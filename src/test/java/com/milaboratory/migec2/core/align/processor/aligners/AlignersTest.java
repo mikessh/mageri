@@ -15,14 +15,12 @@
  */
 package com.milaboratory.migec2.core.align.processor.aligners;
 
-import com.milaboratory.core.sequence.mutations.Mutations;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.migec2.core.align.entity.SAlignmentResult;
 import com.milaboratory.migec2.core.align.processor.Aligner;
 import com.milaboratory.migec2.core.align.processor.AlignerFactory;
 import com.milaboratory.migec2.core.align.reference.ReferenceLibrary;
 import com.milaboratory.migec2.util.testing.PercentRange;
-import com.milaboratory.migec2.util.testing.generators.GeneratorMutationModel;
 import com.milaboratory.migec2.util.testing.generators.RandomIndelGenerator;
 import com.milaboratory.migec2.util.testing.generators.RandomReferenceGenerator;
 import org.junit.Test;
@@ -49,30 +47,30 @@ public class AlignersTest {
         System.out.println("Testing aligners for deletions..");
 
         System.out.println("Simple");
-        randomizedIndelTest(new SimpleExomeAlignerFactory(),
+        randomizedIndelTest(new SimpleExomeAlignerFactory(LocalAlignmentEvaluator.FLEXIBLE),
                 RandomIndelGenerator.DEFAULT_DELETION,
-                PercentRange.createUpperBound("SubstitutionRate", "SimpleExomeAligner-Deletions", 15),
-                PercentRange.createLowerBound("AlignmentRate", "SimpleExomeAligner-Deletions", 95));
+                PercentRange.createUpperBound("SubstitutionRate", "SimpleExomeAligner-Deletions", 20),
+                PercentRange.createLowerBound("AlignmentRate", "SimpleExomeAligner-Deletions", 50));
 
         System.out.println("Extended");
-        randomizedIndelTest(new ExtendedExomeAlignerFactory(),
+        randomizedIndelTest(new ExtendedExomeAlignerFactory(LocalAlignmentEvaluator.FLEXIBLE),
                 RandomIndelGenerator.DEFAULT_DELETION,
-                PercentRange.createUpperBound("SubstitutionRate", "ImprovedExomeAligner-Deletions", 0),
-                PercentRange.createLowerBound("AlignmentRate", "ImprovedExomeAligner-Deletions", 100));
+                PercentRange.createUpperBound("SubstitutionRate", "ImprovedExomeAligner-Deletions", 5),
+                PercentRange.createLowerBound("AlignmentRate", "ImprovedExomeAligner-Deletions", 90));
 
         System.out.println("Testing aligners for insertions..");
 
         System.out.println("Simple");
-        randomizedIndelTest(new SimpleExomeAlignerFactory(),
+        randomizedIndelTest(new SimpleExomeAlignerFactory(LocalAlignmentEvaluator.FLEXIBLE),
                 RandomIndelGenerator.DEFAULT_INSERTION,
-                PercentRange.createUpperBound("SubstitutionRate", "SimpleExomeAligner-Insertions", 15),
-                PercentRange.createLowerBound("AlignmentRate", "SimpleExomeAligner-Insertions", 95));
+                PercentRange.createUpperBound("SubstitutionRate", "SimpleExomeAligner-Insertions", 20),
+                PercentRange.createLowerBound("AlignmentRate", "SimpleExomeAligner-Insertions", 50));
 
         System.out.println("Extended");
-        randomizedIndelTest(new ExtendedExomeAlignerFactory(),
+        randomizedIndelTest(new ExtendedExomeAlignerFactory(LocalAlignmentEvaluator.FLEXIBLE),
                 RandomIndelGenerator.DEFAULT_INSERTION,
-                PercentRange.createUpperBound("SubstitutionRate", "ImprovedExomeAligner-Insertions", 0),
-                PercentRange.createLowerBound("AlignmentRate", "ImprovedExomeAligner-Insertions", 100));
+                PercentRange.createUpperBound("SubstitutionRate", "ImprovedExomeAligner-Insertions", 5),
+                PercentRange.createLowerBound("AlignmentRate", "ImprovedExomeAligner-Insertions", 90));
     }
 
     public void randomizedSimilarityTest(AlignerFactory alignerFactory,

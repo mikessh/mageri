@@ -24,7 +24,8 @@ public class LocalAlignmentEvaluator implements AlignmentEvaluator<LocalAlignmen
     private final int maxConsequentMismatches;
     private final double minIdentity, minAlignedQueryRelativeSpan;
 
-    public static LocalAlignmentEvaluator STRICT = new LocalAlignmentEvaluator(2, 0.9, 0.8);
+    public static LocalAlignmentEvaluator STRICT = new LocalAlignmentEvaluator(2, 0.9, 0.8),
+            FLEXIBLE = new LocalAlignmentEvaluator(5, 0.7, 0.5);
 
     public LocalAlignmentEvaluator(int maxConsequentMismatches,
                                    double minIdentity,

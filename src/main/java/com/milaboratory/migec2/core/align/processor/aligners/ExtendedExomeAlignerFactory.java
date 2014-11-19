@@ -8,10 +8,14 @@ public class ExtendedExomeAlignerFactory implements AlignerFactory<ExtendedExome
     private final LocalAlignmentEvaluator localAlignmentEvaluator;
 
     public ExtendedExomeAlignerFactory() {
-        this(11, LocalAlignmentEvaluator.STRICT);
+        this(LocalAlignmentEvaluator.STRICT, 11);
     }
 
-    public ExtendedExomeAlignerFactory(int k, LocalAlignmentEvaluator localAlignmentEvaluator) {
+    public ExtendedExomeAlignerFactory(LocalAlignmentEvaluator localAlignmentEvaluator) {
+        this(localAlignmentEvaluator, 11);
+    }
+
+    public ExtendedExomeAlignerFactory(LocalAlignmentEvaluator localAlignmentEvaluator, int k) {
         this.k = k;
         this.localAlignmentEvaluator = localAlignmentEvaluator;
     }

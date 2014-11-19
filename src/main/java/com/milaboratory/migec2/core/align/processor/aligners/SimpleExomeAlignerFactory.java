@@ -9,11 +9,15 @@ public class SimpleExomeAlignerFactory implements AlignerFactory<SimpleExomeAlig
     private final LocalAlignmentEvaluator localAlignmentEvaluator;
 
     public SimpleExomeAlignerFactory() {
-        this(KAlignerParameters.getByName("strict"), LocalAlignmentEvaluator.STRICT);
+        this(LocalAlignmentEvaluator.STRICT, KAlignerParameters.getByName("strict"));
     }
 
-    public SimpleExomeAlignerFactory(KAlignerParameters parameters,
-                                     LocalAlignmentEvaluator localAlignmentEvaluator) {
+    public SimpleExomeAlignerFactory(LocalAlignmentEvaluator localAlignmentEvaluator) {
+        this(localAlignmentEvaluator, KAlignerParameters.getByName("strict"));
+    }
+
+    public SimpleExomeAlignerFactory(LocalAlignmentEvaluator localAlignmentEvaluator,
+                                     KAlignerParameters parameters) {
         this.parameters = parameters;
         this.localAlignmentEvaluator = localAlignmentEvaluator;
     }
