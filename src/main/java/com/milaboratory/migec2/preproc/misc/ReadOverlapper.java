@@ -26,23 +26,29 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ReadOverlapper {
-    private final int maxOffset, mmOverlapSz, k;
-    private final boolean orientedOverlap;
+    private final int maxOverlapOffset, overlapFuzzySize, overlapSeedSize, maxConsMms;
+    private final boolean orientedOverlap, allowPartialOverlap;
+    private final double maxOverlapMismatchRatio;
     private AtomicLong overlappedCount = new AtomicLong(), totalCount = new AtomicLong();
 
-    public ReadOverlapper(boolean orientedOverlap, int maxOffset, int mmOverlapSz, int k) {
+    public ReadOverlapper(boolean orientedOverlap, boolean allowPartialOverlap,
+                          int maxOverlapOffset, int overlapFuzzySize, int overlapSeedSize, int maxConsMms,
+                          double maxOverlapMismatchRatio) {
         this.orientedOverlap = orientedOverlap;
-        this.maxOffset = maxOffset;
-        this.mmOverlapSz = mmOverlapSz;
-        this.k = k;
+        this.allowPartialOverlap = allowPartialOverlap;
+        this.maxOverlapOffset = maxOverlapOffset;
+        this.overlapFuzzySize = overlapFuzzySize;
+        this.overlapSeedSize = overlapSeedSize;
+        this.maxConsMms = maxConsMms;
+        this.maxOverlapMismatchRatio = maxOverlapMismatchRatio;
     }
 
     public ReadOverlapper(boolean orientedOverlap) {
-        this(orientedOverlap, 5, 10, 5);
+        this(orientedOverlap, true, 5, 10, 5, 2, 0.1);
     }
 
     public ReadOverlapper() {
-        this(true, 5, 10, 5); // for default checkout output
+        this(true, true, 5, 10, 5, 2, 0.1); // for default checkout output
     }
 
     public AtomicLong getOverlappedCount() {
@@ -54,22 +60,26 @@ public class ReadOverlapper {
     }
 
     public OverlapResult overlap(PSequencingRead readPair) {
+        return overlap(readPair, 0);
+    }
+
+    public OverlapResult overlap(PSequencingRead readPair, int barcodeOffset) {
         SSequencingRead read1 = readPair.getSingleRead(0), read2 = readPair.getSingleRead(1);
         //if (performIlluminaRC)
         //    read2 = new SSequencingReadImpl(read2.getDescription(),
         //            read2.getData().getRC(), read2.id());
 
-        OverlapResult result = overlap(read1, read2);
+        OverlapResult result = overlap(read1, read2, barcodeOffset);
 
         if (!orientedOverlap && !result.isOverlapped()) {
-            OverlapResult result2 = overlap(read2, read1);
+            OverlapResult result2 = overlap(read2, read1, barcodeOffset);
             if (result2.isOverlapped())
                 return result2;
         }
         return result;
     }
 
-    private OverlapResult overlap(SSequencingRead read1, SSequencingRead read2) {
+    private OverlapResult overlap(SSequencingRead read1, SSequencingRead read2, int barcodeOffset) {
         String seq1 = read1.getData().getSequence().toString(),
                 seq2 = read2.getData().getSequence().toString(),
                 qual1 = read1.getData().getQuality().toString(),
@@ -77,11 +87,11 @@ public class ReadOverlapper {
 
         totalCount.incrementAndGet();
 
-        for (int i = 0; i < maxOffset; i++) {
-            if (i + k > seq2.length())
+        for (int i = 0; i < maxOverlapOffset + barcodeOffset; i++) {
+            if (i + overlapSeedSize > seq2.length())
                 break; // too short
 
-            String kmer = seq2.substring(i, i + k);
+            String kmer = seq2.substring(i, i + overlapSeedSize);
             Pattern pattern = Pattern.compile(kmer);
             Matcher matcher = pattern.matcher(seq1);
 
@@ -91,19 +101,28 @@ public class ReadOverlapper {
                 position = matcher.start();
                 if (position >= 0) {
                     // Start fuzzy align - allowing two consequent mismatches here
-                    int nmm = 0;
-                    for (int j = 0; j < mmOverlapSz; j++) {
-                        int posInR1 = position + k + j, posInR2 = i + k + j;
-                        if (posInR1 + 1 > seq1.length())
-                            break;  // went to end of r1, all fine
+                    boolean alignedAll = true;
+                    int nConsMms = 0, nMms = 0, actualFuzzyOverlapSize = overlapFuzzySize;
+
+                    for (int j = 0; j < overlapFuzzySize; j++) {
+                        int posInR1 = position + overlapSeedSize + j, posInR2 = i + overlapSeedSize + j;
+                        if (posInR1 + 1 > seq1.length() || posInR2 + 1 > seq2.length()) {
+                            actualFuzzyOverlapSize = j + 1;
+                            alignedAll = false;
+                            break;     // went to end of r1
+                        }
                         if (seq1.charAt(posInR1) != seq2.charAt(posInR2)) {
-                            if (++nmm > 1)
-                                break;  // two consequent mismatches
+                            nMms++;
+                            if (++nConsMms >= maxConsMms)
+                                break;  // several consequent mismatches
                         } else {
-                            nmm = 0; // zero counter
+                            nConsMms = 0; // zero counter
                         }
                     }
-                    if (nmm < 2) {
+
+                    if (nConsMms < maxConsMms &&
+                            (allowPartialOverlap || alignedAll) &&
+                            (nMms / (double) actualFuzzyOverlapSize) <= maxOverlapMismatchRatio) {
                         // Take best qual nts
                         StringBuilder nrSeq1 = new StringBuilder(seq1.substring(0, position)),
                                 nrQual1 = new StringBuilder(qual1.substring(0, position)),
@@ -114,9 +133,10 @@ public class ReadOverlapper {
                         int pos2 = i - 1, overlapHalfSz = (seq1.length() - position) / 2;
                         for (int j = position; j < position + overlapHalfSz; j++) {
                             pos2++;
-                            if (pos2 + 1 == seq2.length())
+
+                            if (pos2 + 1 > seq2.length())
                                 // should not happen
-                                return new OverlapResult(-2, false, new PSequencingReadImpl(read1, read2));
+                                return new OverlapResult(-1, OverlapType.Bad, new PSequencingReadImpl(read1, read2));
 
                             if (qual1.charAt(j) > qual2.charAt(pos2)) {
                                 nrSeq1.append(seq1.charAt(j));
@@ -130,9 +150,25 @@ public class ReadOverlapper {
                         // Second half
                         for (int j = position + overlapHalfSz; j < seq1.length(); j++) {
                             pos2++;
-                            if (pos2 + 1 == seq2.length())
-                                // should not happen
-                                return new OverlapResult(-2, false, new PSequencingReadImpl(read1, read2));
+
+                            if (pos2 + 1 > seq2.length()) {
+                                StringBuilder masterSeq = nrSeq1.append(nrSeq2),
+                                        masterQual = nrQual1.append(nrQual2);
+                                overlapHalfSz = masterSeq.length() / 2;
+
+                                // readthrough
+                                return new OverlapResult(overlapHalfSz,
+                                        OverlapType.ReadThrough,
+                                        new PSequencingReadImpl(
+                                                new SSequencingReadImpl(read1.getDescription(),
+                                                        new NucleotideSQPair(masterSeq.substring(0, overlapHalfSz),
+                                                                masterQual.substring(0, overlapHalfSz)),
+                                                        read1.id()),
+                                                new SSequencingReadImpl(read2.getDescription(),
+                                                        new NucleotideSQPair(masterSeq.substring(overlapHalfSz),
+                                                                masterQual.substring(overlapHalfSz)),
+                                                        read2.id())));
+                            }
 
                             if (qual1.charAt(j) > qual2.charAt(pos2)) {
                                 nrSeq2.append(seq1.charAt(j));
@@ -148,8 +184,10 @@ public class ReadOverlapper {
                             nrSeq2.append(seq2.charAt(j));
                             nrQual2.append(qual2.charAt(j));
                         }
+
                         overlappedCount.incrementAndGet();
-                        return new OverlapResult(overlapHalfSz, true,
+
+                        return new OverlapResult(overlapHalfSz, OverlapType.Normal,
                                 new PSequencingReadImpl(
                                         new SSequencingReadImpl(read1.getDescription(),
                                                 new NucleotideSQPair(nrSeq1.toString(), nrQual1.toString()),
@@ -162,17 +200,17 @@ public class ReadOverlapper {
             }
         }
 
-        return new OverlapResult(-1, false, new PSequencingReadImpl(read1, read2));
+        return new OverlapResult(-1, OverlapType.None, new PSequencingReadImpl(read1, read2));
     }
 
     public class OverlapResult {
         private final int overlapHalfSz;
-        private final boolean overlapped;
         private final PSequencingRead readPair;
+        private final OverlapType overlapType;
 
-        public OverlapResult(int overlapHalfSz, boolean overlapped, PSequencingRead readPair) {
+        public OverlapResult(int overlapHalfSz, OverlapType overlapType, PSequencingRead readPair) {
             this.overlapHalfSz = overlapHalfSz;
-            this.overlapped = overlapped;
+            this.overlapType = overlapType;
             this.readPair = readPair;
         }
 
@@ -180,12 +218,20 @@ public class ReadOverlapper {
             return overlapHalfSz;
         }
 
+        public OverlapType getOverlapType() {
+            return overlapType;
+        }
+
         public boolean isOverlapped() {
-            return overlapped;
+            return overlapType != OverlapType.None;
         }
 
         public PSequencingRead getReadPair() {
             return readPair;
         }
+    }
+
+    public static enum OverlapType {
+        Normal, ReadThrough, None, Bad
     }
 }

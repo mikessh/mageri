@@ -24,6 +24,7 @@ import com.milaboratory.core.sequence.quality.QualityFormat;
 import com.milaboratory.core.sequence.quality.SequenceQualityPhred;
 import com.milaboratory.core.sequencing.read.PSequencingRead;
 import com.milaboratory.core.sequencing.read.PSequencingReadImpl;
+import com.milaboratory.core.sequencing.read.SSequencingRead;
 import com.milaboratory.core.sequencing.read.SSequencingReadImpl;
 import org.junit.Assert;
 import org.junit.Test;
@@ -34,8 +35,8 @@ import static com.milaboratory.migec2.util.Util.randomSequence;
 
 
 public class OverlapTest {
-    private final int TOTAL_OVERLAP_SIZE = 15, SEQ_LENGTH = 100, TOTAL_ATTEMPTS = 10000;
-    private final double MIN_TP = 0.999, MAX_FP = 0.02;
+    private final int TOTAL_OVERLAP_SIZE = 15, SEQ_LENGTH = 75, TOTAL_ATTEMPTS = 10000;
+    private final double MIN_TP = 0.9, MAX_FP = 0.1;
 
     @Test
     public void positiveTest() throws Exception {
@@ -75,6 +76,42 @@ public class OverlapTest {
         Assert.assertTrue("TP > 99.9%", (double) overlapped / (double) total >= MIN_TP);
     }
 
+    @Test
+    public void readThroughTest() {
+        ReadOverlapper ro = new ReadOverlapper();
+
+        int overlappedT = 0, overlappedF = 0, total = TOTAL_ATTEMPTS;
+        int barcodeOffset = (int) (0.1 * SEQ_LENGTH), overhangSize = (int) (0.05 * SEQ_LENGTH);
+
+        for (int i = 0; i < total; i++) {
+            NucleotideSequence fragment = randomSequence(2 * SEQ_LENGTH),
+                    barcode = randomSequence(barcodeOffset),
+                    overhang = randomSequence(overhangSize);
+
+            NucleotideSequence s1 = fragment.concatenate(overhang),
+                    s2 = barcode.concatenate(fragment);
+
+            SSequencingRead r1 = new SSequencingReadImpl(new NucleotideSQPair(s1)),
+                    r2 = new SSequencingReadImpl(new NucleotideSQPair(s2));
+
+            ReadOverlapper.OverlapResult o12T = ro.overlap(new PSequencingReadImpl(r1, r2), barcodeOffset),
+                    o12F = ro.overlap(new PSequencingReadImpl(r1, r2));
+
+            PSequencingRead r12T = o12T.getReadPair();
+
+
+            if (r12T.getData(0).getSequence().concatenate(r12T.getData(1).getSequence()).equals(fragment))
+                overlappedT++;
+
+            if (o12F.isOverlapped())
+                overlappedF++;
+        }
+
+        System.out.println("True positives (read-through): " + overlappedT + " of " + total);
+        Assert.assertTrue("TP > 99.9%", (double) overlappedT / (double) total >= MIN_TP);
+        System.out.println("False positives (read-through): " + overlappedF + " of " + total);
+        Assert.assertTrue("FP < 2%", (double) overlappedF / (double) total <= MAX_FP);
+    }
 
     @Test
     public void negativeTest() throws Exception {

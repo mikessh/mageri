@@ -136,6 +136,8 @@ public final class PMigReader extends MigReader<PMig> {
 
                     // Trim reads if corresponding option is set
                     // and UMIs were de-novo extracted using adapter search
+                    int barcodeOffset = 0;
+
                     if (migReaderParameters.trimAdapters() &&
                             readInfo.getCheckoutResult() instanceof PCheckoutResult) {
                         PCheckoutResult result = (PCheckoutResult) readInfo.getCheckoutResult();
@@ -151,26 +153,28 @@ public final class PMigReader extends MigReader<PMig> {
                         // -R1|---> -R2----|-->
 
                         //if (result.masterFirst()) {
-                            read1 = Util.sub(read1, result.getMasterResult().getTo());
-                            if (result.getSlaveResult() != BarcodeSearcherResult.BLANK_RESULT)
-                                read2 = Util.sub(read2, 0, result.getSlaveResult().getFrom());
+                        read1 = Util.sub(read1, result.getMasterResult().getTo());
+                        if (result.getSlaveResult() != BarcodeSearcherResult.BLANK_RESULT)
+                            read2 = Util.sub(read2, 0, result.getSlaveResult().getFrom());
                         //} else {
-                            //read2 = Util.sub(read2, 0, result.getMasterResult().getFrom());
-                            //if (result.getSlaveResult() != BarcodeSearcherResult.BLANK_RESULT)
-                            //    read1 = Util.sub(read1, result.getSlaveResult().getTo());
+                        //read2 = Util.sub(read2, 0, result.getMasterResult().getFrom());
+                        //if (result.getSlaveResult() != BarcodeSearcherResult.BLANK_RESULT)
+                        //    read1 = Util.sub(read1, result.getSlaveResult().getTo());
                         //    read2 = Util.sub(read2, result.getMasterResult().getTo());
                         //    if (result.getSlaveResult() != BarcodeSearcherResult.BLANK_RESULT)
                         //        read1 = Util.sub(read1, 0, result.getSlaveResult().getFrom());
                         //}
+
+                        barcodeOffset = result.getMasterResult().getTo();
                     }
 
                     ReadOverlapper.OverlapResult overlapResult =
-                            readOverlapper.overlap(new PSequencingReadImpl(read1, read2));
-                            // orient reads, so that all have, depending on user specified options,
-                            // either master or slave in RQ
-                            //readInfo.flipMe() ?
-                            //        readOverlapper.overlap(new PSequencingReadImpl(read2, read1)) :
-                            //        readOverlapper.overlap(new PSequencingReadImpl(read1, read2));
+                            readOverlapper.overlap(new PSequencingReadImpl(read1, read2), barcodeOffset);
+                    // orient reads, so that all have, depending on user specified options,
+                    // either master or slave in RQ
+                    //readInfo.flipMe() ?
+                    //        readOverlapper.overlap(new PSequencingReadImpl(read2, read1)) :
+                    //        readOverlapper.overlap(new PSequencingReadImpl(read1, read2));
 
                     // Note that we don't need to worry for Illumina RC of mates
                     // even if Overlapper has failed, it performs Illumina RC
