@@ -4,10 +4,12 @@ import cc.redberry.pipe.OutputPort;
 import cc.redberry.pipe.blocks.Merger;
 import cc.redberry.pipe.blocks.ParallelProcessor;
 import cc.redberry.pipe.util.CountingOutputPort;
+import com.milaboratory.migec2.core.align.reference.Reference;
 import com.milaboratory.migec2.core.assemble.entity.Consensus;
 import com.milaboratory.migec2.core.assemble.misc.AssemblerFactory;
 import com.milaboratory.migec2.core.assemble.processor.Assembler;
 import com.milaboratory.migec2.core.consalign.entity.AlignedConsensus;
+import com.milaboratory.migec2.core.consalign.entity.AlignerReferenceLibrary;
 import com.milaboratory.migec2.core.consalign.misc.ConsensusAlignerFactory;
 import com.milaboratory.migec2.core.consalign.processor.ConsensusAligner;
 import com.milaboratory.migec2.core.correct.CorrectedConsensus;
@@ -18,6 +20,8 @@ import com.milaboratory.migec2.core.haplotype.misc.SimpleHaplotypeErrorStatistic
 import com.milaboratory.migec2.core.io.entity.Mig;
 import com.milaboratory.migec2.core.io.misc.UmiHistogram;
 import com.milaboratory.migec2.core.io.readers.MigReader;
+import com.milaboratory.migec2.model.substitution.Variant;
+import com.milaboratory.migec2.model.substitution.VariantCollector;
 import com.milaboratory.migec2.util.ProcessorResultWrapper;
 
 import java.util.*;
@@ -188,7 +192,7 @@ public class MigecPipeline {
     }
 
     public String getVariantSizeStatisticsOutput(String sampleName) {
-        return  alignerBySample.get(sampleName).getVariantSizeLibrary().toString();
+        return alignerBySample.get(sampleName).getVariantSizeLibrary().toString();
     }
 
     public String getCorrectorOutput(String sampleName) {
@@ -208,5 +212,21 @@ public class MigecPipeline {
             return haplotypeTreeBySample.get(sampleName).toFastaString();
         else
             return "";
+    }
+
+    public String getMinorVariantDump(double threshold) {
+        String dump = "#SampleName\tReferenceName\tReferenceFullName\t" + Variant.HEADER;
+        for (String sample : sampleNames) {
+            AlignerReferenceLibrary alignerReferenceLibrary = alignerBySample.get(sample).getAlignerReferenceLibrary();
+            for (Reference reference : alignerReferenceLibrary.getReferenceLibrary().getReferences()) {
+                VariantCollector variantCollector = new VariantCollector(threshold);
+                for (Variant variant :
+                        variantCollector.collect(alignerReferenceLibrary.getMutationsAndCoverage(reference))) {
+                    dump += "\n" + sample + "\t" + reference.getName() + "\t" + reference.getFullName() + "\t" +
+                            variant.toString();
+                }
+            }
+        }
+        return dump;
     }
 }

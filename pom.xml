@@ -30,6 +30,12 @@
         </dependency>
 
         <dependency>
+            <groupId>cc.redberry</groupId>
+            <artifactId>pipe</artifactId>
+            <version>0.9.3-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.11</version>
@@ -72,13 +78,6 @@
             <artifactId>jackson-databind</artifactId>
             <version>2.3.1</version>
         </dependency>
-
-        <dependency>
-            <groupId>cc.redberry</groupId>
-            <artifactId>pipe</artifactId>
-            <version>0.9.3-SNAPSHOT</version>
-        </dependency>
-
 
         <dependency>
             <groupId>org.apache.commons</groupId>

@@ -56,7 +56,8 @@ public final class MigecCli {
                 OPT_FASTQ1_LONG = "first-read", OPT_FASTQ1_SHORT = "1",
                 OPT_FASTQ2_LONG = "second-read", OPT_FASTQ2_SHORT = "2",
                 OPT_UNPAIRED_LONG = "single-end", OPT_UNPAIRED_SHORT = "S",
-                OPT_OUTPUT_LONG = "output-path", OPT_OUTPUT_SHORT = "O";
+                OPT_OUTPUT_LONG = "output-path", OPT_OUTPUT_SHORT = "O",
+                OPT_DUMP_LONG = "dump-variants", OPT_DUMP_SHORT = "D";
 
         options
                 .addOption(
@@ -181,6 +182,14 @@ public final class MigecCli {
                                 .withDescription("path to output")
                                 .withLongOpt(OPT_OUTPUT_LONG)
                                 .create(OPT_OUTPUT_SHORT)
+                )
+                .addOption(
+                        OptionBuilder
+                                .withArgName("file")
+                                .hasArg(true)
+                                .withDescription("path to variant dump")
+                                .withLongOpt(OPT_DUMP_LONG)
+                                .create(OPT_DUMP_SHORT)
                 );
 
 
@@ -188,6 +197,7 @@ public final class MigecCli {
         CommandLineParser parser = new BasicParser();
         MigecPipeline pipeline = null;
         File outputFolder = null;
+        File dumpFile = null;
 
         try {
             // parse the command line arguments
@@ -258,14 +268,21 @@ public final class MigecCli {
 
             // output
             outputFolder = new File(commandLine.getOptionValue(OPT_OUTPUT_SHORT));
-            if (outputFolder.mkdirs())
-                System.out.println("WARNING: Output folder already exists, " +
-                        "files may be overwritten! " +
-                        "You have several minutes to skip with Ctrl + C while FASTQ files are being indexed :)");
 
-            if (!outputFolder.exists())
-                throw new ParseException("Failed to create output folder");
+            if (!outputFolder.mkdirs())
+                if (!outputFolder.exists())
+                    throw new ParseException("Failed to create output folder");
+                else
+                    System.out.println("WARNING: Output folder already exists, " +
+                            "files may be overwritten! " +
+                            "You have several minutes to skip with Ctrl + C while FASTQ files are being indexed :)");
 
+            // dump
+            if (commandLine.hasOption(OPT_OUTPUT_SHORT)) {
+                String dumpPath = commandLine.getOptionValue(OPT_OUTPUT_SHORT);
+                new File(dumpPath).getAbsoluteFile().getParentFile().mkdirs();
+                dumpFile = new File(dumpPath);
+            }
 
             // =================
             // Pipeline creation
@@ -371,8 +388,13 @@ public final class MigecCli {
         // =======
         runFirstStage(pipeline, outputFolder);
 
-        runSecondStage(pipeline, outputFolder);
+        if (dumpFile != null) {
+            dumpVariants(pipeline, outputFolder);
+            print2("Finished dumping variants");
+            return;
+        }
 
+        runSecondStage(pipeline, outputFolder);
 
         print2("Finished");
     }
@@ -451,6 +473,10 @@ public final class MigecCli {
             e.printStackTrace();
             System.exit(-1);
         }
+    }
+
+    private static void dumpVariants(MigecPipeline pipeline, File dumpFile) throws IOException {
+        FileUtils.writeStringToFile(dumpFile, pipeline.getMinorVariantDump(0.05));
     }
 
     private static void runSecondStage(MigecPipeline pipeline, File outputFolder) {

@@ -42,10 +42,10 @@ public class Variant {
         this.majorReadCount = majorReadCount;
     }
 
-    public static final String HEADER = "POS\tNT\t" +
-            "BG_MAJOR_FREQ\tBG_MINOR_FREQ\t" +
-            "MIG_MAJOR_COUNT\tMIG_MINOR_COUNT\t" +
-            "READ_MAJOR_COUNT\tREAD_MINOR_COUNT";
+    public static final String HEADER = "Pos\tNt\t" +
+            "BgMinorMigFreq\tBgMinorReadFreq\t" +
+            "MajorMigCount\tMinorMigCount\t" +
+            "MajorReadCount\tMinorReadCount";
 
     void setBgMinorReadFreq(double bgMinorReadFreq) {
         this.bgMinorReadFreq = bgMinorReadFreq;
