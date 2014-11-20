@@ -185,9 +185,9 @@ public final class MigecCli {
                 )
                 .addOption(
                         OptionBuilder
-                                .withArgName("file")
+                                .withArgName("double")
                                 .hasArg(true)
-                                .withDescription("path to variant dump")
+                                .withDescription("dumping mode for variants having less than threshold frequency")
                                 .withLongOpt(OPT_DUMP_LONG)
                                 .create(OPT_DUMP_SHORT)
                 );
@@ -197,7 +197,7 @@ public final class MigecCli {
         CommandLineParser parser = new BasicParser();
         MigecPipeline pipeline = null;
         File outputFolder = null;
-        File dumpFile = null;
+        double dumpFreq = -1;
 
         try {
             // parse the command line arguments
@@ -278,10 +278,8 @@ public final class MigecCli {
                             "You have several minutes to skip with Ctrl + C while FASTQ files are being indexed :)");
 
             // dump
-            if (commandLine.hasOption(OPT_OUTPUT_SHORT)) {
-                String dumpPath = commandLine.getOptionValue(OPT_OUTPUT_SHORT);
-                new File(dumpPath).getAbsoluteFile().getParentFile().mkdirs();
-                dumpFile = new File(dumpPath);
+            if (commandLine.hasOption(OPT_DUMP_SHORT)) {
+                dumpFreq = Double.parseDouble(commandLine.getOptionValue(OPT_DUMP_SHORT));
             }
 
             // =================
@@ -388,8 +386,8 @@ public final class MigecCli {
         // =======
         runFirstStage(pipeline, outputFolder);
 
-        if (dumpFile != null) {
-            dumpVariants(pipeline, outputFolder);
+        if (dumpFreq > 0) {
+            dumpVariants(pipeline, outputFolder, dumpFreq);
             print2("Finished dumping variants");
             return;
         }
@@ -475,8 +473,9 @@ public final class MigecCli {
         }
     }
 
-    private static void dumpVariants(MigecPipeline pipeline, File dumpFile) throws IOException {
-        FileUtils.writeStringToFile(dumpFile, pipeline.getMinorVariantDump(0.05));
+    private static void dumpVariants(MigecPipeline pipeline, File outputFolder, double dumpFreq) throws IOException {
+        FileUtils.writeStringToFile(new File(outputFolder.getAbsolutePath() + "/_vardump.txt"),
+                pipeline.getMinorVariantDump(dumpFreq));
     }
 
     private static void runSecondStage(MigecPipeline pipeline, File outputFolder) {
