@@ -53,32 +53,35 @@ public class VariantCollector {
                 masterCount[from] = majorMigCount;
             }
 
-            for (byte from = 0; from < 4; from++) {
-                majorMigCount = mutationsAndCoverage.getMajorNucleotideMigCount(i, from);
-                majorReadCount = mutationsAndCoverage.getMajorNucleotideReadCount(i, from);
+            if (sumAtPosMig > 0) {
 
-                for (byte to = 0; to < 4; to++) {
-                    minorMigCount = mutationsAndCoverage.getMinorNucleotideMigCount(i, to);
-                    minorReadCount = mutationsAndCoverage.getMinorNucleotideReadCount(i, to);
+                for (byte from = 0; from < 4; from++) {
+                    majorMigCount = mutationsAndCoverage.getMajorNucleotideMigCount(i, from);
+                    majorReadCount = mutationsAndCoverage.getMajorNucleotideReadCount(i, from);
 
-                    if (from != to) {
-                        innerMatrixMig[from][to] += minorMigCount * majorMigCount / sumAtPosMig;
-                        innerMatrixRead[from][to] += minorReadCount * majorReadCount / sumAtPosRead;
-                    } else if (majorMigCount > 0 &&
-                            majorMigCount / (double) sumAtPosMig <= minorVariantThreshold) {
-                        // report a variant
-                        // NOTE: we use MIG-based criteria solely here
+                    for (byte to = 0; to < 4; to++) {
+                        minorMigCount = mutationsAndCoverage.getMinorNucleotideMigCount(i, to);
+                        minorReadCount = mutationsAndCoverage.getMinorNucleotideReadCount(i, to);
 
-                        final double[] parentProb = new double[4];
+                        if (from != to) {
+                            innerMatrixMig[from][to] += minorMigCount * majorMigCount / (double) sumAtPosMig;
+                            innerMatrixRead[from][to] += minorReadCount * majorReadCount / (double) sumAtPosRead;
+                        } else if (majorMigCount > 0 &&
+                                majorMigCount / (double) sumAtPosMig <= minorVariantThreshold) {
+                            // report a variant
+                            // NOTE: we use MIG-based criteria solely here
 
-                        // weighted probability of parent
-                        for (byte parent = 0; parent < 4; parent++)
-                            if (parent != from)
-                                parentProb[parent] = masterCount[parent] / (double) (sumAtPosMig - masterCount[from]);
+                            final double[] parentProb = new double[4];
 
-                        variants.add(new Variant(i, from, parentProb,
-                                minorMigCount, majorMigCount,
-                                minorReadCount, majorReadCount));
+                            // weighted probability of parent
+                            for (byte parent = 0; parent < 4; parent++)
+                                if (parent != from)
+                                    parentProb[parent] = masterCount[parent] / (double) (sumAtPosMig - masterCount[from]);
+
+                            variants.add(new Variant(i, from, parentProb,
+                                    minorMigCount, majorMigCount,
+                                    minorReadCount, majorReadCount));
+                        }
                     }
                 }
             }
