@@ -187,7 +187,7 @@ public final class MigecCli {
                         OptionBuilder
                                 .withArgName("double")
                                 .hasArg(true)
-                                .withDescription("dumping mode for variants having less than threshold frequency")
+                                .withDescription("dumping mode for variants having less than the threshold frequency")
                                 .withLongOpt(OPT_DUMP_LONG)
                                 .create(OPT_DUMP_SHORT)
                 );

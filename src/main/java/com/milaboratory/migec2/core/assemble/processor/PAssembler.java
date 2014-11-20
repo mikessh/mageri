@@ -26,8 +26,8 @@ public final class PAssembler extends Assembler<PConsensus, PMig> {
         readsTotal.addAndGet(pMig.size());
         migsTotal.incrementAndGet();
         if (result1 == null || result2 == null) {
-            System.out.println(pMig.getMig1().getReads().get(0).getData().getSequence().toString() + "\t" +
-                    pMig.getMig2().getReads().get(0).getData().getSequence().toString());
+            //System.out.println(pMig.getMig1().getReads().get(0).getData().getSequence().toString() + "\t" +
+            //        pMig.getMig2().getReads().get(0).getData().getSequence().toString());
             return null;
         } else {
             PConsensus consensus = new PConsensus(result1, result2);
