@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+@Deprecated
 public class VariantSizeLibrary {
     private final Map<Reference, VariantSizeStatistics> variantSizeStatisticsByReference;
 
