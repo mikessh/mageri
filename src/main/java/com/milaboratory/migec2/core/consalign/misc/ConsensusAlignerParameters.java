@@ -9,7 +9,6 @@ public final class ConsensusAlignerParameters implements ParameterSet {
     private final boolean backAlignDroppedReads;
 
     public static ConsensusAlignerParameters DEFAULT = new ConsensusAlignerParameters((byte) 30, (byte) 25, true),
-            CQS_FILTER = new ConsensusAlignerParameters((byte) 30, (byte) 25, true),
             NO_FILTER = new ConsensusAlignerParameters((byte) 0, (byte) 0, true);
 
     public ConsensusAlignerParameters(byte consensusQualityThreshold, byte readQualityThreshold,

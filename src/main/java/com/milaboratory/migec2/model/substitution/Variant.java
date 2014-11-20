@@ -43,16 +43,20 @@ public class Variant {
     }
 
     public static final String HEADER = "Pos\tNt\t" +
+            NucleotideAlphabet.INSTANCE.symbolFromCode((byte)0) + "\t" +
+            NucleotideAlphabet.INSTANCE.symbolFromCode((byte)1) + "\t" +
+            NucleotideAlphabet.INSTANCE.symbolFromCode((byte)2) + "\t" +
+            NucleotideAlphabet.INSTANCE.symbolFromCode((byte)3) + "\t" +
             "BgMinorMigFreq\tBgMinorReadFreq\t" +
             "MajorMigCount\tMinorMigCount\t" +
             "MajorReadCount\tMinorReadCount";
 
-    void setBgMinorReadFreq(double bgMinorReadFreq) {
-        this.bgMinorReadFreq = bgMinorReadFreq;
+    void incrementBgMinorReadFreq(double bgMinorReadFreq) {
+        this.bgMinorReadFreq += bgMinorReadFreq;
     }
 
-    void setBgMinorMigFreq(double bgMinorMigFreq) {
-        this.bgMinorMigFreq = bgMinorMigFreq;
+    void incrementBgMinorMigFreq(double bgMinorMigFreq) {
+        this.bgMinorMigFreq += bgMinorMigFreq;
     }
 
     public double getParentProb(byte from) {
@@ -94,6 +98,7 @@ public class Variant {
     @Override
     public String toString() {
         return pos + "\t" + NucleotideAlphabet.INSTANCE.symbolFromCode(to) + "\t" +
+                parentProb[0] + "\t" + parentProb[1] + "\t" + parentProb[2] + "\t" + parentProb[3] + "\t" +
                 bgMinorMigFreq + "\t" + bgMinorReadFreq + "\t" +
                 majorMigCount + "\t" + minorMigCount + "\t" +
                 majorReadCount + "\t" + minorReadCount;

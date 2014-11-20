@@ -54,9 +54,8 @@ public class VariantCollector {
             }
 
             if (sumAtPosMig > 0) {
-
                 for (byte from = 0; from < 4; from++) {
-                    majorMigCount = mutationsAndCoverage.getMajorNucleotideMigCount(i, from);
+                    majorMigCount = masterCount[from];
                     majorReadCount = mutationsAndCoverage.getMajorNucleotideReadCount(i, from);
 
                     for (byte to = 0; to < 4; to++) {
@@ -92,8 +91,8 @@ public class VariantCollector {
                 // weight by parent probability
                 // NOTE: we use MIG-based measure of probability solely here
                 double weight = variant.getParentProb(from);
-                variant.setBgMinorMigFreq(weight * getAtMig(from, variant.getTo()));
-                variant.setBgMinorReadFreq(weight * getAtRead(from, variant.getTo()));
+                variant.incrementBgMinorMigFreq(weight * getAtMig(from, variant.getTo()));
+                variant.incrementBgMinorReadFreq(weight * getAtRead(from, variant.getTo()));
             }
         }
 
