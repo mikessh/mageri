@@ -25,7 +25,7 @@ public class Variant {
     private final byte to;
     private final double[] parentProb;
 
-    private double bgMinorReadFreq = -1, bgMinorMigFreq = -1;
+    private double bgMinorReadFreq = 0, bgMinorMigFreq = 0;
 
     private final int minorMigCount, majorMigCount, minorReadCount, majorReadCount;
 
