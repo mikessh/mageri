@@ -16,7 +16,7 @@
  * Last modified on 20.11.2014 by mikesh
  */
 
-package com.milaboratory.migec2.model.substitution;
+package com.milaboratory.migec2.model.variant;
 
 import com.milaboratory.migec2.core.consalign.mutations.MutationsAndCoverage;
 
