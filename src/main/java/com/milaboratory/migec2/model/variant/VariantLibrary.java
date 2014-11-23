@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Last modified on 20.11.2014 by mikesh
+ * Last modified on 23.11.2014 by mikesh
  */
 
 package com.milaboratory.migec2.model.variant;
@@ -23,18 +23,22 @@ import com.milaboratory.migec2.core.consalign.mutations.MutationsAndCoverage;
 import java.util.Collection;
 import java.util.LinkedList;
 
-public class VariantCollector {
+/**
+ * A dual-purpose class that serves as an updatable transition frequency matrix and
+ * a minor variant scanner. While minor variants are collected, they are annotated with
+ * corresponding background error frequencies, an information that could be further used
+ * in error filtering process.
+ */
+public class VariantLibrary {
     private final double[][] innerMatrixMig = new double[4][4], innerMatrixRead = new double[4][4];
     private final double[] rowSumsMig = new double[4], rowSumsRead = new double[4];
-    private final double minorVariantThreshold;
 
-    public VariantCollector(double minorVariantThreshold) {
-        this.minorVariantThreshold = minorVariantThreshold;
-    }
-
-    public Collection<Variant> collect(MutationsAndCoverage mutationsAndCoverage) {
-        final LinkedList<Variant> variants = new LinkedList<>();
-
+    /**
+     * Updates background substitution statistics using a given mutations and coverage matrix
+     *
+     * @param mutationsAndCoverage mutation and coverage matrix to summarize
+     */
+    public void update(MutationsAndCoverage mutationsAndCoverage) {
         final int[] masterCount = new int[4];
         for (int i = 0; i < mutationsAndCoverage.referenceLength(); i++) {
             int sumAtPosMig = 0, sumAtPosRead = 0,
@@ -63,9 +67,57 @@ public class VariantCollector {
                         minorReadCount = mutationsAndCoverage.getMinorNucleotideReadCount(i, to);
 
                         if (from != to) {
+                            // don't forget to protect from overflow here
                             innerMatrixMig[from][to] += minorMigCount * (double) majorMigCount / (double) sumAtPosMig;
                             innerMatrixRead[from][to] += minorReadCount * (double) majorReadCount / (double) sumAtPosRead;
-                        } else if (majorMigCount > 0 &&
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Collects minor variants (<5%) from a given mutations and coverage matrix
+     *
+     * @param mutationsAndCoverage mutation and coverage matrix to scan for minor variants
+     * @return a collection of minor variants that were detected
+     */
+    public Collection<Variant> collectVariants(MutationsAndCoverage mutationsAndCoverage) {
+        return collectVariants(mutationsAndCoverage, 0.05);
+    }
+
+    /**
+     * Collects minor variants from a given mutations and coverage matrix
+     *
+     * @param mutationsAndCoverage  mutation and coverage matrix to scan for minor variants
+     * @param minorVariantThreshold a threshold for minor variant frequency
+     * @return a collection of minor variants that were detected
+     */
+    public Collection<Variant> collectVariants(MutationsAndCoverage mutationsAndCoverage,
+                                               double minorVariantThreshold) {
+        final LinkedList<Variant> variants = new LinkedList<>();
+
+        final int[] masterCount = new int[4];
+        for (int i = 0; i < mutationsAndCoverage.referenceLength(); i++) {
+            int sumAtPosMig = 0, majorMigCount, minorMigCount, majorReadCount, minorReadCount;
+
+            for (byte from = 0; from < 4; from++) {
+                majorMigCount = mutationsAndCoverage.getMajorNucleotideMigCount(i, from);
+                sumAtPosMig += majorMigCount;
+                masterCount[from] = majorMigCount;
+            }
+
+            if (sumAtPosMig > 0) {
+                for (byte from = 0; from < 4; from++) {
+                    majorMigCount = masterCount[from];
+                    majorReadCount = mutationsAndCoverage.getMajorNucleotideReadCount(i, from);
+
+                    for (byte to = 0; to < 4; to++) {
+                        minorMigCount = mutationsAndCoverage.getMinorNucleotideMigCount(i, to);
+                        minorReadCount = mutationsAndCoverage.getMinorNucleotideReadCount(i, to);
+
+                        if (majorMigCount > 0 &&
                                 majorMigCount / (double) sumAtPosMig <= minorVariantThreshold) {
                             // report a variant
                             // NOTE: we use MIG-based criteria solely here
@@ -91,19 +143,33 @@ public class VariantCollector {
                 // weight by parent probability
                 // NOTE: we use MIG-based measure of probability solely here
                 double weight = variant.getParentProb(from);
-                variant.incrementBgMinorMigFreq(weight * getAtMig(from, variant.getTo()));
-                variant.incrementBgMinorReadFreq(weight * getAtRead(from, variant.getTo()));
+                variant.incrementBgMinorMigFreq(weight * getBgFreqMig(from, variant.getTo()));
+                variant.incrementBgMinorReadFreq(weight * getBgFreqRead(from, variant.getTo()));
             }
         }
 
         return variants;
     }
 
-    public double getAtMig(byte from, byte to) {
+    /**
+     * Gets background substitution frequency, computed in MIG units. Note: the probability matrix is non-symmetrical
+     *
+     * @param from reference nucleotide
+     * @param to   variant nucleotide
+     * @return probability of substitution
+     */
+    public double getBgFreqMig(byte from, byte to) {
         return from == to ? 0d : (innerMatrixMig[from][to] / rowSumsMig[from]);
     }
 
-    public double getAtRead(byte from, byte to) {
+    /**
+     * Gets background substitution frequency, computed in READ units. Note: the probability matrix is non-symmetrical
+     *
+     * @param from reference nucleotide code
+     * @param to   variant nucleotide code
+     * @return probability of substitution
+     */
+    public double getBgFreqRead(byte from, byte to) {
         return from == to ? 0d : (innerMatrixRead[from][to] / rowSumsRead[from]);
     }
 }
