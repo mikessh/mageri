@@ -51,8 +51,6 @@ public final class SConsensusAligner extends ConsensusAligner<SConsensus> {
 
                 majorMutations = mutationsExtractor.calculateMajorMutations();
                 minorMutations = mutationsExtractor.calculateMinorMutations();
-
-                mutationsExtractor.updateVariantSizeStatistics(variantSizeLibrary);
             }
 
             majorMutationsByReference.put(reference, majorMutations);

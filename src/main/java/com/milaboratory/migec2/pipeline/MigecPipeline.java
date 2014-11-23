@@ -195,10 +195,6 @@ public class MigecPipeline {
         return alignerBySample.get(sampleName).getAlignerReferenceLibrary().toString();
     }
 
-    public String getVariantSizeStatisticsOutput(String sampleName) {
-        return alignerBySample.get(sampleName).getVariantSizeLibrary().toString();
-    }
-
     public String getCorrectorOutput(String sampleName) {
         return correctorBySample.get(sampleName).getCorrectorReferenceLibrary().toString();
     }

@@ -58,8 +58,6 @@ public final class PConsensusAligner extends ConsensusAligner<PConsensus> {
 
                 majorMutations = mutationsExtractor.calculateMajorMutations();
                 minorMutations = mutationsExtractor.calculateMinorMutations();
-
-                mutationsExtractor.updateVariantSizeStatistics(variantSizeLibrary);
             }
 
             majorMutationsByReference.put(reference1, majorMutations);
@@ -84,8 +82,6 @@ public final class PConsensusAligner extends ConsensusAligner<PConsensus> {
                 // TODO: test mutations don't overlap
                 majorMutations.append(mutationsExtractor.calculateMajorMutations());
                 Map<Integer, Integer> additionalMinorMutations = mutationsExtractor.calculateMinorMutations();
-
-                mutationsExtractor.updateVariantSizeStatistics(variantSizeLibrary);
 
                 for (Map.Entry<Integer, Integer> minorMutationEntry : additionalMinorMutations.entrySet()) {
                     Integer count = minorMutations.get(minorMutationEntry.getKey());

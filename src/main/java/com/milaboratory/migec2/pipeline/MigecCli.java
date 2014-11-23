@@ -463,8 +463,6 @@ public final class MigecCli {
                         pipeline.getAssemblerOutput(sampleName));
                 writeStringToFile(new File(samplePrefix + ".1.consaligner.txt"),
                         pipeline.getConsAlignerOutput(sampleName));
-                writeStringToFile(new File(samplePrefix + ".1.variantstats.txt"),
-                        pipeline.getVariantSizeStatisticsOutput(sampleName));
             }
         } catch (IOException e) {
             System.err.println("Error writing output: " + e.toString());

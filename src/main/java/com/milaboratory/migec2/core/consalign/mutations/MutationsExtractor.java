@@ -10,7 +10,6 @@ import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.core.sequence.quality.SequenceQualityPhred;
 import com.milaboratory.migec2.core.align.reference.Reference;
 import com.milaboratory.migec2.core.assemble.entity.SConsensus;
-import com.milaboratory.migec2.core.consalign.entity.VariantSizeLibrary;
 import com.milaboratory.migec2.core.consalign.misc.ConsensusAlignerParameters;
 import com.milaboratory.migec2.core.mutations.MigecMutationsCollection;
 
@@ -130,16 +129,6 @@ public final class MutationsExtractor {
     public Map<Integer, Integer> calculateMinorMutations() {
         prebuildMinorMutations();
         return new HashMap<>(minorMutations);
-    }
-
-    public void updateVariantSizeStatistics(VariantSizeLibrary variantSizeLibrary) {
-        variantSizeLibrary.update(reference,
-                // this should return MAJOR substitutions, already moved to ref coords
-                passedMajorMQPairs,
-                // this should return MINOR mutations in reference coords
-                // however they're not filtered from indels
-                prebuildMinorMutations(),
-                backAlignDroppedReads ? consensus.fullSize() : consensus.size());
     }
 
     private int[] computeFilteredRelativeMutations(NucleotideSequence referenceSequence, SequenceQualityPhred queryQuality,

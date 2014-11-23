@@ -20,7 +20,6 @@ import com.milaboratory.migec2.core.align.processor.Aligner;
 import com.milaboratory.migec2.core.assemble.entity.Consensus;
 import com.milaboratory.migec2.core.consalign.entity.AlignedConsensus;
 import com.milaboratory.migec2.core.consalign.entity.AlignerReferenceLibrary;
-import com.milaboratory.migec2.core.consalign.entity.VariantSizeLibrary;
 import com.milaboratory.migec2.core.consalign.misc.ConsensusAlignerParameters;
 import com.milaboratory.migec2.util.ProcessorResultWrapper;
 
@@ -29,13 +28,11 @@ public abstract class ConsensusAligner<T extends Consensus> implements Processor
     protected final Aligner aligner;
     protected final AlignerReferenceLibrary alignerReferenceLibrary;
     protected final ConsensusAlignerParameters parameters;
-    protected final VariantSizeLibrary variantSizeLibrary;
 
     protected ConsensusAligner(Aligner aligner, ConsensusAlignerParameters parameters) {
         this.aligner = aligner;
         this.alignerReferenceLibrary = new AlignerReferenceLibrary(aligner.getReferenceLibrary());
         this.parameters = parameters;
-        this.variantSizeLibrary = new VariantSizeLibrary(aligner.getReferenceLibrary());
     }
 
     public ProcessorResultWrapper<AlignedConsensus> process(ProcessorResultWrapper<T> consensus) {
@@ -53,9 +50,5 @@ public abstract class ConsensusAligner<T extends Consensus> implements Processor
 
     public AlignerReferenceLibrary getAlignerReferenceLibrary() {
         return alignerReferenceLibrary;
-    }
-
-    public VariantSizeLibrary getVariantSizeLibrary() {
-        return variantSizeLibrary;
     }
 }

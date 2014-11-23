@@ -87,9 +87,6 @@ public class HaplotypeTreeDataTest {
         System.out.println();
         System.out.println(aligner.getAlignerReferenceLibrary());
 
-        System.out.println();
-        System.out.println(aligner.getVariantSizeLibrary());
-
         // Find major and minor mutations
         Corrector corrector = new Corrector(aligner.getAlignerReferenceLibrary());
 
