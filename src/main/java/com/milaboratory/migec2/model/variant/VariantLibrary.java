@@ -18,7 +18,6 @@
 
 package com.milaboratory.migec2.model.variant;
 
-import com.milaboratory.migec2.core.align.reference.Reference;
 import com.milaboratory.migec2.core.consalign.mutations.MutationsAndCoverage;
 
 import java.util.Collection;
@@ -31,19 +30,32 @@ import java.util.LinkedList;
  * in error filtering process.
  */
 public class VariantLibrary {
+    private final MutationsAndCoverage mutationsAndCoverage;
+    private final Variant[][] variants;
     private final double[][] innerMatrixMig = new double[4][4], innerMatrixRead = new double[4][4];
     private final double[] rowSumsMig = new double[4], rowSumsRead = new double[4];
 
     /**
-     * Updates background substitution statistics using a given mutations and coverage matrix
+     * Creates a new instance
      *
-     * @param mutationsAndCoverage mutation and coverage matrix to summarize
+     * @param mutationsAndCoverage mutations and coverage matrix to process
      */
-    public void update(MutationsAndCoverage mutationsAndCoverage) {
-        final int[] masterCount = new int[4];
+    public VariantLibrary(MutationsAndCoverage mutationsAndCoverage) {
+        this.mutationsAndCoverage = mutationsAndCoverage;
+        this.variants = new Variant[mutationsAndCoverage.referenceLength()][4];
+        init();
+    }
+
+    /**
+     * Computes background substitution statistics using a given mutations and coverage matrix.
+     * Summarizes variants
+     */
+    private void init() {
+        final int[] majorMigCountArr = new int[4];
+
         for (int i = 0; i < mutationsAndCoverage.referenceLength(); i++) {
-            int sumAtPosMig = 0, sumAtPosRead = 0,
-                    majorMigCount, minorMigCount, majorReadCount, minorReadCount;
+            int sumAtPosMig = 0, majorMigCount, minorMigCount;
+            long sumAtPosRead = 0, majorReadCount, minorReadCount;
 
             for (byte from = 0; from < 4; from++) {
                 majorMigCount = mutationsAndCoverage.getMajorNucleotideMigCount(i, from);
@@ -55,12 +67,12 @@ public class VariantLibrary {
                 sumAtPosRead += majorReadCount;
                 rowSumsRead[from] += majorReadCount;
 
-                masterCount[from] = majorMigCount;
+                majorMigCountArr[from] = majorMigCount;
             }
 
             if (sumAtPosMig > 0) {
                 for (byte from = 0; from < 4; from++) {
-                    majorMigCount = masterCount[from];
+                    majorMigCount = majorMigCountArr[from];
                     majorReadCount = mutationsAndCoverage.getMajorNucleotideReadCount(i, from);
 
                     for (byte to = 0; to < 4; to++) {
@@ -71,6 +83,20 @@ public class VariantLibrary {
                             // don't forget to protect from overflow here
                             innerMatrixMig[from][to] += minorMigCount * (double) majorMigCount / (double) sumAtPosMig;
                             innerMatrixRead[from][to] += minorReadCount * (double) majorReadCount / (double) sumAtPosRead;
+                        } else if (majorMigCount > 0) {
+                            // diagonal - store variants that are represented by at least 1 molecule
+                            final double[] fromWeights = new double[4];
+
+                            // first determine probability of where this variant originated from
+                            for (byte from2 = 0; from2 < 4; from2++)
+                                if (from2 != to)
+                                    fromWeights[from2] = majorMigCountArr[from2] /
+                                            (double) (sumAtPosMig - majorMigCountArr[to]);
+
+                            // then store this variant. Bg frequencies are calculated in lazy fashion
+                            variants[i][to] = new Variant(this, i, to, fromWeights,
+                                    sumAtPosMig, sumAtPosRead, minorMigCount, majorMigCount,
+                                    minorReadCount, majorReadCount);
                         }
                     }
                 }
@@ -79,76 +105,27 @@ public class VariantLibrary {
     }
 
     /**
-     * Collects minor variants (&lt; 5%) from a given mutations and coverage matrix
+     * Collects minor variants that have &lt; 5% frequency
      *
-     * @param mutationsAndCoverage mutation and coverage matrix to scan for minor variants
      * @return a collection of minor variants that were detected
      */
-    public Collection<Variant> collectVariants(MutationsAndCoverage mutationsAndCoverage) {
-        return collectVariants(mutationsAndCoverage, 0.05);
+    public Collection<Variant> collectVariants() {
+        return collectVariants(0.05);
     }
 
     /**
      * Collects minor variants from a given mutations and coverage matrix
      *
-     * @param mutationsAndCoverage  mutation and coverage matrix to scan for minor variants
-     * @param minorVariantThreshold a threshold for minor variant frequency
      * @return a collection of minor variants that were detected
      */
-    public Collection<Variant> collectVariants(MutationsAndCoverage mutationsAndCoverage,
-                                               double minorVariantThreshold) {
+    public Collection<Variant> collectVariants(double minorVariantThreshold) {
         final LinkedList<Variant> variants = new LinkedList<>();
-        Reference reference = mutationsAndCoverage.getReference();
 
-        final int[] masterCount = new int[4];
         for (int i = 0; i < mutationsAndCoverage.referenceLength(); i++) {
-            int sumAtPosMig = 0, majorMigCount, minorMigCount, majorReadCount, minorReadCount;
-
-            for (byte from = 0; from < 4; from++) {
-                majorMigCount = mutationsAndCoverage.getMajorNucleotideMigCount(i, from);
-                sumAtPosMig += majorMigCount;
-                masterCount[from] = majorMigCount;
-            }
-
-            if (sumAtPosMig > 0) {
-                for (byte from = 0; from < 4; from++) {
-                    majorMigCount = masterCount[from];
-                    majorReadCount = mutationsAndCoverage.getMajorNucleotideReadCount(i, from);
-
-                    for (byte to = 0; to < 4; to++) {
-                        minorMigCount = mutationsAndCoverage.getMinorNucleotideMigCount(i, to);
-                        minorReadCount = mutationsAndCoverage.getMinorNucleotideReadCount(i, to);
-
-                        // NOTE: we use solely MIG-based criteria to calculate variant freq here
-                        if (majorMigCount > 0 &&
-                                majorMigCount / (double) sumAtPosMig <= minorVariantThreshold) {
-                            // report a variant
-
-                            final double[] parentProb = new double[4];
-
-                            // background error rates, to be properly normalized
-                            double bgMinorMigFreq = 0, bgMinorReadFreq = 0;
-
-                            // weighted probability of parent
-                            for (byte parent = 0; parent < 4; parent++) {
-                                if (parent != to) {
-                                    // NOTE: we use MIG-based measure of probability solely here
-                                    double w = masterCount[parent] / (double) (sumAtPosMig - masterCount[to]);
-                                    parentProb[parent] = w;
-                                    bgMinorMigFreq += w * getBgFreqMig(from, to);
-                                    bgMinorReadFreq += w * getBgFreqRead(from, to);
-                                }
-                            }
-
-                            variants.add(new Variant(reference, i, from,
-                                    parentProb,
-                                    bgMinorMigFreq,
-                                    bgMinorReadFreq,
-                                    minorMigCount, majorMigCount,
-                                    minorReadCount, majorReadCount));
-                        }
-                    }
-                }
+            for (byte to = 0; to < 4; to++) {
+                Variant variant = this.variants[i][to];
+                if (variant != null && variant.getFreq() <= minorVariantThreshold)
+                    variants.add(variant);
             }
         }
 
@@ -175,5 +152,12 @@ public class VariantLibrary {
      */
     public double getBgFreqRead(byte from, byte to) {
         return from == to ? 0d : (innerMatrixRead[from][to] / rowSumsRead[from]);
+    }
+
+    /**
+     * Get mutations and coverage data used to build this variant library
+     */
+    public MutationsAndCoverage getMutationsAndCoverage() {
+        return mutationsAndCoverage;
     }
 }

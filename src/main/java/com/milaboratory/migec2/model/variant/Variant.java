@@ -23,19 +23,26 @@ import com.milaboratory.core.sequence.nucleotide.NucleotideAlphabet;
 public class Variant {
     private final int pos;
     private final byte to;
-    private final double[] parentProb;
+    private final double[] fromWeights;
 
-    private double bgMinorReadFreq = 0, bgMinorMigFreq = 0;
+    private final VariantLibrary parent;
 
-    private final int minorMigCount, majorMigCount, minorReadCount, majorReadCount;
+    private double bgMinorReadFreq = -1, bgMinorMigFreq = -1;
 
-    Variant(int pos, byte to,
-            double[] parentProb,
+    private final int minorMigCount, majorMigCount, sumAtPosMig;
+    private final long sumAtPosRead, minorReadCount, majorReadCount;
+
+    Variant(VariantLibrary parent, int pos, byte to,
+            double[] fromWeights,
+            int sumAtPosMig, long sumAtPosRead,
             int minorMigCount, int majorMigCount,
-            int minorReadCount, int majorReadCount) {
+            long minorReadCount, long majorReadCount) {
+        this.parent = parent;
         this.pos = pos;
         this.to = to;
-        this.parentProb = parentProb;
+        this.fromWeights = fromWeights;
+        this.sumAtPosMig = sumAtPosMig;
+        this.sumAtPosRead = sumAtPosRead;
         this.minorMigCount = minorMigCount;
         this.majorMigCount = majorMigCount;
         this.minorReadCount = minorReadCount;
@@ -43,24 +50,17 @@ public class Variant {
     }
 
     public static final String HEADER = "Pos\tNt\t" +
-            NucleotideAlphabet.INSTANCE.symbolFromCode((byte)0) + "\t" +
-            NucleotideAlphabet.INSTANCE.symbolFromCode((byte)1) + "\t" +
-            NucleotideAlphabet.INSTANCE.symbolFromCode((byte)2) + "\t" +
-            NucleotideAlphabet.INSTANCE.symbolFromCode((byte)3) + "\t" +
+            NucleotideAlphabet.INSTANCE.symbolFromCode((byte) 0) + "\t" +
+            NucleotideAlphabet.INSTANCE.symbolFromCode((byte) 1) + "\t" +
+            NucleotideAlphabet.INSTANCE.symbolFromCode((byte) 2) + "\t" +
+            NucleotideAlphabet.INSTANCE.symbolFromCode((byte) 3) + "\t" +
             "BgMinorMigFreq\tBgMinorReadFreq\t" +
+            "SumAtPosMig\tSumAtPosRead\t" +
             "MajorMigCount\tMinorMigCount\t" +
             "MajorReadCount\tMinorReadCount";
 
-    void incrementBgMinorReadFreq(double bgMinorReadFreq) {
-        this.bgMinorReadFreq += bgMinorReadFreq;
-    }
-
-    void incrementBgMinorMigFreq(double bgMinorMigFreq) {
-        this.bgMinorMigFreq += bgMinorMigFreq;
-    }
-
-    public double getParentProb(byte from) {
-        return from != to ? parentProb[from] : 0.0;
+    public double getFromWeight(byte from) {
+        return fromWeights[from];
     }
 
     public int getPos() {
@@ -71,11 +71,27 @@ public class Variant {
         return to;
     }
 
+    public double getFreq() {
+        return majorMigCount / (double)sumAtPosMig;
+    }
+
     public double getBgMinorReadFreq() {
+        if (bgMinorReadFreq < 0) {
+            bgMinorReadFreq = 0;
+            for (byte from = 0; from < 4; from++) {
+                bgMinorReadFreq += fromWeights[from] * parent.getBgFreqRead(from, to);
+            }
+        }
         return bgMinorReadFreq;
     }
 
     public double getBgMinorMigFreq() {
+        if (bgMinorMigFreq < 0) {
+            bgMinorMigFreq = 0;
+            for (byte from = 0; from < 4; from++) {
+                bgMinorMigFreq += fromWeights[from] * parent.getBgFreqMig(from, to);
+            }
+        }
         return bgMinorMigFreq;
     }
 
@@ -87,18 +103,27 @@ public class Variant {
         return majorMigCount;
     }
 
-    public int getMinorReadCount() {
+    public long getMinorReadCount() {
         return minorReadCount;
     }
 
-    public int getMajorReadCount() {
+    public long getMajorReadCount() {
         return majorReadCount;
+    }
+
+    public int getSumAtPosMig() {
+        return sumAtPosMig;
+    }
+
+    public long getSumAtPosRead() {
+        return sumAtPosRead;
     }
 
     @Override
     public String toString() {
         return pos + "\t" + NucleotideAlphabet.INSTANCE.symbolFromCode(to) + "\t" +
-                parentProb[0] + "\t" + parentProb[1] + "\t" + parentProb[2] + "\t" + parentProb[3] + "\t" +
+                fromWeights[0] + "\t" + fromWeights[1] + "\t" + fromWeights[2] + "\t" + fromWeights[3] + "\t" +
+                sumAtPosMig + "\t" + sumAtPosRead + "\t" +
                 bgMinorMigFreq + "\t" + bgMinorReadFreq + "\t" +
                 majorMigCount + "\t" + minorMigCount + "\t" +
                 majorReadCount + "\t" + minorReadCount;
