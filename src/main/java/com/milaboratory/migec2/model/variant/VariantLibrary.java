@@ -18,6 +18,7 @@
 
 package com.milaboratory.migec2.model.variant;
 
+import com.milaboratory.migec2.core.align.reference.Reference;
 import com.milaboratory.migec2.core.consalign.mutations.MutationsAndCoverage;
 
 import java.util.Collection;
@@ -78,7 +79,7 @@ public class VariantLibrary {
     }
 
     /**
-     * Collects minor variants (<5%) from a given mutations and coverage matrix
+     * Collects minor variants (&lt; 5%) from a given mutations and coverage matrix
      *
      * @param mutationsAndCoverage mutation and coverage matrix to scan for minor variants
      * @return a collection of minor variants that were detected
@@ -97,6 +98,7 @@ public class VariantLibrary {
     public Collection<Variant> collectVariants(MutationsAndCoverage mutationsAndCoverage,
                                                double minorVariantThreshold) {
         final LinkedList<Variant> variants = new LinkedList<>();
+        Reference reference = mutationsAndCoverage.getReference();
 
         final int[] masterCount = new int[4];
         for (int i = 0; i < mutationsAndCoverage.referenceLength(); i++) {
@@ -117,34 +119,36 @@ public class VariantLibrary {
                         minorMigCount = mutationsAndCoverage.getMinorNucleotideMigCount(i, to);
                         minorReadCount = mutationsAndCoverage.getMinorNucleotideReadCount(i, to);
 
+                        // NOTE: we use solely MIG-based criteria to calculate variant freq here
                         if (majorMigCount > 0 &&
                                 majorMigCount / (double) sumAtPosMig <= minorVariantThreshold) {
                             // report a variant
-                            // NOTE: we use MIG-based criteria solely here
 
                             final double[] parentProb = new double[4];
 
-                            // weighted probability of parent
-                            for (byte parent = 0; parent < 4; parent++)
-                                if (parent != from)
-                                    parentProb[parent] = masterCount[parent] / (double) (sumAtPosMig - masterCount[from]);
+                            // background error rates, to be properly normalized
+                            double bgMinorMigFreq = 0, bgMinorReadFreq = 0;
 
-                            variants.add(new Variant(i, from, parentProb,
+                            // weighted probability of parent
+                            for (byte parent = 0; parent < 4; parent++) {
+                                if (parent != to) {
+                                    // NOTE: we use MIG-based measure of probability solely here
+                                    double w = masterCount[parent] / (double) (sumAtPosMig - masterCount[to]);
+                                    parentProb[parent] = w;
+                                    bgMinorMigFreq += w * getBgFreqMig(from, to);
+                                    bgMinorReadFreq += w * getBgFreqRead(from, to);
+                                }
+                            }
+
+                            variants.add(new Variant(reference, i, from,
+                                    parentProb,
+                                    bgMinorMigFreq,
+                                    bgMinorReadFreq,
                                     minorMigCount, majorMigCount,
                                     minorReadCount, majorReadCount));
                         }
                     }
                 }
-            }
-        }
-
-        for (Variant variant : variants) {
-            for (byte from = 0; from < 4; from++) {
-                // weight by parent probability
-                // NOTE: we use MIG-based measure of probability solely here
-                double weight = variant.getParentProb(from);
-                variant.incrementBgMinorMigFreq(weight * getBgFreqMig(from, variant.getTo()));
-                variant.incrementBgMinorReadFreq(weight * getBgFreqRead(from, variant.getTo()));
             }
         }
 
