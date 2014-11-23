@@ -31,13 +31,14 @@ public final class Corrector {
             totalConsensuses = new AtomicInteger();
     private final CorrectorReferenceLibrary correctorReferenceLibrary;
 
-
     public Corrector(AlignerReferenceLibrary referenceLibraryWithStatistics) {
-        this(referenceLibraryWithStatistics, CorrectorParameters.DEFAULT);
+        this(referenceLibraryWithStatistics, CorrectorParameters.DEFAULT, BayesianHotSpotClassifier.DEFAULT);
     }
 
-    public Corrector(AlignerReferenceLibrary referenceLibraryWithStatistics, CorrectorParameters parameters) {
-        this.correctorReferenceLibrary = new CorrectorReferenceLibrary(referenceLibraryWithStatistics, parameters);
+    public Corrector(AlignerReferenceLibrary referenceLibraryWithStatistics,
+                     CorrectorParameters parameters, HotSpotClassifier hotSpotClassifier) {
+        this.correctorReferenceLibrary = new CorrectorReferenceLibrary(referenceLibraryWithStatistics,
+                parameters, hotSpotClassifier);
     }
 
     public CorrectedConsensus correct(AlignedConsensus alignedConsensus) {
@@ -67,7 +68,7 @@ public final class Corrector {
                 for (MigecMutation mutation : mutations) {
                     // Check if that substitution passes coverage-quality filter 2nd step MIGEC
                     if (mutation.isSubstitution()) {
-                        if (mutationFilter.hasMutation(mutation.pos(), mutation.to())) {
+                        if (mutationFilter.hasSubstitution(mutation.pos(), mutation.to())) {
                             if (!mutationFilter.hasReference(mutation.pos()))
                                 mustHaveMutationsCount++; // covered a hole in reference with substitution
                         } else {

@@ -18,7 +18,8 @@
 
 package com.milaboratory.migec2.core.correct;
 
+import com.milaboratory.migec2.model.variant.Variant;
+
 public interface HotSpotClassifier {
-    public HotSpotFilterResult apply(int majorMigCount, int minorMigCount, int totalMigCount,
-                       int majorReadCount, int minorReadCount, int totalReadCount);
+    public HotSpotClassifierResult apply(Variant variant);
 }

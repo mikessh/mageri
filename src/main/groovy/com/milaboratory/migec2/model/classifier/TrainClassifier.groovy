@@ -16,7 +16,7 @@
  * Last modified on 23.11.2014 by mikesh
  */
 
-package com.milaboratory.migec2.model.substitution
+package com.milaboratory.migec2.model.classifier
 
 def cli = new CliBuilder(usage: "TrainClassifier [options] control_variants input_vardump output_prefix\n" +
         "Control variants is a tab-delimited table of the following structure:\n" +

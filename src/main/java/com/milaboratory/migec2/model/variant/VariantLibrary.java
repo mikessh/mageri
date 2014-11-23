@@ -160,4 +160,14 @@ public class VariantLibrary {
     public MutationsAndCoverage getMutationsAndCoverage() {
         return mutationsAndCoverage;
     }
+
+    /**
+     * Gets a variant data at specified position
+     * @param pos coordinate
+     * @param nt nucleotide
+     * @return variant data or null if no variant exists
+     */
+    public Variant getAt(int pos, byte nt) {
+        return variants[pos][nt];
+    }
 }

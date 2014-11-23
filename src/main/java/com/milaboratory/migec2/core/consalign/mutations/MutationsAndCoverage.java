@@ -45,6 +45,7 @@ public final class MutationsAndCoverage {
             majorLetterReadCounts, minorLetterReadCounts;
     private AtomicBoolean updated = new AtomicBoolean(false);
     private int migCount = -1;
+    private long readCount = -1;
 
     public MutationsAndCoverage(Reference reference) {
         this.reference = reference;
@@ -130,6 +131,16 @@ public final class MutationsAndCoverage {
                 migCount = Math.max(migCount, referenceUmiCoverage.get(i));
         }
         return migCount;
+    }
+
+    public long getReadCount() {
+        if (readCount < 0) {
+            // account for paired
+            readCount = 0;
+            for (int i = 0; i < referenceLength; i++)
+                readCount = Math.max(readCount, referenceReadCoverage.get(i));
+        }
+        return readCount;
     }
 
     public long getReferenceUmiCoverage(int pos) {
@@ -329,7 +340,6 @@ public final class MutationsAndCoverage {
                 formattedString.append("\t").append(getMinorIndelReadCount(code));
             }
         }
-
 
 
         return formattedString.toString();

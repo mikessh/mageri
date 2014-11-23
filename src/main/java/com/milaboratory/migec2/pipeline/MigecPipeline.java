@@ -11,17 +11,19 @@ import com.milaboratory.migec2.core.assemble.processor.Assembler;
 import com.milaboratory.migec2.core.consalign.entity.AlignedConsensus;
 import com.milaboratory.migec2.core.consalign.entity.AlignerReferenceLibrary;
 import com.milaboratory.migec2.core.consalign.misc.ConsensusAlignerFactory;
+import com.milaboratory.migec2.core.consalign.mutations.MutationsAndCoverage;
 import com.milaboratory.migec2.core.consalign.processor.ConsensusAligner;
 import com.milaboratory.migec2.core.correct.CorrectedConsensus;
 import com.milaboratory.migec2.core.correct.Corrector;
+import com.milaboratory.migec2.core.correct.HotSpotClassifier;
 import com.milaboratory.migec2.core.haplotype.HaplotypeTree;
 import com.milaboratory.migec2.core.haplotype.misc.HaplotypeErrorStatistics;
 import com.milaboratory.migec2.core.haplotype.misc.SimpleHaplotypeErrorStatistics;
 import com.milaboratory.migec2.core.io.entity.Mig;
 import com.milaboratory.migec2.core.io.misc.UmiHistogram;
 import com.milaboratory.migec2.core.io.readers.MigReader;
-import com.milaboratory.migec2.model.substitution.Variant;
-import com.milaboratory.migec2.model.substitution.VariantCollector;
+import com.milaboratory.migec2.model.variant.Variant;
+import com.milaboratory.migec2.model.variant.VariantLibrary;
 import com.milaboratory.migec2.util.ProcessorResultWrapper;
 
 import java.util.*;
@@ -38,6 +40,7 @@ public class MigecPipeline {
     protected final Map<String, HaplotypeTree> haplotypeTreeBySample;
     protected final List<String> sampleNames, skippedSamples;
     protected final MigecParameterSet migecParameterSet;
+    protected final HotSpotClassifier hotSpotClassifier = null; // todo:
 
     protected MigecPipeline(MigReader reader,
                             AssemblerFactory assemblerFactory,
@@ -150,7 +153,8 @@ public class MigecPipeline {
 
             // Find major and minor mutations
             Corrector corrector = new Corrector(aligner.getAlignerReferenceLibrary(),
-                    migecParameterSet.getCorrectorParameters());
+                    migecParameterSet.getCorrectorParameters(),
+                    hotSpotClassifier);
             correctorBySample.put(sampleName, corrector);
 
             // Error statistics for haplotype filtering using binomial test
@@ -219,9 +223,9 @@ public class MigecPipeline {
         for (String sample : sampleNames) {
             AlignerReferenceLibrary alignerReferenceLibrary = alignerBySample.get(sample).getAlignerReferenceLibrary();
             for (Reference reference : alignerReferenceLibrary.getReferenceLibrary().getReferences()) {
-                VariantCollector variantCollector = new VariantCollector(threshold);
-                for (Variant variant :
-                        variantCollector.collect(alignerReferenceLibrary.getMutationsAndCoverage(reference))) {
+                MutationsAndCoverage mutationsAndCoverage = alignerReferenceLibrary.getMutationsAndCoverage(reference);
+                VariantLibrary variantLibrary = new VariantLibrary(mutationsAndCoverage);
+                for (Variant variant : variantLibrary.collectVariants(threshold)) {
                     dump += "\n" + sample + "\t" + reference.getName() + "\t" + reference.getFullName() + "\t" +
                             variant.toString();
                 }

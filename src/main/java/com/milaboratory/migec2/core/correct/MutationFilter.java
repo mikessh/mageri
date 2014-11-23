@@ -18,27 +18,27 @@ package com.milaboratory.migec2.core.correct;
 import java.util.Set;
 
 public final class MutationFilter {
-    private final boolean[][] mutationsByPosition;
-    private final boolean[] referenceByPosition, passedQualityFilter, passedCoverageFilter;
+    private final boolean[][] substitutionMask;
+    private final boolean[] referenceMask, qualityMask, coverageMask;
     private final boolean good;
     private final int mustHaveMutationsCount;
     private final Set<Integer> indels;
 
-    public MutationFilter(boolean[][] mutationsByPosition, boolean[] referenceByPosition,
-                          boolean[] passedQualityFilter, boolean[] passedCoverageFilter, Set<Integer> indels,
+    public MutationFilter(boolean[][] substitutionMask, boolean[] referenceMask,
+                          boolean[] qualityMask, boolean[] coverageMask, Set<Integer> indels,
                           boolean good, int mustHaveMutationsCount) {
-        this.mutationsByPosition = mutationsByPosition;
-        this.referenceByPosition = referenceByPosition;
-        this.passedCoverageFilter = passedCoverageFilter;
-        this.passedQualityFilter = passedQualityFilter;
+        this.substitutionMask = substitutionMask;
+        this.referenceMask = referenceMask;
+        this.coverageMask = coverageMask;
+        this.qualityMask = qualityMask;
         this.indels = indels;
         this.good = good;
         this.mustHaveMutationsCount = mustHaveMutationsCount;
     }
 
-    public boolean hasMutation(int position, int ntCode) {
+    public boolean hasSubstitution(int position, int ntCode) {
         return passedFilter(position) &&
-                mutationsByPosition[position][ntCode];
+                substitutionMask[position][ntCode];
     }
 
     public boolean hasIndel(int indel) {
@@ -46,11 +46,11 @@ public final class MutationFilter {
     }
 
     public boolean hasReference(int position) {
-        return referenceByPosition[position];
+        return referenceMask[position];
     }
 
     public boolean passedFilter(int position) {
-        return passedCoverageFilter[position] && passedQualityFilter[position];
+        return coverageMask[position] && qualityMask[position];
     }
 
     public boolean good() {

@@ -20,6 +20,8 @@ import com.milaboratory.core.sequence.nucleotide.NucleotideAlphabet;
 import com.milaboratory.migec2.core.align.reference.Reference;
 import com.milaboratory.migec2.core.consalign.entity.AlignerReferenceLibrary;
 import com.milaboratory.migec2.core.consalign.mutations.MutationsAndCoverage;
+import com.milaboratory.migec2.model.variant.Variant;
+import com.milaboratory.migec2.model.variant.VariantLibrary;
 import org.apache.commons.math.distribution.BinomialDistribution;
 import org.apache.commons.math.distribution.BinomialDistributionImpl;
 
@@ -37,7 +39,9 @@ public final class CorrectorReferenceLibrary {
     private final AlignerReferenceLibrary alignerReferenceLibrary;
     private final List<Reference> references;
 
-    // Hot-spot p-value
+    private final HotSpotClassifier hotSpotClassifier;
+
+    // Hot-spot p-value DEPRECATED
     private final double majorPvalueThreshold, pcrEfficiency;
     private final int pcrCycles;
 
@@ -49,11 +53,13 @@ public final class CorrectorReferenceLibrary {
     private final int minMigCount;
 
     public CorrectorReferenceLibrary(AlignerReferenceLibrary alignerReferenceLibrary,
-                                     CorrectorParameters parameters) {
+                                     CorrectorParameters parameters,
+                                     HotSpotClassifier hotSpotClassifier) {
         // Hot-spot p-value
         this.majorPvalueThreshold = parameters.getMajorPvalueThreshold();
         this.pcrEfficiency = parameters.getPcrEfficiency();
         this.pcrCycles = parameters.getPcrCycles();
+        this.hotSpotClassifier = hotSpotClassifier;
 
         // Filtering
         this.filterSingleMigs = parameters.filterSingleMigs();
@@ -66,7 +72,10 @@ public final class CorrectorReferenceLibrary {
         // Record if reference at given position also exists
         this.alignerReferenceLibrary = alignerReferenceLibrary;
         this.references = new ArrayList<>(alignerReferenceLibrary.getReferenceLibrary().getReferences());
+        init();
+    }
 
+    private void init() {
         Collection<Reference> skippedReferences = new LinkedList<>();
 
         for (Reference reference : references) {
@@ -76,7 +85,7 @@ public final class CorrectorReferenceLibrary {
             if (mutationsAndCoverage.wasUpdated()) {
                 int n = reference.getSequence().size();
                 int numberOfMigs = mutationsAndCoverage.getMigCount();
-                boolean[][] mutationsByPosition = new boolean[n][4];
+                boolean[][] substitutionsByPosition = new boolean[n][4];
                 int[][] majorSubstitutionCounts = new int[n][4];
                 int[] majorInsertionCounts = new int[n], majorDeletionCounts = new int[n];
                 double[][] majorSubstitutionPvalues = new double[n][4];
@@ -86,6 +95,8 @@ public final class CorrectorReferenceLibrary {
                         qualityFilterByPosition = new boolean[n];
 
                 int nMustHaveMutations = 0, nBadBases = 0;
+
+                final VariantLibrary variantLibrary = new VariantLibrary(mutationsAndCoverage);
 
                 for (int i = 0; i < n; i++) {
                     // Compute quality and coverage
@@ -99,23 +110,25 @@ public final class CorrectorReferenceLibrary {
                     if (!coverageFilterByPosition[i] || !qualityFilterByPosition[i])
                         nBadBases++;
 
-                    // Filter major mutations
-                    for (int j = 0; j < 4; j++) {
-                        int majorCount = mutationsAndCoverage.getMajorNucleotideMigCount(i, j),
-                                minorCount = mutationsAndCoverage.getMinorNucleotideMigCount(i, j);
+                    // Filter major SUBSTITUTIONS
+                    // here we apply classifier and use variant library for querying
+                    // as it has complete stats that could be required by classifier
+                    for (byte j = 0; j < 4; j++) {
+                        Variant variant = variantLibrary.getAt(i, j);
+                        if (variant != null) {
+                            HotSpotClassifierResult result = hotSpotClassifier.apply(variant);
 
-                        double majorPvalue = computeMajorPvalue(majorCount, minorCount, numberOfMigs);
-
-                        if (majorPvalue <= majorPvalueThreshold) {
-                            if (reference.getSequence().codeAt(i) == j)
-                                referencePresenceByPosition[i] = true;
-                            else
-                                mutationsByPosition[i][j] = true;
-                            majorSubstitutionCounts[i][j] = majorCount;
-                        } //else
-                          //  majorPvalue = Double.NaN;
-
-                        majorSubstitutionPvalues[i][j] = majorPvalue;
+                            if (result.isPassed()) {
+                                if (reference.getSequence().codeAt(i) == j)
+                                    referencePresenceByPosition[i] = true;
+                                else
+                                    substitutionsByPosition[i][j] = true;
+                                majorSubstitutionCounts[i][j] = variant.getMajorMigCount();
+                                majorSubstitutionPvalues[i][j] = result.getpValue();
+                            } else {
+                                majorSubstitutionPvalues[i][j] = 1.0;
+                            }
+                        }
                     }
 
                     // Have a hole in reference
@@ -127,31 +140,31 @@ public final class CorrectorReferenceLibrary {
                 boolean good = (nBadBases / (double) n) <= maxBasePairsMaskedRatio &&
                         mutationsAndCoverage.getMigCount() >= minMigCount;
 
-                // Finally deal with indels. Same way as with substitutions for now
+                // Finally deal with indels.
+                // NOTE completely frequency-based for now
                 Set<Integer> indels = new HashSet<>();
                 for (Integer indel : mutationsAndCoverage.getMajorIndelCodes()) {
-                    int majorCount = mutationsAndCoverage.getMajorIndelMigCount(indel),
-                            minorCount = mutationsAndCoverage.getMinorIndelMigCount(indel);
-                    double majorPvalue = computeMajorPvalue(majorCount, minorCount, numberOfMigs);
+                    int majorCount = mutationsAndCoverage.getMajorIndelMigCount(indel);
+                    //        minorCount = mutationsAndCoverage.getMinorIndelMigCount(indel);
+                    //double majorPvalue = computeMajorPvalue(majorCount, minorCount, numberOfMigs);
                     boolean isDeletion = Mutations.isDeletion(indel);
                     int pos = Mutations.getPosition(indel);
 
-                    if (majorPvalue <= majorPvalueThreshold) {
+                    if (majorCount > 1 && majorCount / (double) numberOfMigs > 1e-3) {
                         indels.add(indel);
                         if (isDeletion)
                             majorDeletionCounts[pos]++;
                         else
                             majorInsertionCounts[pos]++;
-                    } //else
-                      //  majorPvalue = Double.NaN;
+                    }
 
                     if (isDeletion)
-                        majorDeletionPvalues[pos] = majorPvalue;
+                        majorDeletionPvalues[pos] = Double.NaN;
                     else
-                        majorInsertionPvalues[pos] = majorPvalue;
+                        majorInsertionPvalues[pos] = Double.NaN;
                 }
 
-                mutationFilterByReference.put(reference, new MutationFilter(mutationsByPosition,
+                mutationFilterByReference.put(reference, new MutationFilter(substitutionsByPosition,
                         referencePresenceByPosition, qualityFilterByPosition, coverageFilterByPosition,
                         indels, good, nMustHaveMutations));
 
@@ -169,6 +182,7 @@ public final class CorrectorReferenceLibrary {
         this.references.removeAll(skippedReferences);
     }
 
+    @Deprecated
     public double computeMajorPvalue(int majorMigCount, int minorMigCount, int numberOfMigs) {
         if (filterSingleMigs && majorMigCount == 1)
             return 1.0;

@@ -16,9 +16,8 @@
  * Last modified on 23.11.2014 by mikesh
  */
 
-package com.milaboratory.migec2.model.substitution
+package com.milaboratory.migec2.model.classifier
 
-import weka.classifiers.Classifier
 import weka.classifiers.bayes.NaiveBayes
 import weka.core.Instances
 import weka.core.converters.ArffLoader
