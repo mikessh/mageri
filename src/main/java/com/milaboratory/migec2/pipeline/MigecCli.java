@@ -323,7 +323,7 @@ public final class MigecCli {
                             parameterSet,
                             MigReaderParameters.TEST(testReadsCount));
 
-                FileUtils.writeStringToFile(new File(outputFolder.getAbsolutePath() + "/_" +
+                writeStringToFile(new File(outputFolder.getAbsolutePath() + "/_" +
                                 FilenameUtils.removeExtension(
                                         new File(commandLine.getOptionValue(OPT_BARCODES_SHORT)).getName()) +
                                 ".test.txt"),
@@ -400,7 +400,7 @@ public final class MigecCli {
     private static void checkPreprocess(MigecPipeline pipeline, File outputFolder,
                                         int minMigCount, int minOverseq) throws IOException {
         // Check molecule count & overseq
-        FileUtils.writeStringToFile(new File(outputFolder.getAbsolutePath() + "/_checkout.txt"),
+        writeStringToFile(new File(outputFolder.getAbsolutePath() + "/_checkout.txt"),
                 pipeline.getCheckoutOutput());
 
         List<String> samplesToSkip = new ArrayList<>();
@@ -410,7 +410,7 @@ public final class MigecCli {
             UmiHistogram histogram = pipeline.getHistogram(sampleName);
 
             String samplePrefix = outputFolder.getAbsolutePath() + "/" + sampleName;
-            FileUtils.writeStringToFile(new File(samplePrefix + ".0.umihistogram.txt"),
+            writeStringToFile(new File(samplePrefix + ".0.umihistogram.txt"),
                     histogram.toString());
 
             int migsTotal = pipeline.getMigsTotal(sampleName),
@@ -442,7 +442,7 @@ public final class MigecCli {
 
         pipeline.skipSamples(samplesToSkip);
 
-        FileUtils.writeStringToFile(new File(outputFolder.getAbsolutePath() + "/_sample_messages.txt"),
+        writeStringToFile(new File(outputFolder.getAbsolutePath() + "/_sample_messages.txt"),
                 sampleMessages);
     }
 
@@ -459,11 +459,11 @@ public final class MigecCli {
         try {
             for (String sampleName : pipeline.getSamples()) {
                 String samplePrefix = outputFolder.getAbsolutePath() + "/" + sampleName;
-                FileUtils.writeStringToFile(new File(samplePrefix + ".1.assembler.txt"),
+                writeStringToFile(new File(samplePrefix + ".1.assembler.txt"),
                         pipeline.getAssemblerOutput(sampleName));
-                FileUtils.writeStringToFile(new File(samplePrefix + ".1.consaligner.txt"),
+                writeStringToFile(new File(samplePrefix + ".1.consaligner.txt"),
                         pipeline.getConsAlignerOutput(sampleName));
-                FileUtils.writeStringToFile(new File(samplePrefix + ".1.variantstats.txt"),
+                writeStringToFile(new File(samplePrefix + ".1.variantstats.txt"),
                         pipeline.getVariantSizeStatisticsOutput(sampleName));
             }
         } catch (IOException e) {
@@ -474,7 +474,7 @@ public final class MigecCli {
     }
 
     private static void dumpVariants(MigecPipeline pipeline, File outputFolder, double dumpFreq) throws IOException {
-        FileUtils.writeStringToFile(new File(outputFolder.getAbsolutePath() + "/_vardump.txt"),
+        writeStringToFile(new File(outputFolder.getAbsolutePath() + "/_vardump.txt"),
                 pipeline.getMinorVariantDump(dumpFreq));
     }
 
@@ -491,13 +491,13 @@ public final class MigecCli {
         try {
             for (String sampleName : pipeline.getSamples()) {
                 String samplePrefix = outputFolder.getAbsolutePath() + "/" + sampleName;
-                FileUtils.writeStringToFile(new File(samplePrefix + ".2.corrector.txt"),
+                writeStringToFile(new File(samplePrefix + ".2.corrector.txt"),
                         pipeline.getCorrectorOutput(sampleName));
-                FileUtils.writeStringToFile(new File(samplePrefix + ".2.errorstat.txt"),
+                writeStringToFile(new File(samplePrefix + ".2.errorstat.txt"),
                         pipeline.getErrorStatisticsOutput(sampleName));
-                FileUtils.writeStringToFile(new File(samplePrefix + ".2.haplotypes.txt"),
+                writeStringToFile(new File(samplePrefix + ".2.haplotypes.txt"),
                         pipeline.getHaplotypeTreeOutput(sampleName));
-                FileUtils.writeStringToFile(new File(samplePrefix + ".2.haplotypes.fa"),
+                writeStringToFile(new File(samplePrefix + ".2.haplotypes.fa"),
                         pipeline.getHaplotypeTreeFastaOutput(sampleName));
             }
         } catch (Exception e) {
@@ -505,5 +505,10 @@ public final class MigecCli {
             e.printStackTrace();
             System.exit(-1);
         }
+    }
+
+    private static void writeStringToFile(File file, String string) throws IOException {
+        // in case someone want to concatenate the output later
+        FileUtils.writeStringToFile(file, string.endsWith("\n") ? string : (string + "\n"));
     }
 }

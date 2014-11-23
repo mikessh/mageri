@@ -63,8 +63,8 @@ public class VariantCollector {
                         minorReadCount = mutationsAndCoverage.getMinorNucleotideReadCount(i, to);
 
                         if (from != to) {
-                            innerMatrixMig[from][to] += minorMigCount * majorMigCount / (double) sumAtPosMig;
-                            innerMatrixRead[from][to] += minorReadCount * majorReadCount / (double) sumAtPosRead;
+                            innerMatrixMig[from][to] += minorMigCount * (double) majorMigCount / (double) sumAtPosMig;
+                            innerMatrixRead[from][to] += minorReadCount * (double) majorReadCount / (double) sumAtPosRead;
                         } else if (majorMigCount > 0 &&
                                 majorMigCount / (double) sumAtPosMig <= minorVariantThreshold) {
                             // report a variant
