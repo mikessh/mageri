@@ -19,28 +19,32 @@
 package com.milaboratory.migec2.model.variant;
 
 import com.milaboratory.core.sequence.nucleotide.NucleotideAlphabet;
+import com.milaboratory.migec2.core.align.reference.Reference;
 
 public class Variant {
     private final int pos;
     private final byte to;
     private final double[] fromWeights;
 
-    private final VariantLibrary parent;
+    private final Reference reference;
 
-    private double bgMinorReadFreq = -1, bgMinorMigFreq = -1;
+    private double bgMinorReadFreq, bgMinorMigFreq;
 
     private final int minorMigCount, majorMigCount, sumAtPosMig;
     private final long sumAtPosRead, minorReadCount, majorReadCount;
 
-    Variant(VariantLibrary parent, int pos, byte to,
+    Variant(Reference reference, int pos, byte to,
             double[] fromWeights,
+            double bgMinorMigFreq, double bgMinorReadFreq,
             int sumAtPosMig, long sumAtPosRead,
             int minorMigCount, int majorMigCount,
             long minorReadCount, long majorReadCount) {
-        this.parent = parent;
+        this.reference = reference;
         this.pos = pos;
         this.to = to;
         this.fromWeights = fromWeights;
+        this.bgMinorMigFreq = bgMinorMigFreq;
+        this.bgMinorReadFreq = bgMinorReadFreq;
         this.sumAtPosMig = sumAtPosMig;
         this.sumAtPosRead = sumAtPosRead;
         this.minorMigCount = minorMigCount;
@@ -49,7 +53,7 @@ public class Variant {
         this.majorReadCount = majorReadCount;
     }
 
-    public static final String HEADER = "Pos\tNt\t" +
+    public static final String HEADER = "Reference\tPos\tNt\t" +
             NucleotideAlphabet.INSTANCE.symbolFromCode((byte) 0) + "\t" +
             NucleotideAlphabet.INSTANCE.symbolFromCode((byte) 1) + "\t" +
             NucleotideAlphabet.INSTANCE.symbolFromCode((byte) 2) + "\t" +
@@ -58,6 +62,10 @@ public class Variant {
             "SumAtPosMig\tSumAtPosRead\t" +
             "MajorMigCount\tMinorMigCount\t" +
             "MajorReadCount\tMinorReadCount";
+
+    public Reference getReference() {
+        return reference;
+    }
 
     public double getFromWeight(byte from) {
         return fromWeights[from];
@@ -72,26 +80,22 @@ public class Variant {
     }
 
     public double getFreq() {
-        return majorMigCount / (double)sumAtPosMig;
+        return majorMigCount / (double) sumAtPosMig;
+    }
+
+    public void setBgMinorReadFreq(double bgMinorReadFreq) {
+        this.bgMinorReadFreq = bgMinorReadFreq;
+    }
+
+    public void setBgMinorMigFreq(double bgMinorMigFreq) {
+        this.bgMinorMigFreq = bgMinorMigFreq;
     }
 
     public double getBgMinorReadFreq() {
-        if (bgMinorReadFreq < 0) {
-            bgMinorReadFreq = 0;
-            for (byte from = 0; from < 4; from++) {
-                bgMinorReadFreq += fromWeights[from] * parent.getBgFreqRead(from, to);
-            }
-        }
         return bgMinorReadFreq;
     }
 
     public double getBgMinorMigFreq() {
-        if (bgMinorMigFreq < 0) {
-            bgMinorMigFreq = 0;
-            for (byte from = 0; from < 4; from++) {
-                bgMinorMigFreq += fromWeights[from] * parent.getBgFreqMig(from, to);
-            }
-        }
         return bgMinorMigFreq;
     }
 
@@ -121,10 +125,11 @@ public class Variant {
 
     @Override
     public String toString() {
-        return pos + "\t" + NucleotideAlphabet.INSTANCE.symbolFromCode(to) + "\t" +
+        return reference.getFullName() + "\t" +
+                pos + "\t" + NucleotideAlphabet.INSTANCE.symbolFromCode(to) + "\t" +
                 fromWeights[0] + "\t" + fromWeights[1] + "\t" + fromWeights[2] + "\t" + fromWeights[3] + "\t" +
-                sumAtPosMig + "\t" + sumAtPosRead + "\t" +
                 bgMinorMigFreq + "\t" + bgMinorReadFreq + "\t" +
+                sumAtPosMig + "\t" + sumAtPosRead + "\t" +
                 majorMigCount + "\t" + minorMigCount + "\t" +
                 majorReadCount + "\t" + minorReadCount;
     }

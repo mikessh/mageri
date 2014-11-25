@@ -13,24 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Last modified on 23.11.2014 by mikesh
+ * Last modified on 25.11.2014 by mikesh
  */
 
 package com.milaboratory.migec2.model.classifier;
 
-public class Schema {
-    public final static String[] FEATURES = new String[]{"BgMinorMigFreq", "BgMinorReadFreq",
-            "MajorMigCount", "MinorMigCount",
-            "MajorReadCount", "MinorReadCount"};
+public class BaseClassifierWrapper {
 
-    private static String buildSchema() {
-        StringBuilder sb = new StringBuilder("@RELATION	MIGEC2");
-        for (String feature : FEATURES) {
-            sb.append("\n@ATTRIBUTE\t").append(feature).append("\tNUMERIC");
-        }
-        sb.append("\n@ATTRIBUTE\tclass\t{0,1}\n@DATA");
-        return sb.toString();
-    }
-
-    public final static String SCHEMA = buildSchema();
 }

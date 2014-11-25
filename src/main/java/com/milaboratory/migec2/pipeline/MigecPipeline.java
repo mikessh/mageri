@@ -215,15 +215,14 @@ public class MigecPipeline {
     }
 
     public String getMinorVariantDump(double threshold) {
-        String dump = "#SampleName\tReferenceName\tReferenceFullName\t" + Variant.HEADER;
+        String dump = "#SampleName\t" + Variant.HEADER;
         for (String sample : sampleNames) {
             AlignerReferenceLibrary alignerReferenceLibrary = alignerBySample.get(sample).getAlignerReferenceLibrary();
             for (Reference reference : alignerReferenceLibrary.getReferenceLibrary().getReferences()) {
                 MutationsAndCoverage mutationsAndCoverage = alignerReferenceLibrary.getMutationsAndCoverage(reference);
                 VariantLibrary variantLibrary = new VariantLibrary(mutationsAndCoverage);
                 for (Variant variant : variantLibrary.collectVariants(threshold)) {
-                    dump += "\n" + sample + "\t" + reference.getName() + "\t" + reference.getFullName() + "\t" +
-                            variant.toString();
+                    dump += "\n" + sample + "\t" + variant.toString();
                 }
             }
         }

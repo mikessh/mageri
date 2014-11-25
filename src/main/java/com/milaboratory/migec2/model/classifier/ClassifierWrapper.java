@@ -13,14 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Last modified on 23.11.2014 by mikesh
+ * Last modified on 25.11.2014 by mikesh
  */
 
-package com.milaboratory.migec2.core.correct;
+package com.milaboratory.migec2.model.classifier;
 
-import com.milaboratory.migec2.model.classifier.ClassifierResult;
-import com.milaboratory.migec2.model.variant.Variant;
 
-public interface HotSpotClassifier {
-    public ClassifierResult apply(Variant variant);
+import weka.core.Instance;
+
+public interface ClassifierWrapper {
+    public ClassifierResult classify(Instance instance);
 }

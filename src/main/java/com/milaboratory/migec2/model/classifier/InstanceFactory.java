@@ -18,5 +18,11 @@
 
 package com.milaboratory.migec2.model.classifier;
 
-public class InstanceFactory {
+import com.milaboratory.migec2.model.variant.Variant;
+import weka.core.Instance;
+import weka.core.Instances;
+
+public interface InstanceFactory {
+    public Instances getDataset();
+    public Instance convert(Variant variant);
 }

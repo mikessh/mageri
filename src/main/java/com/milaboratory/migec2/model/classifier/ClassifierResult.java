@@ -16,22 +16,22 @@
  * Last modified on 23.11.2014 by mikesh
  */
 
-package com.milaboratory.migec2.core.correct;
+package com.milaboratory.migec2.model.classifier;
 
-public class HotSpotClassifierResult {
+public class ClassifierResult {
     private final boolean passed;
     private final double pValue;
 
-    public HotSpotClassifierResult(boolean passed, double pValue) {
+    public ClassifierResult(boolean passed, double pValue) {
         this.passed = passed;
         this.pValue = pValue;
     }
 
-    public boolean isPassed() {
+    public boolean passed() {
         return passed;
     }
 
-    public double getpValue() {
+    public double getPValue() {
         return pValue;
     }
 }

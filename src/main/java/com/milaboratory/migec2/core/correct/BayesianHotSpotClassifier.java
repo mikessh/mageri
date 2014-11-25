@@ -18,13 +18,19 @@
 
 package com.milaboratory.migec2.core.correct;
 
+import com.milaboratory.migec2.model.classifier.ClassifierResult;
+import com.milaboratory.migec2.model.classifier.InstanceFactory;
 import com.milaboratory.migec2.model.variant.Variant;
 
 public class BayesianHotSpotClassifier implements HotSpotClassifier {
     public static final BayesianHotSpotClassifier DEFAULT = null;
+    private InstanceFactory instanceFactory = InstanceFactory.DEFAULT;
+
+    // from bytes
+    // from file
 
     @Override
-    public HotSpotClassifierResult apply(Variant variant) {
+    public ClassifierResult apply(Variant variant) {
         return null;
     }
 }

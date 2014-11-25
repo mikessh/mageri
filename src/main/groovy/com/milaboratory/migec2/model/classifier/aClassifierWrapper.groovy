@@ -23,11 +23,11 @@ import weka.core.Instances
 import weka.core.converters.ArffLoader
 
 
-class ClassifierWrapper {
+class aClassifierWrapper {
     private final NaiveBayes classifier
     private final Instances trainingData
 
-    public ClassifierWrapper(String inputFile) {
+    public aClassifierWrapper(String inputFile) {
         classifier = new NaiveBayes()
         classifier.useSupervisedDiscretization = true
 

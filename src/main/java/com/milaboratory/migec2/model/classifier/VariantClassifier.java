@@ -13,14 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Last modified on 23.11.2014 by mikesh
+ * Last modified on 25.11.2014 by mikesh
  */
 
-package com.milaboratory.migec2.core.correct;
+package com.milaboratory.migec2.model.classifier;
 
-import com.milaboratory.migec2.model.classifier.ClassifierResult;
 import com.milaboratory.migec2.model.variant.Variant;
 
-public interface HotSpotClassifier {
-    public ClassifierResult apply(Variant variant);
+public class VariantClassifier {
+    private final ClassifierWrapper classifierWrapper;
+    private final InstanceFactory instanceFactory;
+
+    public VariantClassifier(ClassifierWrapper classifierWrapper, InstanceFactory instanceFactory) {
+        this.classifierWrapper = classifierWrapper;
+        this.instanceFactory = instanceFactory;
+    }
+
+    public ClassifierResult classify(Variant variant) {
+        return classifierWrapper.classify(instanceFactory.convert(variant));
+    }
 }

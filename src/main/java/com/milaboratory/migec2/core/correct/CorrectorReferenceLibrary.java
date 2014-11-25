@@ -20,6 +20,8 @@ import com.milaboratory.core.sequence.nucleotide.NucleotideAlphabet;
 import com.milaboratory.migec2.core.align.reference.Reference;
 import com.milaboratory.migec2.core.consalign.entity.AlignerReferenceLibrary;
 import com.milaboratory.migec2.core.consalign.mutations.MutationsAndCoverage;
+import com.milaboratory.migec2.model.classifier.ClassifierResult;
+import com.milaboratory.migec2.model.classifier.VariantClassifier;
 import com.milaboratory.migec2.model.variant.Variant;
 import com.milaboratory.migec2.model.variant.VariantLibrary;
 import org.apache.commons.math.distribution.BinomialDistribution;
@@ -39,7 +41,7 @@ public final class CorrectorReferenceLibrary {
     private final AlignerReferenceLibrary alignerReferenceLibrary;
     private final List<Reference> references;
 
-    private final HotSpotClassifier hotSpotClassifier;
+    private final VariantClassifier variantClassifier;
 
     // Hot-spot p-value DEPRECATED
     private final double majorPvalueThreshold, pcrEfficiency;
@@ -54,12 +56,12 @@ public final class CorrectorReferenceLibrary {
 
     public CorrectorReferenceLibrary(AlignerReferenceLibrary alignerReferenceLibrary,
                                      CorrectorParameters parameters,
-                                     HotSpotClassifier hotSpotClassifier) {
+                                     VariantClassifier variantClassifier) {
         // Hot-spot p-value
         this.majorPvalueThreshold = parameters.getMajorPvalueThreshold();
         this.pcrEfficiency = parameters.getPcrEfficiency();
         this.pcrCycles = parameters.getPcrCycles();
-        this.hotSpotClassifier = hotSpotClassifier;
+        this.variantClassifier = variantClassifier;
 
         // Filtering
         this.filterSingleMigs = parameters.filterSingleMigs();
@@ -116,15 +118,15 @@ public final class CorrectorReferenceLibrary {
                     for (byte j = 0; j < 4; j++) {
                         Variant variant = variantLibrary.getAt(i, j);
                         if (variant != null) {
-                            HotSpotClassifierResult result = hotSpotClassifier.apply(variant);
+                            ClassifierResult result = variantClassifier.classify(variant);
 
-                            if (result.isPassed()) {
+                            if (result.passed()) {
                                 if (reference.getSequence().codeAt(i) == j)
                                     referencePresenceByPosition[i] = true;
                                 else
                                     substitutionsByPosition[i][j] = true;
                                 majorSubstitutionCounts[i][j] = variant.getMajorMigCount();
-                                majorSubstitutionPvalues[i][j] = result.getpValue();
+                                majorSubstitutionPvalues[i][j] = result.getPValue();
                             } else {
                                 majorSubstitutionPvalues[i][j] = 1.0;
                             }
