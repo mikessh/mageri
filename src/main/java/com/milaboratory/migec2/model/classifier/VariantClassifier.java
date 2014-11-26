@@ -13,23 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Last modified on 25.11.2014 by mikesh
+ * Last modified on 26.11.2014 by mikesh
  */
 
 package com.milaboratory.migec2.model.classifier;
 
 import com.milaboratory.migec2.model.variant.Variant;
 
-public class VariantClassifier {
-    private final ClassifierWrapper classifierWrapper;
-    private final InstanceFactory instanceFactory;
-
-    public VariantClassifier(ClassifierWrapper classifierWrapper, InstanceFactory instanceFactory) {
-        this.classifierWrapper = classifierWrapper;
-        this.instanceFactory = instanceFactory;
-    }
-
-    public ClassifierResult classify(Variant variant) {
-        return classifierWrapper.classify(instanceFactory.convert(variant));
-    }
+public interface VariantClassifier {
+    public ClassifierResult classify(Variant variant);
 }

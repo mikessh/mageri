@@ -22,7 +22,17 @@ import com.milaboratory.migec2.model.variant.Variant;
 import weka.core.Instance;
 import weka.core.Instances;
 
+import java.io.File;
+import java.io.IOException;
+
 public interface InstanceFactory {
+    public void save(File outputFile) throws IOException;
+
+    public boolean storing();
+
+    public boolean hasInstances();
+
     public Instances getDataset();
+
     public Instance convert(Variant variant);
 }

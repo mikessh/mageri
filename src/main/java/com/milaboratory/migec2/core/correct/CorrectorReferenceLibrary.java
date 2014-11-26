@@ -152,6 +152,7 @@ public final class CorrectorReferenceLibrary {
                     boolean isDeletion = Mutations.isDeletion(indel);
                     int pos = Mutations.getPosition(indel);
 
+                    // todo: re-implement?
                     if (majorCount > 1 && majorCount / (double) numberOfMigs > 1e-3) {
                         indels.add(indel);
                         if (isDeletion)

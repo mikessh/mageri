@@ -22,20 +22,23 @@ import com.milaboratory.migec2.model.variant.Variant;
 import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.converters.ArffLoader;
+import weka.core.converters.ArffSaver;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 
 public class BaseInstanceFactory implements InstanceFactory {
     private final Instances dataset;
+    private final boolean store;
 
     public final static String[] FEATURES = new String[]{
             "BgMinorMigFreq", "BgMinorReadFreq",
-            "MajorMigCount", "MinorMigCount",
-            "MajorReadCount", "MinorReadCount"};
+            "MajorMigFreq", "MinorMigFreq",
+            "MajorReadFreq", "MinorReadFreq"};
 
     private static String buildSchema() {
-        StringBuilder sb = new StringBuilder("@RELATION	MIGEC2");
+        StringBuilder sb = new StringBuilder("@RELATION	MIGEC2_BASE");
         for (String feature : FEATURES) {
             sb.append("\n@ATTRIBUTE\t").append(feature).append("\tNUMERIC");
         }
@@ -46,18 +49,27 @@ public class BaseInstanceFactory implements InstanceFactory {
     public final static String SCHEMA = buildSchema();
 
     public BaseInstanceFactory() throws IOException {
+        this(false);
+    }
+
+    public BaseInstanceFactory(boolean store) throws IOException {
         ArffLoader loader = new ArffLoader();
         loader.setSource(new ByteArrayInputStream(SCHEMA.getBytes()));
         this.dataset = loader.getDataSet();
         dataset.setClassIndex(dataset.numAttributes() - 1);
+        this.store = store;
     }
 
     @Override
     public Instance convert(Variant variant) {
         double[] features = new double[]{
-                variant.getBgMinorMigFreq(), variant.getBgMinorReadFreq(),
-                variant.getMajorMigCount(), variant.getMinorMigCount(),
-                variant.getMajorReadCount(), variant.getMinorReadCount(),
+                // don't worry abt NaNs, we'll set them as missing
+                Math.log10(variant.getBgMinorMigFreq()),
+                Math.log10(variant.getBgMinorReadFreq()),
+                Math.log10(variant.getMajorMigCount() / (double) variant.getSumAtPosMig()),
+                Math.log10(variant.getMinorMigCount() / (double) variant.getSumAtPosMig()),
+                Math.log10(variant.getMajorReadCount() / (double) variant.getSumAtPosRead()),
+                Math.log10(variant.getMinorReadCount() / (double) variant.getSumAtPosRead()),
                 0 // class
         };
 
@@ -68,12 +80,33 @@ public class BaseInstanceFactory implements InstanceFactory {
                 instance.setMissing(i);
 
         instance.setDataset(dataset);
-        dataset.add(instance);
+
+        if (store)
+            dataset.add(instance);
 
         return instance;
     }
 
+    @Override
+    public boolean storing() {
+        return store;
+    }
+
+    @Override
+    public boolean hasInstances() {
+        return dataset.numInstances() > 0;
+    }
+
+    @Override
     public Instances getDataset() {
         return dataset;
+    }
+
+    @Override
+    public void save(File outputFile) throws IOException {
+        ArffSaver saver = new ArffSaver();
+        saver.setInstances(dataset);
+        saver.setFile(outputFile);
+        saver.writeBatch();
     }
 }

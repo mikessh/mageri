@@ -22,6 +22,10 @@ public class ClassifierResult {
     private final boolean passed;
     private final double pValue;
 
+    ClassifierResult(double[] p) {
+        this(p[1] > p[0], p[0]);
+    }
+
     public ClassifierResult(boolean passed, double pValue) {
         this.passed = passed;
         this.pValue = pValue;

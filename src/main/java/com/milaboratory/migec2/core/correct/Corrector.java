@@ -21,6 +21,8 @@ import com.milaboratory.migec2.core.consalign.entity.AlignedConsensus;
 import com.milaboratory.migec2.core.consalign.entity.AlignerReferenceLibrary;
 import com.milaboratory.migec2.core.mutations.MigecMutation;
 import com.milaboratory.migec2.core.mutations.MigecMutationsCollection;
+import com.milaboratory.migec2.model.classifier.BaseVariantClassifier;
+import com.milaboratory.migec2.model.classifier.VariantClassifier;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -32,13 +34,13 @@ public final class Corrector {
     private final CorrectorReferenceLibrary correctorReferenceLibrary;
 
     public Corrector(AlignerReferenceLibrary referenceLibraryWithStatistics) {
-        this(referenceLibraryWithStatistics, CorrectorParameters.DEFAULT, BayesianHotSpotClassifier.DEFAULT);
+        this(referenceLibraryWithStatistics, CorrectorParameters.DEFAULT, BaseVariantClassifier.BUILT_IN);
     }
 
     public Corrector(AlignerReferenceLibrary referenceLibraryWithStatistics,
-                     CorrectorParameters parameters, HotSpotClassifier hotSpotClassifier) {
+                     CorrectorParameters parameters, VariantClassifier variantClassifier) {
         this.correctorReferenceLibrary = new CorrectorReferenceLibrary(referenceLibraryWithStatistics,
-                parameters, hotSpotClassifier);
+                parameters, variantClassifier);
     }
 
     public CorrectedConsensus correct(AlignedConsensus alignedConsensus) {
