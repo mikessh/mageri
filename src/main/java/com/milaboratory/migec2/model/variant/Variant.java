@@ -125,7 +125,7 @@ public class Variant {
 
     @Override
     public String toString() {
-        return reference.getFullName() + "\t" +
+        return reference.getName() + "\t" + reference.getFullName() + "\t" +
                 pos + "\t" + NucleotideAlphabet.INSTANCE.symbolFromCode(to) + "\t" +
                 fromWeights[0] + "\t" + fromWeights[1] + "\t" + fromWeights[2] + "\t" + fromWeights[3] + "\t" +
                 bgMinorMigFreq + "\t" + bgMinorReadFreq + "\t" +
