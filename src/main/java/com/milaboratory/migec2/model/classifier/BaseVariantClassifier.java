@@ -66,7 +66,6 @@ public class BaseVariantClassifier implements VariantClassifier {
         return new BaseVariantClassifier(classifier, instanceFactory);
     }
 
-
     public static BaseVariantClassifier train(InstanceFactory instanceFactory) throws Exception {
         return train(
                 "weka.classifiers.bayes.BayesNet",
@@ -85,6 +84,8 @@ public class BaseVariantClassifier implements VariantClassifier {
 
     public static BaseVariantClassifier train(String classifierName, String[] options,
                                           InstanceFactory instanceFactory) throws Exception {
+        if (!instanceFactory.hasInstances())
+            throw new Exception("Empty InstanceFactory supplied for classifier training");
         Classifier classifier = Classifier.forName(classifierName, options);
         classifier.buildClassifier(instanceFactory.getDataset());
         return new BaseVariantClassifier(classifier, instanceFactory);

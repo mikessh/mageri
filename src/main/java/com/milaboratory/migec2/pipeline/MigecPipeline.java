@@ -22,6 +22,7 @@ import com.milaboratory.migec2.core.haplotype.misc.SimpleHaplotypeErrorStatistic
 import com.milaboratory.migec2.core.io.entity.Mig;
 import com.milaboratory.migec2.core.io.misc.UmiHistogram;
 import com.milaboratory.migec2.core.io.readers.MigReader;
+import com.milaboratory.migec2.model.classifier.VariantClassifier;
 import com.milaboratory.migec2.model.variant.Variant;
 import com.milaboratory.migec2.model.variant.VariantLibrary;
 import com.milaboratory.migec2.util.ProcessorResultWrapper;
@@ -40,7 +41,7 @@ public class MigecPipeline {
     protected final Map<String, HaplotypeTree> haplotypeTreeBySample;
     protected final List<String> sampleNames, skippedSamples;
     protected final MigecParameterSet migecParameterSet;
-    protected final HotSpotClassifier hotSpotClassifier = null; // todo:
+    protected final VariantClassifier variantClassifier = null; // todo:
 
     protected MigecPipeline(MigReader reader,
                             AssemblerFactory assemblerFactory,
@@ -154,7 +155,7 @@ public class MigecPipeline {
             // Find major and minor mutations
             Corrector corrector = new Corrector(aligner.getAlignerReferenceLibrary(),
                     migecParameterSet.getCorrectorParameters(),
-                    hotSpotClassifier);
+                    variantClassifier);
             correctorBySample.put(sampleName, corrector);
 
             // Error statistics for haplotype filtering using binomial test

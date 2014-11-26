@@ -30,7 +30,6 @@ import java.io.IOException;
 
 public class BaseInstanceFactory implements InstanceFactory {
     private final Instances dataset;
-    private final boolean store;
 
     public final static String[] FEATURES = new String[]{
             "BgMinorMigFreq", "BgMinorReadFreq",
@@ -49,19 +48,17 @@ public class BaseInstanceFactory implements InstanceFactory {
     public final static String SCHEMA = buildSchema();
 
     public BaseInstanceFactory() throws IOException {
-        this(false);
-    }
-
-    public BaseInstanceFactory(boolean store) throws IOException {
         ArffLoader loader = new ArffLoader();
         loader.setSource(new ByteArrayInputStream(SCHEMA.getBytes()));
         this.dataset = loader.getDataSet();
         dataset.setClassIndex(dataset.numAttributes() - 1);
-        this.store = store;
     }
 
-    @Override
-    public Instance convert(Variant variant) {
+    protected Instance getInstance(Variant variant) {
+        return getInstance(variant, false);
+    }
+
+    protected Instance getInstance(Variant variant, boolean real) {
         double[] features = new double[]{
                 // don't worry abt NaNs, we'll set them as missing
                 Math.log10(variant.getBgMinorMigFreq()),
@@ -70,26 +67,32 @@ public class BaseInstanceFactory implements InstanceFactory {
                 Math.log10(variant.getMinorMigCount() / (double) variant.getSumAtPosMig()),
                 Math.log10(variant.getMajorReadCount() / (double) variant.getSumAtPosRead()),
                 Math.log10(variant.getMinorReadCount() / (double) variant.getSumAtPosRead()),
-                0 // class
+                real ? 1 : 0 // class
         };
 
-        Instance instance = new Instance(0.0, features);
+        Instance instance = new Instance(1.0, features);
 
         for (int i = 0; i < features.length; i++)
             if (Double.isNaN(features[i]))
                 instance.setMissing(i);
 
-        instance.setDataset(dataset);
+        return instance;
+    }
 
-        if (store)
-            dataset.add(instance);
+    @Override
+    public Instance convert(Variant variant) {
+        Instance instance = getInstance(variant);
+
+        instance.setDataset(dataset);
 
         return instance;
     }
 
     @Override
-    public boolean storing() {
-        return store;
+    public void store(Variant variant, boolean real) {
+        Instance instance = getInstance(variant, real);
+
+        dataset.add(instance);
     }
 
     @Override

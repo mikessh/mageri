@@ -28,11 +28,11 @@ import java.io.IOException;
 public interface InstanceFactory {
     public void save(File outputFile) throws IOException;
 
-    public boolean storing();
-
     public boolean hasInstances();
 
     public Instances getDataset();
 
     public Instance convert(Variant variant);
+
+    public void store(Variant variant, boolean real);
 }
