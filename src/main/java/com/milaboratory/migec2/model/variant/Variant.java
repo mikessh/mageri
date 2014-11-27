@@ -34,11 +34,11 @@ public class Variant {
     private final long sumAtPosRead, minorReadCount, majorReadCount;
 
     public Variant(Reference reference, int pos, byte to,
-            double[] fromWeights,
-            double bgMinorMigFreq, double bgMinorReadFreq,
-            int sumAtPosMig, long sumAtPosRead,
-            int minorMigCount, int majorMigCount,
-            long minorReadCount, long majorReadCount) {
+                   double[] fromWeights,
+                   double bgMinorMigFreq, double bgMinorReadFreq,
+                   int sumAtPosMig, long sumAtPosRead,
+                   int minorMigCount, int majorMigCount,
+                   long minorReadCount, long majorReadCount) {
         this.reference = reference;
         this.pos = pos;
         this.to = to;
@@ -127,7 +127,7 @@ public class Variant {
     @Override
     public String toString() {
         return reference.getName() + "\t" + reference.getType() + "\t" +
-                (reference.isReverseComplement() ? "true" : "false") + "\t" + reference.getSequence().size() + "\t" +
+                reference.isReverseComplement() + "\t" + reference.getSequence().size() + "\t" +
                 pos + "\t" + NucleotideAlphabet.INSTANCE.symbolFromCode(to) + "\t" +
                 fromWeights[0] + "\t" + fromWeights[1] + "\t" + fromWeights[2] + "\t" + fromWeights[3] + "\t" +
                 bgMinorMigFreq + "\t" + bgMinorReadFreq + "\t" +

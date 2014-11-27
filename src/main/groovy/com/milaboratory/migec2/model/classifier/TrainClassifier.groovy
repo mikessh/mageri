@@ -23,7 +23,7 @@ import com.milaboratory.migec2.model.variant.Variant
 
 def cli = new CliBuilder(usage: "TrainClassifier [options] control_variants input_vardump output_prefix\n" +
         "Control variants is a tab-delimited table of the following structure:\n" +
-        "|reference name|position|variant")
+        "|reference name|reference type|position|variant")
 cli.h("display help message")
 
 cli.width = 100
@@ -64,7 +64,7 @@ new File(vardumpFileName).withReader { reader ->
 
         def referenceName = splitLine[idMap["referenceName"]],
             referenceType = splitLine[idMap["referenceType"]],
-            referenceRC = splitLine[idMap["referenceRC"]].toBoolean(),
+            referenceRC = splitLine[idMap["referenceRC"]].toUpperCase() == "TRUE",
             referenceLen = splitLine[idMap["referenceLen"]].toInteger(),
             pos = splitLine[idMap["pos"]].toInteger(),
             to = splitLine[idMap["to"]].charAt(0),
@@ -78,7 +78,7 @@ new File(vardumpFileName).withReader { reader ->
             majorReadCount = splitLine[idMap["majorReadCount"]].toLong()
 
         def variantKey = [referenceName, referenceType,
-                          referenceRC ? (referenceLen - pos) : pos,
+                          referenceRC ? (referenceLen - pos - 1) : pos,
                           referenceRC ? rc[to] : to].join("\t").toUpperCase()
 
         boolean control = controlSet.contains(variantKey)
