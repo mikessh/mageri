@@ -15,7 +15,6 @@ import com.milaboratory.migec2.core.consalign.mutations.MutationsAndCoverage;
 import com.milaboratory.migec2.core.consalign.processor.ConsensusAligner;
 import com.milaboratory.migec2.core.correct.CorrectedConsensus;
 import com.milaboratory.migec2.core.correct.Corrector;
-import com.milaboratory.migec2.core.correct.HotSpotClassifier;
 import com.milaboratory.migec2.core.haplotype.HaplotypeTree;
 import com.milaboratory.migec2.core.haplotype.misc.HaplotypeErrorStatistics;
 import com.milaboratory.migec2.core.haplotype.misc.SimpleHaplotypeErrorStatistics;

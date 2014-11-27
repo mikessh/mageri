@@ -26,6 +26,7 @@ import weka.core.SerializationHelper;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.InputStream;
 
 public class BaseVariantClassifier implements VariantClassifier {
@@ -45,7 +46,7 @@ public class BaseVariantClassifier implements VariantClassifier {
     }
 
     public static BaseVariantClassifier pretrained(File inputFile,
-                                               InstanceFactory instanceFactory) throws Exception {
+                                                   InstanceFactory instanceFactory) throws Exception {
         return pretrained(new FileInputStream(inputFile),
                 instanceFactory);
     }
@@ -56,7 +57,7 @@ public class BaseVariantClassifier implements VariantClassifier {
     }
 
     public static BaseVariantClassifier pretrained(InputStream inputStream,
-                                               InstanceFactory instanceFactory) throws Exception {
+                                                   InstanceFactory instanceFactory) throws Exception {
         SerializedClassifier classifier = new SerializedClassifier();
         classifier.setModel((SerializedClassifier) SerializationHelper.read(inputStream));
 
@@ -83,7 +84,7 @@ public class BaseVariantClassifier implements VariantClassifier {
     }
 
     public static BaseVariantClassifier train(String classifierName, String[] options,
-                                          InstanceFactory instanceFactory) throws Exception {
+                                              InstanceFactory instanceFactory) throws Exception {
         if (!instanceFactory.hasInstances())
             throw new Exception("Empty InstanceFactory supplied for classifier training");
         Classifier classifier = Classifier.forName(classifierName, options);
@@ -104,5 +105,12 @@ public class BaseVariantClassifier implements VariantClassifier {
     @Override
     public ClassifierResult classify(Variant variant) {
         return classify(instanceFactory.convert(variant));
+    }
+
+    @Override
+    public void save(File outputFile) throws Exception {
+        FileOutputStream outputStream = new FileOutputStream(outputFile);
+        SerializationHelper.write(outputStream, classifier);
+        outputStream.close();
     }
 }

@@ -26,7 +26,7 @@ public class Reference {
     private final boolean reverseComplement;
     private final boolean isDeNovo;
 
-    public Reference(int globalId ,String name, String type, NucleotideSequence sequence, boolean reverseComplement) {
+    public Reference(int globalId, String name, String type, NucleotideSequence sequence, boolean reverseComplement) {
         this.globalId = globalId;
         this.name = name;
         this.type = type;
@@ -71,9 +71,7 @@ public class Reference {
 
         Reference reference = (Reference) o;
 
-        if (globalId != reference.globalId) return false;
-
-        return true;
+        return globalId == reference.globalId;
     }
 
     @Override

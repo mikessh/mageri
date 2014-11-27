@@ -18,6 +18,9 @@
 
 package com.milaboratory.migec2.model.classifier
 
+import com.milaboratory.core.sequence.nucleotide.NucleotideAlphabet
+import com.milaboratory.migec2.model.variant.Variant
+
 def cli = new CliBuilder(usage: "TrainClassifier [options] control_variants input_vardump output_prefix\n" +
         "Control variants is a tab-delimited table of the following structure:\n" +
         "|reference name|position|variant")
@@ -35,37 +38,65 @@ if (opt.h || opt.arguments().size() != 3) {
     System.exit(-1)
 }
 
+def rc = [((char) 'A'): (char) 'T', ((char) 'T'): (char) 'A', ((char) 'G'): (char) 'C', ((char) 'C'): (char) 'G']
+
 def controlFileName = opt.arguments()[0], vardumpFileName = opt.arguments()[1], outputPrefix = opt.arguments()[2]
 
-def controlSet = new HashSet(new File(controlFileName).readLines())
+def controlSet = new HashSet(new File(controlFileName).readLines().collect { it.toUpperCase() })
 
-def idCols = ["ReferenceName", "Pos", "Nt"], idColIndices = [-1, -1, -1],
-        featureCols = ["BgMinorMigFreq", "BgMinorReadFreq",
-                       "MajorMigCount", "MinorMigCount",
-                       "MajorReadCount", "MinorReadCount"], featureColIndices = [-1, -1, -1, -1, -1, -1]
+def idMap = new HashMap<String, Integer>()
+def ids = ["referenceName", "referenceType", "referenceRC", "referenceLen",
+           "pos", "to",
+           "bgMinorMigFreq", "bgMinorReadFreq",
+           "sumAtPosMig", "sumAtPosRead",
+           "minorMigCount", "majorMigCount",
+           "minorReadCount", "majorReadCount"]
 
-def SCHEMA = "@RELATION\tMIGEC2\n" +
-        featureCols.collect { "@ATTRIBUTE\t$it\tNUMERIC" }.join("\n") +
-        "\n@ATTRIBUTE\tclass\t{0,1}\n@DATA"
+def instanceFactory = new BaseInstanceFactory()
 
-new File(outputPrefix + "_training_set.arff").withPrintWriter { pw ->
-    pw.println(SCHEMA)
+new File(vardumpFileName).withReader { reader ->
+    def header = reader.readLine()[1..-1].split("\t")
+    ids.each { id -> idMap.put(id, header.findIndexOf { id.toUpperCase() == it.toUpperCase() }) }
 
-    new File(vardumpFileName).withReader { reader ->
-        def header = reader.readLine()[1..-1].split("\t")
-        idCols.eachWithIndex { name, ind ->
-            idColIndices[ind] = header.findIndexOf { it == name }
-        }
-        featureCols.eachWithIndex { name, ind ->
-            featureColIndices[ind] = header.findIndexOf { it == name }
-        }
+    def line
+    while ((line = reader.readLine()) != null) {
+        def splitLine = line.split("\t")
 
-        def line
-        while ((line = reader.readLine()) != null) {
-            def splitLine = line.split("\t")
-            boolean control = controlSet.contains(splitLine[[idColIndices]].join("\t"))
+        def referenceName = splitLine[idMap["referenceName"]],
+            referenceType = splitLine[idMap["referenceType"]],
+            referenceRC = splitLine[idMap["referenceRC"]].toBoolean(),
+            referenceLen = splitLine[idMap["referenceLen"]].toInteger(),
+            pos = splitLine[idMap["pos"]].toInteger(),
+            to = splitLine[idMap["to"]].charAt(0),
+            bgMinorMigFreq = splitLine[idMap["bgMinorMigFreq"]].toDouble(),
+            bgMinorReadFreq = splitLine[idMap["bgMinorReadFreq"]].toDouble(),
+            sumAtPosMig = splitLine[idMap["sumAtPosMig"]].toInteger(),
+            sumAtPosRead = splitLine[idMap["sumAtPosRead"]].toLong(),
+            minorMigCount = splitLine[idMap["minorMigCount"]].toInteger(),
+            majorMigCount = splitLine[idMap["majorMigCount"]].toInteger(),
+            minorReadCount = splitLine[idMap["minorReadCount"]].toLong(),
+            majorReadCount = splitLine[idMap["majorReadCount"]].toLong()
 
-            pw.println([line[featureColIndices], control ? 1 : 0].join("\t"))
-        }
+        def variantKey = [referenceName, referenceType,
+                          referenceRC ? (referenceLen - pos) : pos,
+                          referenceRC ? rc[to] : to].join("\t").toUpperCase()
+
+        boolean control = controlSet.contains(variantKey)
+
+        def variant = new Variant(null, pos, NucleotideAlphabet.INSTANCE.codeFromSymbol(to),
+                null, bgMinorMigFreq, bgMinorReadFreq,
+                sumAtPosMig, sumAtPosRead,
+                minorMigCount, majorMigCount,
+                minorReadCount, majorReadCount)
+
+        instanceFactory.store(variant, control)
     }
 }
+
+new File(outputPrefix + "_tmp.txt").absoluteFile.parentFile.mkdirs()
+
+instanceFactory.save(new File(outputPrefix + "_training_set.arff"))
+
+def variantClassifier = BaseVariantClassifier.train(instanceFactory)
+
+variantClassifier.save(new File(outputPrefix + "_classifier.model"))

@@ -20,6 +20,10 @@ package com.milaboratory.migec2.model.classifier;
 
 import com.milaboratory.migec2.model.variant.Variant;
 
+import java.io.File;
+
 public interface VariantClassifier {
     public ClassifierResult classify(Variant variant);
+
+    public void save(File outputFile) throws Exception;
 }

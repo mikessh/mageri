@@ -33,7 +33,7 @@ public class Variant {
     private final int minorMigCount, majorMigCount, sumAtPosMig;
     private final long sumAtPosRead, minorReadCount, majorReadCount;
 
-    Variant(Reference reference, int pos, byte to,
+    public Variant(Reference reference, int pos, byte to,
             double[] fromWeights,
             double bgMinorMigFreq, double bgMinorReadFreq,
             int sumAtPosMig, long sumAtPosRead,
@@ -53,15 +53,16 @@ public class Variant {
         this.majorReadCount = majorReadCount;
     }
 
-    public static final String HEADER = "Reference\tPos\tNt\t" +
-            NucleotideAlphabet.INSTANCE.symbolFromCode((byte) 0) + "\t" +
-            NucleotideAlphabet.INSTANCE.symbolFromCode((byte) 1) + "\t" +
-            NucleotideAlphabet.INSTANCE.symbolFromCode((byte) 2) + "\t" +
-            NucleotideAlphabet.INSTANCE.symbolFromCode((byte) 3) + "\t" +
-            "BgMinorMigFreq\tBgMinorReadFreq\t" +
-            "SumAtPosMig\tSumAtPosRead\t" +
-            "MajorMigCount\tMinorMigCount\t" +
-            "MajorReadCount\tMinorReadCount";
+    public static final String HEADER = "referenceName\treferenceType\treferenceRC\treferenceLen\t" +
+            "pos\tto\t" +
+            "from" + NucleotideAlphabet.INSTANCE.symbolFromCode((byte) 0) + "\t" +
+            "from" + NucleotideAlphabet.INSTANCE.symbolFromCode((byte) 1) + "\t" +
+            "from" + NucleotideAlphabet.INSTANCE.symbolFromCode((byte) 2) + "\t" +
+            "from" + NucleotideAlphabet.INSTANCE.symbolFromCode((byte) 3) + "\t" +
+            "bgMinorMigFreq\tbgMinorReadFreq\t" +
+            "sumAtPosMig\tsumAtPosRead\t" +
+            "minorMigCount\tmajorMigCount\t" +
+            "minorReadCount\tmajorReadCount";
 
     public Reference getReference() {
         return reference;
@@ -125,12 +126,13 @@ public class Variant {
 
     @Override
     public String toString() {
-        return reference.getName() + "\t" + reference.getFullName() + "\t" +
+        return reference.getName() + "\t" + reference.getType() + "\t" +
+                (reference.isReverseComplement() ? "true" : "false") + "\t" + reference.getSequence().size() + "\t" +
                 pos + "\t" + NucleotideAlphabet.INSTANCE.symbolFromCode(to) + "\t" +
                 fromWeights[0] + "\t" + fromWeights[1] + "\t" + fromWeights[2] + "\t" + fromWeights[3] + "\t" +
                 bgMinorMigFreq + "\t" + bgMinorReadFreq + "\t" +
                 sumAtPosMig + "\t" + sumAtPosRead + "\t" +
-                majorMigCount + "\t" + minorMigCount + "\t" +
-                majorReadCount + "\t" + minorReadCount;
+                minorMigCount + "\t" + majorMigCount + "\t" +
+                minorReadCount + "\t" + majorReadCount;
     }
 }
