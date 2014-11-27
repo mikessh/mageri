@@ -100,6 +100,8 @@ public final class CorrectorReferenceLibrary {
 
                 final VariantLibrary variantLibrary = new VariantLibrary(mutationsAndCoverage);
 
+                // SUBSTITUTIONS
+
                 for (int i = 0; i < n; i++) {
                     // Compute quality and coverage
                     long umiCoverage = mutationsAndCoverage.getReferenceUmiCoverage(i);
@@ -109,27 +111,37 @@ public final class CorrectorReferenceLibrary {
                     coverageFilterByPosition[i] = umiCoverage >= minMigCoverage;
                     qualityFilterByPosition[i] = avgQual >= minAvgQuality;
 
+                    // Not quite sure here, but we'll carry on and do our best
                     if (!coverageFilterByPosition[i] || !qualityFilterByPosition[i])
                         nBadBases++;
 
-                    // Filter major SUBSTITUTIONS
                     // here we apply classifier and use variant library for querying
                     // as it has complete stats that could be required by classifier
                     for (byte j = 0; j < 4; j++) {
-                        Variant variant = variantLibrary.getAt(i, j);
-                        if (variant != null) {
-                            ClassifierResult result = variantClassifier.classify(variant);
+                        int majorMigCount = mutationsAndCoverage.getMajorNucleotideMigCount(i, j);
+                        Variant minorVariant = variantLibrary.getAt(i, j);
+                        boolean variantExists = false;
 
-                            if (result.passed()) {
-                                if (reference.getSequence().codeAt(i) == j)
-                                    referencePresenceByPosition[i] = true;
-                                else
-                                    substitutionsByPosition[i][j] = true;
-                                majorSubstitutionCounts[i][j] = variant.getMajorMigCount();
-                                majorSubstitutionPvalues[i][j] = result.getPValue();
-                            } else {
-                                majorSubstitutionPvalues[i][j] = 1.0;
-                            }
+                        if (minorVariant != null) {
+                            // Classify minor variants
+                            ClassifierResult result = variantClassifier.classify(minorVariant);
+                            variantExists = result.passed();
+                            majorSubstitutionPvalues[i][j] = result.getPValue();
+                        } else if (majorMigCount > 0) {
+                            // Retain all major variants
+                            variantExists = true;
+                            majorSubstitutionPvalues[i][j] = 0.0;
+                        } else {
+                            // Nothing here
+                            majorSubstitutionPvalues[i][j] = 1.0;
+                        }
+
+                        if (variantExists) {
+                            majorSubstitutionCounts[i][j] = majorMigCount;
+                            if (reference.getSequence().codeAt(i) == j)
+                                referencePresenceByPosition[i] = true;
+                            else
+                                substitutionsByPosition[i][j] = true;
                         }
                     }
 
@@ -142,13 +154,11 @@ public final class CorrectorReferenceLibrary {
                 boolean good = (nBadBases / (double) n) <= maxBasePairsMaskedRatio &&
                         mutationsAndCoverage.getMigCount() >= minMigCount;
 
-                // Finally deal with indels.
+                // Finally deal with INDELS
                 // NOTE completely frequency-based for now
                 Set<Integer> indels = new HashSet<>();
                 for (Integer indel : mutationsAndCoverage.getMajorIndelCodes()) {
                     int majorCount = mutationsAndCoverage.getMajorIndelMigCount(indel);
-                    //        minorCount = mutationsAndCoverage.getMinorIndelMigCount(indel);
-                    //double majorPvalue = computeMajorPvalue(majorCount, minorCount, numberOfMigs);
                     boolean isDeletion = Mutations.isDeletion(indel);
                     int pos = Mutations.getPosition(indel);
 
@@ -166,6 +176,8 @@ public final class CorrectorReferenceLibrary {
                     else
                         majorInsertionPvalues[pos] = Double.NaN;
                 }
+
+                // Mutation filter -
 
                 mutationFilterByReference.put(reference, new MutationFilter(substitutionsByPosition,
                         referencePresenceByPosition, qualityFilterByPosition, coverageFilterByPosition,

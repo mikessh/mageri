@@ -21,6 +21,7 @@ package com.milaboratory.migec2.model.variant;
 import com.milaboratory.migec2.core.consalign.mutations.MutationsAndCoverage;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -38,21 +39,31 @@ public class VariantLibrary {
     private final double[] rowSumsMig = new double[4], rowSumsRead = new double[4];
 
     /**
-     * Creates a new instance
+     * Computes background substitution frequencies and collects minor variants that have &lt; 10% frequency
      *
      * @param mutationsAndCoverage mutations and coverage matrix to process
      */
     public VariantLibrary(MutationsAndCoverage mutationsAndCoverage) {
+        this(mutationsAndCoverage, 0.1);
+    }
+
+    /**
+     * Computes background substitution frequencies and collects minor variants under a given frequency threshold
+     *
+     * @param mutationsAndCoverage mutations and coverage matrix to process
+     * @param freqThreshold frequency threshold for a minor variant
+     */
+    public VariantLibrary(MutationsAndCoverage mutationsAndCoverage, double freqThreshold) {
         this.mutationsAndCoverage = mutationsAndCoverage;
         this.variants = new Variant[mutationsAndCoverage.referenceLength()][4];
-        init();
+        init(freqThreshold);
     }
 
     /**
      * Computes background substitution statistics using a given mutations and coverage matrix.
      * Summarizes variants
      */
-    private void init() {
+    private void init(double freqThreshold) {
         final int[] majorMigCountArr = new int[4];
 
         for (int i = 0; i < mutationsAndCoverage.referenceLength(); i++) {
@@ -85,7 +96,8 @@ public class VariantLibrary {
                             // don't forget to protect from overflow here
                             innerMatrixMig[from][to] += minorMigCount * (double) majorMigCount / (double) sumAtPosMig;
                             innerMatrixRead[from][to] += minorReadCount * (double) majorReadCount / (double) sumAtPosRead;
-                        } else if (majorMigCount > 0) {
+                        } else if (majorMigCount > 0 &&
+                                (majorMigCount / (double)sumAtPosMig) <= freqThreshold) { // store only minor variants
                             // diagonal - store variants that are represented by at least 1 molecule
                             final double[] fromWeights = new double[4];
 
@@ -125,32 +137,12 @@ public class VariantLibrary {
         }
     }
 
-    /**
-     * Collects minor variants that have &lt; 5% frequency
-     *
-     * @return a collection of minor variants that were detected
-     */
-    public Collection<Variant> collectVariants() {
-        return collectVariants(0.05);
-    }
 
     /**
-     * Collects minor variants from a given mutations and coverage matrix
-     *
-     * @return a collection of minor variants that were detected
+     * Gets a list of detected minor variants
      */
-    public Collection<Variant> collectVariants(double minorVariantThreshold) {
-        final LinkedList<Variant> variants = new LinkedList<>();
-
-        for (int i = 0; i < mutationsAndCoverage.referenceLength(); i++) {
-            for (byte to = 0; to < 4; to++) {
-                Variant variant = this.variants[i][to];
-                if (variant != null && variant.getFreq() <= minorVariantThreshold)
-                    variants.add(variant);
-            }
-        }
-
-        return variants;
+    public List<Variant> getMinorVariants() {
+        return Collections.unmodifiableList(variantList);
     }
 
     /**
@@ -183,11 +175,11 @@ public class VariantLibrary {
     }
 
     /**
-     * Gets a variant data at specified position
+     * Gets variant data at specified position
      *
      * @param pos coordinate
      * @param nt  nucleotide
-     * @return variant data or null if no variant exists
+     * @return variant data or null if no minor variant exists
      */
     public Variant getAt(int pos, byte nt) {
         return variants[pos][nt];

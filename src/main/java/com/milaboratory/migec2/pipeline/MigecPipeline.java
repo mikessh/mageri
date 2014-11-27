@@ -221,8 +221,8 @@ public class MigecPipeline {
             AlignerReferenceLibrary alignerReferenceLibrary = alignerBySample.get(sample).getAlignerReferenceLibrary();
             for (Reference reference : alignerReferenceLibrary.getReferenceLibrary().getReferences()) {
                 MutationsAndCoverage mutationsAndCoverage = alignerReferenceLibrary.getMutationsAndCoverage(reference);
-                VariantLibrary variantLibrary = new VariantLibrary(mutationsAndCoverage);
-                for (Variant variant : variantLibrary.collectVariants(threshold)) {
+                VariantLibrary variantLibrary = new VariantLibrary(mutationsAndCoverage, threshold);
+                for (Variant variant : variantLibrary.getMinorVariants()) {
                     dump += "\n" + sample + "\t" + variant.toString();
                 }
             }

@@ -129,10 +129,13 @@ public class BaseVariantClassifier implements VariantClassifier {
         return classify(instanceFactory.convert(variant));
     }
 
-    @Override
     public void save(File outputFile) throws Exception {
         FileOutputStream outputStream = new FileOutputStream(outputFile);
         SerializationHelper.write(outputStream, classifier);
         outputStream.close();
+    }
+
+    public Classifier getClassifier() {
+        return classifier;
     }
 }
