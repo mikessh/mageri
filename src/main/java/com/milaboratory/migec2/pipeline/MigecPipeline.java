@@ -21,6 +21,7 @@ import com.milaboratory.migec2.core.haplotype.misc.SimpleHaplotypeErrorStatistic
 import com.milaboratory.migec2.core.io.entity.Mig;
 import com.milaboratory.migec2.core.io.misc.UmiHistogram;
 import com.milaboratory.migec2.core.io.readers.MigReader;
+import com.milaboratory.migec2.model.classifier.BaseVariantClassifier;
 import com.milaboratory.migec2.model.classifier.VariantClassifier;
 import com.milaboratory.migec2.model.variant.Variant;
 import com.milaboratory.migec2.model.variant.VariantLibrary;
@@ -40,7 +41,7 @@ public class MigecPipeline {
     protected final Map<String, HaplotypeTree> haplotypeTreeBySample;
     protected final List<String> sampleNames, skippedSamples;
     protected final MigecParameterSet migecParameterSet;
-    protected final VariantClassifier variantClassifier = null; // todo:
+    protected final VariantClassifier variantClassifier = BaseVariantClassifier.BUILT_IN; // todo: implement loading from file
 
     protected MigecPipeline(MigReader reader,
                             AssemblerFactory assemblerFactory,

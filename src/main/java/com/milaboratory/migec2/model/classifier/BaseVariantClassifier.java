@@ -32,8 +32,27 @@ import java.io.InputStream;
 public class BaseVariantClassifier implements VariantClassifier {
     private final Classifier classifier;
     private final InstanceFactory instanceFactory;
+    private static boolean verbose = false;
 
-    public static BaseVariantClassifier BUILT_IN = null; // todo: from resources
+    public final static BaseVariantClassifier BUILT_IN;
+
+    static {
+        BaseVariantClassifier _BUILT_IN;
+        try {
+            _BUILT_IN = pretrained(
+                    Thread.currentThread().getContextClassLoader().
+                            getResourceAsStream("classifier/default_classifier.model")
+            );
+        } catch (Exception e) {
+            _BUILT_IN = null;
+            System.out.println("[CRITICAL ERROR] Could not load default classifier");
+            e.printStackTrace();
+        }
+
+        BUILT_IN = _BUILT_IN;
+
+        verbose = true;
+    }
 
     private BaseVariantClassifier(Classifier classifier, InstanceFactory instanceFactory) {
         this.classifier = classifier;
@@ -59,10 +78,13 @@ public class BaseVariantClassifier implements VariantClassifier {
     public static BaseVariantClassifier pretrained(InputStream inputStream,
                                                    InstanceFactory instanceFactory) throws Exception {
         SerializedClassifier classifier = new SerializedClassifier();
-        classifier.setModel((SerializedClassifier) SerializationHelper.read(inputStream));
+        classifier.setModel((Classifier) SerializationHelper.read(inputStream));
 
         // Important: check if attributes match
         classifier.getCapabilities().testWithFail(instanceFactory.getDataset());
+
+        if (verbose)
+            System.out.println("[BaseVariantClassifier] Loaded " + classifier.toString() + " model.");
 
         return new BaseVariantClassifier(classifier, instanceFactory);
     }

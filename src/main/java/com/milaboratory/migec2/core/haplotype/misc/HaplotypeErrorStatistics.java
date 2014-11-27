@@ -19,6 +19,8 @@ import com.milaboratory.migec2.core.align.reference.Reference;
 import com.milaboratory.migec2.core.mutations.wrappers.MutationWrapper;
 import org.apache.commons.math.MathException;
 
+// todo: change for VariantLibrary
+@Deprecated
 public interface HaplotypeErrorStatistics {
     public double calculatePValue(Reference reference,
                                   int mutation,

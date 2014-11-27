@@ -8,8 +8,8 @@ public final class HaplotypeTreeParameters implements ParameterSet {
     private final double childMajorRatioForPValue, pValueThreshold;
     private final int depth;
 
-    public static HaplotypeTreeParameters DEFAULT = new HaplotypeTreeParameters(true, 0.5, 0.05, 2),
-            NO_PVALUE_THRESHOLD = new HaplotypeTreeParameters(true, 0.5, 1.0, 2);
+    public static HaplotypeTreeParameters DEFAULT = new HaplotypeTreeParameters(false, 0.5, 0.05, 2),
+            NO_PVALUE_THRESHOLD = new HaplotypeTreeParameters(false, 0.5, 1.0, 2);
 
     public HaplotypeTreeParameters(boolean filterSingleMigs, double childMajorRatioForPValue,
                                    double pValueThreshold, int depth) {
