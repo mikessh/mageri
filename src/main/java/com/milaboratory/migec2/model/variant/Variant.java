@@ -128,7 +128,7 @@ public class Variant {
     public String toString() {
         return reference.getName() + "\t" + reference.getType() + "\t" +
                 reference.isReverseComplement() + "\t" + reference.getSequence().size() + "\t" +
-                pos + "\t" + NucleotideAlphabet.INSTANCE.symbolFromCode(to) + "\t" +
+                (pos + 1) + "\t" + NucleotideAlphabet.INSTANCE.symbolFromCode(to) + "\t" +
                 fromWeights[0] + "\t" + fromWeights[1] + "\t" + fromWeights[2] + "\t" + fromWeights[3] + "\t" +
                 bgMinorMigFreq + "\t" + bgMinorReadFreq + "\t" +
                 sumAtPosMig + "\t" + sumAtPosRead + "\t" +

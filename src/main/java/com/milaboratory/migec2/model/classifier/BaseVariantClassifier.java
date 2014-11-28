@@ -119,7 +119,10 @@ public class BaseVariantClassifier implements VariantClassifier {
         try {
             classifierResult = new ClassifierResult(classifier.distributionForInstance(instance));
         } catch (Exception ignored) {
-            // We've already performed all checks
+            // We've already performed all checks; anyways
+            System.out.println("[CRITICAL ERROR]");
+            ignored.printStackTrace();
+            System.exit(-1);
         }
         return classifierResult;
     }

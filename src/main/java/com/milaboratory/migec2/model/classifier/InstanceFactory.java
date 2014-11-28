@@ -24,6 +24,7 @@ import weka.core.Instances;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 public interface InstanceFactory {
     public void save(File outputFile) throws IOException;
@@ -32,7 +33,9 @@ public interface InstanceFactory {
 
     public Instances getDataset();
 
+    public List<Variant> getVariants();
+
     public Instance convert(Variant variant);
 
-    public void store(Variant variant, boolean real);
+    public Instance convertAndStore(Variant variant, boolean real);
 }

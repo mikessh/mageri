@@ -27,9 +27,13 @@ import weka.core.converters.ArffSaver;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 
 public class BaseInstanceFactory implements InstanceFactory {
     private final Instances dataset;
+    private final List<Variant> variants = new LinkedList<>();
 
     public final static String[] FEATURES = new String[]{
             "BgMinorMigFreq", "BgMinorReadFreq",
@@ -89,10 +93,14 @@ public class BaseInstanceFactory implements InstanceFactory {
     }
 
     @Override
-    public void store(Variant variant, boolean real) {
-        Instance instance = getInstance(variant, real);
+    public Instance convertAndStore(Variant variant, boolean truePositive) {
+        Instance instance = getInstance(variant, truePositive);
 
         dataset.add(instance);
+        instance.setDataset(dataset);
+        variants.add(variant);
+
+        return instance;
     }
 
     @Override
@@ -103,6 +111,11 @@ public class BaseInstanceFactory implements InstanceFactory {
     @Override
     public Instances getDataset() {
         return dataset;
+    }
+
+    @Override
+    public List<Variant> getVariants() {
+        return Collections.unmodifiableList(variants);
     }
 
     @Override

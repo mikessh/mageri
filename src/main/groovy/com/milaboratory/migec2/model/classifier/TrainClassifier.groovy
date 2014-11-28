@@ -20,6 +20,7 @@ package com.milaboratory.migec2.model.classifier
 
 import com.milaboratory.core.sequence.nucleotide.NucleotideAlphabet
 import com.milaboratory.migec2.model.variant.Variant
+import weka.core.Instance
 
 def cli = new CliBuilder(usage: "TrainClassifier [options] control_variants input_vardump output_prefix\n" +
         "Control variants is a tab-delimited table of the following structure:\n" +
@@ -42,7 +43,7 @@ def rc = [((char) 'A'): (char) 'T', ((char) 'T'): (char) 'A', ((char) 'G'): (cha
 
 def controlFileName = opt.arguments()[0], vardumpFileName = opt.arguments()[1], outputPrefix = opt.arguments()[2]
 
-def controlSet = new HashSet(new File(controlFileName).readLines().collect { it.toUpperCase() })
+def truePositiveSet = new HashSet(new File(controlFileName).readLines().collect { it.toUpperCase() })
 
 def idMap = new HashMap<String, Integer>()
 def ids = ["referenceName", "referenceType", "referenceRC", "referenceLen",
@@ -53,10 +54,13 @@ def ids = ["referenceName", "referenceType", "referenceRC", "referenceLen",
            "minorReadCount", "majorReadCount"]
 
 def instanceFactory = new BaseInstanceFactory()
+def variantMap = new HashMap<String, Instance>()
+
+def varDumpHeader
 
 new File(vardumpFileName).withReader { reader ->
-    def header = reader.readLine()[1..-1].split("\t")
-    ids.each { id -> idMap.put(id, header.findIndexOf { id.toUpperCase() == it.toUpperCase() }) }
+    varDumpHeader = reader.readLine()[1..-1].split("\t")
+    ids.each { id -> idMap.put(id, varDumpHeader.findIndexOf { id.toUpperCase() == it.toUpperCase() }) }
 
     def line
     while ((line = reader.readLine()) != null) {
@@ -66,7 +70,7 @@ new File(vardumpFileName).withReader { reader ->
             referenceType = splitLine[idMap["referenceType"]],
             referenceRC = splitLine[idMap["referenceRC"]].toUpperCase() == "TRUE",
             referenceLen = splitLine[idMap["referenceLen"]].toInteger(),
-            pos = splitLine[idMap["pos"]].toInteger(),
+            pos = splitLine[idMap["pos"]].toInteger() - 1,
             to = splitLine[idMap["to"]].charAt(0),
             bgMinorMigFreq = splitLine[idMap["bgMinorMigFreq"]].toDouble(),
             bgMinorReadFreq = splitLine[idMap["bgMinorReadFreq"]].toDouble(),
@@ -81,7 +85,7 @@ new File(vardumpFileName).withReader { reader ->
                           referenceRC ? (referenceLen - pos - 1) : pos,
                           referenceRC ? rc[to] : to].join("\t").toUpperCase()
 
-        boolean control = controlSet.contains(variantKey)
+        boolean truePositive = truePositiveSet.contains(variantKey)
 
         def variant = new Variant(null, pos, NucleotideAlphabet.INSTANCE.codeFromSymbol(to),
                 null, bgMinorMigFreq, bgMinorReadFreq,
@@ -89,14 +93,26 @@ new File(vardumpFileName).withReader { reader ->
                 minorMigCount, majorMigCount,
                 minorReadCount, majorReadCount)
 
-        instanceFactory.store(variant, control)
+        def instance = instanceFactory.convertAndStore(variant, truePositive)
+        variantMap.put(line + "\t" + (truePositive ? 1 : 0), instance)
     }
 }
 
 new File(outputPrefix + "_tmp.txt").absoluteFile.parentFile.mkdirs()
 
+// This will allow further exploration of classifier performance
+// via Weka software
 instanceFactory.save(new File(outputPrefix + "_training_set.arff"))
 
+// Save a trained classifier to be further re-used
 def variantClassifier = BaseVariantClassifier.train(instanceFactory)
-
 variantClassifier.save(new File(outputPrefix + "_classifier.model"))
+
+// Output predictions
+new File(outputPrefix + "_predictions.txt").withPrintWriter { pw ->
+    pw.println(varDumpHeader.join("\t") + "\ttruePositive\tclassifierVerdict\tpValue")
+    variantMap.each {
+        def result = variantClassifier.classify((Instance) it.value)
+        pw.println(it.key + "\t" + (result.passed() ? 1 : 0) + "\t" + result.PValue)
+    }
+}
