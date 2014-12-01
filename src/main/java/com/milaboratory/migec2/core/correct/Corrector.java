@@ -48,6 +48,7 @@ public final class Corrector {
 
         Set<Integer> coverageMask = new HashSet<>();
 
+        double maxPValue = 0;
         int offset = 0;
         for (int i = 0; i < alignedConsensus.getNumberOfReferences(); i++) {
             Reference reference = alignedConsensus.getReference(i);
@@ -76,6 +77,9 @@ public final class Corrector {
                         } else {
                             mutation.filter();
                         }
+                        maxPValue = Math.max(maxPValue, correctorReferenceLibrary.getPValue(reference,
+                                mutation.pos(),
+                                mutation.to()));
                     } else if (!mutationFilter.hasIndel(mutation.code())) {
                         mutation.filter();
                     } else if (mutation.isDeletion()) {
@@ -97,7 +101,7 @@ public final class Corrector {
 
         goodConsensuses.incrementAndGet();
 
-        return new CorrectedConsensus(alignedConsensus, coverageMask);
+        return new CorrectedConsensus(alignedConsensus, coverageMask, maxPValue);
     }
 
     public CorrectorReferenceLibrary getCorrectorReferenceLibrary() {

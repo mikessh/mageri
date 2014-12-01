@@ -35,9 +35,11 @@ public final class CorrectedConsensus {
     private final Set<Integer> coverageMask;
     private final int numberOfReferences;
     private final int migSize;
+    private final double maxPValue;
 
     public CorrectedConsensus(AlignedConsensus alignedConsensus,
-                              Set<Integer> coverageMask) {
+                              Set<Integer> coverageMask,
+                              double maxPValue) {
         this.alignedConsensus = alignedConsensus;
         this.mutationsList = new ArrayList<>();
         this.coverageMask = coverageMask;
@@ -49,6 +51,7 @@ public final class CorrectedConsensus {
         }
 
         this.migSize = alignedConsensus.getMigSize();
+        this.maxPValue = maxPValue;
     }
 
     public Haplotype generateHaplotype() {
@@ -118,6 +121,10 @@ public final class CorrectedConsensus {
             seq = seq.concatenate(referenceSequence.getRange(range));
         }
         return seq;
+    }
+
+    public double getMaxPValue() {
+        return maxPValue;
     }
 
     public int getNumberOfReferences() {

@@ -272,6 +272,10 @@ public final class CorrectorReferenceLibrary {
         return count;
     }
 
+    public double getPValue(Reference reference, int pos, int nt) {
+        return majorSubstitutionPvalueMap.get(reference)[pos][nt];
+    }
+
     public VariantLibrary getVariantLibrary() {
         return variantLibrary;
     }
@@ -282,6 +286,15 @@ public final class CorrectorReferenceLibrary {
 
     public int getMajorDelCount(Reference reference, int pos) {
         return majorDeletionCountMap.get(reference)[pos];
+    }
+
+
+    public double getInsPValue(Reference reference, int pos) {
+        return majorInsertionPvalueMap.get(reference)[pos];
+    }
+
+    public double getDelPValue(Reference reference, int pos) {
+        return majorDeletionPvalueMap.get(reference)[pos];
     }
 
     private static StringBuilder appendNucleotideArrayToStringBuilder(StringBuilder sb, String name,

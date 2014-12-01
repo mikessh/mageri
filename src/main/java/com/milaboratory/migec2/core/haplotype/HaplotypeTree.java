@@ -212,7 +212,7 @@ public class HaplotypeTree {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("#").append(super.toString()).
-                append("\nSequence\tReferences\tMutations\tMigCount\tReadCount\tP-value\n");
+                append("\nSequence\tReferences\tMutations\tMigCount\tReadCount\tMaxPointPvalue\tHaplotypePValue\n");
 
         for (Haplotype haplotype : getHaplotypes()) {
             HaplotypeCounters counters = getCounters(haplotype);
@@ -228,6 +228,8 @@ public class HaplotypeTree {
                     append(counters.getCount()).
                     append("\t").
                     append(counters.getReadCount()).
+                    append("\t").
+                    append(haplotype.getMaxPValue()).
                     append("\t").
                     append(counters.getpValue()).
                     append("\n");
