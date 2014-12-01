@@ -492,7 +492,7 @@ public final class MigecCli {
                 writeStringToFile(new File(samplePrefix + ".2.corrector.txt"),
                         pipeline.getCorrectorOutput(sampleName));
                 writeStringToFile(new File(samplePrefix + ".2.errorstat.txt"),
-                        pipeline.getErrorStatisticsOutput(sampleName));
+                        pipeline.getVariantLibraryOutput(sampleName));
                 writeStringToFile(new File(samplePrefix + ".2.haplotypes.txt"),
                         pipeline.getHaplotypeTreeOutput(sampleName));
                 writeStringToFile(new File(samplePrefix + ".2.haplotypes.fa"),

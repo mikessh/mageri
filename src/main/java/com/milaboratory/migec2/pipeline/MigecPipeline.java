@@ -16,14 +16,13 @@ import com.milaboratory.migec2.core.consalign.processor.ConsensusAligner;
 import com.milaboratory.migec2.core.correct.CorrectedConsensus;
 import com.milaboratory.migec2.core.correct.Corrector;
 import com.milaboratory.migec2.core.haplotype.HaplotypeTree;
-import com.milaboratory.migec2.core.haplotype.misc.HaplotypeErrorStatistics;
-import com.milaboratory.migec2.core.haplotype.misc.SimpleHaplotypeErrorStatistics;
 import com.milaboratory.migec2.core.io.entity.Mig;
 import com.milaboratory.migec2.core.io.misc.UmiHistogram;
 import com.milaboratory.migec2.core.io.readers.MigReader;
 import com.milaboratory.migec2.model.classifier.BaseVariantClassifier;
 import com.milaboratory.migec2.model.classifier.VariantClassifier;
 import com.milaboratory.migec2.model.variant.Variant;
+import com.milaboratory.migec2.model.variant.VariantContainer;
 import com.milaboratory.migec2.model.variant.VariantLibrary;
 import com.milaboratory.migec2.util.ProcessorResultWrapper;
 
@@ -37,7 +36,7 @@ public class MigecPipeline {
     protected final Map<String, ConsensusAligner> alignerBySample;
     protected final Map<String, List<AlignedConsensus>> alignmentDataBySample;
     protected final Map<String, Corrector> correctorBySample;
-    protected final Map<String, HaplotypeErrorStatistics> errorStatisticsBySample;
+    protected final Map<String, VariantLibrary> variantLibraryBySample;
     protected final Map<String, HaplotypeTree> haplotypeTreeBySample;
     protected final List<String> sampleNames, skippedSamples;
     protected final MigecParameterSet migecParameterSet;
@@ -52,7 +51,7 @@ public class MigecPipeline {
         this.assemblerBySample = new HashMap<>();
         this.alignerBySample = new HashMap<>();
         this.correctorBySample = new HashMap<>();
-        this.errorStatisticsBySample = new HashMap<>();
+        this.variantLibraryBySample = new HashMap<>();
         this.haplotypeTreeBySample = new HashMap<>();
         this.sampleNames = reader.getSampleNames();
         this.skippedSamples = new ArrayList<>();
@@ -159,12 +158,13 @@ public class MigecPipeline {
             correctorBySample.put(sampleName, corrector);
 
             // Error statistics for haplotype filtering using binomial test
-            HaplotypeErrorStatistics errorStatistics =
-                    new SimpleHaplotypeErrorStatistics(corrector.getCorrectorReferenceLibrary());
-            errorStatisticsBySample.put(sampleName, errorStatistics);
+            // Store here for output summary purposes
+            variantLibraryBySample.put(sampleName,
+                    corrector.getCorrectorReferenceLibrary().getVariantLibrary());
 
             // Haplotype 1-mm graph
-            HaplotypeTree haplotypeTree = new HaplotypeTree(errorStatistics,
+            HaplotypeTree haplotypeTree = new HaplotypeTree(
+                    corrector.getCorrectorReferenceLibrary(),
                     migecParameterSet.getHaplotypeTreeParameters());
             haplotypeTreeBySample.put(sampleName, haplotypeTree);
 
@@ -200,8 +200,8 @@ public class MigecPipeline {
         return correctorBySample.get(sampleName).getCorrectorReferenceLibrary().toString();
     }
 
-    public String getErrorStatisticsOutput(String sampleName) {
-        return errorStatisticsBySample.get(sampleName).toString();
+    public String getVariantLibraryOutput(String sampleName) {
+        return variantLibraryBySample.get(sampleName).toString();
     }
 
     public String getHaplotypeTreeOutput(String sampleName) {
@@ -221,8 +221,8 @@ public class MigecPipeline {
             AlignerReferenceLibrary alignerReferenceLibrary = alignerBySample.get(sample).getAlignerReferenceLibrary();
             for (Reference reference : alignerReferenceLibrary.getReferenceLibrary().getReferences()) {
                 MutationsAndCoverage mutationsAndCoverage = alignerReferenceLibrary.getMutationsAndCoverage(reference);
-                VariantLibrary variantLibrary = new VariantLibrary(mutationsAndCoverage, threshold);
-                for (Variant variant : variantLibrary.getMinorVariants()) {
+                VariantContainer variantContainer = new VariantContainer(mutationsAndCoverage, threshold);
+                for (Variant variant : variantContainer.getMinorVariants()) {
                     dump += "\n" + sample + "\t" + variant.toString();
                 }
             }

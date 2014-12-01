@@ -23,6 +23,7 @@ import com.milaboratory.migec2.core.consalign.mutations.MutationsAndCoverage;
 import com.milaboratory.migec2.model.classifier.ClassifierResult;
 import com.milaboratory.migec2.model.classifier.VariantClassifier;
 import com.milaboratory.migec2.model.variant.Variant;
+import com.milaboratory.migec2.model.variant.VariantContainer;
 import com.milaboratory.migec2.model.variant.VariantLibrary;
 import org.apache.commons.math.distribution.BinomialDistribution;
 import org.apache.commons.math.distribution.BinomialDistributionImpl;
@@ -38,6 +39,7 @@ public final class CorrectorReferenceLibrary {
     private final HashMap<Reference, double[]> majorInsertionPvalueMap = new HashMap<>(),
             majorDeletionPvalueMap = new HashMap<>();
 
+    private final VariantLibrary variantLibrary;
     private final AlignerReferenceLibrary alignerReferenceLibrary;
     private final List<Reference> references;
 
@@ -74,6 +76,8 @@ public final class CorrectorReferenceLibrary {
         // Record if reference at given position also exists
         this.alignerReferenceLibrary = alignerReferenceLibrary;
         this.references = new ArrayList<>(alignerReferenceLibrary.getReferenceLibrary().getReferences());
+
+        this.variantLibrary = new VariantLibrary(alignerReferenceLibrary);
         init();
     }
 
@@ -98,7 +102,7 @@ public final class CorrectorReferenceLibrary {
 
                 int nMustHaveMutations = 0, nBadBases = 0;
 
-                final VariantLibrary variantLibrary = new VariantLibrary(mutationsAndCoverage);
+                final VariantContainer variantContainer = variantLibrary.getVariantContainer(reference);
 
                 // SUBSTITUTIONS
 
@@ -119,7 +123,7 @@ public final class CorrectorReferenceLibrary {
                     // as it has complete stats that could be required by classifier
                     for (byte j = 0; j < 4; j++) {
                         int majorMigCount = mutationsAndCoverage.getMajorNucleotideMigCount(i, j);
-                        Variant minorVariant = variantLibrary.getAt(i, j);
+                        Variant minorVariant = variantContainer.getAt(i, j);
                         boolean variantExists = false;
 
                         if (minorVariant != null) {
@@ -266,6 +270,10 @@ public final class CorrectorReferenceLibrary {
         for (int i = 0; i < 4; i++)
             count += majorSubstitutionCountMap.get(reference)[pos][i];
         return count;
+    }
+
+    public VariantLibrary getVariantLibrary() {
+        return variantLibrary;
     }
 
     public int getMajorInsCount(Reference reference, int pos) {

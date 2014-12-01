@@ -15,11 +15,16 @@
  */
 package com.milaboratory.migec2.core.haplotype;
 
+import com.milaboratory.core.sequence.mutations.Mutations;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.migec2.core.align.reference.Reference;
 import com.milaboratory.migec2.core.correct.CorrectedConsensus;
-import com.milaboratory.migec2.core.haplotype.misc.HaplotypeErrorStatistics;
+import com.milaboratory.migec2.core.correct.CorrectorReferenceLibrary;
 import com.milaboratory.migec2.core.mutations.MutationDifference;
+import com.milaboratory.migec2.model.variant.VariantLibrary;
+import org.apache.commons.math.MathException;
+import org.apache.commons.math.distribution.BinomialDistribution;
+import org.apache.commons.math.distribution.BinomialDistributionImpl;
 
 import java.util.*;
 
@@ -27,15 +32,17 @@ public class HaplotypeTree {
     private final HaplotypeTreeParameters parameters;
     private final Map<NucleotideSequence, Map<Haplotype, HaplotypeCounters>> haplotypesByReference =
             new HashMap<>();
-    private final HaplotypeErrorStatistics haplotypeErrorStatistics;
+    private final CorrectorReferenceLibrary correctorReferenceLibrary;
+    private final VariantLibrary variantLibrary;
 
-    public HaplotypeTree(HaplotypeErrorStatistics haplotypeErrorStatistics) {
-        this(haplotypeErrorStatistics, HaplotypeTreeParameters.DEFAULT);
+    public HaplotypeTree(CorrectorReferenceLibrary correctorReferenceLibrary) {
+        this(correctorReferenceLibrary, HaplotypeTreeParameters.DEFAULT);
     }
 
-    public HaplotypeTree(HaplotypeErrorStatistics haplotypeErrorStatistics,
+    public HaplotypeTree(CorrectorReferenceLibrary correctorReferenceLibrary,
                          HaplotypeTreeParameters parameters) {
-        this.haplotypeErrorStatistics = haplotypeErrorStatistics;
+        this.variantLibrary = correctorReferenceLibrary.getVariantLibrary();
+        this.correctorReferenceLibrary = correctorReferenceLibrary;
         this.parameters = parameters;
     }
 
@@ -80,11 +87,11 @@ public class HaplotypeTree {
             for (int mutation : mutationDifferences) {
 
                 // Take max P-value among references
-                int totalCountForMutation = haplotypeErrorStatistics.totalCountForMutation(reference, mutation);
+                int totalCountForMutation = totalCountForMutation(reference, mutation);
 
                 // ONLY update p-value if child is masked by more than x times (default=twice) MIGs
                 if (childCounter.getCount() / (double) totalCountForMutation <= parameters.getChildMajorRatioForPValue()) {
-                    double pi = haplotypeErrorStatistics.calculatePValue(
+                    double pi = calculatePValue(
                             reference,
                             mutation, parentCounter.getReadCount(), childCounter.getReadCount());
                     pValue *= pi;
@@ -101,6 +108,44 @@ public class HaplotypeTree {
         }
 
         childCounter.updatepValue(pValue); // Take max P-value among parents
+    }
+
+    private int totalCountForMutation(Reference reference, int mutation) {
+        int totalCountForMutation = 0;
+        int pos = Mutations.getPosition(mutation);
+
+        switch (Mutations.getType(mutation)) {
+            case Substitution:
+                totalCountForMutation = correctorReferenceLibrary.
+                        getMajorCount(reference, pos,
+                                Mutations.getTo(mutation));
+                break;
+            case Insertion:
+                totalCountForMutation = correctorReferenceLibrary.getMajorInsCount(reference, pos);
+
+                break;
+            case Deletion:
+                totalCountForMutation = correctorReferenceLibrary.getMajorDelCount(reference, pos);
+                break;
+        }
+
+        return totalCountForMutation;
+    }
+
+    private double calculatePValue(Reference reference, int mutation, int parentCount, int childCount) throws MathException {
+        double p;
+        int pos = Mutations.getPosition(mutation);
+        if (Mutations.isSubstitution(mutation))
+            p = variantLibrary.getBgFreqMig(reference,
+                    (byte) Mutations.getFrom(mutation),
+                    (byte) Mutations.getTo(mutation));
+        else
+            p = 1.0 / correctorReferenceLibrary.getMajorCount(reference, pos);
+
+        BinomialDistribution binomialDistribution = new BinomialDistributionImpl(parentCount + childCount, p);
+
+        return 1.0 - binomialDistribution.cumulativeProbability(childCount) + 0.5 *
+                binomialDistribution.probability(childCount);
     }
 
     public void calculatePValues() throws Exception {
