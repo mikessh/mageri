@@ -123,7 +123,7 @@ public final class CorrectedConsensus {
         return seq;
     }
 
-    public double getMaxPValue() {
+    public double getWorstPValue() {
         return maxPValue;
     }
 

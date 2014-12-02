@@ -25,8 +25,6 @@ import com.milaboratory.migec2.model.classifier.VariantClassifier;
 import com.milaboratory.migec2.model.variant.Variant;
 import com.milaboratory.migec2.model.variant.VariantContainer;
 import com.milaboratory.migec2.model.variant.VariantLibrary;
-import org.apache.commons.math.distribution.BinomialDistribution;
-import org.apache.commons.math.distribution.BinomialDistributionImpl;
 
 import java.util.*;
 
@@ -45,25 +43,19 @@ public final class CorrectorReferenceLibrary {
 
     private final VariantClassifier variantClassifier;
 
-    // Hot-spot p-value DEPRECATED
-    private final double majorPvalueThreshold, pcrEfficiency;
-    private final int pcrCycles;
-
     // Filtering
     private final boolean filterSingleMigs;
     private final int minMigCoverage;
     private final byte minAvgQuality;
-    private final double maxBasePairsMaskedRatio;
+    private final double maxBasePairsMaskedRatio, pValueThreshold;
     private final int minMigCount;
 
     public CorrectorReferenceLibrary(AlignerReferenceLibrary alignerReferenceLibrary,
                                      CorrectorParameters parameters,
                                      VariantClassifier variantClassifier) {
         // Hot-spot p-value
-        this.majorPvalueThreshold = parameters.getMajorPvalueThreshold();
-        this.pcrEfficiency = parameters.getPcrEfficiency();
-        this.pcrCycles = parameters.getPcrCycles();
         this.variantClassifier = variantClassifier;
+        this.pValueThreshold = parameters.getpValueThreshold();
 
         // Filtering
         this.filterSingleMigs = parameters.filterSingleMigs();
@@ -129,7 +121,7 @@ public final class CorrectorReferenceLibrary {
                         if (minorVariant != null) {
                             // Classify minor variants
                             ClassifierResult result = variantClassifier.classify(minorVariant);
-                            variantExists = result.passed();
+                            variantExists = result.getPValue() <= pValueThreshold;
                             majorSubstitutionPvalues[i][j] = result.getPValue();
                         } else if (majorMigCount > 0) {
                             // Retain all major variants
@@ -201,6 +193,7 @@ public final class CorrectorReferenceLibrary {
         this.references.removeAll(skippedReferences);
     }
 
+    /*
     @Deprecated
     public double computeMajorPvalue(int majorMigCount, int minorMigCount, int numberOfMigs) {
         if (filterSingleMigs && majorMigCount == 1)
@@ -236,6 +229,7 @@ public final class CorrectorReferenceLibrary {
     public boolean isMajor(int majorCount, int minorCount) {
         return majorCount / (double) minorCount >= majorPvalueThreshold;
     }
+    */
 
     public MutationFilter getMutationFilter(Reference reference) {
         return mutationFilterByReference.get(reference);
