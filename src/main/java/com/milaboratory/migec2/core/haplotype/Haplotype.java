@@ -48,8 +48,8 @@ public final class Haplotype {
         return haplotypeSequence;
     }
 
-    public double getMaxPValue() {
-        return correctedConsensus.getMaxPValue();
+    public double getWorstPointPvalue() {
+        return correctedConsensus.getWorstPValue();
     }
 
     public String getMaskedSequence() {

@@ -30,8 +30,7 @@ import java.util.*;
 
 public class HaplotypeTree {
     private final HaplotypeTreeParameters parameters;
-    private final Map<NucleotideSequence, Map<Haplotype, HaplotypeCounters>> haplotypesByReference =
-            new HashMap<>();
+    private final Map<NucleotideSequence, Map<Haplotype, HaplotypeCounters>> haplotypesByReference = new HashMap<>();
     private final CorrectorReferenceLibrary correctorReferenceLibrary;
     private final VariantLibrary variantLibrary;
 
@@ -212,7 +211,7 @@ public class HaplotypeTree {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("#").append(super.toString()).
-                append("\nSequence\tReferences\tMutations\tMigCount\tReadCount\tMaxPointPvalue\tHaplotypePValue\n");
+                append("\nSequence\tReferences\tMutations\tMigCount\tReadCount\tWorstPointPvalue\tHaplotypePValue\n");
 
         for (Haplotype haplotype : getHaplotypes()) {
             HaplotypeCounters counters = getCounters(haplotype);
@@ -229,7 +228,7 @@ public class HaplotypeTree {
                     append("\t").
                     append(counters.getReadCount()).
                     append("\t").
-                    append(haplotype.getMaxPValue()).
+                    append(haplotype.getWorstPointPvalue()).
                     append("\t").
                     append(counters.getpValue()).
                     append("\n");
