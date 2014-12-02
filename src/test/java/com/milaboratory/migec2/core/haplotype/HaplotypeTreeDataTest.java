@@ -26,8 +26,6 @@ import com.milaboratory.migec2.core.consalign.processor.ConsensusAligner;
 import com.milaboratory.migec2.core.consalign.processor.PConsensusAligner;
 import com.milaboratory.migec2.core.correct.CorrectedConsensus;
 import com.milaboratory.migec2.core.correct.Corrector;
-import com.milaboratory.migec2.core.haplotype.misc.HaplotypeErrorStatistics;
-import com.milaboratory.migec2.core.haplotype.misc.SimpleHaplotypeErrorStatistics;
 import com.milaboratory.migec2.core.io.entity.PMig;
 import com.milaboratory.migec2.core.io.readers.PMigReader;
 import com.milaboratory.migec2.util.testing.TestResources;

@@ -41,7 +41,7 @@ public class MigecParameterSet implements ParameterSet {
         this(assemblerParameters, ConsensusAlignerParameters.DEFAULT,
                 CorrectorParameters.DEFAULT, HaplotypeTreeParameters.DEFAULT,
                 DemultiplexParameters.DEFAULT,
-                4, -1, 50, Util.PH33_LOW_QUAL, true, true);
+                5, 5, 30, Util.PH33_LOW_QUAL, true, true);
     }
 
     public MigecParameterSet(AssemblerParameters assemblerParameters, ConsensusAlignerParameters consensusAlignerParameters,
