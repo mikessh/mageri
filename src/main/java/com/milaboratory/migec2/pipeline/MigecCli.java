@@ -418,13 +418,13 @@ public final class MigecCli {
 
             String message;
 
-            if (migsTotal <= minMigCount) {
+            if (migsTotal < minMigCount) {
                 message = "SKIPPED\tEstimated number of molecules in sample is below allowed threshold, " +
                         migsTotal + " < " + minMigCount;
                 System.out.println(message + ". Skipping " + sampleName);
                 samplesToSkip.add(sampleName);
             } else {
-                if (overSeq <= minOverseq) {
+                if (overSeq < minOverseq) {
                     message = "SKIPPED\tEstimated minimal MIG size is below allowed threshold, " +
                             overSeq + " < " + minOverseq;
                     System.out.println(message + ". Skipping " + sampleName);
