@@ -45,6 +45,7 @@ public final class CorrectorReferenceLibrary {
 
     // Filtering
     private final boolean filterSingleMigs;
+    private final double singleMigFilterRatio;
     private final int minMigCoverage;
     private final byte minAvgQuality;
     private final double maxBasePairsMaskedRatio, pValueThreshold;
@@ -55,10 +56,11 @@ public final class CorrectorReferenceLibrary {
                                      VariantClassifier variantClassifier) {
         // Hot-spot p-value
         this.variantClassifier = variantClassifier;
-        this.pValueThreshold = parameters.getpValueThreshold();
+        this.pValueThreshold = parameters.getClassifierProbabilityThreshold();
 
         // Filtering
-        this.filterSingleMigs = parameters.filterSingleMigs();
+        this.filterSingleMigs = parameters.filterSingletons();
+        this.singleMigFilterRatio = parameters.getSingletonFilterRatio();
         this.minMigCoverage = parameters.getMinMigCoverage();
         this.minAvgQuality = parameters.getMinAvgQuality();
         this.maxBasePairsMaskedRatio = parameters.getMaxBasePairsMaskedRatio();
@@ -121,7 +123,12 @@ public final class CorrectorReferenceLibrary {
                         if (minorVariant != null) {
                             // Classify minor variants
                             ClassifierResult result = variantClassifier.classify(minorVariant);
-                            variantExists = result.getPValue() <= pValueThreshold;
+                            variantExists = result.getPValue() <= pValueThreshold &&
+                                    // if single mig filtering is on (for RT errors, etc)
+                                    // perform ratio-based check
+                                    (!filterSingleMigs ||
+                                            minorVariant.getMajorMigCount() > 1 ||
+                                            majorMigCount / (double) minorVariant.getMajorMigCount() <= singleMigFilterRatio);
                             majorSubstitutionPvalues[i][j] = result.getPValue();
                         } else if (majorMigCount > 0) {
                             // Retain all major variants

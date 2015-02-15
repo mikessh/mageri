@@ -13,6 +13,7 @@ import com.milaboratory.migec2.core.io.misc.ReadInfo;
 import com.milaboratory.migec2.core.io.misc.UmiHistogram;
 import com.milaboratory.migec2.core.io.misc.index.IndexingInfo;
 import com.milaboratory.migec2.core.io.misc.index.UmiIndexer;
+import com.milaboratory.migec2.pipeline.MigecCli;
 import com.milaboratory.migec2.preproc.demultiplex.processor.CheckoutProcessor;
 import com.milaboratory.migec2.preproc.demultiplex.processor.HeaderParser;
 import com.milaboratory.migec2.util.ProcessorResultWrapper;
@@ -24,14 +25,15 @@ public abstract class MigReader<T extends Mig> implements OutputPort<T> {
 
     protected int sizeThreshold;
     protected String currentSample;
+    protected double minMismatchRatio = -1;
 
     protected final MigReaderParameters migReaderParameters;
     private final UmiIndexer umiIndexer;
     protected final List<String> sampleNames;
 
     // Umi index is here
-    protected Map<String, Iterator<Map.Entry<NucleotideSequence, List<ReadInfo>>>> iteratorMap = new HashMap<>();
-    protected Map<String, UmiHistogram> umiHistogramBySample = new HashMap<>();
+    protected final Map<String, Iterator<Map.Entry<NucleotideSequence, List<ReadInfo>>>> iteratorMap = new HashMap<>();
+    protected final Map<String, UmiHistogram> umiHistogramBySample = new HashMap<>();
 
     private final CheckoutProcessor checkoutProcessor;
 
@@ -81,7 +83,7 @@ public abstract class MigReader<T extends Mig> implements OutputPort<T> {
                         while (!countingInput.isClosed()) {
                             long count = countingInput.getCount();
                             if (prevCount != count) {
-                                System.out.println("Building UMI index, " +
+                                MigecCli.print2("Building UMI index, " +
                                         count + " reads processed, " +
                                         (int) (umiIndexer.getCheckoutProcessor().extractionRatio() * 100) +
                                         "% extracted..");
@@ -129,14 +131,14 @@ public abstract class MigReader<T extends Mig> implements OutputPort<T> {
             histogram.calculateHistogram();
 
         if (migReaderParameters.verbose())
-            System.out.println("Finished building UMI index, " +
+            MigecCli.print2("Finished building UMI index, " +
                     countingInput.getCount() + " reads processed, " +
                     (int) (umiIndexer.getCheckoutProcessor().extractionRatio() * 100) + "% extracted");
     }
 
     protected boolean checkUmiMismatch(String sampleName, NucleotideSequence umi) {
-        return !migReaderParameters.filterMismatchUmis() ||
-                !umiHistogramBySample.get(sampleName).isMismatch(umi);
+        return minMismatchRatio < 1 ||
+                !umiHistogramBySample.get(sampleName).isMismatch(umi, minMismatchRatio);
     }
 
     public T take() {
@@ -157,16 +159,24 @@ public abstract class MigReader<T extends Mig> implements OutputPort<T> {
         return checkoutProcessor;
     }
 
-    public int getSizeThreshold() {
-        return sizeThreshold;
-    }
-
     public String getCurrentSample() {
         return currentSample;
     }
 
+    public int getSizeThreshold() {
+        return sizeThreshold;
+    }
+
     public void setSizeThreshold(int sizeThreshold) {
         this.sizeThreshold = sizeThreshold;
+    }
+
+    public double getMinMismatchRatio() {
+        return minMismatchRatio;
+    }
+
+    public void setMinMismatchRatio(double minMismatchRatio) {
+        this.minMismatchRatio = minMismatchRatio;
     }
 
     public void setCurrentSample(String currentSample) {

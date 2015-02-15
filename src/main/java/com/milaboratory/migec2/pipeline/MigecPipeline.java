@@ -72,7 +72,7 @@ public class MigecPipeline {
     }
 
     public int getOverSeq(String sampleName) {
-        return migecParameterSet.getForcedOverseq() > 0 ? migecParameterSet.getForcedOverseq() :
+        return migecParameterSet.forceOverseq() ? migecParameterSet.getDefaultOverseq() :
                 reader.getUmiHistogram(sampleName).getMigSizeThreshold();
     }
 
@@ -93,10 +93,13 @@ public class MigecPipeline {
             reader.setCurrentSample(sampleName);
             reader.setSizeThreshold(overSeq);
 
+            if (migecParameterSet.filterMismatchUmis())
+                reader.setMinMismatchRatio(migecParameterSet.getUmiMismatchFilterRatio());
+
             OutputPort<Mig> input = reader;
 
             if (ENABLE_BUFFERING) {
-                final Merger<Mig> bufferedInput = new Merger<>(2048);
+                final Merger<Mig> bufferedInput = new Merger<>(524288);
                 bufferedInput.merge(input);
                 bufferedInput.start();
                 input = bufferedInput;
@@ -114,7 +117,7 @@ public class MigecPipeline {
                             while (!countingInput.isClosed()) {
                                 long count = countingInput.getCount();
                                 if (prevCount != count) {
-                                    System.out.println("Running first stage of MIGEC for " + sampleName +
+                                    MigecCli.print2("Running first stage of MIGEC for " + sampleName +
                                             ", " + count + " MIGs processed..");
                                     prevCount = count;
                                 }
@@ -128,12 +131,10 @@ public class MigecPipeline {
 
             // Assemble in parallel
             final OutputPort<ProcessorResultWrapper<Consensus>> assemblyResults =
-                    new ParallelProcessor<Mig,
-                            ProcessorResultWrapper<Consensus>>(countingInput, assembler, THREADS);
+                    new ParallelProcessor<>(countingInput, assembler, THREADS);
 
             final OutputPort<ProcessorResultWrapper<AlignedConsensus>> alignerResults =
-                    new ParallelProcessor<ProcessorResultWrapper<Consensus>,
-                            ProcessorResultWrapper<AlignedConsensus>>(assemblyResults, aligner, THREADS);
+                    new ParallelProcessor<>(assemblyResults, aligner, THREADS);
 
             ProcessorResultWrapper<AlignedConsensus> alignmentData;
             while ((alignmentData = alignerResults.take()) != null)
@@ -141,7 +142,7 @@ public class MigecPipeline {
                     alignmentDataList.add(alignmentData.getResult());
 
             if (VERBOSE)
-                System.out.println("Finished first stage of MIGEC for " + sampleName +
+                MigecCli.print2("Finished first stage of MIGEC for " + sampleName +
                         ", " + countingInput.getCount() + " MIGs processed in total");
         }
     }

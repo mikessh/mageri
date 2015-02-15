@@ -22,9 +22,10 @@ public class MigecParameterSet implements ParameterSet {
     private final CorrectorParameters correctorParameters;
     private final HaplotypeTreeParameters haplotypeTreeParameters;
     private final DemultiplexParameters demultiplexParameters;
-    private final int minOverseq, forcedOverseq, minMigCount;
+    private final int minOverseq, defaultOverseq, minUniqueUmis;
     private final byte readerUmiQualThreshold;
-    private final boolean outputFasta, filterMismatchUmis;
+    private final boolean outputFasta, forceOverseq, filterMismatchUmis;
+    private final double umiMismatchFilterRatio;
 
     private static String DEDUCE_VERSION() {
         return MigecParameterSet.class.getPackage().getImplementationVersion();
@@ -41,25 +42,35 @@ public class MigecParameterSet implements ParameterSet {
         this(assemblerParameters, ConsensusAlignerParameters.DEFAULT,
                 CorrectorParameters.DEFAULT, HaplotypeTreeParameters.DEFAULT,
                 DemultiplexParameters.DEFAULT,
-                5, 5, 30, Util.PH33_LOW_QUAL, true, true);
+                Util.PH33_LOW_QUAL,
+                4, false, 4, 1,
+                true, 8.0,
+                true);
     }
 
     public MigecParameterSet(AssemblerParameters assemblerParameters, ConsensusAlignerParameters consensusAlignerParameters,
                              CorrectorParameters correctorParameters, HaplotypeTreeParameters haplotypeTreeParameters,
                              DemultiplexParameters demultiplexParameters,
-                             int minOverseq, int forcedOverseq, int minMigCount,
-                             byte readerUmiQualThreshold, boolean filterMismatchUmis,
+                             byte readerUmiQualThreshold,
+                             int minOverseq, boolean forceOverseq, int defaultOverseq, int minUniqueUmis,
+                             boolean filterMismatchUmis, double umiMismatchFilterRatio,
                              boolean outputFasta) {
         this.assemblerParameters = assemblerParameters;
         this.consensusAlignerParameters = consensusAlignerParameters;
         this.correctorParameters = correctorParameters;
         this.haplotypeTreeParameters = haplotypeTreeParameters;
         this.demultiplexParameters = demultiplexParameters;
-        this.minMigCount = minMigCount;
-        this.minOverseq = minOverseq;
-        this.forcedOverseq = forcedOverseq;
+
         this.readerUmiQualThreshold = readerUmiQualThreshold;
+
+        this.minOverseq = minOverseq;
+        this.forceOverseq = forceOverseq;
+        this.defaultOverseq = defaultOverseq;
+        this.minUniqueUmis = minUniqueUmis;
+
         this.filterMismatchUmis = filterMismatchUmis;
+        this.umiMismatchFilterRatio = umiMismatchFilterRatio;
+
         this.outputFasta = outputFasta;
     }
 
@@ -83,16 +94,20 @@ public class MigecParameterSet implements ParameterSet {
         return demultiplexParameters;
     }
 
-    public int getMinMigCount() {
-        return minMigCount;
+    public int getMinUniqueUmis() {
+        return minUniqueUmis;
     }
 
     public int getMinOverseq() {
         return minOverseq;
     }
 
-    public int getForcedOverseq() {
-        return forcedOverseq;
+    public boolean forceOverseq() {
+        return forceOverseq;
+    }
+
+    public int getDefaultOverseq() {
+        return defaultOverseq;
     }
 
     public byte getReaderUmiQualThreshold() {
@@ -101,6 +116,10 @@ public class MigecParameterSet implements ParameterSet {
 
     public boolean filterMismatchUmis() {
         return filterMismatchUmis;
+    }
+
+    public double getUmiMismatchFilterRatio() {
+        return umiMismatchFilterRatio;
     }
 
     public boolean outputFasta() {
@@ -150,11 +169,17 @@ public class MigecParameterSet implements ParameterSet {
         e.addContent(correctorParameters.toXml());
         e.addContent(haplotypeTreeParameters.toXml());
         e.addContent(demultiplexParameters.toXml());
-        e.addContent(new Element("minOverseq").setText(Integer.toString(minOverseq)));
-        e.addContent(new Element("forcedOverseq").setText(Integer.toString(forcedOverseq)));
-        e.addContent(new Element("minMigCount").setText(Integer.toString(minMigCount)));
+
         e.addContent(new Element("readerUmiQualThreshold").setText(Byte.toString(readerUmiQualThreshold)));
+
+        e.addContent(new Element("minOverseq").setText(Integer.toString(minOverseq)));
+        e.addContent(new Element("forceOverseq").setText(Boolean.toString(forceOverseq)));
+        e.addContent(new Element("defaultOverseq").setText(Integer.toString(defaultOverseq)));
+        e.addContent(new Element("minUniqueUmis").setText(Integer.toString(minUniqueUmis)));
+
         e.addContent(new Element("filterMismatchUmis").setText(Boolean.toString(filterMismatchUmis)));
+        e.addContent(new Element("umiMismatchFilterRatio").setText(Double.toString(umiMismatchFilterRatio)));
+
         e.addContent(new Element("outputFasta").setText(Boolean.toString(outputFasta)));
         return e;
     }
@@ -173,11 +198,17 @@ public class MigecParameterSet implements ParameterSet {
                 CorrectorParameters.fromXml(e),
                 HaplotypeTreeParameters.fromXml(e),
                 DemultiplexParameters.fromXml(e),
-                Integer.parseInt(e.getChildTextTrim("minOverseq")),
-                Integer.parseInt(e.getChildTextTrim("forcedOverseq")),
-                Integer.parseInt(e.getChildTextTrim("minMigCount")),
+
                 Byte.parseByte(e.getChildTextTrim("readerUmiQualThreshold")),
+
+                Integer.parseInt(e.getChildTextTrim("minOverseq")),
+                Boolean.parseBoolean(e.getChildTextTrim("forceOverseq")),
+                Integer.parseInt(e.getChildTextTrim("defaultOverseq")),
+                Integer.parseInt(e.getChildTextTrim("minUniqueUmis")),
+
                 Boolean.parseBoolean(e.getChildTextTrim("filterMismatchUmis")),
+                Double.parseDouble(e.getChildTextTrim("umiMismatchFilterRatio")),
+
                 Boolean.parseBoolean(e.getChildTextTrim("outputFasta"))
         );
     }
@@ -189,12 +220,14 @@ public class MigecParameterSet implements ParameterSet {
 
         MigecParameterSet that = (MigecParameterSet) o;
 
+        if (defaultOverseq != that.defaultOverseq) return false;
         if (filterMismatchUmis != that.filterMismatchUmis) return false;
-        if (forcedOverseq != that.forcedOverseq) return false;
-        if (minMigCount != that.minMigCount) return false;
+        if (forceOverseq != that.forceOverseq) return false;
         if (minOverseq != that.minOverseq) return false;
+        if (minUniqueUmis != that.minUniqueUmis) return false;
         if (outputFasta != that.outputFasta) return false;
         if (readerUmiQualThreshold != that.readerUmiQualThreshold) return false;
+        if (Double.compare(that.umiMismatchFilterRatio, umiMismatchFilterRatio) != 0) return false;
         if (!assemblerParameters.equals(that.assemblerParameters)) return false;
         if (!consensusAlignerParameters.equals(that.consensusAlignerParameters)) return false;
         if (!correctorParameters.equals(that.correctorParameters)) return false;
@@ -206,17 +239,22 @@ public class MigecParameterSet implements ParameterSet {
 
     @Override
     public int hashCode() {
-        int result = assemblerParameters.hashCode();
+        int result;
+        long temp;
+        result = assemblerParameters.hashCode();
         result = 31 * result + consensusAlignerParameters.hashCode();
         result = 31 * result + correctorParameters.hashCode();
         result = 31 * result + haplotypeTreeParameters.hashCode();
         result = 31 * result + demultiplexParameters.hashCode();
         result = 31 * result + minOverseq;
-        result = 31 * result + forcedOverseq;
-        result = 31 * result + minMigCount;
+        result = 31 * result + defaultOverseq;
+        result = 31 * result + minUniqueUmis;
         result = 31 * result + (int) readerUmiQualThreshold;
         result = 31 * result + (outputFasta ? 1 : 0);
+        result = 31 * result + (forceOverseq ? 1 : 0);
         result = 31 * result + (filterMismatchUmis ? 1 : 0);
+        temp = Double.doubleToLongBits(umiMismatchFilterRatio);
+        result = 31 * result + (int) (temp ^ (temp >>> 32));
         return result;
     }
 }

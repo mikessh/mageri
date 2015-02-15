@@ -89,7 +89,7 @@ public class HaplotypeTree {
                 int totalCountForMutation = totalCountForMutation(reference, mutation);
 
                 // ONLY update p-value if child is masked by more than x times (default=twice) MIGs
-                if (childCounter.getCount() / (double) totalCountForMutation <= parameters.getChildMajorRatioForPValue()) {
+                if (totalCountForMutation / (double) childCounter.getCount() >= parameters.getErrorMaskingTestMajorRatio()) {
                     double pi = calculatePValue(
                             reference,
                             mutation, parentCounter.getReadCount(), childCounter.getReadCount());
@@ -152,7 +152,6 @@ public class HaplotypeTree {
             for (Map.Entry<Haplotype, HaplotypeCounters> child : haplotypeEntries.entrySet()) {
                 for (Map.Entry<Haplotype, HaplotypeCounters> parent : haplotypeEntries.entrySet()) {
                     if (parent.getKey() != child.getKey() &&
-                            (!parameters.filterSingleMigs() || child.getValue().getCount() > 1) &&
                             parent.getValue().getCount() >= child.getValue().getCount())
                         updatePValue(parent.getKey(), parent.getValue(), child.getKey(), child.getValue());
                 }
@@ -169,8 +168,7 @@ public class HaplotypeTree {
         for (Map<Haplotype, HaplotypeCounters> haplotypeCountersMap : haplotypesByReference.values()) {
             for (Map.Entry<Haplotype, HaplotypeCounters> entry : haplotypeCountersMap.entrySet()) {
                 HaplotypeCounters counters = entry.getValue();
-                if (counters.getpValue() <= pValueThreshold &&
-                        (!parameters.filterSingleMigs() || counters.getCount() > 1))
+                if (counters.getpValue() <= pValueThreshold)
                     filteredHaplotypes.add(entry.getKey());
             }
         }

@@ -5,9 +5,10 @@ import com.milaboratory.migec2.util.Util;
 import org.jdom.Element;
 
 public final class CorrectorParameters implements ParameterSet {
-    private final double pValueThreshold;
+    private final double classifierProbabilityThreshold;
 
-    private final boolean filterSingleMigs;
+    private final boolean filterSingletons;
+    private final double singletonFilterRatio;
 
     private final int minMigCoverage;
     private final int minMigCount;
@@ -15,27 +16,41 @@ public final class CorrectorParameters implements ParameterSet {
 
     private final double maxBasePairsMaskedRatio;
 
-    public static CorrectorParameters DEFAULT = new CorrectorParameters(0.1,
-            true, 5, 10, Util.PH33_LOW_QUAL, 0.3);
+    public static CorrectorParameters DEFAULT = new CorrectorParameters(0.1, false, 10000.0,
+            5, 10, Util.PH33_LOW_QUAL, 0.5);
 
-    public CorrectorParameters(double pValueThreshold,
-                               boolean filterSingleMigs,
+    public CorrectorParameters(double classifierProbabilityThreshold,
+                               boolean filterSingletons, double singletonFilterRatio,
                                int minMigCoverage, int minMigCount,
                                byte minAvgQuality, double maxBasePairsMaskedRatio) {
-        this.pValueThreshold = pValueThreshold;
-        this.filterSingleMigs = filterSingleMigs;
+        this.classifierProbabilityThreshold = classifierProbabilityThreshold;
+        this.filterSingletons = filterSingletons;
+        this.singletonFilterRatio = singletonFilterRatio;
         this.minMigCoverage = minMigCoverage;
         this.minMigCount = minMigCount;
         this.minAvgQuality = minAvgQuality;
         this.maxBasePairsMaskedRatio = maxBasePairsMaskedRatio;
+
+        if (classifierProbabilityThreshold < 0 ||
+                classifierProbabilityThreshold > 1)
+            throw new IllegalArgumentException("Classifier probability threshold should be set in [0, 1] range");
+        if (singletonFilterRatio < 1)
+            throw new IllegalArgumentException("Singleton filter ratio should be greater than 1");
+        if (maxBasePairsMaskedRatio < 0 ||
+                maxBasePairsMaskedRatio > 1)
+            throw new IllegalArgumentException("Max base pair masked ratio should be set in [0, 1] range");
     }
 
-    public double getpValueThreshold() {
-        return pValueThreshold;
+    public double getClassifierProbabilityThreshold() {
+        return classifierProbabilityThreshold;
     }
 
-    public boolean filterSingleMigs() {
-        return filterSingleMigs;
+    public boolean filterSingletons() {
+        return filterSingletons;
+    }
+
+    public double getSingletonFilterRatio() {
+        return singletonFilterRatio;
     }
 
     public int getMinMigCoverage() {
@@ -57,8 +72,9 @@ public final class CorrectorParameters implements ParameterSet {
     @Override
     public Element toXml() {
         Element e = new Element("CorrectorParameters");
-        e.addContent(new Element("pValueThreshold").setText(Double.toString(pValueThreshold)));
-        e.addContent(new Element("filterSingleMigs").setText(Boolean.toString(filterSingleMigs)));
+        e.addContent(new Element("classifierProbabilityThreshold").setText(Double.toString(classifierProbabilityThreshold)));
+        e.addContent(new Element("filterSingleMigs").setText(Boolean.toString(filterSingletons)));
+        e.addContent(new Element("singletonFilterRatio").setText(Double.toString(singletonFilterRatio)));
         e.addContent(new Element("minMigCoverage").setText(Integer.toString(minMigCoverage)));
         e.addContent(new Element("minMigCount").setText(Integer.toString(minMigCount)));
         e.addContent(new Element("minAvgQuality").setText(Byte.toString(minAvgQuality)));
@@ -69,8 +85,9 @@ public final class CorrectorParameters implements ParameterSet {
     public static CorrectorParameters fromXml(Element parent) {
         Element e = parent.getChild("CorrectorParameters");
         return new CorrectorParameters(
-                Double.parseDouble(e.getChildTextTrim("pValueThreshold")),
+                Double.parseDouble(e.getChildTextTrim("classifierProbabilityThreshold")),
                 Boolean.parseBoolean(e.getChildTextTrim("filterSingleMigs")),
+                Double.parseDouble(e.getChildTextTrim("singletonFilterRatio")),
                 Integer.parseInt(e.getChildTextTrim("minMigCoverage")),
                 Integer.parseInt(e.getChildTextTrim("minMigCount")),
                 Byte.parseByte(e.getChildTextTrim("minAvgQuality")),
@@ -85,12 +102,13 @@ public final class CorrectorParameters implements ParameterSet {
 
         CorrectorParameters that = (CorrectorParameters) o;
 
-        if (filterSingleMigs != that.filterSingleMigs) return false;
+        if (Double.compare(that.classifierProbabilityThreshold, classifierProbabilityThreshold) != 0) return false;
+        if (filterSingletons != that.filterSingletons) return false;
         if (Double.compare(that.maxBasePairsMaskedRatio, maxBasePairsMaskedRatio) != 0) return false;
         if (minAvgQuality != that.minAvgQuality) return false;
         if (minMigCount != that.minMigCount) return false;
         if (minMigCoverage != that.minMigCoverage) return false;
-        if (Double.compare(that.pValueThreshold, pValueThreshold) != 0) return false;
+        if (Double.compare(that.singletonFilterRatio, singletonFilterRatio) != 0) return false;
 
         return true;
     }
@@ -99,9 +117,11 @@ public final class CorrectorParameters implements ParameterSet {
     public int hashCode() {
         int result;
         long temp;
-        temp = Double.doubleToLongBits(pValueThreshold);
+        temp = Double.doubleToLongBits(classifierProbabilityThreshold);
         result = (int) (temp ^ (temp >>> 32));
-        result = 31 * result + (filterSingleMigs ? 1 : 0);
+        result = 31 * result + (filterSingletons ? 1 : 0);
+        temp = Double.doubleToLongBits(singletonFilterRatio);
+        result = 31 * result + (int) (temp ^ (temp >>> 32));
         result = 31 * result + minMigCoverage;
         result = 31 * result + minMigCount;
         result = 31 * result + (int) minAvgQuality;

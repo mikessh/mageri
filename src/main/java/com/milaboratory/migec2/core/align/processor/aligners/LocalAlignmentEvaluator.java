@@ -17,6 +17,7 @@
 package com.milaboratory.migec2.core.align.processor.aligners;
 
 import com.milaboratory.core.sequence.alignment.LocalAlignment;
+import com.milaboratory.core.sequence.aminoacid.AminoAcidAlphabet;
 import com.milaboratory.core.sequence.mutations.Mutations;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 

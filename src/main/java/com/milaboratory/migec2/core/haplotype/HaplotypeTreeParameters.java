@@ -4,31 +4,31 @@ import com.milaboratory.migec2.util.ParameterSet;
 import org.jdom.Element;
 
 public final class HaplotypeTreeParameters implements ParameterSet {
-    private final boolean filterSingleMigs;
-    private final double childMajorRatioForPValue, pValueThreshold;
+    private final double errorMaskingTestMajorRatio, errorMaskingTestPvalueThreshold;
     private final int depth;
 
-    public static HaplotypeTreeParameters DEFAULT = new HaplotypeTreeParameters(false, 0.5, 0.05, 2),
-            NO_PVALUE_THRESHOLD = new HaplotypeTreeParameters(false, 0.5, 1.0, 2);
+    public static HaplotypeTreeParameters DEFAULT = new HaplotypeTreeParameters(2.0, 0.05, 2),
+            NO_MASKING_TEST = new HaplotypeTreeParameters(2.0, 1.0, 2);
 
-    public HaplotypeTreeParameters(boolean filterSingleMigs, double childMajorRatioForPValue,
-                                   double pValueThreshold, int depth) {
-        this.filterSingleMigs = filterSingleMigs;
-        this.childMajorRatioForPValue = childMajorRatioForPValue;
-        this.pValueThreshold = pValueThreshold;
+    public HaplotypeTreeParameters(double errorMaskingTestMajorRatio,
+                                   double errorMaskingTestPvalueThreshold, int depth) {
+        this.errorMaskingTestMajorRatio = errorMaskingTestMajorRatio;
+        this.errorMaskingTestPvalueThreshold = errorMaskingTestPvalueThreshold;
         this.depth = depth;
+
+        if (errorMaskingTestPvalueThreshold < 0 ||
+                errorMaskingTestPvalueThreshold > 1)
+            throw new IllegalArgumentException("Error masking test P-value threshold should be set in [0, 1] range");
+        if (errorMaskingTestMajorRatio < 1)
+            throw new IllegalArgumentException("Error masking test major ratio should be greater than 1");
     }
 
-    public boolean filterSingleMigs() {
-        return filterSingleMigs;
-    }
-
-    public double getChildMajorRatioForPValue() {
-        return childMajorRatioForPValue;
+    public double getErrorMaskingTestMajorRatio() {
+        return errorMaskingTestMajorRatio;
     }
 
     public double getPValueThreshold() {
-        return pValueThreshold;
+        return errorMaskingTestPvalueThreshold;
     }
 
     public int getDepth() {
@@ -38,9 +38,8 @@ public final class HaplotypeTreeParameters implements ParameterSet {
     @Override
     public Element toXml() {
         Element e = new Element("HaplotypeTreeParameters");
-        e.addContent(new Element("filterSingleMigs").setText(Boolean.toString(filterSingleMigs)));
-        e.addContent(new Element("childMajorRatioForPValue").setText(Double.toString(childMajorRatioForPValue)));
-        e.addContent(new Element("pValueThreshold").setText(Double.toString(pValueThreshold)));
+        e.addContent(new Element("errorMaskingTestMajorRatio").setText(Double.toString(errorMaskingTestMajorRatio)));
+        e.addContent(new Element("errorMaskingTestPvalueThreshold").setText(Double.toString(errorMaskingTestPvalueThreshold)));
         e.addContent(new Element("depth").setText(Integer.toString(depth)));
         return e;
     }
@@ -48,9 +47,8 @@ public final class HaplotypeTreeParameters implements ParameterSet {
     public static HaplotypeTreeParameters fromXml(Element parent) {
         Element e = parent.getChild("HaplotypeTreeParameters");
         return new HaplotypeTreeParameters(
-                Boolean.parseBoolean(e.getChildTextTrim("filterSingleMigs")),
-                Double.parseDouble(e.getChildTextTrim("childMajorRatioForPValue")),
-                Double.parseDouble(e.getChildTextTrim("pValueThreshold")),
+                Double.parseDouble(e.getChildTextTrim("errorMaskingTestMajorRatio")),
+                Double.parseDouble(e.getChildTextTrim("errorMaskingTestPvalueThreshold")),
                 Integer.parseInt(e.getChildTextTrim("depth"))
         );
     }
@@ -62,10 +60,9 @@ public final class HaplotypeTreeParameters implements ParameterSet {
 
         HaplotypeTreeParameters that = (HaplotypeTreeParameters) o;
 
-        if (Double.compare(that.childMajorRatioForPValue, childMajorRatioForPValue) != 0) return false;
+        if (Double.compare(that.errorMaskingTestMajorRatio, errorMaskingTestMajorRatio) != 0) return false;
         if (depth != that.depth) return false;
-        if (filterSingleMigs != that.filterSingleMigs) return false;
-        if (Double.compare(that.pValueThreshold, pValueThreshold) != 0) return false;
+        if (Double.compare(that.errorMaskingTestPvalueThreshold, errorMaskingTestPvalueThreshold) != 0) return false;
 
         return true;
     }
@@ -74,10 +71,9 @@ public final class HaplotypeTreeParameters implements ParameterSet {
     public int hashCode() {
         int result;
         long temp;
-        result = (filterSingleMigs ? 1 : 0);
-        temp = Double.doubleToLongBits(childMajorRatioForPValue);
-        result = 31 * result + (int) (temp ^ (temp >>> 32));
-        temp = Double.doubleToLongBits(pValueThreshold);
+        temp = Double.doubleToLongBits(errorMaskingTestMajorRatio);
+        result = (int) (temp ^ (temp >>> 32));
+        temp = Double.doubleToLongBits(errorMaskingTestPvalueThreshold);
         result = 31 * result + (int) (temp ^ (temp >>> 32));
         result = 31 * result + depth;
         return result;

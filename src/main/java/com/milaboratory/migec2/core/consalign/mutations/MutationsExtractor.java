@@ -27,7 +27,8 @@ public final class MutationsExtractor {
     private Map<Integer, Integer> minorMutations = null, minorMutationsUnmodifyable = null;
     private final Collection<MutationQualityPair> passedMajorMQPairs = new LinkedList<>(); // updated on creation
 
-    public MutationsExtractor(LocalAlignment consensusAlignment, Reference reference,
+    public MutationsExtractor(LocalAlignment consensusAlignment,
+                              Reference reference,
                               SConsensus consensus,
                               ConsensusAlignerParameters parameters) {
         this.consensusAlignment = consensusAlignment;
