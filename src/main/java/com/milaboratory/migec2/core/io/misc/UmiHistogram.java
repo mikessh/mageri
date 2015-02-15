@@ -41,14 +41,8 @@ public class UmiHistogram {
     private long readTotal = 0;
     private int migsTotal;
     private static final double base = Math.log(2.0);
-    private final double mismatchRatio = 10.0;
 
-
-    final double percLowOverseq = 0.25, percHighOverseq = 0.10;
-    final int overseqPeakLow = 4, // 16
-            overseqPeakHigh = 7; // 256
-
-    public boolean isMismatch(NucleotideSequence umi) {
+    public boolean isMismatch(NucleotideSequence umi, double mismatchRatio) {
         Bit2Array innerData = umi.getInnerData();
         int counter = umiCounterMap.get(umi).get();
 
@@ -73,9 +67,8 @@ public class UmiHistogram {
     }
 
     public void update(NucleotideSequence umi) {
-        // todo: not parallel anymore
-        AtomicInteger blankUmiCounter = new AtomicInteger(), umiCounter =
-                umiCounterMap.putIfAbsent(umi, blankUmiCounter);
+        AtomicInteger blankUmiCounter = new AtomicInteger(),
+                umiCounter = umiCounterMap.putIfAbsent(umi, blankUmiCounter);
 
         if (umiCounter == null)
             umiCounter = blankUmiCounter;
@@ -100,7 +93,8 @@ public class UmiHistogram {
 
 
     public int getMigSizeThreshold() {
-        int overseq, overSeqPeak = -1;
+        // empirical for now
+        int overSeqPeak = -1;
         long valueAtPeak = -1;
 
         for (int i = 0; i < N; i++) {
@@ -110,30 +104,7 @@ public class UmiHistogram {
             }
         }
 
-        if (overSeqPeak < overseqPeakLow) {
-            overseq = (int) Math.pow(2.0, overSeqPeak / 2.0);
-        } else {
-            double p = (overSeqPeak <= overseqPeakHigh) ? percLowOverseq : percHighOverseq;
-
-            overseq = getMigSizeThreshold(p);
-        }
-
-        return overseq;
-    }
-
-    public int getMigSizeThreshold(double readsPercentile) {
-        int overseq = 0;
-        long readSubTotal = 0;
-
-        for (int i = 0; i < N; i++) {
-            overseq = convertToValue(i);
-            readSubTotal += readHistogram[i];
-
-            if ((double) readSubTotal / (double) readTotal > readsPercentile)
-                break;
-        }
-
-        return overseq;
+        return convertToValue(overSeqPeak / 2);
     }
 
     public long calculateReadsRetained(int migSizeThreshold) {

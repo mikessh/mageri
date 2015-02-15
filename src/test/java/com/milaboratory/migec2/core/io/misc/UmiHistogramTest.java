@@ -17,7 +17,7 @@ public class UmiHistogramTest {
 
         // correct
         for (int i = 0; i < 1000; i++) {
-            int migSize = (int) Math.pow(10, randomGenerator.nextGaussian() * 0.25 + 2.5);
+            int migSize = (int) Math.pow(2, randomGenerator.nextGaussian() + 5);
             NucleotideSequence umi = Util.randomSequence(12);
             for (int k = 0; k < migSize; k++)
                 histogram.update(umi);
@@ -25,7 +25,7 @@ public class UmiHistogramTest {
 
         // errors
         for (int i = 0; i < 10000; i++) {
-            int migSize = (int) Math.pow(10, randomGenerator.nextGaussian() * 0.5);
+            int migSize = (int) Math.pow(2, randomGenerator.nextGaussian() * 0.5);
             NucleotideSequence umi = Util.randomSequence(12);
             for (int k = 0; k < migSize; k++)
                 histogram.update(umi);
@@ -34,8 +34,8 @@ public class UmiHistogramTest {
         histogram.calculateHistogram();
         System.out.println(histogram);
 
-        int overseq = histogram.getMigSizeThreshold(0.05);
-        System.out.println("Overseq (0.05) = " + overseq);
+        int overseq = histogram.getMigSizeThreshold();
+        System.out.println("Overseq = " + overseq);
 
         System.out.println("Reads dropped count with overseq = " +
                 histogram.calculateReadsDropped(overseq) +
@@ -44,7 +44,6 @@ public class UmiHistogramTest {
                 histogram.calculateMigsDropped(overseq) +
                 " of total = " + histogram.getMigsTotal());
 
-        Assert.assertEquals("Correct overseq", 64, overseq);
+        Assert.assertEquals("Correct overseq", 4, overseq);
     }
-
 }
