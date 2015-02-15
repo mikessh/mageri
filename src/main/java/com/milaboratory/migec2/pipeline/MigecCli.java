@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public final class MigecCli {
+    private static boolean appendMode = false;
+
     private static final Class ME = MigecCli.class;
     private static final String MY_PATH = ME.getProtectionDomain().getCodeSource().getLocation().getFile(),
             MY_VERSION = ME.getPackage().getImplementationVersion();
@@ -26,10 +28,10 @@ public final class MigecCli {
         System.out.println("[" + start.toString() + "] " + message);
     }
 
-    private static void print2(String message) {
+    public static void print2(String message) {
         Date now = new Date();
         System.out.println("[" + now.toString() + " +" + timePassed(now.getTime() - start.getTime()) + "] " + message);
-        start = now;
+        //start = now;
     }
 
     private static String timePassed(long millis) {
@@ -50,6 +52,7 @@ public final class MigecCli {
                 OPT_IMPORT_PRESET = "import-preset", OPT_EXPORT_PRESET = "export-preset",
                 OPT_EXOME_LONG = "exome-mode", OPT_EXOME_SHORT = "E",
                 OPT_TEST_LONG = "test-mode", OPT_TEST_SHORT = "T",
+                OPT_APPEND_LONG = "append-mode", OPT_APPEND_SHORT = "A",
                 OPT_BARCODES_LONG = "barcodes", OPT_BARCODES_SHORT = "B",
                 OPT_NO_BARCODES_LONG = "no-barcodes", OPT_NO_BARCODES_SHORT = "N",
                 OPT_REFERENCES_LONG = "references", OPT_REFERENCES_SHORT = "R",
@@ -101,6 +104,14 @@ public final class MigecCli {
                 )
                         //
                         // modes
+                .addOption(
+                        OptionBuilder
+                                .hasArg(false)
+                                .withDescription("append mode, " +
+                                        "will not overwrite files if specified")
+                                .withLongOpt(OPT_APPEND_LONG)
+                                .create(OPT_APPEND_SHORT)
+                )
                 .addOption(
                         OptionBuilder
                                 .hasArg(false)
@@ -241,6 +252,8 @@ public final class MigecCli {
             // mode
             if (!commandLine.hasOption(OPT_EXOME_SHORT) && !commandLine.hasOption(OPT_TEST_SHORT))
                 throw new ParseException("No mode has been set");
+            if (commandLine.hasOption(OPT_APPEND_SHORT))
+                appendMode = true;
 
             // barcodes
             boolean doCheckout = commandLine.hasOption(OPT_BARCODES_SHORT);
@@ -272,10 +285,10 @@ public final class MigecCli {
             if (!outputFolder.mkdirs())
                 if (!outputFolder.exists())
                     throw new ParseException("Failed to create output folder");
-                else
+                else if (!appendMode)
                     System.out.println("WARNING: Output folder already exists, " +
                             "files may be overwritten! " +
-                            "You have several minutes to skip with Ctrl + C while FASTQ files are being indexed :)");
+                            "You can still skip with Ctrl + C while FASTQ files are being indexed");
 
             // dump
             if (commandLine.hasOption(OPT_DUMP_SHORT)) {
@@ -371,7 +384,7 @@ public final class MigecCli {
                 }
             }
 
-            checkPreprocess(pipeline, outputFolder, parameterSet.getMinMigCount(), parameterSet.getMinOverseq());
+            checkPreprocess(pipeline, outputFolder, parameterSet.getMinUniqueUmis(), parameterSet.getMinOverseq());
         } catch (ParseException e) {
             System.err.println("Bad arguments: " + e.getMessage());
             System.exit(-1);
@@ -507,6 +520,6 @@ public final class MigecCli {
 
     private static void writeStringToFile(File file, String string) throws IOException {
         // in case someone want to concatenate the output later
-        FileUtils.writeStringToFile(file, string.endsWith("\n") ? string : (string + "\n"));
+        FileUtils.writeStringToFile(file, string.endsWith("\n") ? string : (string + "\n"), appendMode);
     }
 }
