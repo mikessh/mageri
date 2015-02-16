@@ -1,4 +1,4 @@
-migec2
-======
+OncoMIGEC
+=========
 
-Error-free variant calling in targeted resequencing
+Under development.. stay tuned
