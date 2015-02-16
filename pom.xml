@@ -3,10 +3,10 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.milaboratory</groupId>
-    <artifactId>migec2</artifactId>
+    <artifactId>oncomigec</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
-    <name>MIGEC2</name>
+    <name>OncoMIGEC</name>
 
     <repositories>
         <repository>
@@ -167,7 +167,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.milaboratory.migec2.pipeline.MigecCli</mainClass>
+                            <mainClass>com.milaboratory.oncomigec.pipeline.MigecCli</mainClass>
                             <addDefaultImplementationEntries>
                                 true
                             </addDefaultImplementationEntries>
@@ -228,7 +228,7 @@
                                 </transformer>
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>com.milaboratory.migec2.pipeline.MigecCli</mainClass>
+                                    <mainClass>com.milaboratory.oncomigec.pipeline.MigecCli</mainClass>
                                 </transformer>
                             </transformers>
                             <shadedArtifactAttached>true</shadedArtifactAttached>
