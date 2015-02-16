@@ -1,6 +1,7 @@
 package com.milaboratory.migec2.core.io.readers;
 
 import cc.redberry.pipe.OutputPort;
+import cc.redberry.pipe.OutputPortCloseable;
 import cc.redberry.pipe.blocks.Merger;
 import cc.redberry.pipe.blocks.ParallelProcessor;
 import cc.redberry.pipe.util.CountLimitingOutputPort;
@@ -20,7 +21,7 @@ import com.milaboratory.migec2.util.ProcessorResultWrapper;
 
 import java.util.*;
 
-public abstract class MigReader<T extends Mig> implements OutputPort<T> {
+public abstract class MigReader<MigType extends Mig> implements OutputPort<MigType> {
     private static final boolean ENABLE_BUFFERING = false;
 
     protected int sizeThreshold;
@@ -54,7 +55,7 @@ public abstract class MigReader<T extends Mig> implements OutputPort<T> {
         this.umiIndexer = new UmiIndexer(checkoutProcessor, migReaderParameters.getUmiQualThreshold());
     }
 
-    protected void buildUmiIndex(OutputPort<SequencingRead> input)
+    protected void buildUmiIndex(OutputPortCloseable<SequencingRead> input)
             throws InterruptedException {
 
         // Set limit if required
@@ -108,7 +109,7 @@ public abstract class MigReader<T extends Mig> implements OutputPort<T> {
             umiIndexBySample.put(sampleName, new HashMap<NucleotideSequence, List<ReadInfo>>());
         }
 
-        // Take results, update histogram and index (not parallel)
+        // Take results, update histogram and index (single thread)
         ProcessorResultWrapper<IndexingInfo> result;
         while ((result = indexingResults.take()) != null) {
             if (result.hasResult()) {
@@ -141,11 +142,11 @@ public abstract class MigReader<T extends Mig> implements OutputPort<T> {
                 !umiHistogramBySample.get(sampleName).isMismatch(umi, minMismatchRatio);
     }
 
-    public T take() {
+    public MigType take() {
         return take(currentSample, sizeThreshold);
     }
 
-    protected abstract T take(String sampleName, int sizeThreshold);
+    protected abstract MigType take(String sampleName, int sizeThreshold);
 
     public List<String> getSampleNames() {
         return sampleNames;

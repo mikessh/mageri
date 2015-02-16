@@ -18,8 +18,9 @@ package com.milaboratory.migec2.core.io.readers;
 import cc.redberry.pipe.OutputPortCloseable;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.core.sequence.quality.QualityFormat;
-import com.milaboratory.core.sequencing.io.fastq.SFastqReader;
+import com.milaboratory.core.sequencing.io.fastq.PFastqReader;
 import com.milaboratory.core.sequencing.io.fastq.SRandomAccessFastqReader;
+import com.milaboratory.core.sequencing.read.PSequencingRead;
 import com.milaboratory.core.sequencing.read.PSequencingReadImpl;
 import com.milaboratory.core.sequencing.read.SSequencingRead;
 import com.milaboratory.core.sequencing.read.SequencingRead;
@@ -32,8 +33,6 @@ import com.milaboratory.migec2.preproc.demultiplex.entity.PCheckoutResult;
 import com.milaboratory.migec2.preproc.demultiplex.processor.PCheckoutProcessor;
 import com.milaboratory.migec2.preproc.misc.ReadOverlapper;
 import com.milaboratory.migec2.util.Util;
-import com.milaboratory.util.CompressionType;
-import com.milaboratory.util.io.RecordIndexer;
 
 import java.io.File;
 import java.io.IOException;
@@ -43,7 +42,6 @@ import java.util.List;
 import java.util.Map;
 
 public final class PMigReader extends MigReader<PMig> {
-    private SRandomAccessFastqReader rar1, rar2;
     private final ReadOverlapper readOverlapper;
     private final boolean performIlluminaRC;
 
@@ -84,25 +82,14 @@ public final class PMigReader extends MigReader<PMig> {
 
     private void preprocess(File file1, File file2) throws IOException, InterruptedException {
         // Only work with uncompressed files
-        final SFastqReader reader1 = new SFastqReader(file1, QualityFormat.Phred33, CompressionType.None),
-                reader2 = new SFastqReader(file2, QualityFormat.Phred33, CompressionType.None);
-
-        // Creating indexer
-        final RecordIndexer indexer1 = new RecordIndexer(1L),
-                indexer2 = new RecordIndexer(1L);
-        reader1.attachIndexer(indexer1);
-        reader2.attachIndexer(indexer2);
+        final PFastqReader reader = new PFastqReader(file1, file2, QualityFormat.Phred33);
 
         // Build UMI index
-        buildUmiIndex(new PairedReaderWrapper(reader1, reader2));
-
-        // Creating random access fastq reader
-        rar1 = new SRandomAccessFastqReader(indexer1.createIndex(), file1);
-        rar2 = new SRandomAccessFastqReader(indexer2.createIndex(), file2);
+        buildUmiIndex(new PairedReaderWrapper(reader));
     }
 
     @Override
-    protected PMig take(String sampleName, int sizeThreshold) {
+    protected synchronized PMig take(String sampleName, int sizeThreshold) {
         Iterator<Map.Entry<NucleotideSequence, List<ReadInfo>>> iterator = iteratorMap.get(sampleName);
         while (iterator.hasNext()) {
             Map.Entry<NucleotideSequence, List<ReadInfo>> entry = iterator.next();
@@ -111,11 +98,9 @@ public final class PMigReader extends MigReader<PMig> {
                         readList2 = new ArrayList<>();
 
                 for (ReadInfo readInfo : entry.getValue()) {
-                    SSequencingRead read1, read2;
-                    rar1.seek(readInfo.id());
-                    read1 = rar1.readNext();
-                    rar2.seek(readInfo.id());
-                    read2 = rar2.readNext();
+                    PSequencingRead pRead = (PSequencingRead) readInfo.getRead();
+                    SSequencingRead read1 = pRead.getSingleRead(0),
+                            read2 = pRead.getSingleRead(1);
 
                     // Barcode was found in RC version of entire read pair
                     // bring back to strand specified in checkout processor barcode
@@ -191,27 +176,22 @@ public final class PMigReader extends MigReader<PMig> {
     }
 
     private class PairedReaderWrapper implements OutputPortCloseable<SequencingRead> {
-        private final SFastqReader[] readers = new SFastqReader[2];
+        private final PFastqReader reader;
 
-        public PairedReaderWrapper(SFastqReader reader1, SFastqReader reader2) {
-            readers[0] = reader1;
-            readers[1] = reader2;
+        public PairedReaderWrapper(PFastqReader reader) {
+            this.reader = reader;
         }
 
         @Override
         public void close() {
-            readers[0].close();
-            readers[1].close();
+            reader.close();
         }
 
         @Override
         public SequencingRead take() {
-            synchronized (readers) {
-                SSequencingRead read1 = readers[0].take();
-                if (read1 == null)
-                    return null;
-                else
-                    return new PSequencingReadImpl(read1, readers[1].take());
+            // allows working with disable buffering
+            synchronized (reader) {
+                return reader.take();
             }
         }
     }

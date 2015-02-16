@@ -17,9 +17,7 @@ package com.milaboratory.migec2.core.io.readers;
 
 import cc.redberry.pipe.OutputPortCloseable;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
-import com.milaboratory.core.sequence.quality.QualityFormat;
 import com.milaboratory.core.sequencing.io.fastq.SFastqReader;
-import com.milaboratory.core.sequencing.io.fastq.SRandomAccessFastqReader;
 import com.milaboratory.core.sequencing.read.SSequencingRead;
 import com.milaboratory.core.sequencing.read.SequencingRead;
 import com.milaboratory.migec2.core.io.entity.SMig;
@@ -27,8 +25,6 @@ import com.milaboratory.migec2.core.io.misc.MigReaderParameters;
 import com.milaboratory.migec2.core.io.misc.ReadInfo;
 import com.milaboratory.migec2.preproc.demultiplex.processor.SCheckoutProcessor;
 import com.milaboratory.migec2.util.Util;
-import com.milaboratory.util.CompressionType;
-import com.milaboratory.util.io.RecordIndexer;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,13 +34,10 @@ import java.util.List;
 import java.util.Map;
 
 public final class SMigReader extends MigReader<SMig> {
-    private SRandomAccessFastqReader rar;
-
     public SMigReader(File file, SCheckoutProcessor checkoutProcessor) throws Exception {
         this(file, checkoutProcessor, MigReaderParameters.DEFAULT);
     }
 
-    //todo: store chekout and from stored checkout
     public SMigReader(File file, SCheckoutProcessor checkoutProcessor, MigReaderParameters migReaderParameters)
             throws IOException, InterruptedException {
         super(migReaderParameters, checkoutProcessor);
@@ -64,30 +57,25 @@ public final class SMigReader extends MigReader<SMig> {
 
     private void preprocess(File file) throws IOException, InterruptedException {
         // Only work with uncompressed files
-        final SFastqReader reader = new SFastqReader(file, QualityFormat.Phred33, CompressionType.None);
-
-        // Creating indexer
-        final RecordIndexer indexer = new RecordIndexer(1L);
-        reader.attachIndexer(indexer);
+        final SFastqReader reader = new SFastqReader(file);
 
         // Build UMI index
         buildUmiIndex(new SingleReaderWrapper(reader));
-
-        // Creating random access fastq reader
-        rar = new SRandomAccessFastqReader(indexer.createIndex(), file);
     }
 
     @Override
-    protected SMig take(String sampleName, int sizeThreshold) {
+    protected synchronized SMig take(String sampleName, int sizeThreshold) {
         Iterator<Map.Entry<NucleotideSequence, List<ReadInfo>>> iterator = iteratorMap.get(sampleName);
         while (iterator.hasNext()) {
             Map.Entry<NucleotideSequence, List<ReadInfo>> entry = iterator.next();
             if (entry.getValue().size() >= sizeThreshold && checkUmiMismatch(sampleName, entry.getKey())) {
                 List<SSequencingRead> readList = new ArrayList<>();
 
+                // todo: handle adapter trimming case
+
                 for (ReadInfo readInfo : entry.getValue()) {
-                    rar.seek(readInfo.id());
-                    readList.add(readInfo.rcMe() ? Util.rc(rar.readNext()) : rar.readNext());
+                    SSequencingRead read = (SSequencingRead) readInfo.getRead();
+                    readList.add(readInfo.rcMe() ? Util.rc(read) : read);
                 }
 
                 return new SMig(readList, entry.getKey());
@@ -110,6 +98,7 @@ public final class SMigReader extends MigReader<SMig> {
 
         @Override
         public SequencingRead take() {
+            // allows working with disable buffering
             synchronized (reader) {
                 return reader.take();
             }

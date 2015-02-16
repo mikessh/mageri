@@ -15,15 +15,16 @@
  */
 package com.milaboratory.migec2.core.io.misc;
 
+import com.milaboratory.core.sequencing.read.SequencingRead;
 import com.milaboratory.migec2.preproc.demultiplex.entity.CheckoutResult;
 
-public class ReadInfo {
-    private final long id;
+public class ReadInfo<ReadType extends SequencingRead> {
+    private final ReadType read;
     private final boolean flipMe, rcMe;
     private final CheckoutResult checkoutResult;
 
-    public ReadInfo(long id, boolean flipMe, boolean rcMe, CheckoutResult checkoutResult) {
-        this.id = id;
+    public ReadInfo(ReadType read, boolean flipMe, boolean rcMe, CheckoutResult checkoutResult) {
+        this.read = read;
         this.flipMe = flipMe;
         this.rcMe = rcMe;
         this.checkoutResult = checkoutResult;
@@ -33,8 +34,8 @@ public class ReadInfo {
         return checkoutResult;
     }
 
-    public long id() {
-        return id;
+    public ReadType getRead() {
+        return read;
     }
 
     public boolean flipMe() {

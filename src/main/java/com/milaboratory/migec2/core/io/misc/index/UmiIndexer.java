@@ -27,7 +27,7 @@ public class UmiIndexer implements Processor<SequencingRead, ProcessorResultWrap
             String sampleName = result.getSampleName();
             NucleotideSequence umi = result.getUmi();
 
-            ReadInfo readInfo = new ReadInfo(sequencingRead.id(),
+            ReadInfo readInfo = new ReadInfo(sequencingRead,
                     masterFirst[result.getSampleId()] != result.masterFirst(),
                     result.foundInRC(), result);
 

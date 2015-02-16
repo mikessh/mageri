@@ -16,7 +16,7 @@ public final class CorrectorParameters implements ParameterSet {
 
     private final double maxBasePairsMaskedRatio;
 
-    public static CorrectorParameters DEFAULT = new CorrectorParameters(0.1, false, 10000.0,
+    public static CorrectorParameters DEFAULT = new CorrectorParameters(0.5, false, 10000.0,
             5, 10, Util.PH33_LOW_QUAL, 0.5);
 
     public CorrectorParameters(double classifierProbabilityThreshold,
