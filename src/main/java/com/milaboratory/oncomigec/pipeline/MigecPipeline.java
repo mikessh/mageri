@@ -40,7 +40,7 @@ public class MigecPipeline {
     protected final Map<String, HaplotypeTree> haplotypeTreeBySample;
     protected final List<String> sampleNames, skippedSamples;
     protected final MigecParameterSet migecParameterSet;
-    protected final VariantClassifier variantClassifier = BaseVariantClassifier.BUILT_IN; // todo: implement loading from file
+    protected VariantClassifier variantClassifier;
 
     protected MigecPipeline(MigReader reader,
                             AssemblerFactory assemblerFactory,
@@ -60,6 +60,7 @@ public class MigecPipeline {
             assemblerBySample.put(sampleName, assemblerFactory.create());
             alignerBySample.put(sampleName, consensusAlignerFactory.create());
         }
+        this.variantClassifier = BaseVariantClassifier.BUILT_IN;
     }
 
     public void skipSamples(List<String> samplesToSkip) {
@@ -214,6 +215,14 @@ public class MigecPipeline {
             return haplotypeTreeBySample.get(sampleName).toFastaString();
         else
             return "";
+    }
+
+    public VariantClassifier getVariantClassifier() {
+        return variantClassifier;
+    }
+
+    public void setVariantClassifier(VariantClassifier variantClassifier) {
+        this.variantClassifier = variantClassifier;
     }
 
     public String getMinorVariantDump(double threshold) {

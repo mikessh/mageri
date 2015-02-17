@@ -2,6 +2,8 @@ package com.milaboratory.oncomigec.pipeline;
 
 import com.milaboratory.oncomigec.core.io.misc.MigReaderParameters;
 import com.milaboratory.oncomigec.core.io.misc.UmiHistogram;
+import com.milaboratory.oncomigec.model.classifier.BaseVariantClassifier;
+import com.milaboratory.oncomigec.model.classifier.VariantClassifier;
 import org.apache.commons.cli.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -52,7 +54,8 @@ public final class MigecCli {
                 OPT_IMPORT_PRESET = "import-preset", OPT_EXPORT_PRESET = "export-preset",
                 OPT_EXOME_LONG = "exome-mode", OPT_EXOME_SHORT = "E",
                 OPT_TEST_LONG = "test-mode", OPT_TEST_SHORT = "T",
-                OPT_APPEND_LONG = "append-mode", OPT_APPEND_SHORT = "A",
+                OPT_APPEND = "append-mode",
+                OPT_CLASSIFIER_FILE = "load-classifier",
                 OPT_BARCODES_LONG = "barcodes", OPT_BARCODES_SHORT = "B",
                 OPT_NO_BARCODES_LONG = "no-barcodes", OPT_NO_BARCODES_SHORT = "N",
                 OPT_REFERENCES_LONG = "references", OPT_REFERENCES_SHORT = "R",
@@ -102,6 +105,14 @@ public final class MigecCli {
                                 .withLongOpt(OPT_EXPORT_PRESET)
                                 .create()
                 )
+                .addOption(
+                        OptionBuilder
+                                .withArgName("file")
+                                .hasArg(true)
+                                .withDescription("specifies a pre-trained classifier binary file (Weka model)")
+                                .withLongOpt(OPT_CLASSIFIER_FILE)
+                                .create()
+                )
                         //
                         // modes
                 .addOption(
@@ -109,8 +120,8 @@ public final class MigecCli {
                                 .hasArg(false)
                                 .withDescription("append mode, " +
                                         "will not overwrite files if specified")
-                                .withLongOpt(OPT_APPEND_LONG)
-                                .create(OPT_APPEND_SHORT)
+                                .withLongOpt(OPT_APPEND)
+                                .create()
                 )
                 .addOption(
                         OptionBuilder
@@ -207,6 +218,7 @@ public final class MigecCli {
         // create the parser
         CommandLineParser parser = new BasicParser();
         MigecPipeline pipeline = null;
+        VariantClassifier variantClassifier = null;
         File outputFolder = null;
         double dumpFreq = -1;
 
@@ -249,10 +261,15 @@ public final class MigecCli {
                 System.exit(0);
             }
 
+            if (commandLine.hasOption(OPT_CLASSIFIER_FILE)) {
+                File classifierFile = new File(commandLine.getOptionValue(OPT_CLASSIFIER_FILE));
+                variantClassifier = BaseVariantClassifier.pretrained(classifierFile);
+            }
+
             // mode
             if (!commandLine.hasOption(OPT_EXOME_SHORT) && !commandLine.hasOption(OPT_TEST_SHORT))
                 throw new ParseException("No mode has been set");
-            if (commandLine.hasOption(OPT_APPEND_SHORT))
+            if (commandLine.hasOption(OPT_APPEND))
                 appendMode = true;
 
             // barcodes
@@ -298,7 +315,7 @@ public final class MigecCli {
             // =================
             // Pipeline creation
             // =================
-            print1("Running MiGEC v" + MigecCli.class.getPackage().getImplementationVersion() +
+            print1("Running OncoMIGEC v" + MigecCli.class.getPackage().getImplementationVersion() +
                             " for " +
                             (paired ?
                                     (commandLine.getOptionValue(OPT_FASTQ1_SHORT) +
@@ -403,6 +420,11 @@ public final class MigecCli {
             dumpVariants(pipeline, outputFolder, dumpFreq);
             print2("Finished dumping variants");
             return;
+        }
+
+        if (variantClassifier != null) {
+            // user-defined classifier
+            pipeline.setVariantClassifier(variantClassifier);
         }
 
         runSecondStage(pipeline, outputFolder);
