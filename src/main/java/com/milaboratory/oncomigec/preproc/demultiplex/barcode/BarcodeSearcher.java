@@ -69,7 +69,7 @@ public class BarcodeSearcher {
             case 'N':
                 return "[ATGC]";
             default:
-                throw new IllegalArgumentException("Illegar nucleotide character");
+                throw new IllegalArgumentException("Illegal nucleotide character");
         }
     }
 

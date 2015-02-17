@@ -73,7 +73,7 @@ public final class CorrectorParameters implements ParameterSet {
     public Element toXml() {
         Element e = new Element("CorrectorParameters");
         e.addContent(new Element("classifierProbabilityThreshold").setText(Double.toString(classifierProbabilityThreshold)));
-        e.addContent(new Element("filterSingleMigs").setText(Boolean.toString(filterSingletons)));
+        e.addContent(new Element("filterSingletons").setText(Boolean.toString(filterSingletons)));
         e.addContent(new Element("singletonFilterRatio").setText(Double.toString(singletonFilterRatio)));
         e.addContent(new Element("minMigCoverage").setText(Integer.toString(minMigCoverage)));
         e.addContent(new Element("minMigCount").setText(Integer.toString(minMigCount)));
@@ -86,7 +86,7 @@ public final class CorrectorParameters implements ParameterSet {
         Element e = parent.getChild("CorrectorParameters");
         return new CorrectorParameters(
                 Double.parseDouble(e.getChildTextTrim("classifierProbabilityThreshold")),
-                Boolean.parseBoolean(e.getChildTextTrim("filterSingleMigs")),
+                Boolean.parseBoolean(e.getChildTextTrim("filterSingletons")),
                 Double.parseDouble(e.getChildTextTrim("singletonFilterRatio")),
                 Integer.parseInt(e.getChildTextTrim("minMigCoverage")),
                 Integer.parseInt(e.getChildTextTrim("minMigCount")),

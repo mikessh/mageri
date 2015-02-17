@@ -81,7 +81,7 @@ public final class MigecCli {
                         OptionBuilder
                                 .withArgName("name")
                                 .hasArg(true)
-                                .withDescription("name of MIGEC parameter preset " +
+                                .withDescription("name of OncoMIGEC parameter preset " +
                                         "(currently Illumina-Exome or Torrent454-Exome, case-insensitive)")
                                 .withLongOpt(OPT_LOAD_PRESET)
                                 .create()
@@ -90,7 +90,7 @@ public final class MigecCli {
                         OptionBuilder
                                 .withArgName("file")
                                 .hasArg(true)
-                                .withDescription("MIGEC2 parameter file in XML format")
+                                .withDescription("OncoMIGEC parameter file in XML format")
                                 .withLongOpt(OPT_IMPORT_PRESET)
                                 .create()
                 )
@@ -226,7 +226,7 @@ public final class MigecCli {
 
             // version
             if (commandLine.hasOption(OPT_VERSION_SHORT)) {
-                System.out.println("You are using MIGEC2 pipeline of version " + MY_VERSION);
+                System.out.println("You are using OncoMIGEC pipeline of version " + MY_VERSION);
                 System.exit(0);
             }
 
@@ -461,7 +461,7 @@ public final class MigecCli {
 
     private static void runFirstStage(MigecPipeline pipeline, File outputFolder) {
         try {
-            print2("Running first stage of MiGEC");
+            print2("Running first stage of OncoMiGEC");
             pipeline.runFirstStage();
         } catch (Exception e) {
             System.err.println("Error on first stage of analysis: " + e.toString());
@@ -491,7 +491,7 @@ public final class MigecCli {
 
     private static void runSecondStage(MigecPipeline pipeline, File outputFolder) {
         try {
-            print2("Running second stage of MiGEC");
+            print2("Running second stage of OncoMiGEC");
             pipeline.runSecondStage();
         } catch (Exception e) {
             System.err.println("Error on second stage of analysis: " + e.toString());
