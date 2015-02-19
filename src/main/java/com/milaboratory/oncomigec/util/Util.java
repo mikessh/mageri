@@ -85,19 +85,17 @@ public final class Util {
         return rnd.nextInt(n);
     }
 
-    public static SSequencingRead createRead(String seq, String qual) {
-        return new SSequencingReadImpl(new NucleotideSQPair(seq, qual));
+    public static NucleotideSQPair createRead(String seq, String qual) {
+        return new NucleotideSQPair(seq, qual);
     }
 
-    public static SSequencingRead cloneRead(SSequencingRead read) {
-        return new SSequencingReadImpl(new NucleotideSQPair(read.getData().getSequence().toString(),
-                read.getData().getQuality().toString()));
+    public static NucleotideSQPair cloneRead(NucleotideSQPair read) {
+        return new NucleotideSQPair(read.getSequence(),
+                read.getQuality());
     }
 
-    public static SSequencingRead rc(SSequencingRead read) {
-        return new SSequencingReadImpl(read.getDescription(),
-                read.getData().getRC(),
-                read.id());
+    public static NucleotideSQPair rc(NucleotideSQPair read) {
+        return read.getRC();
     }
 
     public static SSequencingRead sub(SSequencingRead read, int from, int to) {

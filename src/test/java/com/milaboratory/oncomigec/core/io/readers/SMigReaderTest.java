@@ -26,6 +26,7 @@ import com.milaboratory.oncomigec.util.Util;
 import java.io.File;
 
 public class SMigReaderTest {
+    //todo: make tests
     //@Test
     public void run() throws Exception {
         String sampleName = "SPIKE";
@@ -38,8 +39,8 @@ public class SMigReaderTest {
             SMig sMig = reader.take(sampleName, 100);
 
             // Check that all reads have correct header
-            for (SSequencingRead read : sMig.getReads())
-                Assert.assertEquals(Util.extractUmi(read.getDescription()), sMig.getUmi());
+            //for (SSequencingRead read : sMig.getReads())
+            //    Assert.assertEquals(Util.extractUmi(read.getDescription()), sMig.getUmi());
 
             // Manually count number of reads with UMI
             SFastqReader standardReader = new SFastqReader(file);

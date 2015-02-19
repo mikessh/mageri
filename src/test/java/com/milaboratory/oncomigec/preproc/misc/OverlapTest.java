@@ -22,10 +22,7 @@ import com.milaboratory.core.sequence.mutations.NucleotideMutationModel;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.core.sequence.quality.QualityFormat;
 import com.milaboratory.core.sequence.quality.SequenceQualityPhred;
-import com.milaboratory.core.sequencing.read.PSequencingRead;
-import com.milaboratory.core.sequencing.read.PSequencingReadImpl;
-import com.milaboratory.core.sequencing.read.SSequencingRead;
-import com.milaboratory.core.sequencing.read.SSequencingReadImpl;
+import com.milaboratory.oncomigec.core.io.misc.NucleotideSQPairTuple;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -62,11 +59,11 @@ public class OverlapTest {
             NucleotideSQPair r1 = new NucleotideSQPair(s1, SequenceQualityPhred.create(QualityFormat.Phred33, q1, true)),
                     r2 = new NucleotideSQPair(s2, SequenceQualityPhred.create(QualityFormat.Phred33, q2, true));
 
-            PSequencingRead r12 = ro.overlap(new PSequencingReadImpl(new SSequencingReadImpl(r1),
-                    new SSequencingReadImpl(r2))).getReadPair();
+            NucleotideSQPairTuple r12 = ro.overlap(new NucleotideSQPairTuple(r1,
+                    r2)).getReadPair();
 
-            NucleotideSequence overlappedSequence = r12.getData(0).getSequence().
-                    concatenate(r12.getData(1).getSequence());
+            NucleotideSequence overlappedSequence = r12.getFirst().getSequence().
+                    concatenate(r12.getSecond().getSequence());
             NucleotideSequence trueSequence = s1.concatenate(s2.getRange(TOTAL_OVERLAP_SIZE, SEQ_LENGTH));
 
             if (overlappedSequence.equals(trueSequence))
@@ -91,16 +88,16 @@ public class OverlapTest {
             NucleotideSequence s1 = fragment.concatenate(overhang),
                     s2 = barcode.concatenate(fragment);
 
-            SSequencingRead r1 = new SSequencingReadImpl(new NucleotideSQPair(s1)),
-                    r2 = new SSequencingReadImpl(new NucleotideSQPair(s2));
+            NucleotideSQPair r1 = new NucleotideSQPair(s1),
+                    r2 = new NucleotideSQPair(s2);
 
-            ReadOverlapper.OverlapResult o12T = ro.overlap(new PSequencingReadImpl(r1, r2), barcodeOffset),
-                    o12F = ro.overlap(new PSequencingReadImpl(r1, r2));
+            ReadOverlapper.OverlapResult o12T = ro.overlap(new NucleotideSQPairTuple(r1, r2), barcodeOffset),
+                    o12F = ro.overlap(new NucleotideSQPairTuple(r1, r2));
 
-            PSequencingRead r12T = o12T.getReadPair();
+            NucleotideSQPairTuple r12T = o12T.getReadPair();
 
 
-            if (r12T.getData(0).getSequence().concatenate(r12T.getData(1).getSequence()).equals(fragment))
+            if (r12T.getFirst().getSequence().concatenate(r12T.getSecond().getSequence()).equals(fragment))
                 overlappedT++;
 
             if (o12F.isOverlapped())
@@ -128,11 +125,11 @@ public class OverlapTest {
             NucleotideSQPair r1 = new NucleotideSQPair(s1, SequenceQualityPhred.create(QualityFormat.Phred33, q1, true)),
                     r2 = new NucleotideSQPair(s2, SequenceQualityPhred.create(QualityFormat.Phred33, q2, true));
 
-            PSequencingRead r12 = ro.overlap(new PSequencingReadImpl(new SSequencingReadImpl(r1),
-                    new SSequencingReadImpl(r2))).getReadPair();
+            NucleotideSQPairTuple r12 = ro.overlap(new NucleotideSQPairTuple(r1,
+                    r2)).getReadPair();
 
-            NucleotideSequence overlappedSequence = r12.getData(0).getSequence().
-                    concatenate(r12.getData(1).getSequence());
+            NucleotideSequence overlappedSequence = r12.getFirst().getSequence().
+                    concatenate(r12.getSecond().getSequence());
             NucleotideSequence trueSequence = s1.concatenate(s2);
 
             if (overlappedSequence.equals(trueSequence))

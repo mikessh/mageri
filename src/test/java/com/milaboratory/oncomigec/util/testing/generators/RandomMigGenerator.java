@@ -4,8 +4,6 @@ import com.milaboratory.core.sequence.NucleotideSQPair;
 import com.milaboratory.core.sequence.mutations.Mutations;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.core.sequence.quality.SequenceQualityPhred;
-import com.milaboratory.core.sequencing.read.SSequencingRead;
-import com.milaboratory.core.sequencing.read.SSequencingReadImpl;
 import com.milaboratory.oncomigec.core.align.reference.Reference;
 import com.milaboratory.oncomigec.core.io.entity.SMig;
 
@@ -58,7 +56,7 @@ public class RandomMigGenerator {
     private RandomMigGeneratorResult nextMig(NucleotideSequence sequence, int[] pcrMutations) {
         sequence = Mutations.mutate(sequence, pcrMutations);
 
-        List<SSequencingRead> reads = new ArrayList<>();
+        List<NucleotideSQPair> reads = new ArrayList<>();
         int migSize = generatorMutationModel.nextFromRange(migSizeMin, migSizeMax);
         int readsWithIndels = 0;
         Map<Integer, Integer> minorMutationCounts = new HashMap<>();
@@ -88,7 +86,7 @@ public class RandomMigGenerator {
                     qual[Mutations.convertPosition(mutations, Mutations.getPosition(code))] = (byte) 0;
             }
 
-            reads.add(new SSequencingReadImpl(new NucleotideSQPair(seq, new SequenceQualityPhred(qual))));
+            reads.add(new NucleotideSQPair(seq, new SequenceQualityPhred(qual)));
         }
 
         boolean indelHeavy = (readsWithIndels / (double) migSize) > INDEL_HEAVY_THERSHOLD;

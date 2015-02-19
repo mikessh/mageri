@@ -16,10 +16,7 @@
 package com.milaboratory.oncomigec.preproc.misc;
 
 import com.milaboratory.core.sequence.NucleotideSQPair;
-import com.milaboratory.core.sequencing.read.PSequencingRead;
-import com.milaboratory.core.sequencing.read.PSequencingReadImpl;
-import com.milaboratory.core.sequencing.read.SSequencingRead;
-import com.milaboratory.core.sequencing.read.SSequencingReadImpl;
+import com.milaboratory.oncomigec.core.io.misc.NucleotideSQPairTuple;
 
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
@@ -59,12 +56,12 @@ public class ReadOverlapper {
         return totalCount;
     }
 
-    public OverlapResult overlap(PSequencingRead readPair) {
+    public OverlapResult overlap(NucleotideSQPairTuple readPair) {
         return overlap(readPair, 0);
     }
 
-    public OverlapResult overlap(PSequencingRead readPair, int barcodeOffset) {
-        SSequencingRead read1 = readPair.getSingleRead(0), read2 = readPair.getSingleRead(1);
+    public OverlapResult overlap(NucleotideSQPairTuple readPair, int barcodeOffset) {
+        NucleotideSQPair read1 = readPair.getFirst(), read2 = readPair.getSecond();
         //if (performIlluminaRC)
         //    read2 = new SSequencingReadImpl(read2.getDescription(),
         //            read2.getData().getRC(), read2.id());
@@ -79,11 +76,11 @@ public class ReadOverlapper {
         return result;
     }
 
-    private OverlapResult overlap(SSequencingRead read1, SSequencingRead read2, int barcodeOffset) {
-        String seq1 = read1.getData().getSequence().toString(),
-                seq2 = read2.getData().getSequence().toString(),
-                qual1 = read1.getData().getQuality().toString(),
-                qual2 = read2.getData().getQuality().toString();
+    private OverlapResult overlap(NucleotideSQPair read1, NucleotideSQPair read2, int barcodeOffset) {
+        String seq1 = read1.getSequence().toString(),
+                seq2 = read2.getSequence().toString(),
+                qual1 = read1.getQuality().toString(),
+                qual2 = read2.getQuality().toString();
 
         totalCount.incrementAndGet();
 
@@ -136,7 +133,7 @@ public class ReadOverlapper {
 
                             if (pos2 + 1 > seq2.length())
                                 // should not happen
-                                return new OverlapResult(-1, OverlapType.Bad, new PSequencingReadImpl(read1, read2));
+                                return new OverlapResult(-1, OverlapType.Bad, new NucleotideSQPairTuple(read1, read2));
 
                             if (qual1.charAt(j) > qual2.charAt(pos2)) {
                                 nrSeq1.append(seq1.charAt(j));
@@ -159,15 +156,13 @@ public class ReadOverlapper {
                                 // readthrough
                                 return new OverlapResult(overlapHalfSz,
                                         OverlapType.ReadThrough,
-                                        new PSequencingReadImpl(
-                                                new SSequencingReadImpl(read1.getDescription(),
-                                                        new NucleotideSQPair(masterSeq.substring(0, overlapHalfSz),
-                                                                masterQual.substring(0, overlapHalfSz)),
-                                                        read1.id()),
-                                                new SSequencingReadImpl(read2.getDescription(),
-                                                        new NucleotideSQPair(masterSeq.substring(overlapHalfSz),
-                                                                masterQual.substring(overlapHalfSz)),
-                                                        read2.id())));
+                                        new NucleotideSQPairTuple(
+                                                new NucleotideSQPair(masterSeq.substring(0, overlapHalfSz),
+                                                        masterQual.substring(0, overlapHalfSz)),
+                                                new NucleotideSQPair(masterSeq.substring(overlapHalfSz),
+                                                        masterQual.substring(overlapHalfSz))
+                                        )
+                                );
                             }
 
                             if (qual1.charAt(j) > qual2.charAt(pos2)) {
@@ -188,27 +183,24 @@ public class ReadOverlapper {
                         overlappedCount.incrementAndGet();
 
                         return new OverlapResult(overlapHalfSz, OverlapType.Normal,
-                                new PSequencingReadImpl(
-                                        new SSequencingReadImpl(read1.getDescription(),
-                                                new NucleotideSQPair(nrSeq1.toString(), nrQual1.toString()),
-                                                read1.id()),
-                                        new SSequencingReadImpl(read2.getDescription(),
-                                                new NucleotideSQPair(nrSeq2.toString(), nrQual2.toString()),
-                                                read2.id())));
+                                new NucleotideSQPairTuple(
+                                        new NucleotideSQPair(nrSeq1.toString(), nrQual1.toString()),
+                                        new NucleotideSQPair(nrSeq2.toString(), nrQual2.toString())
+                                ));
                     }
                 }
             }
         }
 
-        return new OverlapResult(-1, OverlapType.None, new PSequencingReadImpl(read1, read2));
+        return new OverlapResult(-1, OverlapType.None, new NucleotideSQPairTuple(read1, read2));
     }
 
     public class OverlapResult {
         private final int overlapHalfSz;
-        private final PSequencingRead readPair;
+        private final NucleotideSQPairTuple readPair;
         private final OverlapType overlapType;
 
-        public OverlapResult(int overlapHalfSz, OverlapType overlapType, PSequencingRead readPair) {
+        public OverlapResult(int overlapHalfSz, OverlapType overlapType, NucleotideSQPairTuple readPair) {
             this.overlapHalfSz = overlapHalfSz;
             this.overlapType = overlapType;
             this.readPair = readPair;
@@ -226,7 +218,7 @@ public class ReadOverlapper {
             return overlapType != OverlapType.None;
         }
 
-        public PSequencingRead getReadPair() {
+        public NucleotideSQPairTuple getReadPair() {
             return readPair;
         }
     }

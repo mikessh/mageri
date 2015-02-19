@@ -16,15 +16,14 @@
 package com.milaboratory.oncomigec.core.io.readers;
 
 import cc.redberry.pipe.OutputPortCloseable;
+import com.milaboratory.core.sequence.NucleotideSQPair;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.core.sequencing.io.fastq.SFastqReader;
-import com.milaboratory.core.sequencing.read.SSequencingRead;
 import com.milaboratory.core.sequencing.read.SequencingRead;
 import com.milaboratory.oncomigec.core.io.entity.SMig;
 import com.milaboratory.oncomigec.core.io.misc.MigReaderParameters;
 import com.milaboratory.oncomigec.core.io.misc.ReadInfo;
 import com.milaboratory.oncomigec.preproc.demultiplex.processor.SCheckoutProcessor;
-import com.milaboratory.oncomigec.util.Util;
 
 import java.io.File;
 import java.io.IOException;
@@ -58,7 +57,7 @@ public final class SMigReader extends MigReader<SMig> {
     private void preprocess(File file) throws IOException, InterruptedException {
         // Only work with uncompressed files
         final SFastqReader reader = new SFastqReader(file);
-
+        
         // Build UMI index
         buildUmiIndex(new SingleReaderWrapper(reader));
     }
@@ -69,13 +68,13 @@ public final class SMigReader extends MigReader<SMig> {
         while (iterator.hasNext()) {
             Map.Entry<NucleotideSequence, List<ReadInfo>> entry = iterator.next();
             if (entry.getValue().size() >= sizeThreshold && checkUmiMismatch(sampleName, entry.getKey())) {
-                List<SSequencingRead> readList = new ArrayList<>();
+                List<NucleotideSQPair> readList = new ArrayList<>();
 
                 // todo: handle adapter trimming case
 
                 for (ReadInfo readInfo : entry.getValue()) {
-                    SSequencingRead read = (SSequencingRead) readInfo.getRead();
-                    readList.add(readInfo.rcMe() ? Util.rc(read) : read);
+                    NucleotideSQPair read = (NucleotideSQPair) readInfo.getRead();
+                    readList.add(readInfo.rcMe() ? read.getRC() : read);
                 }
 
                 return new SMig(readList, entry.getKey());

@@ -15,8 +15,8 @@
  */
 package com.milaboratory.oncomigec.core.assemble.processor;
 
+import com.milaboratory.core.sequence.NucleotideSQPair;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
-import com.milaboratory.core.sequencing.read.SSequencingRead;
 import com.milaboratory.oncomigec.core.assemble.entity.Consensus;
 import com.milaboratory.oncomigec.core.assemble.entity.SConsensus;
 import com.milaboratory.oncomigec.core.io.entity.Mig;
@@ -30,7 +30,8 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.milaboratory.oncomigec.util.Util.*;
+import static com.milaboratory.oncomigec.util.Util.cloneRead;
+import static com.milaboratory.oncomigec.util.Util.randomSequence;
 
 public class AssemblerTest {
     private static final int nRepetitions = 1000, randomTestAssertThreshold = 70, randomTestAssertIDHThreshold = 60;
@@ -80,21 +81,21 @@ public class AssemblerTest {
                 (100 - percentIncorrectIndelHeavy + percentDroppedIndelHeavy) >= randomTestAssertIDHThreshold);
     }
 
-    private static final SSequencingRead
-            read1 = createRead(
+    private static final NucleotideSQPair
+            read1 = new NucleotideSQPair(
             "ATAGCAGAAATAAAAGAAAAGATTGGAACTAGTCAGATAGCAGAAATAAAAGAAAAGATTGGAACTAGTCAG",
             "HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH"),
-            read2 = createRead(
+            read2 = new NucleotideSQPair(
                     "ATAACAGAAATAAAAGAAAAGATTGGAACTAGTCAGATAGCAGAAATAAAAGAAAAGATTGGAACTAGTCAG",
                     "HHH#HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH"),
-            read3 = createRead(
+            read3 = new NucleotideSQPair(
                     "ATAACAGAAATAAAAGAAAAGATTGGAACTAGTCAGATAGCAGAAATAAAAGAAAAGATTGGAACTAGTCAG",
                     "HHHJHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH");
 
     @Test
     public void fixedMutationCasesTest() {
         Assembler assembler = new SAssembler();
-        List<SSequencingRead> reads;
+        List<NucleotideSQPair> reads;
         Mig mig;
         Consensus consensus;
 
@@ -106,7 +107,7 @@ public class AssemblerTest {
         mig = new SMig(reads, randomSequence(12));
         consensus = (SConsensus) assembler.process(mig).getResult();
         Assert.assertEquals("Correct consensus should be assembled",
-                ((SConsensus) consensus).getConsensusSQPair().getSequence(), read1.getData().getSequence());
+                ((SConsensus) consensus).getConsensusSQPair().getSequence(), read1.getSequence());
 
         // Bad qual mutation, not recorded at all, dont affect consensus
         System.out.println("Testing Assembler. Case: frequent mutation with bad sequencing quality");
@@ -118,7 +119,7 @@ public class AssemblerTest {
         mig = new SMig(reads, randomSequence(12));
         consensus = (SConsensus) assembler.process(mig).getResult();
         Assert.assertEquals("Correct consensus should be assembled",
-                ((SConsensus) consensus).getConsensusSQPair().getSequence(), read1.getData().getSequence());
+                ((SConsensus) consensus).getConsensusSQPair().getSequence(), read1.getSequence());
 
         // Good qual mutation, rare - recorded in reads only
         System.out.println("Testing Assembler. Case: rare mutation with good sequencing quality");
@@ -130,7 +131,7 @@ public class AssemblerTest {
         mig = new SMig(reads, randomSequence(12));
         consensus = (SConsensus) assembler.process(mig).getResult();
         Assert.assertEquals("Correct consensus should be assembled",
-                ((SConsensus) consensus).getConsensusSQPair().getSequence(), read1.getData().getSequence());
+                ((SConsensus) consensus).getConsensusSQPair().getSequence(), read1.getSequence());
 
         // Good qual mutation, frequent - recorded both in reads and in consensus
         System.out.println("Testing Assembler. Case: dominating mutation with good sequencing quality");
@@ -142,6 +143,6 @@ public class AssemblerTest {
         mig = new SMig(reads, randomSequence(12));
         consensus = (SConsensus) assembler.process(mig).getResult();
         Assert.assertEquals("Incorrect consensus should be assembled",
-                ((SConsensus) consensus).getConsensusSQPair().getSequence(), read3.getData().getSequence());
+                ((SConsensus) consensus).getConsensusSQPair().getSequence(), read3.getSequence());
     }
 }

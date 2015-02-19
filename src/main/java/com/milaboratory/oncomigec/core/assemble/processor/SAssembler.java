@@ -50,10 +50,10 @@ public final class SAssembler extends Assembler<SConsensus, SMig> {
         Map<NucleotideSequence, int[]> coreSeqDataMap = new HashMap<>();
         NucleotideSequence coreSeq = null;
         int[] coreSeqData;
-        for (SSequencingRead read : sMig.getReads()) {
-            if (read.getData().getSequence().size() > parameters.getMinReadSize())
+        for (NucleotideSQPair read : sMig.getReads()) {
+            if (read.getSequence().size() > parameters.getMinReadSize())
                 for (int offset = -parameters.getOffsetRange(); offset <= parameters.getOffsetRange(); offset++) {
-                    coreSeq = getCoreSeq(read.getData().getSequence(), offset);
+                    coreSeq = getCoreSeq(read.getSequence(), offset);
                     coreSeqData = coreSeqDataMap.get(coreSeq);
                     if (coreSeqData == null)
                         coreSeqDataMap.put(coreSeq, coreSeqData = new int[2]);
@@ -77,13 +77,13 @@ public final class SAssembler extends Assembler<SConsensus, SMig> {
         int avgX = 0, avgY = 0;
 
         List<Integer> xArr = new ArrayList<>(sMig.getReads().size());
-        for (SSequencingRead read : sMig.getReads()) {
-            if (read.getData().getSequence().size() > parameters.getMinReadSize()) {
+        for (NucleotideSQPair read : sMig.getReads()) {
+            if (read.getSequence().size() > parameters.getMinReadSize()) {
                 // 2.1 Determine best offset vs core
                 int bestOffset = 0, bestOffsetMMs = parameters.getAnchorRegion();
                 for (int offset = -parameters.getOffsetRange(); offset <= parameters.getOffsetRange(); offset++) {
                     int offsetMMs = 0;
-                    coreSeq = getCoreSeq(read.getData().getSequence(), offset);
+                    coreSeq = getCoreSeq(read.getSequence(), offset);
                     if (coreSeq.equals(bestCoreSeq)) {
                         bestOffset = offset;
                         bestOffsetMMs = 0;
@@ -102,20 +102,20 @@ public final class SAssembler extends Assembler<SConsensus, SMig> {
 
                 // 2.2 Keep if more than 'maxMMs' per 'anchorRegion'
                 if (bestOffsetMMs <= parameters.getMaxMMs()) {
-                    int l = read.getData().size(), mid = l / 2;
+                    int l = read.size(), mid = l / 2;
                     int x = mid - bestOffset, y = l - x;
                     avgX += x;
                     avgY += y;
 
                     xArr.add(x);
 
-                    assembledReads.add(read.getData());
+                    assembledReads.add(read);
                 } else {
-                    droppedReads.add(read.getData()); // drop due to too much errors
+                    droppedReads.add(read); // drop due to too much errors
                     readsDroppedErrors.incrementAndGet();
                 }
             } else {
-                droppedReads.add(read.getData()); // drop too short
+                droppedReads.add(read); // drop too short
                 readsDroppedShort.incrementAndGet();
             }
         }

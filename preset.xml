@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<MigecParameterSet>
+  <version>0.1</version>
+  <AssemblerParameters>
+    <offsetRange>4</offsetRange>
+    <anchorRegion>8</anchorRegion>
+    <maxMMs>4</maxMMs>
+    <maxConsequentMMs>3</maxConsequentMMs>
+    <qualityWeightedMode>true</qualityWeightedMode>
+    <maxDroppedReadsRatio>0.3</maxDroppedReadsRatio>
+    <cqsRescue>false</cqsRescue>
+  </AssemblerParameters>
+  <ConsensusAlignerParameters>
+    <consensusQualityThreshold>25</consensusQualityThreshold>
+    <readQualityThreshold>20</readQualityThreshold>
+    <backAlignDroppedReads>true</backAlignDroppedReads>
+  </ConsensusAlignerParameters>
+  <CorrectorParameters>
+    <classifierProbabilityThreshold>0.5</classifierProbabilityThreshold>
+    <filterSingletons>false</filterSingletons>
+    <singletonFilterRatio>10000.0</singletonFilterRatio>
+    <minMigCoverage>5</minMigCoverage>
+    <minMigCount>10</minMigCount>
+    <minAvgQuality>20</minAvgQuality>
+    <maxBasePairsMaskedRatio>0.5</maxBasePairsMaskedRatio>
+  </CorrectorParameters>
+  <HaplotypeTreeParameters>
+    <errorMaskingTestMajorRatio>2.0</errorMaskingTestMajorRatio>
+    <errorMaskingTestPvalueThreshold>0.05</errorMaskingTestPvalueThreshold>
+    <depth>2</depth>
+  </HaplotypeTreeParameters>
+  <DemultiplexParameters>
+    <illuminaReads>true</illuminaReads>
+    <orientedReads>false</orientedReads>
+    <scanRC>false</scanRC>
+    <maxTruncations>2</maxTruncations>
+    <maxGoodQualMMRatio>0.05</maxGoodQualMMRatio>
+    <maxLowQualityMMRatio>0.1</maxLowQualityMMRatio>
+    <lowQualityThreshold>20</lowQualityThreshold>
+  </DemultiplexParameters>
+  <readerUmiQualThreshold>20</readerUmiQualThreshold>
+  <minOverseq>4</minOverseq>
+  <forceOverseq>false</forceOverseq>
+  <defaultOverseq>4</defaultOverseq>
+  <minUniqueUmis>1</minUniqueUmis>
+  <filterMismatchUmis>true</filterMismatchUmis>
+  <umiMismatchFilterRatio>8.0</umiMismatchFilterRatio>
+  <outputFasta>true</outputFasta>
+</MigecParameterSet>
+

@@ -15,15 +15,14 @@
  */
 package com.milaboratory.oncomigec.core.io.misc;
 
-import com.milaboratory.core.sequencing.read.SequencingRead;
 import com.milaboratory.oncomigec.preproc.demultiplex.entity.CheckoutResult;
 
-public class ReadInfo<ReadType extends SequencingRead> {
-    private final ReadType read;
+public class ReadInfo<SQPairType> {
+    private final SQPairType read;
     private final boolean flipMe, rcMe;
     private final CheckoutResult checkoutResult;
 
-    public ReadInfo(ReadType read, boolean flipMe, boolean rcMe, CheckoutResult checkoutResult) {
+    public ReadInfo(SQPairType read, boolean flipMe, boolean rcMe, CheckoutResult checkoutResult) {
         this.read = read;
         this.flipMe = flipMe;
         this.rcMe = rcMe;
@@ -34,7 +33,7 @@ public class ReadInfo<ReadType extends SequencingRead> {
         return checkoutResult;
     }
 
-    public ReadType getRead() {
+    public SQPairType getRead() {
         return read;
     }
 

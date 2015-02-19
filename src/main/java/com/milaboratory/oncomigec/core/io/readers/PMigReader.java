@@ -16,16 +16,15 @@
 package com.milaboratory.oncomigec.core.io.readers;
 
 import cc.redberry.pipe.OutputPortCloseable;
+import com.milaboratory.core.sequence.NucleotideSQPair;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.core.sequence.quality.QualityFormat;
 import com.milaboratory.core.sequencing.io.fastq.PFastqReader;
-import com.milaboratory.core.sequencing.read.PSequencingRead;
-import com.milaboratory.core.sequencing.read.PSequencingReadImpl;
-import com.milaboratory.core.sequencing.read.SSequencingRead;
 import com.milaboratory.core.sequencing.read.SequencingRead;
 import com.milaboratory.oncomigec.core.io.entity.PMig;
 import com.milaboratory.oncomigec.core.io.entity.SMig;
 import com.milaboratory.oncomigec.core.io.misc.MigReaderParameters;
+import com.milaboratory.oncomigec.core.io.misc.NucleotideSQPairTuple;
 import com.milaboratory.oncomigec.core.io.misc.ReadInfo;
 import com.milaboratory.oncomigec.preproc.demultiplex.barcode.BarcodeSearcherResult;
 import com.milaboratory.oncomigec.preproc.demultiplex.entity.PCheckoutResult;
@@ -93,23 +92,23 @@ public final class PMigReader extends MigReader<PMig> {
         while (iterator.hasNext()) {
             Map.Entry<NucleotideSequence, List<ReadInfo>> entry = iterator.next();
             if (entry.getValue().size() >= sizeThreshold && checkUmiMismatch(sampleName, entry.getKey())) {
-                List<SSequencingRead> readList1 = new ArrayList<>(),
+                List<NucleotideSQPair> readList1 = new ArrayList<>(),
                         readList2 = new ArrayList<>();
 
                 for (ReadInfo readInfo : entry.getValue()) {
-                    PSequencingRead pRead = (PSequencingRead) readInfo.getRead();
-                    SSequencingRead read1 = pRead.getSingleRead(0),
-                            read2 = pRead.getSingleRead(1);
+                    NucleotideSQPairTuple pRead = (NucleotideSQPairTuple) readInfo.getRead();
+                    NucleotideSQPair read1 = pRead.getFirst(),
+                            read2 = pRead.getSecond();
 
                     // Barcode was found in RC version of entire read pair
                     // bring back to strand specified in checkout processor barcode
                     if (readInfo.rcMe()) {
-                        read1 = Util.rc(read1);
-                        read2 = Util.rc(read2);
+                        read1 = read1.getRC();
+                        read2 = read2.getRC();
                     }
 
                     if (readInfo.flipMe()) {
-                        SSequencingRead tmp = read2;
+                        NucleotideSQPair tmp = read2;
                         read2 = read1;
                         read1 = tmp;
                     }
@@ -137,23 +136,15 @@ public final class PMigReader extends MigReader<PMig> {
                         // -R1|---> -R2----|-->
 
                         //if (result.masterFirst()) {
-                        read1 = Util.sub(read1, result.getMasterResult().getTo());
+                        read1 = read1.getRange(result.getMasterResult().getTo(), read1.size());
                         if (result.getSlaveResult() != BarcodeSearcherResult.BLANK_RESULT)
-                            read2 = Util.sub(read2, 0, result.getSlaveResult().getFrom());
-                        //} else {
-                        //read2 = Util.sub(read2, 0, result.getMasterResult().getFrom());
-                        //if (result.getSlaveResult() != BarcodeSearcherResult.BLANK_RESULT)
-                        //    read1 = Util.sub(read1, result.getSlaveResult().getTo());
-                        //    read2 = Util.sub(read2, result.getMasterResult().getTo());
-                        //    if (result.getSlaveResult() != BarcodeSearcherResult.BLANK_RESULT)
-                        //        read1 = Util.sub(read1, 0, result.getSlaveResult().getFrom());
-                        //}
+                            read1 = read1.getRange(0, result.getSlaveResult().getFrom());
 
                         barcodeOffset = result.getMasterResult().getTo();
                     }
 
                     ReadOverlapper.OverlapResult overlapResult =
-                            readOverlapper.overlap(new PSequencingReadImpl(read1, read2), barcodeOffset);
+                            readOverlapper.overlap(new NucleotideSQPairTuple(read1, read2), barcodeOffset);
                     // orient reads, so that all have, depending on user specified options,
                     // either master or slave in RQ
                     //readInfo.flipMe() ?
@@ -162,8 +153,8 @@ public final class PMigReader extends MigReader<PMig> {
 
                     // Note that we don't need to worry for Illumina RC of mates
                     // even if Overlapper has failed, it performs Illumina RC
-                    readList1.add(overlapResult.getReadPair().getSingleRead(0));
-                    readList2.add(overlapResult.getReadPair().getSingleRead(1));
+                    readList1.add(overlapResult.getReadPair().getFirst());
+                    readList2.add(overlapResult.getReadPair().getSecond());
                 }
 
                 return new PMig(new SMig(readList1, entry.getKey()),
