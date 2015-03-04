@@ -5,7 +5,6 @@ import com.milaboratory.oncomigec.core.io.misc.UmiHistogram;
 import com.milaboratory.oncomigec.model.classifier.BaseVariantClassifier;
 import com.milaboratory.oncomigec.model.classifier.VariantClassifier;
 import org.apache.commons.cli.*;
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
@@ -15,6 +14,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import static com.milaboratory.oncomigec.pipeline.IOUtils.writeStringToFile;
 
 public final class MigecCli {
     private static boolean appendMode = false;
@@ -538,10 +539,5 @@ public final class MigecCli {
             e.printStackTrace();
             System.exit(-1);
         }
-    }
-
-    private static void writeStringToFile(File file, String string) throws IOException {
-        // in case someone want to concatenate the output later
-        FileUtils.writeStringToFile(file, string.endsWith("\n") ? string : (string + "\n"), appendMode);
     }
 }
