@@ -34,7 +34,7 @@ public class BarcodeListParser {
     }
 
     public static SCheckoutProcessor generateSCheckoutProcessor(List<String> lines,
-                                                                DemultiplexParameters demultiplexParameters) throws Exception {
+                                                                DemultiplexParameters demultiplexParameters) {
         return generateSCheckoutProcessor(lines, demultiplexParameters.scanRC(),
                 demultiplexParameters.getMaxTruncations(), demultiplexParameters.getMaxGoodQualMMRatio(),
                 demultiplexParameters.getMaxLowQualityMMRatio(), demultiplexParameters.getLowQualityThreshold());
@@ -45,7 +45,7 @@ public class BarcodeListParser {
                                                                 int maxTruncations,
                                                                 double maxGoodMMRatio,
                                                                 double maxLowQualMMRatio,
-                                                                byte lowQualityThreshold) throws Exception {
+                                                                byte lowQualityThreshold) {
         List<BarcodeSearcher> barcodeSearchers = new ArrayList<>();
         List<String> sampleNames = new ArrayList<>();
         Set<String> usedBarcodes = new HashSet<>();
@@ -54,17 +54,17 @@ public class BarcodeListParser {
             if (!line.startsWith("#")) {
                 String[] splitLine = line.split("\t");
                 if (splitLine.length < 3)
-                    throw new Exception("Bad barcode line:\t" + line);
+                    throw new RuntimeException("Bad barcode line:\t" + line);
                 String sampleName = splitLine[0];
                 String barcode = splitLine[2];
                 if (usedBarcodes.contains(barcode))
-                    throw new Exception("Duplicate barcode:\t" + line);
+                    throw new RuntimeException("Duplicate barcode:\t" + line);
                 else
                     usedBarcodes.add(barcode);
                 if (barcode.equals("-"))
-                    throw new Exception("Blank master barcode not allowed:\t" + line);
+                    throw new RuntimeException("Blank master barcode not allowed:\t" + line);
                 if (!bcRgx.matcher(barcode).matches())
-                    throw new Exception("Bad barcode character set:\t" + line);
+                    throw new RuntimeException("Bad barcode character set:\t" + line);
 
                 BarcodeSearcher bs = new BarcodeSearcher(barcode, maxTruncations,
                         maxGoodMMRatio, maxLowQualMMRatio, lowQualityThreshold);
@@ -80,12 +80,12 @@ public class BarcodeListParser {
     }
 
 
-    public static PCheckoutProcessor generatePCheckoutProcessor(List<String> lines) throws Exception {
+    public static PCheckoutProcessor generatePCheckoutProcessor(List<String> lines) {
         return generatePCheckoutProcessor(lines, DemultiplexParameters.DEFAULT);
     }
 
     public static PCheckoutProcessor generatePCheckoutProcessor(List<String> lines,
-                                                                DemultiplexParameters demultiplexParameters) throws Exception {
+                                                                DemultiplexParameters demultiplexParameters) {
         return generatePCheckoutProcessor(lines, demultiplexParameters.scanRC(), demultiplexParameters.orientedReads(),
                 demultiplexParameters.illuminaReads(),
                 demultiplexParameters.getMaxTruncations(), demultiplexParameters.getMaxGoodQualMMRatio(),
@@ -99,7 +99,7 @@ public class BarcodeListParser {
                                                                 int maxTruncations,
                                                                 double maxGoodMMRatio,
                                                                 double maxLowQualMMRatio,
-                                                                byte lowQualityThreshold) throws Exception {
+                                                                byte lowQualityThreshold) {
         List<BarcodeSearcher> masterBarcodeSearchers = new ArrayList<>(),
                 slaveBarcodeSearchers = new ArrayList<>();
         List<Boolean> masterFirstList = new ArrayList<>();
@@ -111,12 +111,12 @@ public class BarcodeListParser {
                 String[] splitLine = line.split("\t");
 
                 if (splitLine.length < 4)
-                    throw new Exception("Bad barcode line:\t" + line.replace("\t", "(tab)"));
+                    throw new RuntimeException("Bad barcode line:\t" + line.replace("\t", "(tab)"));
 
                 String sampleName = splitLine[0];
 
                 if (!(splitLine[1].equals("0") || splitLine[1].equals("1")))
-                    throw new Exception("Values in master first column should be either 0 or 1:\t" + line);
+                    throw new RuntimeException("Values in master first column should be either 0 or 1:\t" + line);
 
                 boolean masterFirst = Integer.parseInt(splitLine[1]) > 0;
                 masterFirstList.add(masterFirst);
@@ -129,18 +129,18 @@ public class BarcodeListParser {
                         usedBarcodes.contains(noSlaveBarcode) ||
                         // slave not specified here, but master barcode already used
                         (slaveBarcode.equals("-") && usedMasterBarcodes.contains(masterBarcode)))
-                    throw new Exception("Duplicate barcode:\t" + line);
+                    throw new RuntimeException("Duplicate barcode:\t" + line);
                 else {
                     usedBarcodes.add(barcode);
                     usedMasterBarcodes.add(masterBarcode);
                 }
 
                 if (masterBarcode.equals("-"))
-                    throw new Exception("Blank master barcode not allowed:\t" + line);
+                    throw new RuntimeException("Blank master barcode not allowed:\t" + line);
 
                 if (!bcRgx.matcher(masterBarcode).matches() ||
                         (!slaveBarcode.equals("-") && !bcRgx.matcher(slaveBarcode).matches()))
-                    throw new Exception("Bad barcode character set:\t" + line);
+                    throw new RuntimeException("Bad barcode character set:\t" + line);
 
                 BarcodeSearcher masterBs = new BarcodeSearcher(masterBarcode, maxTruncations,
                         maxGoodMMRatio, maxLowQualMMRatio, lowQualityThreshold),

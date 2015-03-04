@@ -17,9 +17,9 @@ package com.milaboratory.oncomigec.preproc.demultiplex.processor;
 
 import com.milaboratory.core.sequence.NucleotideSQPair;
 import com.milaboratory.core.sequencing.read.PSequencingRead;
-import com.milaboratory.oncomigec.preproc.demultiplex.entity.PCheckoutResult;
 import com.milaboratory.oncomigec.preproc.demultiplex.barcode.BarcodeSearcher;
 import com.milaboratory.oncomigec.preproc.demultiplex.barcode.BarcodeSearcherResult;
+import com.milaboratory.oncomigec.preproc.demultiplex.entity.PCheckoutResult;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
@@ -34,17 +34,17 @@ public final class PCheckoutProcessor extends CheckoutProcessor<PCheckoutResult,
 
     public PCheckoutProcessor(String[] sampleNames,
                               BarcodeSearcher[] masterBarcodes, BarcodeSearcher[] slaveBarcodes,
-                              boolean[] masterFirst) throws Exception {
+                              boolean[] masterFirst) {
         this(sampleNames, masterBarcodes, slaveBarcodes, masterFirst, false, false, true);
     }
 
     public PCheckoutProcessor(String[] sampleNames,
                               BarcodeSearcher[] masterBarcodes, BarcodeSearcher[] slaveBarcodes,
                               boolean[] masterFirst,
-                              boolean checkRC, boolean nonOrientedReads, boolean illuminaReads) throws Exception {
+                              boolean checkRC, boolean nonOrientedReads, boolean illuminaReads) {
         super(sampleNames, masterBarcodes, checkRC);
         if (masterBarcodes.length != slaveBarcodes.length)
-            throw new Exception("Number of master and slave barcodes provided doesn't agree");
+            throw new RuntimeException("Number of master and slave barcodes provided doesn't agree");
 
         this.slaveBarcodes = slaveBarcodes;
         this.nonOrientedReads = nonOrientedReads;

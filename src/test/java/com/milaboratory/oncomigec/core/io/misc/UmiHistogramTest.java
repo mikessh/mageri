@@ -40,7 +40,7 @@ public class UmiHistogramTest {
 
     @Test
     public void test() {
-        System.out.println("Testing UmiHistogram estimates");
+        System.out.println("Running performance test for UmiHistogram");
         UmiHistogram histogram = prepareHistogram();
 
         System.out.println(histogram);
@@ -60,7 +60,7 @@ public class UmiHistogramTest {
 
     @Test
     public void serializationTest() throws IOException {
-        System.out.println("Testing UmiHistogram serialization");
+        System.out.println("Testing serialization test for UmiHistogram");
         UmiHistogram histogram = prepareHistogram();
         TestUtil.serializationCheckForOutputData(histogram);
     }
