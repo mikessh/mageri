@@ -24,7 +24,7 @@ import com.milaboratory.core.sequencing.read.SequencingRead;
 import com.milaboratory.oncomigec.core.io.entity.SMig;
 import com.milaboratory.oncomigec.core.io.misc.MigReaderParameters;
 import com.milaboratory.oncomigec.core.io.misc.ReadInfo;
-import com.milaboratory.oncomigec.preproc.demultiplex.processor.PCheckoutProcessor;
+import com.milaboratory.oncomigec.preproc.demultiplex.processor.SCheckoutProcessor;
 import com.milaboratory.util.CompressionType;
 
 import java.io.File;
@@ -36,7 +36,7 @@ import java.util.List;
 import java.util.Map;
 
 public final class SMigReader extends MigReader<SMig> {
-    public SMigReader(SFastqReader reader, PCheckoutProcessor checkoutProcessor, MigReaderParameters migReaderParameters)
+    public SMigReader(SFastqReader reader, SCheckoutProcessor checkoutProcessor, MigReaderParameters migReaderParameters)
             throws IOException, InterruptedException {
         super(migReaderParameters, checkoutProcessor);
 
@@ -44,25 +44,25 @@ public final class SMigReader extends MigReader<SMig> {
     }
 
     public SMigReader(File file1,
-                      PCheckoutProcessor checkoutProcessor) throws IOException, InterruptedException {
+                      SCheckoutProcessor checkoutProcessor) throws IOException, InterruptedException {
         this(file1, checkoutProcessor, MigReaderParameters.DEFAULT);
     }
 
     public SMigReader(File file1,
-                      PCheckoutProcessor checkoutProcessor, MigReaderParameters migReaderParameters)
+                      SCheckoutProcessor checkoutProcessor, MigReaderParameters migReaderParameters)
             throws IOException, InterruptedException {
         this(new SFastqReader(file1), checkoutProcessor, migReaderParameters);
     }
 
     SMigReader(InputStream inputStream1,
-               PCheckoutProcessor checkoutProcessor, MigReaderParameters migReaderParameters)
+               SCheckoutProcessor checkoutProcessor, MigReaderParameters migReaderParameters)
             throws IOException, InterruptedException {
         this(new SFastqReader(inputStream1, QualityFormat.Phred33, CompressionType.None),
                 checkoutProcessor, migReaderParameters);
     }
 
     SMigReader(InputStream inputStream1,
-               PCheckoutProcessor checkoutProcessor)
+               SCheckoutProcessor checkoutProcessor)
             throws IOException, InterruptedException {
         this(inputStream1, checkoutProcessor, MigReaderParameters.DEFAULT);
     }

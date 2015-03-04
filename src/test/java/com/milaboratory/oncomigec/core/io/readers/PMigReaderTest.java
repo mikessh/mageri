@@ -20,11 +20,10 @@ import com.milaboratory.core.sequencing.io.fastq.SFastqReader;
 import com.milaboratory.core.sequencing.read.SSequencingRead;
 import com.milaboratory.oncomigec.core.io.entity.PMig;
 import com.milaboratory.oncomigec.core.io.misc.MigReaderParameters;
-import com.milaboratory.oncomigec.core.io.misc.NucleotideSQPairTuple;
 import com.milaboratory.oncomigec.core.io.misc.UmiHistogram;
 import com.milaboratory.oncomigec.preproc.demultiplex.config.BarcodeListParser;
-import com.milaboratory.oncomigec.util.testing.TestResources;
 import com.milaboratory.oncomigec.util.Util;
+import com.milaboratory.oncomigec.util.testing.TestResources;
 import org.junit.Assert;
 
 import java.io.File;
@@ -51,7 +50,7 @@ public class PMigReaderTest {
             //for (NucleotideSQPairTuple read : pMig.getMig1().getReads())
             //    Assert.assertEquals("Correct UMI header in read",
             //            Util.extractUmi(read.getDescription()),
-             //           umi);
+            //           umi);
 
             // Manually count number of reads with UMI
             SFastqReader standardReader = new SFastqReader(file1);
@@ -90,7 +89,7 @@ public class PMigReaderTest {
             NucleotideSequence umi = pMig.getUmi();
 
             // Check that all reads have correct header
-            //for (SSequencingRead read : pMig.getMig1().getReads())
+            //for (NucleotideSQPair read : pMig.getMig1().getReads())
             //    if (!Util.extractUmi(read.getDescription()).equals(umi))
             //        readsWithDifferentUmisCount++;
 
