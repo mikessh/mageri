@@ -18,13 +18,14 @@ package com.milaboratory.oncomigec.core.io.misc;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.util.Bit2Array;
 
+import java.io.Serializable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class UmiHistogram {
+public class UmiHistogram implements Serializable{
     // todo: from mixture
     // todo: UMI redundancy/entropy
-    private final ConcurrentHashMap<NucleotideSequence, AtomicInteger> umiCounterMap =
+    private transient final ConcurrentHashMap<NucleotideSequence, AtomicInteger> umiCounterMap =
             new ConcurrentHashMap<>();
 
     private static final int N = 20;
@@ -147,8 +148,8 @@ public class UmiHistogram {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("#").append(super.toString())
-                .append("\nOverseqEstimate=").append(getMigSizeThreshold())
+        StringBuilder sb = new StringBuilder("#").append("UmiHistogram")
+                .append("\n#OverseqEstimate=").append(getMigSizeThreshold())
                 .append("\nMigSize");
         for (int i = 0; i < N; i++)
             sb.append("\t").append(convertToValue(i));

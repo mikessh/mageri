@@ -2,17 +2,19 @@ package com.milaboratory.oncomigec.core.io.misc;
 
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.oncomigec.util.Util;
+import com.milaboratory.oncomigec.util.testing.TestUtil;
 import org.apache.commons.math.random.MersenneTwister;
 import org.apache.commons.math.random.RandomGenerator;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.IOException;
+
 
 public class UmiHistogramTest {
     private static RandomGenerator randomGenerator = new MersenneTwister(51102);
 
-    @Test
-    public void test() {
+    private static UmiHistogram prepareHistogram() {
         UmiHistogram histogram = new UmiHistogram();
 
         // correct
@@ -32,6 +34,15 @@ public class UmiHistogramTest {
         }
 
         histogram.calculateHistogram();
+
+        return histogram;
+    }
+
+    @Test
+    public void test() {
+        System.out.println("Testing UmiHistogram estimates");
+        UmiHistogram histogram = prepareHistogram();
+
         System.out.println(histogram);
 
         int overseq = histogram.getMigSizeThreshold();
@@ -45,5 +56,12 @@ public class UmiHistogramTest {
                 " of total = " + histogram.getMigsTotal());
 
         Assert.assertEquals("Correct overseq", 4, overseq);
+    }
+
+    @Test
+    public void serializationTest() throws IOException {
+        System.out.println("Testing UmiHistogram serialization");
+        UmiHistogram histogram = prepareHistogram();
+        TestUtil.serializationCheckForOutputData(histogram);
     }
 }
