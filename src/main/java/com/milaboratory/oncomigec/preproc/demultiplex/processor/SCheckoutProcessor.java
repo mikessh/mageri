@@ -48,4 +48,10 @@ public final class SCheckoutProcessor extends CheckoutProcessor<SCheckoutResult,
         }
         return null;
     }
+
+    // no flipping/rc should be performed for external data
+    @Override
+    public boolean performIlluminaRC() {
+        return false;
+    }
 }

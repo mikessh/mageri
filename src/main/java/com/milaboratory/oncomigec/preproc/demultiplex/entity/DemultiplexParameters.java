@@ -57,7 +57,7 @@ public class DemultiplexParameters implements ParameterSet{
     @Override
     public Element toXml() {
         Element e = new Element("DemultiplexParameters");
-        e.addContent(new Element("illuminaReads").setText(Boolean.toString(illuminaReads)));
+        e.addContent(new Element("performIlluminaRC").setText(Boolean.toString(illuminaReads)));
         e.addContent(new Element("orientedReads").setText(Boolean.toString(orientedReads)));
         e.addContent(new Element("scanRC").setText(Boolean.toString(scanRC)));
         e.addContent(new Element("maxTruncations").setText(Integer.toString(maxTruncations)));
@@ -70,7 +70,7 @@ public class DemultiplexParameters implements ParameterSet{
     public static DemultiplexParameters fromXml(Element parent) {
         Element e = parent.getChild("DemultiplexParameters");
         return new DemultiplexParameters(
-                Boolean.parseBoolean(e.getChildTextTrim("illuminaReads")),
+                Boolean.parseBoolean(e.getChildTextTrim("performIlluminaRC")),
                 Boolean.parseBoolean(e.getChildTextTrim("orientedReads")),
                 Boolean.parseBoolean(e.getChildTextTrim("scanRC")),
                 Integer.parseInt(e.getChildTextTrim("maxTruncations")),

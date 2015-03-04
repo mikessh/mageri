@@ -19,13 +19,14 @@ import com.milaboratory.core.sequence.NucleotideSQPair;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.oncomigec.util.Util;
 
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
-public class BarcodeSearcher {
+public class BarcodeSearcher implements Serializable {
     private final Pattern seed;
     private final String barcodeSeqeunce;
     private int seedPatternStart, seedPatternEnd;

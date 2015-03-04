@@ -31,35 +31,56 @@ import com.milaboratory.oncomigec.preproc.demultiplex.entity.PCheckoutResult;
 import com.milaboratory.oncomigec.preproc.demultiplex.processor.PCheckoutProcessor;
 import com.milaboratory.oncomigec.preproc.misc.ReadOverlapper;
 import com.milaboratory.oncomigec.util.Util;
+import com.milaboratory.util.CompressionType;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+//todo: store chekout and from stored checkout
 public final class PMigReader extends MigReader<PMig> {
-    private final ReadOverlapper readOverlapper;
-    private final boolean performIlluminaRC;
+    private final ReadOverlapper readOverlapper = new ReadOverlapper(true);
+
+    public PMigReader(PFastqReader reader, PCheckoutProcessor checkoutProcessor, MigReaderParameters migReaderParameters)
+            throws IOException, InterruptedException {
+        super(migReaderParameters, checkoutProcessor);
+
+        buildUmiIndex(new PairedReaderWrapper(reader));
+    }
 
     public PMigReader(File file1, File file2,
                       PCheckoutProcessor checkoutProcessor) throws IOException, InterruptedException {
         this(file1, file2, checkoutProcessor, MigReaderParameters.DEFAULT);
     }
 
-    //todo: store chekout and from stored checkout
     public PMigReader(File file1, File file2,
                       PCheckoutProcessor checkoutProcessor, MigReaderParameters migReaderParameters)
             throws IOException, InterruptedException {
-        super(migReaderParameters, checkoutProcessor);
+        this(new PFastqReader(file1, file2, QualityFormat.Phred33), checkoutProcessor, migReaderParameters);
+    }
 
-        // Only RC of slave is performed in case of illumina reads
-        // preserve orientation of checkouted reads
-        this.readOverlapper = new ReadOverlapper(true);
-        this.performIlluminaRC = checkoutProcessor.illuminaReads();
+    PMigReader(InputStream inputStream1, InputStream inputStream2,
+               PCheckoutProcessor checkoutProcessor, MigReaderParameters migReaderParameters)
+            throws IOException, InterruptedException {
+        this(new PFastqReader(inputStream1, inputStream2, QualityFormat.Phred33, CompressionType.None, null, false, false),
+                checkoutProcessor, migReaderParameters);
+    }
 
-        preprocess(file1, file2);
+    PMigReader(InputStream inputStream1, InputStream inputStream2,
+               PCheckoutProcessor checkoutProcessor)
+            throws IOException, InterruptedException {
+        this(inputStream1, inputStream2, checkoutProcessor, MigReaderParameters.DEFAULT);
+    }
+
+    public PMigReader(PFastqReader reader, String sampleName, MigReaderParameters migReaderParameters)
+            throws IOException, InterruptedException {
+        super(migReaderParameters, sampleName);
+
+        buildUmiIndex(new PairedReaderWrapper(reader));
     }
 
     public PMigReader(File file1, File file2,
@@ -69,21 +90,20 @@ public final class PMigReader extends MigReader<PMig> {
 
     public PMigReader(File file1, File file2, String sampleName,
                       MigReaderParameters migReaderParameters) throws Exception {
-        super(migReaderParameters, sampleName);
-
-        // no flipping/rc should be performed for external data
-        this.readOverlapper = new ReadOverlapper(true);
-        this.performIlluminaRC = false;
-
-        preprocess(file1, file2);
+        this(new PFastqReader(file1, file2, QualityFormat.Phred33), sampleName, migReaderParameters);
     }
 
-    private void preprocess(File file1, File file2) throws IOException, InterruptedException {
-        // Only work with uncompressed files
-        final PFastqReader reader = new PFastqReader(file1, file2, QualityFormat.Phred33);
+    PMigReader(InputStream inputStream1, InputStream inputStream2,
+               String sampleName, MigReaderParameters migReaderParameters)
+            throws IOException, InterruptedException {
+        this(new PFastqReader(inputStream1, inputStream2, QualityFormat.Phred33, CompressionType.None, null, false, false),
+                sampleName, migReaderParameters);
+    }
 
-        // Build UMI index
-        buildUmiIndex(new PairedReaderWrapper(reader));
+    PMigReader(InputStream inputStream1, InputStream inputStream2,
+               String sampleName)
+            throws IOException, InterruptedException {
+        this(inputStream1, inputStream2, sampleName, MigReaderParameters.DEFAULT);
     }
 
     @Override
@@ -114,7 +134,7 @@ public final class PMigReader extends MigReader<PMig> {
                     }
 
                     // For illumina systems
-                    if (performIlluminaRC)
+                    if (checkoutProcessor.performIlluminaRC())
                         read2 = Util.rc(read2);
 
                     // Trim reads if corresponding option is set

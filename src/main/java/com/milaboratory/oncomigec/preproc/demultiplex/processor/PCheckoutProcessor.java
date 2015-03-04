@@ -131,7 +131,10 @@ public final class PCheckoutProcessor extends CheckoutProcessor<PCheckoutResult,
         return masterFirst;
     }
 
-    public boolean illuminaReads() {
+    // Only RC of slave is performed in case of illumina reads
+    // preserve orientation of checkouted reads
+    @Override
+    public boolean performIlluminaRC() {
         return illuminaReads;
     }
 

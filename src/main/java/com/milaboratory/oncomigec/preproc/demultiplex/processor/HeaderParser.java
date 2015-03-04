@@ -28,6 +28,12 @@ public final class HeaderParser extends CheckoutProcessor<CheckoutResult, Sequen
             return new SimpleCheckoutResult(sampleName, umiSQPair);
     }
 
+    // no flipping/rc should be performed for external data
+    @Override
+    public boolean performIlluminaRC() {
+        return false;
+    }
+
     @Override
     public boolean[] getMasterFirst() {
         return new boolean[]{true};

@@ -24,6 +24,7 @@ import com.milaboratory.oncomigec.preproc.demultiplex.entity.SimpleCheckoutResul
 import com.milaboratory.oncomigec.util.Util;
 
 public class ReadPositionUmiExtractor extends CheckoutProcessor<CheckoutResult, SequencingRead> {
+    // todo: implement
     private final String sampleName;
 
     public ReadPositionUmiExtractor(String sampleName, int start, int end) {
@@ -47,5 +48,10 @@ public class ReadPositionUmiExtractor extends CheckoutProcessor<CheckoutResult, 
     @Override
     public boolean[] getMasterFirst() {
         return new boolean[]{true};
+    }
+
+    @Override
+    public boolean performIlluminaRC() {
+        return false;
     }
 }

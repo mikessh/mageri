@@ -33,10 +33,10 @@ public abstract class MigReader<MigType extends Mig> implements OutputPort<MigTy
     protected final List<String> sampleNames;
 
     // Umi index is here
-    protected final Map<String, Iterator<Map.Entry<NucleotideSequence, List<ReadInfo>>>> iteratorMap = new HashMap<>();
+    protected transient final Map<String, Iterator<Map.Entry<NucleotideSequence, List<ReadInfo>>>> iteratorMap = new HashMap<>();
     protected final Map<String, UmiHistogram> umiHistogramBySample = new HashMap<>();
 
-    private final CheckoutProcessor checkoutProcessor;
+    protected final CheckoutProcessor checkoutProcessor;
 
     protected MigReader(MigReaderParameters migReaderParameters, CheckoutProcessor checkoutProcessor) {
         this.migReaderParameters = migReaderParameters;

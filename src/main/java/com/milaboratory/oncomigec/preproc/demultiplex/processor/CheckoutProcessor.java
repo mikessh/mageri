@@ -19,6 +19,7 @@ import com.milaboratory.core.sequencing.read.SequencingRead;
 import com.milaboratory.oncomigec.preproc.demultiplex.barcode.BarcodeSearcher;
 import com.milaboratory.oncomigec.preproc.demultiplex.entity.CheckoutResult;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -26,7 +27,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicLongArray;
 
-public abstract class CheckoutProcessor<T extends CheckoutResult, V extends SequencingRead> {
+public abstract class CheckoutProcessor<T extends CheckoutResult, V extends SequencingRead> implements Serializable {
     protected final AtomicLongArray masterCounters;
     protected final AtomicLong masterNotFoundCounter, totalCounter;
     protected final String[] sampleNames;
@@ -79,6 +80,8 @@ public abstract class CheckoutProcessor<T extends CheckoutResult, V extends Sequ
         Arrays.fill(masterFirst, true);
         return masterFirst;
     }
+
+    public abstract boolean performIlluminaRC();
 
     @Override
     public String toString() {
