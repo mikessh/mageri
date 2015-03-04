@@ -24,7 +24,7 @@ public final class MigecCli {
     private static final String MY_PATH = ME.getProtectionDomain().getCodeSource().getLocation().getFile(),
             MY_VERSION = ME.getPackage().getImplementationVersion();
 
-    private static Date start;
+    private static Date start = new Date();
 
     private static void print1(String message) {
         start = new Date();

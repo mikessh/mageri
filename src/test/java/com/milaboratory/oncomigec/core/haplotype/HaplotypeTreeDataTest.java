@@ -15,29 +15,9 @@
  */
 package com.milaboratory.oncomigec.core.haplotype;
 
-import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
-import com.milaboratory.oncomigec.core.align.processor.aligners.ExtendedExomeAligner;
-import com.milaboratory.oncomigec.core.align.reference.ReferenceLibrary;
-import com.milaboratory.oncomigec.core.assemble.entity.Consensus;
-import com.milaboratory.oncomigec.core.assemble.processor.Assembler;
-import com.milaboratory.oncomigec.core.assemble.processor.PAssembler;
-import com.milaboratory.oncomigec.core.consalign.entity.AlignedConsensus;
-import com.milaboratory.oncomigec.core.consalign.processor.ConsensusAligner;
-import com.milaboratory.oncomigec.core.consalign.processor.PConsensusAligner;
-import com.milaboratory.oncomigec.core.correct.CorrectedConsensus;
-import com.milaboratory.oncomigec.core.correct.Corrector;
-import com.milaboratory.oncomigec.core.io.entity.PMig;
-import com.milaboratory.oncomigec.core.io.readers.PMigReader;
-import com.milaboratory.oncomigec.util.testing.TestResources;
-import org.junit.Assert;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 public class HaplotypeTreeDataTest {
     //@Test
+    /*
     public void dataTest() throws Exception {
         String sampleName = "21_SPIKE-1R";//"BRAF-15";//// "SPIKE-2"
 
@@ -145,5 +125,5 @@ public class HaplotypeTreeDataTest {
         ));
 
         //
-    }
+    }*/
 }

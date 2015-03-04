@@ -19,37 +19,32 @@ import com.milaboratory.core.sequencing.io.fastq.SFastqReader;
 import com.milaboratory.core.sequencing.read.SSequencingRead;
 import com.milaboratory.oncomigec.core.io.entity.SMig;
 import com.milaboratory.oncomigec.core.io.misc.MigReaderParameters;
-import org.junit.Assert;
-import com.milaboratory.oncomigec.util.testing.TestResources;
 import com.milaboratory.oncomigec.util.Util;
+import com.milaboratory.util.CompressionType;
+import org.junit.Assert;
+import org.junit.Test;
 
-import java.io.File;
+import static com.milaboratory.oncomigec.util.testing.DefaultTestSet.SAMPLE_NAME;
+import static com.milaboratory.oncomigec.util.testing.DefaultTestSet.getR1;
 
 public class SMigReaderTest {
-    //todo: make tests
-    //@Test
+    @Test
     public void run() throws Exception {
-        String sampleName = "SPIKE";
+        SMigReader reader = new SMigReader(getR1(), SAMPLE_NAME, MigReaderParameters.IGNORE_QUAL);
 
-        File file = TestResources.getResource("21_SPIKE-1R_R1.fastq");
-        SMigReader reader = new SMigReader(file, sampleName, MigReaderParameters.IGNORE_QUAL);
-
-        for (int i = 0; i < 10; i++) {
-            // Take next large enough MIG
-            SMig sMig = reader.take(sampleName, 100);
-
+        SMig sMig;
+        while ((sMig = reader.take(SAMPLE_NAME, 5)) != null) {
             // Check that all reads have correct header
             //for (SSequencingRead read : sMig.getReads())
             //    Assert.assertEquals(Util.extractUmi(read.getDescription()), sMig.getUmi());
 
             // Manually count number of reads with UMI
-            SFastqReader standardReader = new SFastqReader(file);
+            SFastqReader standardReader = new SFastqReader(getR1(), CompressionType.None);
             SSequencingRead read;
             int rawCount = 0;
             while ((read = standardReader.take()) != null)
                 if (read.getDescription().contains(Util.UMI_FIELD_ID + ":" + sMig.getUmi()))
                     rawCount++;
-
             Assert.assertEquals(sMig.size(), rawCount);
         }
     }

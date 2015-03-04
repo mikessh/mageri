@@ -24,8 +24,9 @@ import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.core.sequence.quality.SequenceQualityPhred;
 import com.milaboratory.core.sequencing.io.fastq.SFastqReader;
 import com.milaboratory.core.sequencing.read.SSequencingRead;
-import com.milaboratory.oncomigec.util.testing.TestResources;
 import com.milaboratory.oncomigec.util.Util;
+import com.milaboratory.oncomigec.util.testing.DefaultTestSet;
+import com.milaboratory.util.CompressionType;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -175,18 +176,17 @@ public class BarcodeSearcherTest {
         }
     }
 
-    //@Test
+    @Test
     public void resourcesTest() throws IOException {
-        SFastqReader reader = new SFastqReader(TestResources.getResource("21_SPIKE-1R_R1.fastq"));
-        String signature = "NNNNNNNNNNNNtgatcttGACGTTGTagatgag";
+        SFastqReader reader = new SFastqReader(DefaultTestSet.getR1(),
+                CompressionType.None);
+
+        String signature = "NNNNNNNNNNNNNNtgatcttGACGTTGtagatgag";
         BarcodeSearcher bs = new BarcodeSearcher(signature);
         SSequencingRead read;
         int badCount = 0;
-        for (int i = 0; i < 1000; i++) {
 
-            read = reader.take();
-
-            //while ((read = reader.take()) != null) {
+        while ((read = reader.take()) != null) {
             BarcodeSearcherResult result = bs.search(read.getData());
             if (result == null) {
                 System.out.println("Failed to extract barcode: ");
@@ -195,8 +195,8 @@ public class BarcodeSearcherTest {
                 System.out.println();
                 badCount++;
             }
-            //}
         }
+
         Assert.assertEquals("Checkout is not worse than its old version", 0, badCount);
     }
 }

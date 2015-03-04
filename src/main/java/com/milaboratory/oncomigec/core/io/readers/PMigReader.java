@@ -20,11 +20,12 @@ import com.milaboratory.core.sequence.NucleotideSQPair;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.core.sequence.quality.QualityFormat;
 import com.milaboratory.core.sequencing.io.fastq.PFastqReader;
+import com.milaboratory.core.sequencing.read.PSequencingReadImpl;
 import com.milaboratory.core.sequencing.read.SequencingRead;
 import com.milaboratory.oncomigec.core.io.entity.PMig;
 import com.milaboratory.oncomigec.core.io.entity.SMig;
 import com.milaboratory.oncomigec.core.io.misc.MigReaderParameters;
-import com.milaboratory.oncomigec.core.io.misc.NucleotideSQPairTuple;
+import com.milaboratory.oncomigec.core.io.misc.MigecReadPair;
 import com.milaboratory.oncomigec.core.io.misc.ReadInfo;
 import com.milaboratory.oncomigec.preproc.demultiplex.barcode.BarcodeSearcherResult;
 import com.milaboratory.oncomigec.preproc.demultiplex.entity.PCheckoutResult;
@@ -116,9 +117,9 @@ public final class PMigReader extends MigReader<PMig> {
                         readList2 = new ArrayList<>();
 
                 for (ReadInfo readInfo : entry.getValue()) {
-                    NucleotideSQPairTuple pRead = (NucleotideSQPairTuple) readInfo.getRead();
-                    NucleotideSQPair read1 = pRead.getFirst(),
-                            read2 = pRead.getSecond();
+                    SequencingRead pRead = readInfo.getRead();
+                    NucleotideSQPair read1 = pRead.getData(0),
+                            read2 = pRead.getData(1);
 
                     // Barcode was found in RC version of entire read pair
                     // bring back to strand specified in checkout processor barcode
@@ -164,7 +165,7 @@ public final class PMigReader extends MigReader<PMig> {
                     }
 
                     ReadOverlapper.OverlapResult overlapResult =
-                            readOverlapper.overlap(new NucleotideSQPairTuple(read1, read2), barcodeOffset);
+                            readOverlapper.overlap(new PSequencingReadImpl(0, null, null, read1, read2), barcodeOffset);
                     // orient reads, so that all have, depending on user specified options,
                     // either master or slave in RQ
                     //readInfo.flipMe() ?
@@ -173,8 +174,8 @@ public final class PMigReader extends MigReader<PMig> {
 
                     // Note that we don't need to worry for Illumina RC of mates
                     // even if Overlapper has failed, it performs Illumina RC
-                    readList1.add(overlapResult.getReadPair().getFirst());
-                    readList2.add(overlapResult.getReadPair().getSecond());
+                    readList1.add(overlapResult.getReadPair().getData(0));
+                    readList2.add(overlapResult.getReadPair().getData(1));
                 }
 
                 return new PMig(new SMig(readList1, entry.getKey()),
@@ -199,7 +200,7 @@ public final class PMigReader extends MigReader<PMig> {
 
         @Override
         public SequencingRead take() {
-            // allows working with disable buffering
+            // allows working with disabled buffering
             synchronized (reader) {
                 return reader.take();
             }

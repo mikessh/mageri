@@ -22,38 +22,27 @@ import com.milaboratory.oncomigec.core.io.entity.PMig;
 import com.milaboratory.oncomigec.core.io.misc.MigReaderParameters;
 import com.milaboratory.oncomigec.core.io.misc.UmiHistogram;
 import com.milaboratory.oncomigec.preproc.demultiplex.config.BarcodeListParser;
+import com.milaboratory.oncomigec.preproc.demultiplex.entity.DemultiplexParameters;
+import com.milaboratory.oncomigec.preproc.demultiplex.processor.PCheckoutProcessor;
 import com.milaboratory.oncomigec.util.Util;
-import com.milaboratory.oncomigec.util.testing.TestResources;
+import com.milaboratory.util.CompressionType;
 import org.junit.Assert;
+import org.junit.Test;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
+import static com.milaboratory.oncomigec.util.testing.DefaultTestSet.*;
 
 public class PMigReaderTest {
-    //todo: make tests
-    //@Test
+    @Test
     public void preprocessedTest() throws Exception {
-        String sampleName = "21_SPIKE-1R";
+        PMigReader reader = new PMigReader(getR1(), getR2(),
+                SAMPLE_NAME, MigReaderParameters.IGNORE_QUAL);
 
-        File file1 = TestResources.getResource("21_SPIKE-1R_R1.fastq"),
-                file2 = TestResources.getResource("21_SPIKE-1R_R2.fastq");
-
-        PMigReader reader = new PMigReader(file1, file2, sampleName, MigReaderParameters.IGNORE_QUAL);
-
-        for (int i = 0; i < 10; i++) {
-            // Take next large enough MIG
-            PMig pMig = reader.take(sampleName, 100);
+        PMig pMig;
+        while ((pMig = reader.take(SAMPLE_NAME, 5)) != null) {
             NucleotideSequence umi = pMig.getUmi();
 
-            // Check that all reads have correct header
-            //for (NucleotideSQPairTuple read : pMig.getMig1().getReads())
-            //    Assert.assertEquals("Correct UMI header in read",
-            //            Util.extractUmi(read.getDescription()),
-            //           umi);
-
             // Manually count number of reads with UMI
-            SFastqReader standardReader = new SFastqReader(file1);
+            SFastqReader standardReader = new SFastqReader(getR1(), CompressionType.None);
             SSequencingRead read;
             int rawCount = 0;
             while ((read = standardReader.take()) != null)
@@ -64,34 +53,24 @@ public class PMigReaderTest {
         }
     }
 
-    //@Test
+    @Test
     public void checkoutTest() throws Exception {
-        File file1 = TestResources.getResource("21_SPIKE-1R_R1.fastq"),
-                file2 = TestResources.getResource("21_SPIKE-1R_R2.fastq");
-        String barcode = "SPIKE-1R\t1\tNNNNNNNNNNNNtgatcttGACGTTGTagatgag\t-";
-        List<String> barcodes = new ArrayList<>();
-        barcodes.add(barcode);
+        PCheckoutProcessor processor = BarcodeListParser.generatePCheckoutProcessor(getBarcodes(),
+                DemultiplexParameters.DEFAULT);
 
-        String sampleName = "SPIKE-1R";
+        String sampleName = "GOOD1";
 
-        PMigReader reader = new PMigReader(file1, file2,
-                BarcodeListParser.generatePCheckoutProcessor(barcodes));
+        PMigReader reader = new PMigReader(getR1(), getR2(), processor);
+        PMigReader reader2 = new PMigReader(getR1(), getR2(), sampleName);
 
-        PMigReader reader2 = new PMigReader(file1, file2, sampleName);
-        UmiHistogram histogram = reader2.getUmiHistogram("SPIKE-1R");
+        UmiHistogram histogram = reader2.getUmiHistogram(sampleName);
 
         double avgSizeDifference = 0;
-        int readsWithDifferentUmisCount = 0, totalReads = 0, n = 100;
+        int readsWithDifferentUmisCount = 0, totalReads = 0;
 
-        for (int i = 0; i < n; i++) {
-            // Take next large enough MIG
-            PMig pMig = reader.take(sampleName, 100);
+        PMig pMig;
+        while ((pMig = reader.take(sampleName, 5)) != null) {
             NucleotideSequence umi = pMig.getUmi();
-
-            // Check that all reads have correct header
-            //for (NucleotideSQPair read : pMig.getMig1().getReads())
-            //    if (!Util.extractUmi(read.getDescription()).equals(umi))
-            //        readsWithDifferentUmisCount++;
 
             totalReads += pMig.getMig1().size();
 
@@ -102,9 +81,8 @@ public class PMigReaderTest {
         }
 
         double readsWithDifferentUmisRatio = readsWithDifferentUmisCount / (double) totalReads;
-        avgSizeDifference /= n;
+        avgSizeDifference /= histogram.getMigsTotal();
 
-        System.out.println("Different UMI extraction in " + (readsWithDifferentUmisRatio * 100) + "% cases");
         Assert.assertTrue("Less than 0.1% reads have different UMIs assigned", readsWithDifferentUmisRatio < 0.001);
         System.out.println("Average difference in MIG size is " + (avgSizeDifference * 100) + "%");
         Assert.assertTrue("Average MIG size difference if < 0.1%", Math.abs(avgSizeDifference) < 0.001);

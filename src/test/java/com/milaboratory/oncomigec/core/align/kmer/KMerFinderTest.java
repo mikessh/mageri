@@ -5,14 +5,15 @@ import com.milaboratory.oncomigec.util.testing.IntRange;
 import com.milaboratory.oncomigec.util.testing.PercentRange;
 import com.milaboratory.oncomigec.util.testing.generators.GeneratorMutationModel;
 import com.milaboratory.oncomigec.util.testing.generators.RandomReferenceGenerator;
+import org.junit.Test;
 
 import java.util.Arrays;
 
 public class KMerFinderTest {
-    int nReferences = 1000, nRepetitions1 = 100, nRepetitions2 = 1000, k = 11;
+    int nReferences = 100, nRepetitions1 = 100, nRepetitions2 = 100, k = 11;
     int nBins = 100;
 
-    //@Test
+    @Test
     public void kmerFinderStressTest() {
         System.out.println("Generating real-world-size reference library");
         // human exome
@@ -22,13 +23,13 @@ public class KMerFinderTest {
 
         System.out.println("Building K-mer finder");
         long now = System.nanoTime(); // todo: timer
-        KMerFinder kMerFinder = new KMerFinder(referenceLibrary, k);
+        new KMerFinder(referenceLibrary, k);
         long elpased = System.nanoTime() - now;
         IntRange intRange = IntRange.createUpperBound("Time elpased, s", "KmerFinder-BuildHash", 60);
         intRange.assertInRange((int) (elpased / 1_000_000_000L));
     }
 
-    //@Test
+    @Test
     public void kmerFinderHitTest() {
         kmerFinderHitTest(false, PercentRange.createLowerBound("CorrectHits", "KmerFinder-NonHomologous", 99));
         kmerFinderHitTest(true, PercentRange.createLowerBound("CorrectHits", "KmerFinder-Homologous", 70));

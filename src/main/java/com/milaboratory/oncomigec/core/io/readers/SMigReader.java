@@ -108,7 +108,7 @@ public final class SMigReader extends MigReader<SMig> {
                 // todo: handle adapter trimming case (!!!)
 
                 for (ReadInfo readInfo : entry.getValue()) {
-                    NucleotideSQPair read = (NucleotideSQPair) readInfo.getRead();
+                    NucleotideSQPair read = readInfo.getRead().getData(0);
                     readList.add(readInfo.rcMe() ? read.getRC() : read);
                 }
 
@@ -132,7 +132,7 @@ public final class SMigReader extends MigReader<SMig> {
 
         @Override
         public SequencingRead take() {
-            // allows working with disable buffering
+            // allows working with disabled buffering
             synchronized (reader) {
                 return reader.take();
             }

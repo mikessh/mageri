@@ -19,20 +19,27 @@
 package com.milaboratory.oncomigec.core.io.misc;
 
 import com.milaboratory.core.sequence.NucleotideSQPair;
+import com.milaboratory.core.sequencing.read.SequencingRead;
 
-public class NucleotideSQPairTuple {
+public class MigecReadPair implements MigecRead {
     private final NucleotideSQPair first, second;
 
-    public NucleotideSQPairTuple(NucleotideSQPair first, NucleotideSQPair second) {
+    public MigecReadPair(SequencingRead sequencingRead) {
+        this(sequencingRead.getData(0), sequencingRead.getData(1));
+    }
+
+    public MigecReadPair(NucleotideSQPair first, NucleotideSQPair second) {
         this.first = first;
         this.second = second;
     }
 
-    public NucleotideSQPair getFirst() {
+    @Override
+    public NucleotideSQPair first() {
         return first;
     }
 
-    public NucleotideSQPair getSecond() {
+    @Override
+    public NucleotideSQPair second() {
         return second;
     }
 }

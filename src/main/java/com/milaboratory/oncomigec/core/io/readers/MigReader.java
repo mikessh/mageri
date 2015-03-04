@@ -10,6 +10,7 @@ import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.core.sequencing.read.SequencingRead;
 import com.milaboratory.oncomigec.core.io.entity.Mig;
 import com.milaboratory.oncomigec.core.io.misc.MigReaderParameters;
+import com.milaboratory.oncomigec.core.io.misc.MigecRead;
 import com.milaboratory.oncomigec.core.io.misc.ReadInfo;
 import com.milaboratory.oncomigec.core.io.misc.UmiHistogram;
 import com.milaboratory.oncomigec.core.io.misc.index.IndexingInfo;
