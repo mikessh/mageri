@@ -20,7 +20,10 @@ package com.milaboratory.oncomigec.util.testing;
 
 import org.apache.commons.lang3.SerializationUtils;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
+import java.util.zip.GZIPInputStream;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
@@ -35,5 +38,10 @@ public class TestUtil {
     public static void serializationCheckForOutputData(Serializable object) {
         Serializable recovered = serializationCheck(object);
         assertEquals("Plain-text data match", recovered.toString(), object.toString());
+    }
+
+    public static InputStream getResourceAsStream(String resourceName) throws IOException {
+        InputStream is = TestUtil.class.getClassLoader().getResourceAsStream(resourceName);
+        return resourceName.endsWith(".gz") ? new GZIPInputStream(is) : is;
     }
 }
