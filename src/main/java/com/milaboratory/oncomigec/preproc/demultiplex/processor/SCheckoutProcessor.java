@@ -16,9 +16,9 @@
 package com.milaboratory.oncomigec.preproc.demultiplex.processor;
 
 import com.milaboratory.core.sequencing.read.SSequencingRead;
-import com.milaboratory.oncomigec.preproc.demultiplex.entity.SCheckoutResult;
 import com.milaboratory.oncomigec.preproc.demultiplex.barcode.BarcodeSearcher;
 import com.milaboratory.oncomigec.preproc.demultiplex.barcode.BarcodeSearcherResult;
+import com.milaboratory.oncomigec.preproc.demultiplex.entity.SCheckoutResult;
 
 public final class SCheckoutProcessor extends CheckoutProcessor<SCheckoutResult, SSequencingRead> {
     public SCheckoutProcessor(String[] sampleNames, BarcodeSearcher[] masterBarcodes) {
@@ -52,6 +52,11 @@ public final class SCheckoutProcessor extends CheckoutProcessor<SCheckoutResult,
     // no flipping/rc should be performed for external data
     @Override
     public boolean performIlluminaRC() {
+        return false;
+    }
+
+    @Override
+    public boolean isPairedEnd() {
         return false;
     }
 }

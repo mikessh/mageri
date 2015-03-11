@@ -161,4 +161,9 @@ public final class PCheckoutProcessor extends CheckoutProcessor<PCheckoutResult,
         sb.append(totalCounter.get());
         return sb.toString();
     }
+
+    @Override
+    public boolean isPairedEnd() {
+        return true;
+    }
 }
