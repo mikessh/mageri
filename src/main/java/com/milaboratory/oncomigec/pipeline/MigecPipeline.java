@@ -4,6 +4,7 @@ import cc.redberry.pipe.OutputPort;
 import cc.redberry.pipe.blocks.Merger;
 import cc.redberry.pipe.blocks.ParallelProcessor;
 import cc.redberry.pipe.util.CountingOutputPort;
+import com.milaboratory.oncomigec.core.ReadSpecific;
 import com.milaboratory.oncomigec.core.align.reference.Reference;
 import com.milaboratory.oncomigec.core.assemble.entity.Consensus;
 import com.milaboratory.oncomigec.core.assemble.misc.AssemblerFactory;
@@ -28,9 +29,10 @@ import com.milaboratory.oncomigec.util.ProcessorResultWrapper;
 
 import java.util.*;
 
-public class MigecPipeline {
+public class MigecPipeline implements ReadSpecific {
     private static final boolean ENABLE_BUFFERING = true, VERBOSE = true;
     private static final int THREADS = Runtime.getRuntime().availableProcessors();   // todo: as parameter
+    protected final boolean paired;
     protected final MigReader reader;
     protected final Map<String, Assembler> assemblerBySample;
     protected final Map<String, ConsensusAligner> alignerBySample;
@@ -42,11 +44,18 @@ public class MigecPipeline {
     protected final MigecParameterSet migecParameterSet;
     protected VariantClassifier variantClassifier;
 
+    @SuppressWarnings("unchecked")
     protected MigecPipeline(MigReader reader,
                             AssemblerFactory assemblerFactory,
                             ConsensusAlignerFactory consensusAlignerFactory,
                             MigecParameterSet migecParameterSet) {
         this.reader = reader;
+        this.paired = reader.isPairedEnd();
+
+        if (assemblerFactory.isPairedEnd() != paired ||
+                consensusAlignerFactory.isPairedEnd() != paired)
+            throw new RuntimeException("All read-specific pipeline steps should have the same paired-end property.");
+
         this.alignmentDataBySample = new HashMap<>();
         this.assemblerBySample = new HashMap<>();
         this.alignerBySample = new HashMap<>();
@@ -81,6 +90,7 @@ public class MigecPipeline {
         return reader.getUmiHistogram(sampleName).getMigsTotal();
     }
 
+    @SuppressWarnings("unchecked")
     public void runFirstStage() {
         for (final String sampleName : sampleNames) {
             Assembler assembler = assemblerBySample.get(sampleName);
@@ -238,5 +248,10 @@ public class MigecPipeline {
             }
         }
         return dump;
+    }
+
+    @Override
+    public boolean isPairedEnd() {
+        return paired;
     }
 }

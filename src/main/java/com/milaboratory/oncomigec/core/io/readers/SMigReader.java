@@ -118,6 +118,11 @@ public final class SMigReader extends MigReader<SMig> {
         return null;
     }
 
+    @Override
+    public boolean isPairedEnd() {
+        return false;
+    }
+
     private class SingleReaderWrapper implements OutputPortCloseable<SequencingRead> {
         private final SFastqReader reader;
 

@@ -4,7 +4,6 @@ import com.milaboratory.core.sequence.NucleotideSQPair;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequenceBuilder;
 import com.milaboratory.core.sequence.quality.SequenceQualityPhred;
-import com.milaboratory.core.sequencing.read.SSequencingRead;
 import com.milaboratory.oncomigec.core.assemble.entity.SConsensus;
 import com.milaboratory.oncomigec.core.assemble.misc.AssemblerParameters;
 import com.milaboratory.oncomigec.core.io.entity.SMig;
@@ -41,7 +40,6 @@ public final class SAssembler extends Assembler<SConsensus, SMig> {
         readsTotal.addAndGet(sMig.size());
 
         // Main algorithm -- quite complex
-        // todo: consider more efficient implementations
         List<NucleotideSQPair> assembledReads = new ArrayList<>(),
                 droppedReads = new ArrayList<>();
 
@@ -281,27 +279,32 @@ public final class SAssembler extends Assembler<SConsensus, SMig> {
 
 
     @Override
-    protected long getReadsDroppedShortR1() {
+    public long getReadsDroppedShortR1() {
         return readsDroppedShort.get();
     }
 
     @Override
-    protected long getReadsDroppedErrorR1() {
+    public long getReadsDroppedErrorR1() {
         return readsDroppedErrors.get();
     }
 
     @Override
-    protected long getReadsDroppedShortR2() {
+    public long getReadsDroppedShortR2() {
         return 0;
     }
 
     @Override
-    protected long getReadsDroppedErrorR2() {
+    public long getReadsDroppedErrorR2() {
         return 0;
     }
 
     @Override
-    protected String formattedSequenceHeader() {
+    public String formattedSequenceHeader() {
         return SConsensus.formattedSequenceHeader();
+    }
+
+    @Override
+    public boolean isPairedEnd() {
+        return false;
     }
 }

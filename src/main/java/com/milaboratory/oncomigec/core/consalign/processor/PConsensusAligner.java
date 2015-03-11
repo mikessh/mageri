@@ -121,4 +121,9 @@ public final class PConsensusAligner extends ConsensusAligner<PConsensus> {
                 pAlignmentResult.getReferences(), pAlignmentResult.getRanges(),
                 parameters.backAlignDroppedReads() ? pConsensus.fullSize() : pConsensus.size());
     }
+
+    @Override
+    public boolean isPairedEnd() {
+        return true;
+    }
 }

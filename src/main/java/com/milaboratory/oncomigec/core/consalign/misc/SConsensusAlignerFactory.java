@@ -18,4 +18,9 @@ public final class SConsensusAlignerFactory extends ConsensusAlignerFactory<SCon
     public SConsensusAligner create() {
         return new SConsensusAligner(alignerFactory.create(), parameters);
     }
+
+    @Override
+    public boolean isPairedEnd() {
+        return false;
+    }
 }

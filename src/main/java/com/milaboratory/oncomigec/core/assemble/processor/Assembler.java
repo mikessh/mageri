@@ -16,6 +16,7 @@
 package com.milaboratory.oncomigec.core.assemble.processor;
 
 import cc.redberry.pipe.Processor;
+import com.milaboratory.oncomigec.core.ReadSpecific;
 import com.milaboratory.oncomigec.core.assemble.entity.Consensus;
 import com.milaboratory.oncomigec.core.io.entity.Mig;
 import com.milaboratory.oncomigec.util.ProcessorResultWrapper;
@@ -27,32 +28,37 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-public abstract class Assembler<T extends Consensus, V extends Mig> implements Processor<V, ProcessorResultWrapper<T>> {
+public abstract class Assembler<ConsensusType extends Consensus, MigType extends Mig> implements Processor<MigType, ProcessorResultWrapper<ConsensusType>>, ReadSpecific {
     protected final AtomicLong readsTotal = new AtomicLong(), readsAssembled = new AtomicLong();
     protected final AtomicInteger migsTotal = new AtomicInteger(), migsAssembled = new AtomicInteger();
-    protected final List<Consensus> consensusList = Collections.synchronizedList(new LinkedList<Consensus>());
+    protected final List<ConsensusType> consensusList = Collections.synchronizedList(new LinkedList<ConsensusType>());
     protected boolean storeConsensuses = true;
 
     @Override
-    public ProcessorResultWrapper<T> process(V mig) {
-        T consensus = assemble(mig);
+    @SuppressWarnings("unchecked")
+    public ProcessorResultWrapper<ConsensusType> process(MigType mig) {
+        ConsensusType consensus = assemble(mig);
         if (consensus == null)
             return ProcessorResultWrapper.BLANK;
         else
             return new ProcessorResultWrapper<>(consensus);
     }
 
-    public abstract T assemble(V mig);
+    public abstract ConsensusType assemble(MigType mig);
 
-    protected abstract long getReadsDroppedShortR1();
+    public abstract long getReadsDroppedShortR1();
 
-    protected abstract long getReadsDroppedErrorR1();
+    public abstract long getReadsDroppedErrorR1();
 
-    protected abstract long getReadsDroppedShortR2();
+    public abstract long getReadsDroppedShortR2();
 
-    protected abstract long getReadsDroppedErrorR2();
+    public abstract long getReadsDroppedErrorR2();
 
-    protected abstract String formattedSequenceHeader();
+    public abstract String formattedSequenceHeader();
+
+    public List<ConsensusType> getConsensusList() {
+        return Collections.synchronizedList(consensusList);
+    }
 
     @Override
     public String toString() {

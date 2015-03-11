@@ -18,4 +18,9 @@ public final class PConsensusAlignerFactory extends ConsensusAlignerFactory<PCon
     public PConsensusAligner create() {
         return new PConsensusAligner(alignerFactory.create(), parameters);
     }
+
+    @Override
+    public boolean isPairedEnd() {
+        return true;
+    }
 }

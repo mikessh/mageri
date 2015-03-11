@@ -16,6 +16,8 @@
 package com.milaboratory.oncomigec.core.assemble.entity;
 
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
+import com.milaboratory.core.sequencing.read.PSequencingRead;
+import com.milaboratory.core.sequencing.read.PSequencingReadImpl;
 import com.milaboratory.oncomigec.util.QualityHistogram;
 
 public final class PConsensus implements Consensus {
@@ -47,6 +49,12 @@ public final class PConsensus implements Consensus {
     @Override
     public NucleotideSequence getUmi() {
         return this.consensus1.getUmi();
+    }
+
+    @Override
+    public PSequencingRead asRead() {
+        return new PSequencingReadImpl(consensus1.asRead(),
+                consensus2.asRead());
     }
 
     public static String formattedSequenceHeader() {

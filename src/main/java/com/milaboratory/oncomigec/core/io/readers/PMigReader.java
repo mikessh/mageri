@@ -25,7 +25,6 @@ import com.milaboratory.core.sequencing.read.SequencingRead;
 import com.milaboratory.oncomigec.core.io.entity.PMig;
 import com.milaboratory.oncomigec.core.io.entity.SMig;
 import com.milaboratory.oncomigec.core.io.misc.MigReaderParameters;
-import com.milaboratory.oncomigec.core.io.misc.MigecReadPair;
 import com.milaboratory.oncomigec.core.io.misc.ReadInfo;
 import com.milaboratory.oncomigec.preproc.demultiplex.barcode.BarcodeSearcherResult;
 import com.milaboratory.oncomigec.preproc.demultiplex.entity.PCheckoutResult;
@@ -42,7 +41,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-//todo: store chekout and from stored checkout
 public final class PMigReader extends MigReader<PMig> {
     private final ReadOverlapper readOverlapper = new ReadOverlapper(true);
 
@@ -184,6 +182,11 @@ public final class PMigReader extends MigReader<PMig> {
 
         }
         return null;
+    }
+
+    @Override
+    public boolean isPairedEnd() {
+        return true;
     }
 
     private class PairedReaderWrapper implements OutputPortCloseable<SequencingRead> {

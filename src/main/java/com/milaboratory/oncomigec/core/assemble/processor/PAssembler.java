@@ -39,27 +39,32 @@ public final class PAssembler extends Assembler<PConsensus, PMig> {
     }
 
     @Override
-    protected long getReadsDroppedShortR1() {
+    public long getReadsDroppedShortR1() {
         return assembler1.getReadsDroppedShortR1();
     }
 
     @Override
-    protected long getReadsDroppedErrorR1() {
+    public long getReadsDroppedErrorR1() {
         return assembler1.getReadsDroppedErrorR1();
     }
 
     @Override
-    protected long getReadsDroppedShortR2() {
+    public long getReadsDroppedShortR2() {
         return assembler2.getReadsDroppedShortR1();
     }
 
     @Override
-    protected long getReadsDroppedErrorR2() {
+    public long getReadsDroppedErrorR2() {
         return assembler2.getReadsDroppedErrorR1();
     }
 
     @Override
-    protected String formattedSequenceHeader() {
+    public String formattedSequenceHeader() {
         return PConsensus.formattedSequenceHeader();
+    }
+
+    @Override
+    public boolean isPairedEnd() {
+        return true;
     }
 }

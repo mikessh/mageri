@@ -17,6 +17,8 @@ package com.milaboratory.oncomigec.core.assemble.entity;
 
 import com.milaboratory.core.sequence.NucleotideSQPair;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
+import com.milaboratory.core.sequencing.read.SSequencingRead;
+import com.milaboratory.core.sequencing.read.SSequencingReadImpl;
 import com.milaboratory.oncomigec.util.QualityHistogram;
 
 import java.util.List;
@@ -46,9 +48,16 @@ public final class SConsensus implements Consensus {
         return consensusSQPair;
     }
 
-
     public static String formattedSequenceHeader() {
         return "Consensus\tQuality";
+    }
+
+    @Override
+    public SSequencingRead asRead() {
+        return new SSequencingReadImpl(
+                "C:" + umi + ":" + assembledReads.size() + ":" + droppedReads.size(),
+                consensusSQPair,
+                -1);
     }
 
     @Override

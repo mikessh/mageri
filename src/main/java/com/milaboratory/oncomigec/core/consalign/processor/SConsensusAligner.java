@@ -66,4 +66,9 @@ public final class SConsensusAligner extends ConsensusAligner<SConsensus> {
         return new AlignedConsensus(majorMutationsList,
                 alignmentResult.getReferences(), alignmentResult.getRanges(), migSize);
     }
+
+    @Override
+    public boolean isPairedEnd() {
+        return false;
+    }
 }

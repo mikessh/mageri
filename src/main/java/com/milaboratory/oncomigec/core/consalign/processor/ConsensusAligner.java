@@ -16,6 +16,7 @@
 package com.milaboratory.oncomigec.core.consalign.processor;
 
 import cc.redberry.pipe.Processor;
+import com.milaboratory.oncomigec.core.ReadSpecific;
 import com.milaboratory.oncomigec.core.align.processor.Aligner;
 import com.milaboratory.oncomigec.core.assemble.entity.Consensus;
 import com.milaboratory.oncomigec.core.consalign.entity.AlignedConsensus;
@@ -24,7 +25,7 @@ import com.milaboratory.oncomigec.core.consalign.misc.ConsensusAlignerParameters
 import com.milaboratory.oncomigec.util.ProcessorResultWrapper;
 
 public abstract class ConsensusAligner<T extends Consensus> implements Processor<ProcessorResultWrapper<T>,
-        ProcessorResultWrapper<AlignedConsensus>> {
+        ProcessorResultWrapper<AlignedConsensus>>, ReadSpecific {
     protected final Aligner aligner;
     protected final AlignerReferenceLibrary alignerReferenceLibrary;
     protected final ConsensusAlignerParameters parameters;
@@ -35,6 +36,7 @@ public abstract class ConsensusAligner<T extends Consensus> implements Processor
         this.parameters = parameters;
     }
 
+    @SuppressWarnings("unchecked")
     public ProcessorResultWrapper<AlignedConsensus> process(ProcessorResultWrapper<T> consensus) {
         if (consensus.hasResult()) {
             AlignedConsensus alignmentData = align(consensus.getResult());

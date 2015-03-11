@@ -8,9 +8,9 @@ import cc.redberry.pipe.util.CountLimitingOutputPort;
 import cc.redberry.pipe.util.CountingOutputPort;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.core.sequencing.read.SequencingRead;
+import com.milaboratory.oncomigec.core.ReadSpecific;
 import com.milaboratory.oncomigec.core.io.entity.Mig;
 import com.milaboratory.oncomigec.core.io.misc.MigReaderParameters;
-import com.milaboratory.oncomigec.core.io.misc.MigecRead;
 import com.milaboratory.oncomigec.core.io.misc.ReadInfo;
 import com.milaboratory.oncomigec.core.io.misc.UmiHistogram;
 import com.milaboratory.oncomigec.core.io.misc.index.IndexingInfo;
@@ -22,7 +22,7 @@ import com.milaboratory.oncomigec.util.ProcessorResultWrapper;
 
 import java.util.*;
 
-public abstract class MigReader<MigType extends Mig> implements OutputPort<MigType> {
+public abstract class MigReader<MigType extends Mig> implements OutputPort<MigType>, ReadSpecific {
     private static final boolean ENABLE_BUFFERING = false;
 
     protected int sizeThreshold;
@@ -39,6 +39,7 @@ public abstract class MigReader<MigType extends Mig> implements OutputPort<MigTy
 
     protected final CheckoutProcessor checkoutProcessor;
 
+    @SuppressWarnings("unchecked")
     protected MigReader(MigReaderParameters migReaderParameters, CheckoutProcessor checkoutProcessor) {
         this.migReaderParameters = migReaderParameters;
         this.checkoutProcessor = checkoutProcessor;
