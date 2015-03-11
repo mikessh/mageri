@@ -42,6 +42,7 @@ public final class ExomePipeline extends MigecPipeline {
         super(reader, assemblerFactory, consensusAlignerFactory, migecParameterSet);
     }
 
+    @SuppressWarnings("unchecked")
     public static ExomePipeline preprocess(File fastq1, File fastq2,
                                            String sampleName,
                                            File references,
@@ -58,6 +59,7 @@ public final class ExomePipeline extends MigecPipeline {
         );
     }
 
+    @SuppressWarnings("unchecked")
     public static ExomePipeline preprocess(File fastq1, File fastq2,
                                            File barcodes,
                                            File references,
@@ -78,6 +80,7 @@ public final class ExomePipeline extends MigecPipeline {
         );
     }
 
+    @SuppressWarnings("unchecked")
     public static ExomePipeline preprocess(File fastq1,
                                            String sampleName,
                                            File references,
@@ -94,6 +97,7 @@ public final class ExomePipeline extends MigecPipeline {
         );
     }
 
+    @SuppressWarnings("unchecked")
     public static ExomePipeline preprocess(File fastq1,
                                            File barcodes,
                                            File references,

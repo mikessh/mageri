@@ -46,6 +46,7 @@ public final class MigecCli {
     }
 
 
+    @SuppressWarnings("static-access")
     public static void main(String[] args) throws Exception {
         Options options = new Options();
 
