@@ -44,7 +44,7 @@ public class IOUtils {
         writeObjectToStream(fileOut, object);
     }
 
-    private static Object readObjectFromStream(InputStream is) throws IOException, ClassNotFoundException {
+    public static Object readObjectFromStream(InputStream is) throws IOException, ClassNotFoundException {
         ObjectInputStream in = new ObjectInputStream(is);
         Object object = in.readObject();
         in.close();
@@ -52,28 +52,7 @@ public class IOUtils {
         return object;
     }
 
-    /*
-     * Object IO
-     */
-    public static CheckoutProcessor readCheckoutProcessorData(InputStream is) throws IOException, ClassNotFoundException {
-        Object object = readObjectFromStream(is);
-        if (!(object instanceof CheckoutProcessor))
-            throw new RuntimeException("File doesn't contain a serialized CheckoutProcessor");
-        return (CheckoutProcessor) object;
-    }
-
-    public static CheckoutProcessor readCheckoutProcessorData(File file) throws IOException, ClassNotFoundException {
-        return readCheckoutProcessorData(new FileInputStream(file));
-    }
-
-    public static UmiHistogram readUmiHistogramData(InputStream is) throws IOException, ClassNotFoundException {
-        Object object = readObjectFromStream(is);
-        if (!(object instanceof UmiHistogram))
-            throw new RuntimeException("File doesn't contain a serialized UmiHistogram");
-        return (UmiHistogram) object;
-    }
-
-    public static UmiHistogram readUmiHistogramData(File file) throws IOException, ClassNotFoundException {
-        return readUmiHistogramData(new FileInputStream(file));
+    public static Object readObjectFromFile(File file) throws IOException, ClassNotFoundException {
+        return readObjectFromStream(new FileInputStream(file));
     }
 }
