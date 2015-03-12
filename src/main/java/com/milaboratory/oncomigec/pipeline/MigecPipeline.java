@@ -44,14 +44,14 @@ public class MigecPipeline implements ReadSpecific {
     protected final Map<String, VariantLibrary> variantLibraryBySample;
     protected final Map<String, HaplotypeTree> haplotypeTreeBySample;
     protected final List<String> sampleNames;
-    protected final MigecParameterSet migecParameterSet;
+    protected final Presets presets;
     protected VariantClassifier variantClassifier;
 
     @SuppressWarnings("unchecked")
     protected MigecPipeline(MigReader reader,
                             AssemblerFactory assemblerFactory,
                             ConsensusAlignerFactory consensusAlignerFactory,
-                            MigecParameterSet migecParameterSet) {
+                            Presets presets) {
         this.reader = reader;
         this.paired = reader.isPairedEnd();
 
@@ -66,7 +66,7 @@ public class MigecPipeline implements ReadSpecific {
         this.variantLibraryBySample = new HashMap<>();
         this.haplotypeTreeBySample = new HashMap<>();
         this.sampleNames = reader.getSampleNames();
-        this.migecParameterSet = migecParameterSet;
+        this.presets = presets;
         for (String sampleName : sampleNames) {
             assemblerBySample.put(sampleName, assemblerFactory.create());
             alignerBySample.put(sampleName, consensusAlignerFactory.create());
@@ -79,7 +79,7 @@ public class MigecPipeline implements ReadSpecific {
     }
 
     public int getOverSeq(String sampleName) {
-        return migecParameterSet.forceOverseq() ? migecParameterSet.getDefaultOverseq() :
+        return presets.forceOverseq() ? presets.getDefaultOverseq() :
                 reader.getUmiHistogram(sampleName).getMigSizeThreshold();
     }
 
@@ -101,8 +101,8 @@ public class MigecPipeline implements ReadSpecific {
             reader.setCurrentSample(sampleName);
             reader.setSizeThreshold(overSeq);
 
-            if (migecParameterSet.filterMismatchUmis())
-                reader.setMinMismatchRatio(migecParameterSet.getUmiMismatchFilterRatio());
+            if (presets.filterMismatchUmis())
+                reader.setMinMismatchRatio(presets.getUmiMismatchFilterRatio());
 
             OutputPort<Mig> input = reader;
 
@@ -162,7 +162,7 @@ public class MigecPipeline implements ReadSpecific {
 
             // Find major and minor mutations
             Corrector corrector = new Corrector(aligner.getAlignerReferenceLibrary(),
-                    migecParameterSet.getCorrectorParameters(),
+                    presets.getCorrectorParameters(),
                     variantClassifier);
             correctorBySample.put(sampleName, corrector);
 
@@ -174,7 +174,7 @@ public class MigecPipeline implements ReadSpecific {
             // Haplotype 1-mm graph
             HaplotypeTree haplotypeTree = new HaplotypeTree(
                     corrector.getCorrectorReferenceLibrary(),
-                    migecParameterSet.getHaplotypeTreeParameters());
+                    presets.getHaplotypeTreeParameters());
             haplotypeTreeBySample.put(sampleName, haplotypeTree);
 
             // Correction processing (MIGEC)
@@ -218,7 +218,7 @@ public class MigecPipeline implements ReadSpecific {
     }
 
     public String getHaplotypeTreeFastaOutput(String sampleName) {
-        if (migecParameterSet.outputFasta())
+        if (presets.outputFasta())
             return haplotypeTreeBySample.get(sampleName).toFastaString();
         else
             return "";

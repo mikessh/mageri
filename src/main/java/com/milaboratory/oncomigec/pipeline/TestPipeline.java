@@ -16,11 +16,11 @@ public class TestPipeline {
 
     public TestPipeline(File fastq1, File fastq2,
                         File barcodes,
-                        MigecParameterSet migecParameterSet,
+                        Presets presets,
                         MigReaderParameters migReaderParameters) throws Exception {
         checkoutProcessor = BarcodeListParser.generatePCheckoutProcessor(
                 FileUtils.readLines(barcodes),
-                migecParameterSet.getDemultiplexParameters()
+                presets.getDemultiplexParameters()
         );
 
         new PMigReader(fastq1, fastq2,
@@ -30,11 +30,11 @@ public class TestPipeline {
 
     public TestPipeline(File fastq1,
                         File barcodes,
-                        MigecParameterSet migecParameterSet,
+                        Presets presets,
                         MigReaderParameters migReaderParameters) throws Exception {
         checkoutProcessor = BarcodeListParser.generateSCheckoutProcessor(
                 FileUtils.readLines(barcodes),
-                migecParameterSet.getDemultiplexParameters()
+                presets.getDemultiplexParameters()
         );
 
         new SMigReader(fastq1,

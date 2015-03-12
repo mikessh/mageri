@@ -10,31 +10,31 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-public class MigecParameterSetTest {
+public class PresetsTest {
     @Test
     public void serializationTest() throws IOException {
-        MigecParameterSet migecParameterSet = new MigecParameterSet();
-        Element e = migecParameterSet.toXml();
+        Presets presets = new Presets();
+        Element e = presets.toXml();
         Basics.printXml(e);
-        Assert.assertEquals("(De)serialization successful", migecParameterSet, MigecParameterSet.fromXml(e));
+        Assert.assertEquals("(De)serialization successful", presets, Presets.fromXml(e));
     }
 
     @Test
     public void ioTest() throws IOException, JDOMException {
-        MigecParameterSet migecParameterSet = new MigecParameterSet();
+        Presets presets = new Presets();
 
         ByteArrayOutputStream output = new ByteArrayOutputStream();
 
-        migecParameterSet.writeToStream(output);
+        presets.writeToStream(output);
 
         output.close();
 
         ByteArrayInputStream input = new ByteArrayInputStream(output.toByteArray());
 
-        MigecParameterSet recoveredMigecParameterSet = MigecParameterSet.readFromStream(input);
+        Presets recoveredPresets = Presets.readFromStream(input);
 
-        Basics.printXml(recoveredMigecParameterSet.toXml());
+        Basics.printXml(recoveredPresets.toXml());
 
-        Assert.assertEquals("Parameters I/O successful", migecParameterSet, recoveredMigecParameterSet);
+        Assert.assertEquals("Parameters I/O successful", presets, recoveredPresets);
     }
 }

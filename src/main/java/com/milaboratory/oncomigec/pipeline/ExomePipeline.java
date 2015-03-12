@@ -38,24 +38,24 @@ public final class ExomePipeline extends MigecPipeline {
     private ExomePipeline(MigReader reader,
                           AssemblerFactory assemblerFactory,
                           ConsensusAlignerFactory consensusAlignerFactory,
-                          MigecParameterSet migecParameterSet) {
-        super(reader, assemblerFactory, consensusAlignerFactory, migecParameterSet);
+                          Presets presets) {
+        super(reader, assemblerFactory, consensusAlignerFactory, presets);
     }
 
     @SuppressWarnings("unchecked")
     public static ExomePipeline preprocess(File fastq1, File fastq2,
                                            String sampleName,
                                            File references,
-                                           MigecParameterSet migecParameterSet) throws Exception {
+                                           Presets presets) throws Exception {
         return new ExomePipeline(
                 new PMigReader(fastq1, fastq2, sampleName,
-                        MigReaderParameters.WITH_QUAL(migecParameterSet.getReaderUmiQualThreshold())),
-                new PAssemblerFactory(migecParameterSet.getAssemblerParameters()),
+                        MigReaderParameters.WITH_QUAL(presets.getReaderUmiQualThreshold())),
+                new PAssemblerFactory(presets.getAssemblerParameters()),
                 new PConsensusAlignerFactory(
                         new AlignerFactoryWithReference(new ReferenceLibrary(references),
                                 new ExtendedExomeAlignerFactory())
                 ),
-                migecParameterSet
+                presets
         );
     }
 
@@ -63,20 +63,20 @@ public final class ExomePipeline extends MigecPipeline {
     public static ExomePipeline preprocess(File fastq1, File fastq2,
                                            File barcodes,
                                            File references,
-                                           MigecParameterSet migecParameterSet) throws Exception {
+                                           Presets presets) throws Exception {
         return new ExomePipeline(
                 new PMigReader(fastq1, fastq2,
                         BarcodeListParser.generatePCheckoutProcessor(FileUtils.readLines(barcodes),
-                                migecParameterSet.getDemultiplexParameters()),
-                        MigReaderParameters.WITH_QUAL(migecParameterSet.getReaderUmiQualThreshold())
+                                presets.getDemultiplexParameters()),
+                        MigReaderParameters.WITH_QUAL(presets.getReaderUmiQualThreshold())
                 ),
-                new PAssemblerFactory(migecParameterSet.getAssemblerParameters()),
+                new PAssemblerFactory(presets.getAssemblerParameters()),
                 new PConsensusAlignerFactory(
                         new AlignerFactoryWithReference(new ReferenceLibrary(references),
                                 new ExtendedExomeAlignerFactory()),
-                        migecParameterSet.getConsensusAlignerParameters()
+                        presets.getConsensusAlignerParameters()
                 ),
-                migecParameterSet
+                presets
         );
     }
 
@@ -84,16 +84,16 @@ public final class ExomePipeline extends MigecPipeline {
     public static ExomePipeline preprocess(File fastq1,
                                            String sampleName,
                                            File references,
-                                           MigecParameterSet migecParameterSet) throws Exception {
+                                           Presets presets) throws Exception {
         return new ExomePipeline(
                 new SMigReader(fastq1, sampleName,
-                        MigReaderParameters.WITH_QUAL(migecParameterSet.getReaderUmiQualThreshold())),
-                new SAssemblerFactory(migecParameterSet.getAssemblerParameters()),
+                        MigReaderParameters.WITH_QUAL(presets.getReaderUmiQualThreshold())),
+                new SAssemblerFactory(presets.getAssemblerParameters()),
                 new SConsensusAlignerFactory(
                         new AlignerFactoryWithReference(new ReferenceLibrary(references),
                                 new ExtendedExomeAlignerFactory())
                 ),
-                migecParameterSet
+                presets
         );
     }
 
@@ -101,19 +101,19 @@ public final class ExomePipeline extends MigecPipeline {
     public static ExomePipeline preprocess(File fastq1,
                                            File barcodes,
                                            File references,
-                                           MigecParameterSet migecParameterSet) throws Exception {
+                                           Presets presets) throws Exception {
         return new ExomePipeline(
                 new SMigReader(fastq1,
                         BarcodeListParser.generateSCheckoutProcessor(FileUtils.readLines(barcodes),
-                                migecParameterSet.getDemultiplexParameters()),
-                        MigReaderParameters.WITH_QUAL(migecParameterSet.getReaderUmiQualThreshold())
+                                presets.getDemultiplexParameters()),
+                        MigReaderParameters.WITH_QUAL(presets.getReaderUmiQualThreshold())
                 ),
-                new SAssemblerFactory(migecParameterSet.getAssemblerParameters()),
+                new SAssemblerFactory(presets.getAssemblerParameters()),
                 new SConsensusAlignerFactory(
                         new AlignerFactoryWithReference(new ReferenceLibrary(references),
                                 new ExtendedExomeAlignerFactory())
                 ),
-                migecParameterSet
+                presets
         );
     }
 }

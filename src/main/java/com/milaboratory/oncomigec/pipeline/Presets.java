@@ -16,7 +16,7 @@ import org.jdom.output.XMLOutputter;
 
 import java.io.*;
 
-public class MigecParameterSet implements ParameterSet {
+public class Presets implements ParameterSet {
     private final AssemblerParameters assemblerParameters;
     private final ConsensusAlignerParameters consensusAlignerParameters;
     private final CorrectorParameters correctorParameters;
@@ -28,17 +28,17 @@ public class MigecParameterSet implements ParameterSet {
     private final double umiMismatchFilterRatio;
 
     private static String DEDUCE_VERSION() {
-        return MigecParameterSet.class.getPackage().getImplementationVersion();
+        return Presets.class.getPackage().getImplementationVersion();
     }
 
     private final static boolean TEST_VERSION;
     private final static String VERSION = (TEST_VERSION = (DEDUCE_VERSION() == null)) ? "TEST" : DEDUCE_VERSION();
 
-    public MigecParameterSet() {
+    public Presets() {
         this(AssemblerParameters.DEFAULT);
     }
 
-    public MigecParameterSet(AssemblerParameters assemblerParameters) {
+    public Presets(AssemblerParameters assemblerParameters) {
         this(assemblerParameters, ConsensusAlignerParameters.DEFAULT,
                 CorrectorParameters.DEFAULT, HaplotypeTreeParameters.DEFAULT,
                 DemultiplexParameters.DEFAULT,
@@ -46,13 +46,13 @@ public class MigecParameterSet implements ParameterSet {
                 false, 4, true, 8.0, true);
     }
 
-    public MigecParameterSet(AssemblerParameters assemblerParameters, ConsensusAlignerParameters consensusAlignerParameters,
-                             CorrectorParameters correctorParameters, HaplotypeTreeParameters haplotypeTreeParameters,
-                             DemultiplexParameters demultiplexParameters,
-                             byte readerUmiQualThreshold,
-                             boolean forceOverseq, int defaultOverseq,
-                             boolean filterMismatchUmis, double umiMismatchFilterRatio,
-                             boolean outputFasta) {
+    public Presets(AssemblerParameters assemblerParameters, ConsensusAlignerParameters consensusAlignerParameters,
+                   CorrectorParameters correctorParameters, HaplotypeTreeParameters haplotypeTreeParameters,
+                   DemultiplexParameters demultiplexParameters,
+                   byte readerUmiQualThreshold,
+                   boolean forceOverseq, int defaultOverseq,
+                   boolean filterMismatchUmis, double umiMismatchFilterRatio,
+                   boolean outputFasta) {
         this.assemblerParameters = assemblerParameters;
         this.consensusAlignerParameters = consensusAlignerParameters;
         this.correctorParameters = correctorParameters;
@@ -89,7 +89,7 @@ public class MigecParameterSet implements ParameterSet {
     public DemultiplexParameters getDemultiplexParameters() {
         return demultiplexParameters;
     }
-    
+
     public boolean forceOverseq() {
         return forceOverseq;
     }
@@ -114,7 +114,7 @@ public class MigecParameterSet implements ParameterSet {
         return outputFasta;
     }
 
-    public static MigecParameterSet loadFromFile(File xmlFile) throws JDOMException, IOException {
+    public static Presets loadFromFile(File xmlFile) throws JDOMException, IOException {
         return readFromStream(new FileInputStream(xmlFile));
     }
 
@@ -130,19 +130,19 @@ public class MigecParameterSet implements ParameterSet {
         fileOutputStream.close();
     }
 
-    public static MigecParameterSet readFromStream(InputStream iStream) throws JDOMException, IOException {
+    public static Presets readFromStream(InputStream iStream) throws JDOMException, IOException {
         SAXBuilder builder = new SAXBuilder();
         Document document = builder.build(iStream);
         return fromXml(document.getRootElement());
     }
 
-    public static MigecParameterSet fromPreset(String presetName) {
+    public static Presets fromPreset(String presetName) {
         // todo: as resources
         switch (presetName.toUpperCase()) {
             case "ILLUMINA-EXOME":
-                return new MigecParameterSet(AssemblerParameters.DEFAULT);
+                return new Presets(AssemblerParameters.DEFAULT);
             case "TORRENT454-EXOME":
-                return new MigecParameterSet(AssemblerParameters.TORRENT454);
+                return new Presets(AssemblerParameters.TORRENT454);
             default:
                 throw new IllegalArgumentException("Unknown parameter preset: " + presetName.toUpperCase());
         }
@@ -170,7 +170,7 @@ public class MigecParameterSet implements ParameterSet {
         return e;
     }
 
-    public static MigecParameterSet fromXml(Element e) {
+    public static Presets fromXml(Element e) {
         //Extracting format information
         String format = e.getChildTextTrim("version");
 
@@ -178,7 +178,7 @@ public class MigecParameterSet implements ParameterSet {
         if (!TEST_VERSION && !format.equals(VERSION))
             throw new RuntimeException("Unsupported parameters format version.");
 
-        return new MigecParameterSet(
+        return new Presets(
                 AssemblerParameters.fromXml(e),
                 ConsensusAlignerParameters.fromXml(e),
                 CorrectorParameters.fromXml(e),
@@ -202,7 +202,7 @@ public class MigecParameterSet implements ParameterSet {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        MigecParameterSet that = (MigecParameterSet) o;
+        Presets that = (Presets) o;
 
         if (defaultOverseq != that.defaultOverseq) return false;
         if (filterMismatchUmis != that.filterMismatchUmis) return false;

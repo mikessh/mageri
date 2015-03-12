@@ -16,6 +16,8 @@ import java.util.concurrent.TimeUnit;
 import static com.milaboratory.oncomigec.pipeline.IOUtils.writeStringToFile;
 
 public final class MigecCli {
+    public static boolean VERBOSE = true;
+
     private static boolean appendMode = false;
 
     private static final Class ME = MigecCli.class;
@@ -25,14 +27,17 @@ public final class MigecCli {
     private static Date start = new Date();
 
     private static void print1(String message) {
-        start = new Date();
-        System.out.println("[" + start.toString() + "] " + message);
+        if (VERBOSE) {
+            start = new Date();
+            System.out.println("[" + start.toString() + "] " + message);
+        }
     }
 
     public static void print2(String message) {
-        Date now = new Date();
-        System.out.println("[" + now.toString() + " +" + timePassed(now.getTime() - start.getTime()) + "] " + message);
-        //start = now;
+        if (VERBOSE) {
+            Date now = new Date();
+            System.out.println("[" + now.toString() + " +" + timePassed(now.getTime() - start.getTime()) + "] " + message);
+        }
     }
 
     private static String timePassed(long millis) {
@@ -245,14 +250,14 @@ public final class MigecCli {
             // check all necessary arguments are provided
 
             // parameters
-            MigecParameterSet parameterSet;
+            Presets parameterSet;
             if (commandLine.hasOption(OPT_IMPORT_PRESET)) {
-                parameterSet = MigecParameterSet.loadFromFile(
+                parameterSet = Presets.loadFromFile(
                         new File(commandLine.getOptionValue(OPT_IMPORT_PRESET)));
             } else if (commandLine.hasOption(OPT_LOAD_PRESET)) {
-                parameterSet = MigecParameterSet.fromPreset(commandLine.getOptionValue(OPT_LOAD_PRESET));
+                parameterSet = Presets.fromPreset(commandLine.getOptionValue(OPT_LOAD_PRESET));
             } else
-                parameterSet = new MigecParameterSet();
+                parameterSet = new Presets();
 
             if (commandLine.hasOption(OPT_EXPORT_PRESET)) {
                 File exportPresetFile = new File(commandLine.getOptionValue(OPT_EXPORT_PRESET));
