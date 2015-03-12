@@ -20,8 +20,11 @@ import com.milaboratory.core.sequence.quality.SequenceQualityPhred;
 
 import java.util.concurrent.atomic.AtomicLongArray;
 
+import static com.milaboratory.oncomigec.util.Util.PH33_MAX_QUAL;
+import static com.milaboratory.oncomigec.util.Util.PH33_MIN_QUAL;
+
 public class QualityHistogram {
-    private final static int length = Util.PH33_MAX_QUAL - Util.PH33_MIN_QUAL + 1;
+    private final static int length = PH33_MAX_QUAL - PH33_MIN_QUAL + 1;
     private final AtomicLongArray hist = new AtomicLongArray(length);
 
     public QualityHistogram() {
@@ -36,13 +39,13 @@ public class QualityHistogram {
 
     public void append(SequenceQualityPhred qualityPhred) {
         for (byte q : qualityPhred.getInnerData())
-            hist.incrementAndGet(q - Util.PH33_MIN_QUAL);
+            hist.incrementAndGet(q - PH33_MIN_QUAL);
     }
 
     public long getAt(byte q) {
-        if (q < Util.PH33_MIN_QUAL || q > Util.PH33_MAX_QUAL)
+        if (q < PH33_MIN_QUAL || q > PH33_MAX_QUAL)
             throw new IndexOutOfBoundsException();
-        int qq = q - Util.PH33_MIN_QUAL;
+        int qq = q - PH33_MIN_QUAL;
         return hist.get(qq);
     }
 
@@ -50,7 +53,7 @@ public class QualityHistogram {
     public String toString() {
         StringBuilder sb = new StringBuilder("qual");
         for (int i = 0; i < length; i++)
-            sb.append("\t").append(i + Util.PH33_MIN_QUAL);
+            sb.append("\t").append(i + PH33_MIN_QUAL);
         sb.append("\ncount");
         for (byte i = 0; i < length; i++)
             sb.append("\t").append(hist.get(i));
