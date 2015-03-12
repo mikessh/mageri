@@ -314,7 +314,7 @@ public class MutationsExtractorTest {
         Assert.assertEquals("All consensuses(no indels) should be cleaned from LQ errors", nGoodConsensuses, nCleanConsensuses);
     }
 
-    private static final int CLEANED_CONS_INDEL_THRESHOLD = 70;
+    private static final int CLEANED_CONS_INDEL_THRESHOLD = 60;
 
     @Test
     public void filterSubstitutionByQualTest() {
