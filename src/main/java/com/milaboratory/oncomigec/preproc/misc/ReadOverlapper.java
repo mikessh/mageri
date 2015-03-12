@@ -18,7 +18,6 @@ package com.milaboratory.oncomigec.preproc.misc;
 import com.milaboratory.core.sequence.NucleotideSQPair;
 import com.milaboratory.core.sequencing.read.PSequencingRead;
 import com.milaboratory.core.sequencing.read.PSequencingReadImpl;
-import com.milaboratory.oncomigec.core.io.misc.MigecReadPair;
 
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;

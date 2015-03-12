@@ -6,6 +6,7 @@ import com.milaboratory.oncomigec.preproc.demultiplex.barcode.BarcodeSearcher;
 import com.milaboratory.oncomigec.preproc.demultiplex.entity.CheckoutResult;
 import com.milaboratory.oncomigec.preproc.demultiplex.entity.SimpleCheckoutResult;
 import com.milaboratory.oncomigec.util.Util;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 public final class HeaderParser extends CheckoutProcessor<CheckoutResult, SequencingRead> {
     private final String sampleName;
@@ -37,5 +38,10 @@ public final class HeaderParser extends CheckoutProcessor<CheckoutResult, Sequen
     @Override
     public boolean[] getMasterFirst() {
         return new boolean[]{true};
+    }
+
+    @Override
+    public boolean isPairedEnd() {
+        throw new NotImplementedException();
     }
 }
