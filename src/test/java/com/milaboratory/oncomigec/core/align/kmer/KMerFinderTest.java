@@ -5,6 +5,7 @@ import com.milaboratory.oncomigec.util.testing.IntRange;
 import com.milaboratory.oncomigec.util.testing.PercentRange;
 import com.milaboratory.oncomigec.util.testing.generators.GeneratorMutationModel;
 import com.milaboratory.oncomigec.util.testing.generators.RandomReferenceGenerator;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -13,6 +14,7 @@ public class KMerFinderTest {
     int nReferences = 100, nRepetitions1 = 100, nRepetitions2 = 100, k = 11;
     int nBins = 100;
 
+    @Ignore("Too heavy")
     @Test
     public void kmerFinderStressTest() {
         System.out.println("Generating real-world-size reference library");
