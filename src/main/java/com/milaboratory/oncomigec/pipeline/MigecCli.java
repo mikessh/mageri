@@ -1,5 +1,11 @@
 package com.milaboratory.oncomigec.pipeline;
 
+import com.milaboratory.core.sequence.quality.QualityFormat;
+import com.milaboratory.core.sequencing.io.fastq.PFastqWriter;
+import com.milaboratory.core.sequencing.io.fastq.SFastqWriter;
+import com.milaboratory.oncomigec.core.assemble.entity.PConsensus;
+import com.milaboratory.oncomigec.core.assemble.entity.SConsensus;
+import com.milaboratory.oncomigec.core.assemble.processor.Assembler;
 import com.milaboratory.oncomigec.core.io.misc.MigReaderParameters;
 import com.milaboratory.oncomigec.core.io.misc.UmiHistogram;
 import com.milaboratory.oncomigec.model.classifier.BaseVariantClassifier;
@@ -466,6 +472,26 @@ public final class MigecCli {
                 String samplePrefix = outputFolder.getAbsolutePath() + "/" + sampleName;
                 writeStringToFile(new File(samplePrefix + ".1.assembler.txt"),
                         pipeline.getAssemblerOutput(sampleName));
+
+                Assembler assembler = pipeline.getAssemblerBySample(sampleName);
+                if (assembler.isPairedEnd()) {
+                    PFastqWriter writer = new PFastqWriter(samplePrefix + ".1.assembler.C1.fastq.gz",
+                            samplePrefix + ".1.assembler.C2.fastq.gz", QualityFormat.Phred33);
+                    for (Object obj : assembler.getConsensusList()) {
+                        PConsensus consensus = (PConsensus) obj;
+                        writer.write(consensus.asRead());
+                    }
+                    writer.close();
+                } else {
+                    SFastqWriter writer = new SFastqWriter(samplePrefix + ".1.assembler.C1.fastq.gz",
+                            QualityFormat.Phred33);
+                    for (Object obj : assembler.getConsensusList()) {
+                        SConsensus consensus = (SConsensus) obj;
+                        writer.write(consensus.asRead());
+                    }
+                    writer.close();
+                }
+
                 writeStringToFile(new File(samplePrefix + ".1.consaligner.txt"),
                         pipeline.getConsAlignerOutput(sampleName));
             }

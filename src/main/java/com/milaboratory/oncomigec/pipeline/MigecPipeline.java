@@ -189,6 +189,7 @@ public class MigecPipeline implements ReadSpecific {
         }
     }
 
+
     public List<String> getSamples() {
         return sampleNames;
     }
@@ -199,6 +200,10 @@ public class MigecPipeline implements ReadSpecific {
 
     public String getAssemblerOutput(String sampleName) {
         return assemblerBySample.get(sampleName).toString();
+    }
+
+    public Assembler getAssemblerBySample(String sampleName) {
+        return assemblerBySample.get(sampleName);
     }
 
     public String getConsAlignerOutput(String sampleName) {
