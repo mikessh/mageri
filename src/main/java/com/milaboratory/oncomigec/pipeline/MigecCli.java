@@ -10,9 +10,7 @@ import org.apache.commons.io.FilenameUtils;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static com.milaboratory.oncomigec.pipeline.IOUtils.writeStringToFile;
@@ -403,7 +401,7 @@ public final class MigecCli {
                 }
             }
 
-            checkPreprocess(pipeline, outputFolder, parameterSet.getMinUniqueUmis(), parameterSet.getMinOverseq());
+            checkPreprocess(pipeline, outputFolder);
         } catch (ParseException e) {
             System.err.println("Bad arguments: " + e.getMessage());
             System.exit(-1);
@@ -434,14 +432,10 @@ public final class MigecCli {
         print2("Finished");
     }
 
-    private static void checkPreprocess(MigecPipeline pipeline, File outputFolder,
-                                        int minMigCount, int minOverseq) throws IOException {
+    private static void checkPreprocess(MigecPipeline pipeline, File outputFolder) throws IOException {
         // Check molecule count & overseq
         writeStringToFile(new File(outputFolder.getAbsolutePath() + "/_checkout.txt"),
                 pipeline.getCheckoutOutput());
-
-        List<String> samplesToSkip = new ArrayList<>();
-        String sampleMessages = "";
 
         for (String sampleName : pipeline.getSamples()) {
             UmiHistogram histogram = pipeline.getHistogram(sampleName);
@@ -449,38 +443,7 @@ public final class MigecCli {
             String samplePrefix = outputFolder.getAbsolutePath() + "/" + sampleName;
             writeStringToFile(new File(samplePrefix + ".0.umihistogram.txt"),
                     histogram.toString());
-
-            int migsTotal = pipeline.getMigsTotal(sampleName),
-                    overSeq = pipeline.getOverSeq(sampleName);
-
-            String message;
-
-            if (migsTotal < minMigCount) {
-                message = "SKIPPED\tEstimated number of molecules in sample is below allowed threshold, " +
-                        migsTotal + " < " + minMigCount;
-                System.out.println(message + ". Skipping " + sampleName);
-                samplesToSkip.add(sampleName);
-            } else {
-                if (overSeq < minOverseq) {
-                    message = "SKIPPED\tEstimated minimal MIG size is below allowed threshold, " +
-                            overSeq + " < " + minOverseq;
-                    System.out.println(message + ". Skipping " + sampleName);
-                    samplesToSkip.add(sampleName);
-                } else {
-                    message = "PASSED\tEstimated minimal MIG size = " + overSeq +
-                            ", MIGSs that passed size threshold = " + histogram.calculateMigsRetained(overSeq) +
-                            ", number of reads in them = " + histogram.calculateReadsRetained(overSeq);
-                    System.out.println(message + ". Proceeding with " + sampleName);
-                }
-            }
-
-            sampleMessages += sampleName + "\t" + message + "\n";
         }
-
-        pipeline.skipSamples(samplesToSkip);
-
-        writeStringToFile(new File(outputFolder.getAbsolutePath() + "/_sample_messages.txt"),
-                sampleMessages);
     }
 
     private static void runFirstStage(MigecPipeline pipeline, File outputFolder) {

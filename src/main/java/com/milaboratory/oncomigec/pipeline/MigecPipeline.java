@@ -27,7 +27,10 @@ import com.milaboratory.oncomigec.model.variant.VariantContainer;
 import com.milaboratory.oncomigec.model.variant.VariantLibrary;
 import com.milaboratory.oncomigec.util.ProcessorResultWrapper;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 public class MigecPipeline implements ReadSpecific {
     private static final boolean ENABLE_BUFFERING = true, VERBOSE = true;
@@ -40,7 +43,7 @@ public class MigecPipeline implements ReadSpecific {
     protected final Map<String, Corrector> correctorBySample;
     protected final Map<String, VariantLibrary> variantLibraryBySample;
     protected final Map<String, HaplotypeTree> haplotypeTreeBySample;
-    protected final List<String> sampleNames, skippedSamples;
+    protected final List<String> sampleNames;
     protected final MigecParameterSet migecParameterSet;
     protected VariantClassifier variantClassifier;
 
@@ -63,18 +66,12 @@ public class MigecPipeline implements ReadSpecific {
         this.variantLibraryBySample = new HashMap<>();
         this.haplotypeTreeBySample = new HashMap<>();
         this.sampleNames = reader.getSampleNames();
-        this.skippedSamples = new ArrayList<>();
         this.migecParameterSet = migecParameterSet;
         for (String sampleName : sampleNames) {
             assemblerBySample.put(sampleName, assemblerFactory.create());
             alignerBySample.put(sampleName, consensusAlignerFactory.create());
         }
         this.variantClassifier = BaseVariantClassifier.BUILT_IN;
-    }
-
-    public void skipSamples(List<String> samplesToSkip) {
-        skippedSamples.addAll(samplesToSkip);
-        sampleNames.removeAll(samplesToSkip);
     }
 
     public UmiHistogram getHistogram(String sampleName) {
