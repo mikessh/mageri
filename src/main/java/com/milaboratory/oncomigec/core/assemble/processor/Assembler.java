@@ -16,6 +16,7 @@
 package com.milaboratory.oncomigec.core.assemble.processor;
 
 import cc.redberry.pipe.Processor;
+import com.milaboratory.oncomigec.core.PipelineBlock;
 import com.milaboratory.oncomigec.core.ReadSpecific;
 import com.milaboratory.oncomigec.core.assemble.entity.Consensus;
 import com.milaboratory.oncomigec.core.io.entity.Mig;
@@ -28,7 +29,8 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-public abstract class Assembler<ConsensusType extends Consensus, MigType extends Mig> implements Processor<MigType, ProcessorResultWrapper<ConsensusType>>, ReadSpecific {
+public abstract class Assembler<ConsensusType extends Consensus, MigType extends Mig>
+        implements Processor<MigType, ProcessorResultWrapper<ConsensusType>>, PipelineBlock, ReadSpecific {
     protected final AtomicLong readsTotal = new AtomicLong(), readsAssembled = new AtomicLong();
     protected final AtomicInteger migsTotal = new AtomicInteger(), migsAssembled = new AtomicInteger();
     protected final List<ConsensusType> consensusList = Collections.synchronizedList(new LinkedList<ConsensusType>());

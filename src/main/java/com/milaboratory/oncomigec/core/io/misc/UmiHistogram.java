@@ -16,13 +16,13 @@
 package com.milaboratory.oncomigec.core.io.misc;
 
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
+import com.milaboratory.oncomigec.core.PipelineBlock;
 import com.milaboratory.util.Bit2Array;
 
-import java.io.Serializable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class UmiHistogram implements Serializable{
+public class UmiHistogram implements PipelineBlock {
     // todo: from mixture
     // todo: UMI redundancy/entropy
     private transient final ConcurrentHashMap<NucleotideSequence, AtomicInteger> umiCounterMap =

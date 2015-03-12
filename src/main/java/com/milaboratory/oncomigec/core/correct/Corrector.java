@@ -16,6 +16,7 @@
 package com.milaboratory.oncomigec.core.correct;
 
 import com.milaboratory.core.sequence.Range;
+import com.milaboratory.oncomigec.core.PipelineBlock;
 import com.milaboratory.oncomigec.core.align.reference.Reference;
 import com.milaboratory.oncomigec.core.consalign.entity.AlignedConsensus;
 import com.milaboratory.oncomigec.core.consalign.entity.AlignerReferenceLibrary;
@@ -28,7 +29,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public final class Corrector {
+public final class Corrector implements PipelineBlock {
     private final AtomicInteger goodConsensuses = new AtomicInteger(),
             totalConsensuses = new AtomicInteger();
     private final CorrectorReferenceLibrary correctorReferenceLibrary;

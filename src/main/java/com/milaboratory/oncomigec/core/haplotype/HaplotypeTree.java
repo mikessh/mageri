@@ -17,6 +17,7 @@ package com.milaboratory.oncomigec.core.haplotype;
 
 import com.milaboratory.core.sequence.mutations.Mutations;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
+import com.milaboratory.oncomigec.core.PipelineBlock;
 import com.milaboratory.oncomigec.core.align.reference.Reference;
 import com.milaboratory.oncomigec.core.correct.CorrectedConsensus;
 import com.milaboratory.oncomigec.core.correct.CorrectorReferenceLibrary;
@@ -28,7 +29,7 @@ import org.apache.commons.math.distribution.BinomialDistributionImpl;
 
 import java.util.*;
 
-public class HaplotypeTree {
+public class HaplotypeTree implements PipelineBlock {
     private final HaplotypeTreeParameters parameters;
     private final Map<NucleotideSequence, Map<Haplotype, HaplotypeCounters>> haplotypesByReference = new HashMap<>();
     private final CorrectorReferenceLibrary correctorReferenceLibrary;

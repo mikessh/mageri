@@ -22,6 +22,7 @@ import com.milaboratory.oncomigec.preproc.demultiplex.barcode.BarcodeSearcher;
 import com.milaboratory.oncomigec.preproc.demultiplex.entity.CheckoutResult;
 import com.milaboratory.oncomigec.preproc.demultiplex.entity.SimpleCheckoutResult;
 import com.milaboratory.oncomigec.util.Util;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 public class ReadPositionUmiExtractor extends CheckoutProcessor<CheckoutResult, SequencingRead> {
     // todo: implement
@@ -53,5 +54,10 @@ public class ReadPositionUmiExtractor extends CheckoutProcessor<CheckoutResult, 
     @Override
     public boolean performIlluminaRC() {
         return false;
+    }
+
+    @Override
+    public boolean isPairedEnd() {
+        throw new NotImplementedException();
     }
 }
