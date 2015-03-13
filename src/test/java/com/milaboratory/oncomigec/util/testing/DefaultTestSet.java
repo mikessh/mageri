@@ -38,6 +38,18 @@ public class DefaultTestSet {
         return readLines(barcodes);
     }
 
+    public static List<String> getBarcodesBadSlave() throws IOException {
+        InputStream barcodes = getResourceAsStream("sample/barcodes_badslave.txt");
+
+        return readLines(barcodes);
+    }
+
+    public static List<String> getBarcodesSlaveFirst() throws IOException {
+        InputStream barcodes = getResourceAsStream("sample/barcodes_slavefirst.txt");
+
+        return readLines(barcodes);
+    }
+
     public static InputStream getR1() throws IOException {
         return getResourceAsStream("sample/R1.fastq.gz");
     }
