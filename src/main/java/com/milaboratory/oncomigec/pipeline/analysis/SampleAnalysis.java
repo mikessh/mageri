@@ -22,31 +22,37 @@ import cc.redberry.pipe.OutputPort;
 import cc.redberry.pipe.blocks.Merger;
 import cc.redberry.pipe.blocks.ParallelProcessor;
 import cc.redberry.pipe.util.CountingOutputPort;
+import com.milaboratory.oncomigec.core.ReadSpecific;
 import com.milaboratory.oncomigec.core.assemble.entity.Consensus;
 import com.milaboratory.oncomigec.core.assemble.processor.Assembler;
 import com.milaboratory.oncomigec.core.consalign.entity.AlignedConsensus;
+import com.milaboratory.oncomigec.core.consalign.entity.AlignerReferenceLibrary;
+import com.milaboratory.oncomigec.core.consalign.mutations.MutationsAndCoverage;
 import com.milaboratory.oncomigec.core.consalign.processor.ConsensusAligner;
 import com.milaboratory.oncomigec.core.correct.CorrectedConsensus;
 import com.milaboratory.oncomigec.core.correct.Corrector;
+import com.milaboratory.oncomigec.core.genomic.Reference;
 import com.milaboratory.oncomigec.core.haplotype.HaplotypeTree;
 import com.milaboratory.oncomigec.core.io.entity.Mig;
 import com.milaboratory.oncomigec.core.io.readers.MigReader;
 import com.milaboratory.oncomigec.model.classifier.BaseVariantClassifier;
 import com.milaboratory.oncomigec.model.classifier.VariantClassifier;
+import com.milaboratory.oncomigec.model.variant.VariantContainer;
 import com.milaboratory.oncomigec.model.variant.VariantLibrary;
 import com.milaboratory.oncomigec.pipeline.MigecCli;
 import com.milaboratory.oncomigec.util.ProcessorResultWrapper;
+import org.apache.commons.math.MathException;
 
 import java.util.LinkedList;
 import java.util.List;
 
-public class SampleAnalysis {
+public class SampleAnalysis implements ReadSpecific {
     private static final boolean ENABLE_BUFFERING = true;
     protected final boolean paired;
-    
+
     protected final ProjectAnalysis parent;
     protected final Sample sample;
-    
+
     protected final MigReader reader;
     protected final Assembler assembler;
     protected final ConsensusAligner aligner;
@@ -54,9 +60,9 @@ public class SampleAnalysis {
     protected VariantLibrary variantLibrary;
     protected HaplotypeTree haplotypeTree;
     protected VariantClassifier variantClassifier;
-    
+
     private boolean firstStageRan = false, secondStageRan = false;
-    
+
     private final List<AlignedConsensus> alignmentDataList = new LinkedList<>();
 
     @SuppressWarnings("unchecked")
@@ -145,7 +151,7 @@ public class SampleAnalysis {
                 ", " + countingInput.getCount() + " MIGs processed in total");
     }
 
-    public void runSecondStage() throws Exception {
+    public void runSecondStage() throws MathException {
         if (!firstStageRan)
             throw new RuntimeException("Should run first stage first.");
 
@@ -179,11 +185,59 @@ public class SampleAnalysis {
         secondStageRan = true;
     }
 
+    public VariantContainer dumpMinorVariants(Reference reference, double threshold) {
+        if (!firstStageRan)
+            throw new RuntimeException("Should run first stage first.");
+
+        AlignerReferenceLibrary alignerReferenceLibrary = aligner.getAlignerReferenceLibrary();
+        MutationsAndCoverage mutationsAndCoverage = alignerReferenceLibrary.getMutationsAndCoverage(reference);
+        VariantContainer variantContainer = new VariantContainer(mutationsAndCoverage, threshold);
+
+        return variantContainer;
+    }
+
+    public MigReader getReader() {
+        return reader;
+    }
+
+    public Assembler getAssembler() {
+        return assembler;
+    }
+
+    public ConsensusAligner getAligner() {
+        return aligner;
+    }
+
+    public Corrector getCorrector() {
+        return corrector;
+    }
+
+    public Sample getSample() {
+        return sample;
+    }
+
+    public ProjectAnalysis getParent() {
+        return parent;
+    }
+
+    public HaplotypeTree getHaplotypeTree() {
+        return haplotypeTree;
+    }
+
+    public VariantLibrary getVariantLibrary() {
+        return variantLibrary;
+    }
+
     public boolean isFirstStageRan() {
         return firstStageRan;
     }
 
     public boolean isSecondStageRan() {
         return secondStageRan;
+    }
+
+    @Override
+    public boolean isPairedEnd() {
+        return paired;
     }
 }

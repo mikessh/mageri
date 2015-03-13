@@ -18,7 +18,9 @@
 
 package com.milaboratory.oncomigec.pipeline.input;
 
-public class SubMultiplexRule extends UmiRule{
+import java.io.Serializable;
+
+public class SubMultiplexRule extends UmiRule implements Serializable {
     private final String multiplexId;
     private final String multiplexBarcode;
 

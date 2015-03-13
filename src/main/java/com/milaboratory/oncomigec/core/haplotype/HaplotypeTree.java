@@ -18,9 +18,9 @@ package com.milaboratory.oncomigec.core.haplotype;
 import com.milaboratory.core.sequence.mutations.Mutations;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.oncomigec.core.PipelineBlock;
-import com.milaboratory.oncomigec.core.genomic.Reference;
 import com.milaboratory.oncomigec.core.correct.CorrectedConsensus;
 import com.milaboratory.oncomigec.core.correct.CorrectorReferenceLibrary;
+import com.milaboratory.oncomigec.core.genomic.Reference;
 import com.milaboratory.oncomigec.core.mutations.MutationDifference;
 import com.milaboratory.oncomigec.model.variant.VariantLibrary;
 import org.apache.commons.math.MathException;
@@ -70,12 +70,12 @@ public class HaplotypeTree implements PipelineBlock {
 
 
     private void updatePValue(Haplotype parentHaplotype, HaplotypeCounters parentCounter,
-                              Haplotype childHaplotype, HaplotypeCounters childCounter) throws Exception {
+                              Haplotype childHaplotype, HaplotypeCounters childCounter) throws MathException {
         List<MutationDifference> mutationDifferencesList = Haplotype.getMutationDifferences(parentHaplotype,
                 childHaplotype);
 
         if (mutationDifferencesList.size() == 0)
-            throw new Exception("Parent and child should be different haplotypes");
+            throw new RuntimeException("Parent and child should be different haplotypes");
 
         double pValue = 1.0;
         int m = 0;
@@ -148,7 +148,7 @@ public class HaplotypeTree implements PipelineBlock {
                 binomialDistribution.probability(childCount);
     }
 
-    public void calculatePValues() throws Exception {
+    public void calculatePValues() throws MathException {
         for (Map<Haplotype, HaplotypeCounters> haplotypeEntries : haplotypesByReference.values()) {
             for (Map.Entry<Haplotype, HaplotypeCounters> child : haplotypeEntries.entrySet()) {
                 for (Map.Entry<Haplotype, HaplotypeCounters> parent : haplotypeEntries.entrySet()) {

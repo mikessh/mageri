@@ -62,10 +62,9 @@ public final class CorrectedConsensus {
         return new Haplotype(this, haplotypeSequence, referenceSequence, maskedSequence);
     }
 
-    public static List<MutationDifference> getMutationDifferences(CorrectedConsensus parent, CorrectedConsensus child)
-            throws Exception {
+    public static List<MutationDifference> getMutationDifferences(CorrectedConsensus parent, CorrectedConsensus child) {
         if (parent.numberOfReferences != child.numberOfReferences)
-            throw new Exception("Different number of references");
+            throw new RuntimeException("Different number of references");
 
         List<MutationDifference> mutationDifferenceList = new ArrayList<>();
 
@@ -74,7 +73,7 @@ public final class CorrectedConsensus {
                     childReference = child.alignedConsensus.getReference(i);
 
             if (parentReference != childReference)
-                throw new Exception("Different reference set of parent and child");
+                throw new RuntimeException("Different reference set of parent and child");
 
             mutationDifferenceList.add(new MutationDifference(parentReference,
                     parent.mutationsList.get(i).getMutationCodes(),

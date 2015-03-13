@@ -22,9 +22,9 @@ import com.milaboratory.oncomigec.core.align.processor.aligners.ExtendedExomeAli
 import com.milaboratory.oncomigec.core.assemble.misc.AssemblerFactory;
 import com.milaboratory.oncomigec.core.assemble.misc.PAssemblerFactory;
 import com.milaboratory.oncomigec.core.assemble.misc.SAssemblerFactory;
-import com.milaboratory.oncomigec.core.assemble.processor.PAssembler;
-import com.milaboratory.oncomigec.core.assemble.processor.SAssembler;
-import com.milaboratory.oncomigec.core.consalign.processor.PConsensusAligner;
+import com.milaboratory.oncomigec.core.consalign.misc.ConsensusAlignerFactory;
+import com.milaboratory.oncomigec.core.consalign.misc.PConsensusAlignerFactory;
+import com.milaboratory.oncomigec.core.consalign.misc.SConsensusAlignerFactory;
 import com.milaboratory.oncomigec.core.genomic.PrimerSet;
 import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
 import com.milaboratory.oncomigec.core.io.readers.MigReader;
@@ -32,6 +32,8 @@ import com.milaboratory.oncomigec.pipeline.Presets;
 import com.milaboratory.oncomigec.pipeline.RuntimeParameters;
 import com.milaboratory.oncomigec.pipeline.input.Input;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -41,9 +43,10 @@ public class ProjectAnalysis {
     protected final Project project;
     protected final Presets presets;
     protected final RuntimeParameters runtimeParameters;
-    protected final AssemblerFactory
+    private final AssemblerFactory pAssemblerFactory, sAssemblerFactory;
+    private final ConsensusAlignerFactory pConsensusAlignerFactory, sConsensusAlignerFactory;
 
-    private final Map<Sample, SampleAnalysis> processorBySample = new TreeMap<>();
+    private final Map<Sample, SampleAnalysis> analysisBySample = new TreeMap<>();
 
     public ProjectAnalysis(Input input,
                            Presets presets,
@@ -55,32 +58,40 @@ public class ProjectAnalysis {
         this.referenceLibrary = ReferenceLibrary.fromInput(input.getReferences());
         this.primers = PrimerSet.fromInput(input.getPrimers());
 
+        this.pAssemblerFactory = new PAssemblerFactory(presets.getAssemblerParameters());
+        this.sAssemblerFactory = new SAssemblerFactory(presets.getAssemblerParameters());
 
-        
+        ExtendedExomeAlignerFactory alignerFactory = new ExtendedExomeAlignerFactory(referenceLibrary);
+
+        this.pConsensusAlignerFactory = new PConsensusAlignerFactory(alignerFactory, presets.getConsensusAlignerParameters());
+        this.sConsensusAlignerFactory = new SConsensusAlignerFactory(alignerFactory, presets.getConsensusAlignerParameters());
+
+        // Create reader factory
     }
-    
-    public void preprocess() {
-        final AssemblerFactory pAssemblerFactory = new PAssemblerFactory(presets.getAssemblerParameters()), 
-                sAssemblerFactory = new SAssemblerFactory(presets.getAssemblerParameters());
-        
-        final ExtendedExomeAlignerFactory
-        
-        for (Sample sample : project.getSamples()) {
-            MigReader reader = preprocess(sample);
-            SampleAnalysis sampleAnalysis = reader.isPairedEnd() ? new SampleAnalysis(this, sample,
-                    reader,
-                    new PAssembler(presets.getAssemblerParameters()),
-                    new PConsensusAligner()
-            )
-            //processorBySample.
+
+    public void run() throws Exception {
+        for (SampleGroup sampleGroup : project.getSampleGroups()) {
+            MigReaderFactory migReaderFactory = new MigReaderFactory(sampleGroup);
+            for (Sample sample : sampleGroup.getSamples()) {
+                MigReader reader = migReaderFactory.create(sample);
+
+                SampleAnalysis sampleAnalysis = reader.isPairedEnd() ? new SampleAnalysis(this, sample,
+                        reader,
+                        pAssemblerFactory.create(),
+                        pConsensusAlignerFactory.create()
+                ) : new SampleAnalysis(this, sample,
+                        reader,
+                        sAssemblerFactory.create(),
+                        sConsensusAlignerFactory.create()
+                );
+
+                sampleAnalysis.runFirstStage();
+
+                sampleAnalysis.runSecondStage();
+
+                analysisBySample.put(sample, sampleAnalysis);
+            }
         }
-        
-    }
-
-    private MigReader prepareReader(Sample sample) {
-        // use primers
-        return null;
-
     }
 
     public ReferenceLibrary getReferenceLibrary() {
@@ -97,5 +108,17 @@ public class ProjectAnalysis {
 
     public RuntimeParameters getRuntimeParameters() {
         return runtimeParameters;
+    }
+
+    public SampleAnalysis getAnalysis(Sample sample) {
+        return analysisBySample.get(sample);
+    }
+
+    public List<SampleAnalysis> getAnalysis(SampleGroup sampleGroup) {
+        List<SampleAnalysis> analysises = new ArrayList<>();
+        for (Sample sample : sampleGroup.getSamples()) {
+            analysises.add(getAnalysis(sample));
+        }
+        return analysises;
     }
 }

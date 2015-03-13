@@ -19,12 +19,13 @@
 package com.milaboratory.oncomigec.pipeline.input;
 
 import java.io.InputStream;
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 
-public class Input {
+public class Input implements Serializable {
     private final String projectName;
-    private final InputStream references, primers;
+    private transient final InputStream references, primers;
     private final List<InputChunk> inputChunks;
 
     public Input(String projectName, InputStream references, InputStream primers, List<InputChunk> inputChunks) {

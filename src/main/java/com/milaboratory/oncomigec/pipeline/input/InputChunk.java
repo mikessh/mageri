@@ -23,10 +23,11 @@ import com.sun.istack.internal.NotNull;
 import com.sun.istack.internal.Nullable;
 
 import java.io.InputStream;
+import java.io.Serializable;
 import java.util.List;
 
-public class InputChunk implements ReadSpecific {
-    private final InputStream inputStream1, inputStream2;
+public class InputChunk implements ReadSpecific, Serializable {
+    private transient final InputStream inputStream1, inputStream2;
     private final String index;
     private final UmiRule umiRule;
     private final List<SubMultiplexRule> subMultiplexRules;

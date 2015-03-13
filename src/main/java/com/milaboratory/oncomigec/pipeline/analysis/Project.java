@@ -22,25 +22,29 @@ import com.milaboratory.oncomigec.pipeline.input.Input;
 import com.milaboratory.oncomigec.pipeline.input.InputChunk;
 import com.milaboratory.oncomigec.pipeline.input.SubMultiplexRule;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class Project {
-    private final String name;
+public class Project implements Serializable {
+    private final List<SampleGroup> sampleGroups = new ArrayList<>();
     private final List<Sample> samples = new ArrayList<>();
+    private final Input input;
 
     public static Project fromInput(Input input) {
-        Project project = new Project(input.getProjectName());
+        Project project = new Project(input);
 
         for (InputChunk inputChunk : input.getInputChunks()) {
+            SampleGroup group = new SampleGroup(inputChunk, project);
             if (inputChunk.hasSubMultiplexing()) {
                 for (SubMultiplexRule subMultiplexRule : inputChunk.getSubMultiplexRules()) {
-                    Sample sample = new Sample(inputChunk.getIndex(), subMultiplexRule.getMultiplexId(), project);
+                    Sample sample = new Sample(subMultiplexRule, group);
                     project.samples.add(sample);
                 }
             } else {
-                Sample sample = new Sample(inputChunk.getIndex(), project);
+                Sample sample = new Sample(null, group);
+                group.addSample(sample);
                 project.samples.add(sample);
             }
         }
@@ -48,15 +52,19 @@ public class Project {
         return project;
     }
 
-    private Project(String name) {
-        this.name = name;
+    private Project(Input input) {
+        this.input = input;
     }
 
     public String getName() {
-        return name;
+        return input.getProjectName();
     }
 
     public List<Sample> getSamples() {
         return Collections.unmodifiableList(samples);
+    }
+
+    public List<SampleGroup> getSampleGroups() {
+        return sampleGroups;
     }
 }

@@ -18,34 +18,39 @@
 
 package com.milaboratory.oncomigec.pipeline.analysis;
 
+import com.milaboratory.oncomigec.pipeline.input.SubMultiplexRule;
 import com.sun.istack.internal.NotNull;
 
-public class Sample implements Comparable<Sample> {
-    public static final String DEFAULT_GROUP_NAME = "ungrouped";
+import java.io.Serializable;
 
-    private final String group, name;
-    private final Project parentProject;
+public class Sample implements Comparable<Sample>, Serializable {
+    private final SampleGroup parent;
+    private final SubMultiplexRule subMultiplexRule;
 
-    public Sample(@NotNull String group, @NotNull String name, @NotNull Project parentProject) {
-        this.group = group;
-        this.name = name;
-        this.parentProject = parentProject;
+    Sample(SubMultiplexRule subMultiplexRule, @NotNull SampleGroup parent) {
+        this.subMultiplexRule = subMultiplexRule;
+        this.parent = parent;
     }
 
-    public Sample(@NotNull String name, @NotNull Project parentProject) {
-        this(DEFAULT_GROUP_NAME, name, parentProject);
-    }
-
-    public String getGroup() {
-        return group;
+    public SampleGroup getParent() {
+        return parent;
     }
 
     public String getName() {
-        return name;
+        return subMultiplexRule != null ? subMultiplexRule.getMultiplexId() : parent.getName();
     }
 
-    public Project getParentProject() {
-        return parentProject;
+    public String getFullName() {
+        return parent.getFullName() + (subMultiplexRule != null ? ("." + subMultiplexRule.getMultiplexId()) : "");
+    }
+
+    SubMultiplexRule getSubMultiplexRule() {
+        return subMultiplexRule;
+    }
+
+    @Override
+    public int compareTo(Sample o) {
+        return this.getFullName().compareTo(o.getFullName());
     }
 
     @Override
@@ -55,23 +60,13 @@ public class Sample implements Comparable<Sample> {
 
         Sample sample = (Sample) o;
 
-        if (!group.equals(sample.group)) return false;
-        if (!name.equals(sample.name)) return false;
-        if (!parentProject.equals(sample.parentProject)) return false;
+        if (!getFullName().equals(sample.getFullName())) return false;
 
         return true;
     }
 
     @Override
     public int hashCode() {
-        int result = group.hashCode();
-        result = 31 * result + name.hashCode();
-        result = 31 * result + parentProject.hashCode();
-        return result;
-    }
-
-    @Override
-    public int compareTo(Sample o) {
-        return this.getName().compareTo(o.getName());
+        return getFullName().hashCode();
     }
 }

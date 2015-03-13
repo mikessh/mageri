@@ -21,7 +21,9 @@ package com.milaboratory.oncomigec.pipeline.input;
 import com.sun.istack.internal.NotNull;
 import com.sun.istack.internal.Nullable;
 
-public class UmiRule {
+import java.io.Serializable;
+
+public class UmiRule implements Serializable{
     private final UmiLocation umiLocation;
     private final String umiString;
 
