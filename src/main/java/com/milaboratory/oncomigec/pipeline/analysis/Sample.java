@@ -16,18 +16,28 @@
  * Last modified on 12.3.2015 by mikesh
  */
 
-package com.milaboratory.oncomigec.pipeline;
+package com.milaboratory.oncomigec.pipeline.analysis;
 
 import com.sun.istack.internal.NotNull;
 
 public class Sample implements Comparable<Sample> {
-    private final String name;
+    public static final String DEFAULT_GROUP_NAME = "ungrouped";
+
+    private final String group, name;
     private final Project parentProject;
 
-    public Sample(@NotNull String name, @NotNull Project parentProject) {
+    public Sample(@NotNull String group, @NotNull String name, @NotNull Project parentProject) {
+        this.group = group;
         this.name = name;
         this.parentProject = parentProject;
-        parentProject.add(this);
+    }
+
+    public Sample(@NotNull String name, @NotNull Project parentProject) {
+        this(DEFAULT_GROUP_NAME, name, parentProject);
+    }
+
+    public String getGroup() {
+        return group;
     }
 
     public String getName() {
@@ -45,6 +55,7 @@ public class Sample implements Comparable<Sample> {
 
         Sample sample = (Sample) o;
 
+        if (!group.equals(sample.group)) return false;
         if (!name.equals(sample.name)) return false;
         if (!parentProject.equals(sample.parentProject)) return false;
 
@@ -53,7 +64,8 @@ public class Sample implements Comparable<Sample> {
 
     @Override
     public int hashCode() {
-        int result = name.hashCode();
+        int result = group.hashCode();
+        result = 31 * result + name.hashCode();
         result = 31 * result + parentProject.hashCode();
         return result;
     }

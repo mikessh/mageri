@@ -40,6 +40,10 @@ public class InputChunk implements ReadSpecific {
         this.subMultiplexRules = subMultiplexRules;
     }
 
+    public boolean hasSubMultiplexing() {
+        return !subMultiplexRules.isEmpty();
+    }
+
     public InputStream getInputStream1() {
         return inputStream1;
     }
@@ -50,6 +54,14 @@ public class InputChunk implements ReadSpecific {
 
     public String getIndex() {
         return index;
+    }
+
+    public UmiRule getUmiRule() {
+        return umiRule;
+    }
+
+    public List<SubMultiplexRule> getSubMultiplexRules() {
+        return subMultiplexRules;
     }
 
     @Override

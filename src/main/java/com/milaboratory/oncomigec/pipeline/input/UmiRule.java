@@ -18,16 +18,23 @@
 
 package com.milaboratory.oncomigec.pipeline.input;
 
+import com.sun.istack.internal.NotNull;
+import com.sun.istack.internal.Nullable;
+
 public class UmiRule {
     private final UmiLocation umiLocation;
     private final String umiString;
 
-    public UmiRule(UmiLocation umiLocation, String umiString) {
+    public UmiRule(@NotNull UmiLocation umiLocation, @Nullable String umiString) {
         this.umiLocation = umiLocation;
         this.umiString = umiString;
     }
 
     public UmiLocation getUmiLocation() {
         return umiLocation;
+    }
+
+    public String getUmiString() {
+        return umiString;
     }
 }

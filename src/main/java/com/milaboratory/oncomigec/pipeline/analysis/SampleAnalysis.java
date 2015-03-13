@@ -16,7 +16,7 @@
  * Last modified on 12.3.2015 by mikesh
  */
 
-package com.milaboratory.oncomigec.pipeline;
+package com.milaboratory.oncomigec.pipeline.analysis;
 
 import cc.redberry.pipe.OutputPort;
 import cc.redberry.pipe.blocks.Merger;
@@ -34,16 +34,17 @@ import com.milaboratory.oncomigec.core.io.readers.MigReader;
 import com.milaboratory.oncomigec.model.classifier.BaseVariantClassifier;
 import com.milaboratory.oncomigec.model.classifier.VariantClassifier;
 import com.milaboratory.oncomigec.model.variant.VariantLibrary;
+import com.milaboratory.oncomigec.pipeline.MigecCli;
 import com.milaboratory.oncomigec.util.ProcessorResultWrapper;
 
 import java.util.LinkedList;
 import java.util.List;
 
-public class SampleProcessor {
+public class SampleAnalysis {
     private static final boolean ENABLE_BUFFERING = true;
     protected final boolean paired;
     
-    protected final ProjectProcessor parent;
+    protected final ProjectAnalysis parent;
     protected final Sample sample;
     
     protected final MigReader reader;
@@ -59,11 +60,11 @@ public class SampleProcessor {
     private final List<AlignedConsensus> alignmentDataList = new LinkedList<>();
 
     @SuppressWarnings("unchecked")
-    protected SampleProcessor(ProjectProcessor parent,
-                              Sample sample,
-                              MigReader reader,
-                              Assembler assembler,
-                              ConsensusAligner consensusAligner) {
+    protected SampleAnalysis(ProjectAnalysis parent,
+                             Sample sample,
+                             MigReader reader,
+                             Assembler assembler,
+                             ConsensusAligner consensusAligner) {
         this.parent = parent;
         this.sample = sample;
         this.reader = reader;
