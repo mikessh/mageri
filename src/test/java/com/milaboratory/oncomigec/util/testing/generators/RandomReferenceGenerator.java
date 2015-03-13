@@ -58,8 +58,7 @@ public class RandomReferenceGenerator {
 
     public Reference nextReference() {
         int id = referenceIndex.incrementAndGet();
-        return new Reference(id, Integer.toString(id), "random_reference",
-                nextSequence(), false);
+        return new Reference(id, Integer.toString(id), nextSequence(), false);
     }
 
     public NucleotideSequence nextReferenceSequence() {

@@ -74,21 +74,19 @@ public final class PConsensusAligner extends ConsensusAligner<PConsensus> {
                 minorMutations = new HashMap<>();
             }
 
-            if (!reference2.isDeNovo()) {
-                LocalAlignment localAlignment2 = alignmentResult2.getAlignments().get(i);
-                MutationsExtractor mutationsExtractor = new MutationsExtractor(localAlignment2,
-                        reference2, consensus2, parameters);
-                // TODO: test mutations don't overlap
-                majorMutations.append(mutationsExtractor.calculateMajorMutations());
-                Map<Integer, Integer> additionalMinorMutations = mutationsExtractor.calculateMinorMutations();
+            LocalAlignment localAlignment2 = alignmentResult2.getAlignments().get(i);
+            MutationsExtractor mutationsExtractor = new MutationsExtractor(localAlignment2,
+                    reference2, consensus2, parameters);
+            // TODO: test mutations don't overlap
+            majorMutations.append(mutationsExtractor.calculateMajorMutations());
+            Map<Integer, Integer> additionalMinorMutations = mutationsExtractor.calculateMinorMutations();
 
-                for (Map.Entry<Integer, Integer> minorMutationEntry : additionalMinorMutations.entrySet()) {
-                    Integer count = minorMutations.get(minorMutationEntry.getKey());
-                    if (count == null)
-                        minorMutations.put(minorMutationEntry.getKey(), minorMutationEntry.getValue());
-                    else
-                        minorMutations.put(minorMutationEntry.getKey(), minorMutationEntry.getValue() + count);
-                }
+            for (Map.Entry<Integer, Integer> minorMutationEntry : additionalMinorMutations.entrySet()) {
+                Integer count = minorMutations.get(minorMutationEntry.getKey());
+                if (count == null)
+                    minorMutations.put(minorMutationEntry.getKey(), minorMutationEntry.getValue());
+                else
+                    minorMutations.put(minorMutationEntry.getKey(), minorMutationEntry.getValue() + count);
             }
 
             majorMutationsByReference.put(reference2, majorMutations);

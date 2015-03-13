@@ -39,16 +39,16 @@ public class AlignersTest {
             IllegalAccessException, NoSuchMethodException, URISyntaxException {
         System.out.println("Generating random mutated variants from reference library and testing aligners..");
 
-        randomizedSimilarityTest(new SimpleExomeAlignerFactory(),
+        ReferenceLibrary dummy = new ReferenceLibrary();
+
+        randomizedSimilarityTest(new SimpleExomeAlignerFactory(dummy),
                 PercentRange.createLowerBound("Similarity", "SimpleExomeAligner-Normal", 95));
 
 
-        randomizedSimilarityTest(new ExtendedExomeAlignerFactory(),
+        randomizedSimilarityTest(new ExtendedExomeAlignerFactory(dummy),
                 PercentRange.createLowerBound("Similarity", "ImprovedExomeAligner-Normal", 99));
 
         System.out.println("Testing aligners for deletions..");
-
-        ReferenceLibrary dummy = new ReferenceLibrary();
 
         System.out.println("Simple");
         randomizedIndelTest(new SimpleExomeAlignerFactory(dummy, FLEXIBLE),
