@@ -58,18 +58,16 @@ public class PMigReaderTest {
         PCheckoutProcessor processor = BarcodeListParser.generatePCheckoutProcessor(getBarcodes(),
                 DemultiplexParameters.DEFAULT);
 
-        String sampleName = "GOOD1";
-
         PMigReader reader = new PMigReader(getR1(), getR2(), processor);
-        PMigReader reader2 = new PMigReader(getR1(), getR2(), sampleName);
+        PMigReader reader2 = new PMigReader(getR1(), getR2(), SAMPLE_NAME);
 
-        UmiHistogram histogram = reader2.getUmiHistogram(sampleName);
+        UmiHistogram histogram = reader2.getUmiHistogram(SAMPLE_NAME);
 
         double avgSizeDifference = 0;
         int readsWithDifferentUmisCount = 0, totalReads = 0;
 
         PMig pMig;
-        while ((pMig = reader.take(sampleName, 5)) != null) {
+        while ((pMig = reader.take(SAMPLE_NAME, 5)) != null) {
             NucleotideSequence umi = pMig.getUmi();
 
             totalReads += pMig.getMig1().size();
