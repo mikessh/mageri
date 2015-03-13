@@ -14,11 +14,19 @@
         <version>7</version>
     </parent>
 
+    <repositories>
+        <repository>
+            <id>in-project</id>
+            <name>In Project Repo</name>
+            <url>file://${project.basedir}/lib</url>
+        </repository>
+    </repositories>
+
     <dependencies>
         <dependency>
             <groupId>com.milaboratory</groupId>
-            <artifactId>milib</artifactId>
-            <version>1.0</version>
+            <artifactId>micommons</artifactId>
+            <version>1.1-SNAPSHOT</version>
         </dependency>
 
         <dependency>
