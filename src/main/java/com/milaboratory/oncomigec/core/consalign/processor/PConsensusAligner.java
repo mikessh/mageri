@@ -4,12 +4,12 @@ import com.milaboratory.core.sequence.alignment.LocalAlignment;
 import com.milaboratory.oncomigec.core.align.entity.PAlignmentResult;
 import com.milaboratory.oncomigec.core.align.entity.SAlignmentResult;
 import com.milaboratory.oncomigec.core.align.processor.Aligner;
-import com.milaboratory.oncomigec.core.align.reference.Reference;
 import com.milaboratory.oncomigec.core.assemble.entity.PConsensus;
 import com.milaboratory.oncomigec.core.assemble.entity.SConsensus;
 import com.milaboratory.oncomigec.core.consalign.entity.AlignedConsensus;
 import com.milaboratory.oncomigec.core.consalign.misc.ConsensusAlignerParameters;
 import com.milaboratory.oncomigec.core.consalign.mutations.MutationsExtractor;
+import com.milaboratory.oncomigec.core.genomic.Reference;
 import com.milaboratory.oncomigec.core.mutations.MigecMutationsCollection;
 
 import java.util.ArrayList;
@@ -51,14 +51,13 @@ public final class PConsensusAligner extends ConsensusAligner<PConsensus> {
             MigecMutationsCollection majorMutations = MigecMutationsCollection.EMPTY(reference1);
             Map<Integer, Integer> minorMutations = new HashMap<>();
 
-            if (!reference1.isDeNovo()) {
-                LocalAlignment localAlignment1 = alignmentResult1.getAlignments().get(i);
-                MutationsExtractor mutationsExtractor = new MutationsExtractor(localAlignment1,
-                        reference1, consensus1, parameters);
+            LocalAlignment localAlignment1 = alignmentResult1.getAlignments().get(i);
+            MutationsExtractor mutationsExtractor = new MutationsExtractor(localAlignment1,
+                    reference1, consensus1, parameters);
 
-                majorMutations = mutationsExtractor.calculateMajorMutations();
-                minorMutations = mutationsExtractor.calculateMinorMutations();
-            }
+            majorMutations = mutationsExtractor.calculateMajorMutations();
+            minorMutations = mutationsExtractor.calculateMinorMutations();
+
 
             majorMutationsByReference.put(reference1, majorMutations);
             minorMutationsByReference.put(reference1, minorMutations);

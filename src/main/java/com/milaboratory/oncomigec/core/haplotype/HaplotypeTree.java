@@ -18,7 +18,7 @@ package com.milaboratory.oncomigec.core.haplotype;
 import com.milaboratory.core.sequence.mutations.Mutations;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.oncomigec.core.PipelineBlock;
-import com.milaboratory.oncomigec.core.align.reference.Reference;
+import com.milaboratory.oncomigec.core.genomic.Reference;
 import com.milaboratory.oncomigec.core.correct.CorrectedConsensus;
 import com.milaboratory.oncomigec.core.correct.CorrectorReferenceLibrary;
 import com.milaboratory.oncomigec.core.mutations.MutationDifference;

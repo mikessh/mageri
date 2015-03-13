@@ -18,8 +18,8 @@
 
 package com.milaboratory.oncomigec.model.variant;
 
-import com.milaboratory.oncomigec.core.align.reference.Reference;
-import com.milaboratory.oncomigec.core.align.reference.ReferenceLibrary;
+import com.milaboratory.oncomigec.core.genomic.Reference;
+import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
 import com.milaboratory.oncomigec.core.consalign.entity.AlignerReferenceLibrary;
 
 import java.util.HashMap;

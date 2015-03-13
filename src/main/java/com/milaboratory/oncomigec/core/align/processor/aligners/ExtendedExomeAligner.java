@@ -10,15 +10,14 @@ import com.milaboratory.oncomigec.core.align.entity.SAlignmentResult;
 import com.milaboratory.oncomigec.core.align.kmer.KMerFinder;
 import com.milaboratory.oncomigec.core.align.kmer.KMerFinderResult;
 import com.milaboratory.oncomigec.core.align.processor.Aligner;
-import com.milaboratory.oncomigec.core.align.reference.Reference;
-import com.milaboratory.oncomigec.core.align.reference.ReferenceLibrary;
+import com.milaboratory.oncomigec.core.genomic.Reference;
+import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class ExtendedExomeAligner implements Aligner {
-    private final KMerFinder finder;
-    private final ReferenceLibrary referenceLibrary;
+    private final KMerFinder kMerFinder;
     private final LocalAlignmentEvaluator localAlignmentEvaluator;
 
     public ExtendedExomeAligner(ReferenceLibrary referenceLibrary) {
@@ -27,14 +26,19 @@ public class ExtendedExomeAligner implements Aligner {
 
     public ExtendedExomeAligner(ReferenceLibrary referenceLibrary, int k,
                                 LocalAlignmentEvaluator localAlignmentEvaluator) {
-        this.finder = new KMerFinder(referenceLibrary, k);
-        this.referenceLibrary = referenceLibrary;
+        this.kMerFinder = new KMerFinder(referenceLibrary, k);
+        this.localAlignmentEvaluator = localAlignmentEvaluator;
+    }
+
+    public ExtendedExomeAligner(KMerFinder kMerFinder,
+                                LocalAlignmentEvaluator localAlignmentEvaluator) {
+        this.kMerFinder = kMerFinder;
         this.localAlignmentEvaluator = localAlignmentEvaluator;
     }
 
     @Override
     public SAlignmentResult align(NucleotideSequence sequence) {
-        KMerFinderResult hit = finder.find(sequence);
+        KMerFinderResult hit = kMerFinder.find(sequence);
 
         if (hit == null)
             return null;
@@ -76,6 +80,6 @@ public class ExtendedExomeAligner implements Aligner {
 
     @Override
     public ReferenceLibrary getReferenceLibrary() {
-        return referenceLibrary;
+        return kMerFinder.getReferenceLibrary();
     }
 }

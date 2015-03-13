@@ -15,7 +15,7 @@
  */
 package com.milaboratory.oncomigec.preproc.demultiplex.processor;
 
-import com.milaboratory.core.sequencing.read.SequencingRead;
+import com.milaboratory.core.sequencing.read.SSequencingRead;
 import com.milaboratory.oncomigec.core.PipelineBlock;
 import com.milaboratory.oncomigec.core.ReadSpecific;
 import com.milaboratory.oncomigec.preproc.demultiplex.barcode.BarcodeSearcher;
@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicLongArray;
 
-public abstract class CheckoutProcessor<T extends CheckoutResult, V extends SequencingRead> implements ReadSpecific, PipelineBlock {
+public abstract class CheckoutProcessor<T extends CheckoutResult, V extends SSequencingRead> implements ReadSpecific, PipelineBlock {
     protected final AtomicLongArray masterCounters;
     protected final AtomicLong masterNotFoundCounter, totalCounter;
     protected final String[] sampleNames;

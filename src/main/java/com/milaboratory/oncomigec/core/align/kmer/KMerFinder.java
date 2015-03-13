@@ -1,17 +1,19 @@
 package com.milaboratory.oncomigec.core.align.kmer;
 
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
-import com.milaboratory.oncomigec.core.align.reference.ReferenceLibrary;
+import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
 import com.milaboratory.util.IntArrayList;
 
 public class KMerFinder {
+    public static final int DEFAULT_K = 11;
+    
     private final KmerUtils kmerUtils;
     private final KmerMap kmerMap;
     private final ReferenceLibrary referenceLibrary;
     private final int referenceCount;
 
     public KMerFinder(ReferenceLibrary referenceLibrary) {
-        this(referenceLibrary, 11);
+        this(referenceLibrary, DEFAULT_K);
     }
 
     public KMerFinder(ReferenceLibrary referenceLibrary, int k) {
@@ -60,5 +62,9 @@ public class KMerFinder {
         maxInformationValue /= Math.log(N) * kmers.length;
 
         return new KMerFinderResult(maxInformationValue, referenceLibrary.getByGlobalId(maxInformationId));
+    }
+
+    public ReferenceLibrary getReferenceLibrary() {
+        return referenceLibrary;
     }
 }

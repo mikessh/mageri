@@ -2,6 +2,7 @@ package com.milaboratory.oncomigec.core.assemble.processor;
 
 import com.milaboratory.oncomigec.core.assemble.entity.PConsensus;
 import com.milaboratory.oncomigec.core.assemble.entity.SConsensus;
+import com.milaboratory.oncomigec.core.assemble.misc.AssemblerParameters;
 import com.milaboratory.oncomigec.core.io.entity.PMig;
 
 public final class PAssembler extends Assembler<PConsensus, PMig> {
@@ -9,6 +10,13 @@ public final class PAssembler extends Assembler<PConsensus, PMig> {
 
     public PAssembler() {
         this(new SAssembler(), new SAssembler());
+    }
+
+    public PAssembler(AssemblerParameters assemblerParameters) {
+        this.assembler1 = new SAssembler(assemblerParameters);
+        this.assembler2 = new SAssembler(assemblerParameters);
+        assembler1.storeConsensuses = false;
+        assembler2.storeConsensuses = false;
     }
 
     public PAssembler(SAssembler assembler1, SAssembler assembler2) {

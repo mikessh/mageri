@@ -17,7 +17,7 @@ package com.milaboratory.oncomigec.core.correct;
 
 import com.milaboratory.core.sequence.mutations.Mutations;
 import com.milaboratory.core.sequence.nucleotide.NucleotideAlphabet;
-import com.milaboratory.oncomigec.core.align.reference.Reference;
+import com.milaboratory.oncomigec.core.genomic.Reference;
 import com.milaboratory.oncomigec.core.consalign.entity.AlignerReferenceLibrary;
 import com.milaboratory.oncomigec.core.consalign.mutations.MutationsAndCoverage;
 import com.milaboratory.oncomigec.model.classifier.ClassifierResult;

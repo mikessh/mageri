@@ -21,19 +21,21 @@ import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.oncomigec.core.align.entity.PAlignmentResult;
 import com.milaboratory.oncomigec.core.align.entity.SAlignmentResult;
 import com.milaboratory.oncomigec.core.align.processor.Aligner;
-import com.milaboratory.oncomigec.core.align.reference.Reference;
-import com.milaboratory.oncomigec.core.align.reference.ReferenceLibrary;
+import com.milaboratory.oncomigec.core.genomic.Reference;
+import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class SimpleExomeAligner implements Aligner {
+    public final static KAlignerParameters DEFAULT_PARAMS = KAlignerParameters.getByName("strict");
+
     private final KAligner aligner;
     private final ReferenceLibrary referenceLibrary;
     private final LocalAlignmentEvaluator localAlignmentEvaluator;
 
     public SimpleExomeAligner(ReferenceLibrary referenceLibrary) {
-        this(referenceLibrary, KAlignerParameters.getByName("strict"), LocalAlignmentEvaluator.STRICT);
+        this(referenceLibrary, DEFAULT_PARAMS, LocalAlignmentEvaluator.STRICT);
     }
 
     public SimpleExomeAligner(ReferenceLibrary referenceLibrary,

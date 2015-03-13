@@ -16,8 +16,8 @@
 package com.milaboratory.oncomigec.core.consalign.entity;
 
 import com.milaboratory.oncomigec.core.align.entity.SAlignmentResult;
-import com.milaboratory.oncomigec.core.align.reference.Reference;
-import com.milaboratory.oncomigec.core.align.reference.ReferenceLibrary;
+import com.milaboratory.oncomigec.core.genomic.Reference;
+import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
 import com.milaboratory.oncomigec.core.assemble.entity.SConsensus;
 import com.milaboratory.oncomigec.core.consalign.mutations.MutationsAndCoverage;
 import com.milaboratory.oncomigec.core.mutations.MigecMutationsCollection;

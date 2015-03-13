@@ -13,21 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Last modified on 12.3.2015 by mikesh
+ * Last modified on 13.3.2015 by mikesh
  */
 
-package com.milaboratory.oncomigec.pipeline;
+package com.milaboratory.oncomigec.core.genomic;
 
-import java.util.ArrayList;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
-public class Project extends ArrayList<Sample> {
-    private final String name;
+import java.io.InputStream;
 
-    public Project(String name) {
-        this.name = name;
-    }
+public class PrimerSet {
 
-    public String getName() {
-        return name;
+    public static PrimerSet fromInput(InputStream input) {
+        throw new NotImplementedException();
     }
 }
