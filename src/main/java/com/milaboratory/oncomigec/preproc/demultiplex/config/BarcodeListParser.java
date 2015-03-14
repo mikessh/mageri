@@ -35,13 +35,12 @@ public class BarcodeListParser {
 
     public static SCheckoutProcessor generateSCheckoutProcessor(List<String> lines,
                                                                 DemultiplexParameters demultiplexParameters) {
-        return generateSCheckoutProcessor(lines, demultiplexParameters.scanRC(),
+        return generateSCheckoutProcessor(lines,
                 demultiplexParameters.getMaxTruncations(), demultiplexParameters.getMaxGoodQualMMRatio(),
                 demultiplexParameters.getMaxLowQualityMMRatio(), demultiplexParameters.getLowQualityThreshold());
     }
 
     public static SCheckoutProcessor generateSCheckoutProcessor(List<String> lines,
-                                                                boolean checkRC,
                                                                 int maxTruncations,
                                                                 double maxGoodMMRatio,
                                                                 double maxLowQualMMRatio,
@@ -75,8 +74,7 @@ public class BarcodeListParser {
         }
 
         return new SCheckoutProcessor(sampleNames.toArray(new String[sampleNames.size()]),
-                barcodeSearchers.toArray(new BarcodeSearcher[barcodeSearchers.size()]),
-                checkRC);
+                barcodeSearchers.toArray(new BarcodeSearcher[barcodeSearchers.size()]));
     }
 
 
@@ -86,16 +84,13 @@ public class BarcodeListParser {
 
     public static PCheckoutProcessor generatePCheckoutProcessor(List<String> lines,
                                                                 DemultiplexParameters demultiplexParameters) {
-        return generatePCheckoutProcessor(lines, demultiplexParameters.scanRC(), demultiplexParameters.orientedReads(),
-                demultiplexParameters.illuminaReads(),
+        return generatePCheckoutProcessor(lines, demultiplexParameters.orientedReads(),
                 demultiplexParameters.getMaxTruncations(), demultiplexParameters.getMaxGoodQualMMRatio(),
                 demultiplexParameters.getMaxLowQualityMMRatio(), demultiplexParameters.getLowQualityThreshold());
     }
 
     public static PCheckoutProcessor generatePCheckoutProcessor(List<String> lines,
-                                                                boolean checkRC,
                                                                 boolean oriented,
-                                                                boolean illuminaReads,
                                                                 int maxTruncations,
                                                                 double maxGoodMMRatio,
                                                                 double maxLowQualMMRatio,
@@ -160,7 +155,6 @@ public class BarcodeListParser {
         return new PCheckoutProcessor(sampleNames.toArray(new String[sampleNames.size()]),
                 masterBarcodeSearchers.toArray(new BarcodeSearcher[masterBarcodeSearchers.size()]),
                 slaveBarcodeSearchers.toArray(new BarcodeSearcher[slaveBarcodeSearchers.size()]),
-                masterFirstArr,
-                checkRC, !oriented, illuminaReads);
+                masterFirstArr, oriented);
     }
 }

@@ -30,25 +30,23 @@ public final class PCheckoutProcessor extends CheckoutProcessor<PCheckoutResult,
     private final AtomicLong slaveNotFoundCounter;
     private final BarcodeSearcher[] slaveBarcodes;
     private final boolean[] masterFirst;
-    private final boolean nonOrientedReads, illuminaReads;
+    private final boolean orientedReads;
 
     public PCheckoutProcessor(String[] sampleNames,
                               BarcodeSearcher[] masterBarcodes, BarcodeSearcher[] slaveBarcodes,
                               boolean[] masterFirst) {
-        this(sampleNames, masterBarcodes, slaveBarcodes, masterFirst, false, false, true);
+        this(sampleNames, masterBarcodes, slaveBarcodes, masterFirst, true);
     }
 
     public PCheckoutProcessor(String[] sampleNames,
                               BarcodeSearcher[] masterBarcodes, BarcodeSearcher[] slaveBarcodes,
-                              boolean[] masterFirst,
-                              boolean checkRC, boolean nonOrientedReads, boolean illuminaReads) {
-        super(sampleNames, masterBarcodes, checkRC);
+                              boolean[] masterFirst, boolean orientedReads) {
+        super(sampleNames, masterBarcodes);
         if (masterBarcodes.length != slaveBarcodes.length)
             throw new RuntimeException("Number of master and slave barcodes provided doesn't agree");
 
         this.slaveBarcodes = slaveBarcodes;
-        this.nonOrientedReads = nonOrientedReads;
-        this.illuminaReads = illuminaReads;
+        this.orientedReads = orientedReads;
         this.masterFirst = masterFirst;
         this.slaveNotFoundCounter = new AtomicLong();
         this.slaveCounters = new AtomicLongArray(masterBarcodes.length);
@@ -58,55 +56,55 @@ public final class PCheckoutProcessor extends CheckoutProcessor<PCheckoutResult,
     public PCheckoutResult checkout(PSequencingRead read) {
         totalCounter.incrementAndGet();
 
-        int masterReadId;
-        boolean masterRC;
+        boolean orientation;
+
         BarcodeSearcherResult masterResult, slaveResult;
 
+        // Illumina convention (FR), orientation #1
+        NucleotideSQPair read1o1 = read.getData(0),
+                read2o1 = null,
+                read1o2 = read.getData(1),
+                read2o2 = null;
+
         for (int i = 0; i < sampleNames.length; i++) {
-            // Search for master
-            // Search 1st and 2nd read if non-oriented (only 1st read otherwise)
-            // Search both strands if checkRC is specified
-            masterRC = false;
-            masterReadId = 0;
-            masterResult = masterBarcodes[i].search(read.getData(0));
+            // Search for master, orientation#1
+            masterResult = masterBarcodes[i].search(read1o1);
+            orientation = true;
 
-            if (masterResult == null && nonOrientedReads) {
-                masterReadId = 1;
-                masterResult = masterBarcodes[i].search(read.getData(1));
-            }
-
-            if (masterResult == null && checkRC) {
-                masterRC = true;
-                masterReadId = 0;
-                masterResult = masterBarcodes[i].search(read.getData(0).getRC());
-                if (masterResult == null && nonOrientedReads) {
-                    masterRC = true;
-                    masterReadId = 1;
-                    masterResult = masterBarcodes[i].search(read.getData(1).getRC());
-                }
+            // For non-oriented reads (master is not forced to be in read#1)
+            // Search orientation#2
+            if (masterResult == null && !orientedReads) {
+                masterResult = masterBarcodes[i].search(read1o2);
+                orientation = false;
             }
 
             // If master is found check for slave
             if (masterResult != null) {
                 masterCounters.incrementAndGet(i);
-                NucleotideSQPair slaveRead = read.getData(1 - masterReadId);
 
                 // No search is performed when slave barcode is blank
                 if (slaveBarcodes[i] == null) {
                     slaveCounters.incrementAndGet(i);
-                    return new PCheckoutResult(i, sampleNames[i], masterReadId == 0, masterRC,
+                    return new PCheckoutResult(i, sampleNames[i], orientation, masterFirst[i],
                             masterResult, BarcodeSearcherResult.BLANK_RESULT);
                 }
 
                 // Position slave to master strand
-                slaveRead = (illuminaReads ^ masterRC) ? slaveRead.getRC() : slaveRead;
+                if (orientation) {
+                    if (read2o1 == null)
+                        read2o1 = read.getData(1).getRC();
+                } else if (read2o2 == null)
+                    read2o2 = read.getData(0).getRC();
+
+                // Get slave for correct orientation
+                NucleotideSQPair slaveRead = orientation ? read2o1 : read2o2;
 
                 if ((slaveResult = slaveBarcodes[i].search(slaveRead)) != null)
                     slaveCounters.incrementAndGet(i);
                 else
                     slaveNotFoundCounter.incrementAndGet();
 
-                return new PCheckoutResult(i, sampleNames[i], masterReadId == 0, masterRC,
+                return new PCheckoutResult(i, sampleNames[i], orientation, masterFirst[i],
                         masterResult, slaveResult);
             }
         }
@@ -129,13 +127,6 @@ public final class PCheckoutProcessor extends CheckoutProcessor<PCheckoutResult,
     @Override
     public boolean[] getMasterFirst() {
         return masterFirst;
-    }
-
-    // Only RC of slave is performed in case of illumina reads
-    // preserve orientation of checkouted reads
-    @Override
-    public boolean performIlluminaRC() {
-        return illuminaReads;
     }
 
     @Override

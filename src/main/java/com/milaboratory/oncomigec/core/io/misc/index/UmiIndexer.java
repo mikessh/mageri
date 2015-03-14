@@ -11,12 +11,10 @@ import com.milaboratory.oncomigec.util.ProcessorResultWrapper;
 public class UmiIndexer implements Processor<SequencingRead, ProcessorResultWrapper<IndexingInfo>> {
     private final CheckoutProcessor checkoutProcessor;
     private final byte umiQualityThreshold;
-    private final boolean[] masterFirst;
 
     public UmiIndexer(CheckoutProcessor checkoutProcessor, byte umiQualityThreshold) {
         this.checkoutProcessor = checkoutProcessor;
         this.umiQualityThreshold = umiQualityThreshold;
-        this.masterFirst = checkoutProcessor.getMasterFirst();
     }
 
     @Override
@@ -27,9 +25,7 @@ public class UmiIndexer implements Processor<SequencingRead, ProcessorResultWrap
             String sampleName = result.getSampleName();
             NucleotideSequence umi = result.getUmi();
 
-            ReadInfo readInfo = new ReadInfo(sequencingRead,
-                    masterFirst[result.getSampleId()] != result.masterFirst(),
-                    result.foundInRC(), result);
+            ReadInfo readInfo = new ReadInfo(sequencingRead, result);
 
             return new ProcessorResultWrapper<>(new IndexingInfo(readInfo, sampleName, umi));
         }

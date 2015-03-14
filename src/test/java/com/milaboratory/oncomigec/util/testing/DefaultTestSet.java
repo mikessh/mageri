@@ -33,21 +33,19 @@ public class DefaultTestSet {
     }
 
     public static List<String> getBarcodes() throws IOException {
-        InputStream barcodes = getResourceAsStream("sample/barcodes.txt");
+        return readLines(getResourceAsStream("sample/barcodes.txt"));
+    }
 
-        return readLines(barcodes);
+    public static List<String> getBarcodesGood() throws IOException {
+        return readLines(getResourceAsStream("sample/barcodes_good.txt"));
     }
 
     public static List<String> getBarcodesBadSlave() throws IOException {
-        InputStream barcodes = getResourceAsStream("sample/barcodes_badslave.txt");
-
-        return readLines(barcodes);
+        return readLines(getResourceAsStream("sample/barcodes_badslave.txt"));
     }
 
     public static List<String> getBarcodesSlaveFirst() throws IOException {
-        InputStream barcodes = getResourceAsStream("sample/barcodes_slavefirst.txt");
-
-        return readLines(barcodes);
+        return readLines(getResourceAsStream("sample/barcodes_slavefirst.txt"));
     }
 
     public static InputStream getR1() throws IOException {

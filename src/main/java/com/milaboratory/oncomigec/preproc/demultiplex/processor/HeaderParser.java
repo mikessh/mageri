@@ -12,7 +12,7 @@ public final class HeaderParser extends CheckoutProcessor<CheckoutResult, Sequen
     private final String sampleName;
 
     public HeaderParser(String sampleName) {
-        super(new String[]{sampleName}, new BarcodeSearcher[1], false);
+        super(new String[]{sampleName}, new BarcodeSearcher[1]);
         this.sampleName = sampleName;
     }
 
@@ -30,10 +30,6 @@ public final class HeaderParser extends CheckoutProcessor<CheckoutResult, Sequen
     }
 
     // no flipping/rc should be performed for external data
-    @Override
-    public boolean performIlluminaRC() {
-        return false;
-    }
 
     @Override
     public boolean[] getMasterFirst() {

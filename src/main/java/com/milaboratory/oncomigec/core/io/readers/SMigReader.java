@@ -24,6 +24,7 @@ import com.milaboratory.core.sequencing.read.SequencingRead;
 import com.milaboratory.oncomigec.core.io.entity.SMig;
 import com.milaboratory.oncomigec.core.io.misc.MigReaderParameters;
 import com.milaboratory.oncomigec.core.io.misc.ReadInfo;
+import com.milaboratory.oncomigec.preproc.demultiplex.entity.CheckoutResult;
 import com.milaboratory.oncomigec.preproc.demultiplex.processor.SCheckoutProcessor;
 import com.milaboratory.util.CompressionType;
 
@@ -105,11 +106,11 @@ public final class SMigReader extends MigReader<SMig> {
             if (entry.getValue().size() >= sizeThreshold && checkUmiMismatch(sampleName, entry.getKey())) {
                 List<NucleotideSQPair> readList = new ArrayList<>();
 
-                // todo: handle adapter trimming case (!!!)
-
                 for (ReadInfo readInfo : entry.getValue()) {
                     NucleotideSQPair read = readInfo.getRead().getData(0);
-                    readList.add(readInfo.rcMe() ? read.getRC() : read);
+                    CheckoutResult result = readInfo.getCheckoutResult();
+                    read = read.getRange(result.getMasterResult().getTo(), read.size());
+                    readList.add(read);
                 }
 
                 return new SMig(readList, entry.getKey());
