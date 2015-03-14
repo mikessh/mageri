@@ -30,7 +30,6 @@ import com.milaboratory.oncomigec.preproc.demultiplex.barcode.BarcodeSearcherRes
 import com.milaboratory.oncomigec.preproc.demultiplex.entity.PCheckoutResult;
 import com.milaboratory.oncomigec.preproc.demultiplex.processor.PCheckoutProcessor;
 import com.milaboratory.oncomigec.preproc.misc.ReadOverlapper;
-import com.milaboratory.oncomigec.util.Util;
 import com.milaboratory.util.CompressionType;
 
 import java.io.File;
@@ -116,64 +115,57 @@ public final class PMigReader extends MigReader<PMig> {
 
                 for (ReadInfo readInfo : entry.getValue()) {
                     SequencingRead pRead = readInfo.getRead();
-                    NucleotideSQPair read1 = pRead.getData(0),
-                            read2 = pRead.getData(1);
+                    NucleotideSQPair read1 = pRead.getData(0), read2 = pRead.getData(1);
 
-                    // Barcode was found in RC version of entire read pair
-                    // bring back to strand specified in checkout processor barcode
-                    if (readInfo.rcMe()) {
-                        read1 = read1.getRC();
-                        read2 = read2.getRC();
-                    }
-
-                    if (readInfo.flipMe()) {
-                        NucleotideSQPair tmp = read2;
-                        read2 = read1;
-                        read1 = tmp;
-                    }
-
-                    // For illumina systems
-                    if (checkoutProcessor.performIlluminaRC())
-                        read2 = Util.rc(read2);
-
-                    // Trim reads if corresponding option is set
-                    // and UMIs were de-novo extracted using adapter search
-                    int barcodeOffset = 0;
-
-                    if (migReaderParameters.trimAdapters() &&
-                            readInfo.getCheckoutResult() instanceof PCheckoutResult) {
+                    if (readInfo.getCheckoutResult() instanceof PCheckoutResult) {
                         PCheckoutResult result = (PCheckoutResult) readInfo.getCheckoutResult();
+                        // Orient read so master is first and slave is on the masters strand
+                        // Master   Slave
+                        // -R1---> -R2------>
+                        if (result.getOrientation()) {
+                            read1 = pRead.getData(0);
+                            read2 = pRead.getData(1).getRC();
+                        } else {
+                            read1 = pRead.getData(1);
+                            read2 = pRead.getData(0).getRC();
+                        }
 
-                        // Trim adapters if required
-                        // Convention is
-                        // master first:
-                        // -M-|            |-S-
-                        // -R1|---> -R2----|-->
-                        //
-                        // slave first:
-                        // -S-|            |-M-
-                        // -R1|---> -R2----|-->
+                        // Trim reads if corresponding option is set
+                        // and UMIs were de-novo extracted using adapter search
+                        int barcodeOffset = 0;
 
-                        //if (result.masterFirst()) {
-                        read1 = read1.getRange(result.getMasterResult().getTo(), read1.size());
-                        if (result.getSlaveResult() != BarcodeSearcherResult.BLANK_RESULT)
-                            read1 = read1.getRange(0, result.getSlaveResult().getFrom());
+                        if (migReaderParameters.trimAdapters() &&
+                                readInfo.getCheckoutResult() instanceof PCheckoutResult) {
 
-                        barcodeOffset = result.getMasterResult().getTo();
+                            // Trim adapters if required
+                            // -M-|            |-S-
+                            // -R1|---> -R2----|-->
+
+                            read1 = read1.getRange(result.getMasterResult().getTo(), read1.size());
+                            if (result.getSlaveResult() != BarcodeSearcherResult.BLANK_RESULT)
+                                read2 = read2.getRange(0, result.getSlaveResult().getFrom());
+                            barcodeOffset = result.getMasterResult().getTo();
+                        }
+
+                        // Try to overlap reads
+                        ReadOverlapper.OverlapResult overlapResult =
+                                readOverlapper.overlap(new PSequencingReadImpl(0, null, null, read1, read2),
+                                        barcodeOffset);
+
+                        // Account for 'master first' attribute
+                        if (result.getMasterFirst()) {
+                            read1 = overlapResult.getReadPair().getData(0);
+                            read2 = overlapResult.getReadPair().getData(1);
+                        } else {
+                            read1 = overlapResult.getReadPair().getData(1).getRC();
+                            read2 = overlapResult.getReadPair().getData(0).getRC();
+                        }
                     }
-
-                    ReadOverlapper.OverlapResult overlapResult =
-                            readOverlapper.overlap(new PSequencingReadImpl(0, null, null, read1, read2), barcodeOffset);
-                    // orient reads, so that all have, depending on user specified options,
-                    // either master or slave in RQ
-                    //readInfo.flipMe() ?
-                    //        readOverlapper.overlap(new PSequencingReadImpl(read2, read1)) :
-                    //        readOverlapper.overlap(new PSequencingReadImpl(read1, read2));
 
                     // Note that we don't need to worry for Illumina RC of mates
                     // even if Overlapper has failed, it performs Illumina RC
-                    readList1.add(overlapResult.getReadPair().getData(0));
-                    readList2.add(overlapResult.getReadPair().getData(1));
+                    readList1.add(read1);
+                    readList2.add(read2);
                 }
 
                 return new PMig(new SMig(readList1, entry.getKey()),

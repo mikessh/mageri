@@ -3,11 +3,11 @@ package com.milaboratory.oncomigec.core.consalign.processor;
 import com.milaboratory.core.sequence.alignment.LocalAlignment;
 import com.milaboratory.oncomigec.core.align.entity.SAlignmentResult;
 import com.milaboratory.oncomigec.core.align.processor.Aligner;
-import com.milaboratory.oncomigec.core.align.reference.Reference;
 import com.milaboratory.oncomigec.core.assemble.entity.SConsensus;
 import com.milaboratory.oncomigec.core.consalign.entity.AlignedConsensus;
 import com.milaboratory.oncomigec.core.consalign.misc.ConsensusAlignerParameters;
 import com.milaboratory.oncomigec.core.consalign.mutations.MutationsExtractor;
+import com.milaboratory.oncomigec.core.genomic.Reference;
 import com.milaboratory.oncomigec.core.mutations.MigecMutationsCollection;
 
 import java.util.ArrayList;
@@ -44,14 +44,12 @@ public final class SConsensusAligner extends ConsensusAligner<SConsensus> {
             MigecMutationsCollection majorMutations = MigecMutationsCollection.EMPTY(reference);
             Map<Integer, Integer> minorMutations = new HashMap<>();
 
-            if (!reference.isDeNovo()) {
-                LocalAlignment localAlignment = alignmentResult.getAlignments().get(i);
-                MutationsExtractor mutationsExtractor = new MutationsExtractor(localAlignment,
-                        reference, consensus, parameters);
+            LocalAlignment localAlignment = alignmentResult.getAlignments().get(i);
+            MutationsExtractor mutationsExtractor = new MutationsExtractor(localAlignment,
+                    reference, consensus, parameters);
 
-                majorMutations = mutationsExtractor.calculateMajorMutations();
-                minorMutations = mutationsExtractor.calculateMinorMutations();
-            }
+            majorMutations = mutationsExtractor.calculateMajorMutations();
+            minorMutations = mutationsExtractor.calculateMinorMutations();
 
             majorMutationsByReference.put(reference, majorMutations);
 

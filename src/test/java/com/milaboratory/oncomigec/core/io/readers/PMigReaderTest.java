@@ -29,6 +29,9 @@ import com.milaboratory.util.CompressionType;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import static com.milaboratory.oncomigec.util.testing.DefaultTestSet.*;
 
 public class PMigReaderTest {
@@ -55,21 +58,27 @@ public class PMigReaderTest {
 
     @Test
     public void checkoutTest() throws Exception {
-        PCheckoutProcessor processor = BarcodeListParser.generatePCheckoutProcessor(getBarcodes(),
-                DemultiplexParameters.DEFAULT);
-
-        String sampleName = "GOOD1";
+        PCheckoutProcessor processor = BarcodeListParser.generatePCheckoutProcessor(getBarcodesGood(),
+                DemultiplexParameters.DEFAULT),
+                processorSlaveFirst = BarcodeListParser.generatePCheckoutProcessor(getBarcodesSlaveFirst(),
+                        DemultiplexParameters.DEFAULT);
 
         PMigReader reader = new PMigReader(getR1(), getR2(), processor);
-        PMigReader reader2 = new PMigReader(getR1(), getR2(), sampleName);
+        PMigReader slaveFirstReader = new PMigReader(getR1(), getR2(), processorSlaveFirst);
+        PMigReader exactReader = new PMigReader(getR1(), getR2(), SAMPLE_NAME);
 
-        UmiHistogram histogram = reader2.getUmiHistogram(sampleName);
+        UmiHistogram histogram = exactReader.getUmiHistogram(SAMPLE_NAME);
 
         double avgSizeDifference = 0;
         int readsWithDifferentUmisCount = 0, totalReads = 0;
 
-        PMig pMig;
-        while ((pMig = reader.take(sampleName, 5)) != null) {
+        Set<NucleotideSequence> set1 = new HashSet<>(), set2 = new HashSet<>(),
+                slaveFirstSet1 = new HashSet<>(), slaveFirstSet2 = new HashSet<>();
+
+        PMig pMig, slaveFirstMig;
+        while ((pMig = reader.take(SAMPLE_NAME, 5)) != null) {
+            slaveFirstMig = slaveFirstReader.take(SAMPLE_NAME, 5);
+
             NucleotideSequence umi = pMig.getUmi();
 
             totalReads += pMig.getMig1().size();
@@ -78,13 +87,31 @@ public class PMigReaderTest {
             int rawCount = histogram.migSize(umi);
 
             avgSizeDifference += 2.0 * (pMig.size() - rawCount) / (pMig.size() + rawCount);
+
+            // Add reads for comparison
+            set1.addAll(pMig.getMig1().getSequences());
+            set2.addAll(pMig.getMig2().getSequences());
+            slaveFirstSet1.addAll(slaveFirstMig.getMig1().getSequences());
+            slaveFirstSet2.addAll(slaveFirstMig.getMig2().getSequences());
         }
 
         double readsWithDifferentUmisRatio = readsWithDifferentUmisCount / (double) totalReads;
         avgSizeDifference /= histogram.getMigsTotal();
 
         Assert.assertTrue("Less than 0.1% reads have different UMIs assigned", readsWithDifferentUmisRatio < 0.001);
-        System.out.println("Average difference in MIG size is " + (avgSizeDifference * 100) + "%");
+        System.out.println("Average difference in MIG size is " + (int)(avgSizeDifference * 100) + "%");
         Assert.assertTrue("Average MIG size difference if < 0.1%", Math.abs(avgSizeDifference) < 0.001);
+
+        // Compare slave first/master first
+
+        // for sake of uneven master/slave barcode matching efficiency
+        int minSize1 = Math.min(set1.size(), slaveFirstSet1.size()),
+                minSize2 = Math.min(set2.size(), slaveFirstSet2.size());
+
+        // intersection itself
+        set1.retainAll(slaveFirstSet1);
+        set2.retainAll(slaveFirstSet2);
+
+        Assert.assertTrue("Slave first reads are the same", set1.size() == minSize1 && set2.size() == minSize2);
     }
 }

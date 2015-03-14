@@ -28,6 +28,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.List;
 
 import static com.milaboratory.oncomigec.util.testing.DefaultTestSet.*;
 
@@ -48,7 +49,11 @@ public class CheckoutProcessorTest {
     }
 
     private static CheckoutProcessor runOnSampleData2() throws IOException {
-        PCheckoutProcessor processor = BarcodeListParser.generatePCheckoutProcessor(getBarcodes(),
+        return runOnSampleData2(getBarcodes());
+    }
+
+    private static CheckoutProcessor runOnSampleData2(List<String> barcodes) throws IOException {
+        PCheckoutProcessor processor = BarcodeListParser.generatePCheckoutProcessor(barcodes,
                 DemultiplexParameters.DEFAULT);
 
         PFastqReader reader = new PFastqReader(getR1(), getR2(),
@@ -87,6 +92,19 @@ public class CheckoutProcessorTest {
 
         System.out.println("Extraction ratio = " + extractionRatio);
         Assert.assertTrue("Extraction ratio in expected bounds", extractionRatio >= 0.99);
+    }
+
+    @Test
+    public void test3() throws Exception {
+        System.out.println("Running performance test for Checkout processor (paired-end), bad slave barcode");
+
+        CheckoutProcessor processor = runOnSampleData2(getBarcodesBadSlave());
+
+        System.out.println(processor);
+        double extractionRatio = processor.extractionRatio();
+
+        System.out.println("Extraction ratio = " + extractionRatio);
+        Assert.assertTrue("Extraction ratio in expected bounds", extractionRatio <= 0.01);
     }
 
     @Test

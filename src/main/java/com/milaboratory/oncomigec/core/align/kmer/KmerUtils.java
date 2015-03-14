@@ -1,8 +1,8 @@
 package com.milaboratory.oncomigec.core.align.kmer;
 
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
-import com.milaboratory.oncomigec.core.align.reference.Reference;
-import com.milaboratory.oncomigec.core.align.reference.ReferenceLibrary;
+import com.milaboratory.oncomigec.core.genomic.Reference;
+import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
 
 public class KmerUtils {
     private final int k;

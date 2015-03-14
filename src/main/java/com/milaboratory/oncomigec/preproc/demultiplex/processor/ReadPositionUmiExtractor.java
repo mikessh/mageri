@@ -29,7 +29,7 @@ public class ReadPositionUmiExtractor extends CheckoutProcessor<CheckoutResult, 
     private final String sampleName;
 
     public ReadPositionUmiExtractor(String sampleName, int start, int end) {
-        super(new String[]{sampleName}, new BarcodeSearcher[1], false);
+        super(new String[]{sampleName}, new BarcodeSearcher[1]);
         this.sampleName = sampleName;
     }
 
@@ -51,10 +51,6 @@ public class ReadPositionUmiExtractor extends CheckoutProcessor<CheckoutResult, 
         return new boolean[]{true};
     }
 
-    @Override
-    public boolean performIlluminaRC() {
-        return false;
-    }
 
     @Override
     public boolean isPairedEnd() {

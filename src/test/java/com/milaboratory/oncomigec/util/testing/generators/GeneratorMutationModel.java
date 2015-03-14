@@ -5,7 +5,7 @@ import com.milaboratory.core.sequence.mutations.Mutations;
 import com.milaboratory.core.sequence.mutations.NucleotideMutationModel;
 import com.milaboratory.core.sequence.mutations.SubstitutionModels;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
-import com.milaboratory.oncomigec.core.align.reference.Reference;
+import com.milaboratory.oncomigec.core.genomic.Reference;
 
 import java.util.Random;
 

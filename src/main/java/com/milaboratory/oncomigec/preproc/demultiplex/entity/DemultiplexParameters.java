@@ -5,37 +5,27 @@ import com.milaboratory.oncomigec.util.Util;
 import org.jdom.Element;
 
 public class DemultiplexParameters implements ParameterSet{
-    private final boolean illuminaReads, orientedReads, scanRC;
+    private final boolean orientedReads;
     private final int maxTruncations;
     private final double maxGoodQualMMRatio, maxLowQualityMMRatio;
     private final byte lowQualityThreshold;
 
-    public static DemultiplexParameters DEFAULT = new DemultiplexParameters(true, false, false,
+    public static DemultiplexParameters DEFAULT = new DemultiplexParameters(false,
             2, 0.05, 0.1,
             Util.PH33_LOW_QUAL);
 
-    public DemultiplexParameters(boolean illuminaReads, boolean orientedReads, boolean scanRC,
+    public DemultiplexParameters(boolean orientedReads,
                                  int maxTruncations, double maxGoodQualMMRatio, double maxLowQualityMMRatio,
                                  byte lowQualityThreshold) {
-        this.illuminaReads = illuminaReads;
         this.orientedReads = orientedReads;
-        this.scanRC = scanRC;
         this.maxTruncations = maxTruncations;
         this.maxGoodQualMMRatio = maxGoodQualMMRatio;
         this.maxLowQualityMMRatio = maxLowQualityMMRatio;
         this.lowQualityThreshold = lowQualityThreshold;
     }
 
-    public boolean illuminaReads() {
-        return illuminaReads;
-    }
-
     public boolean orientedReads() {
         return orientedReads;
-    }
-
-    public boolean scanRC() {
-        return scanRC;
     }
 
     public int getMaxTruncations() {
@@ -57,9 +47,7 @@ public class DemultiplexParameters implements ParameterSet{
     @Override
     public Element toXml() {
         Element e = new Element("DemultiplexParameters");
-        e.addContent(new Element("performIlluminaRC").setText(Boolean.toString(illuminaReads)));
         e.addContent(new Element("orientedReads").setText(Boolean.toString(orientedReads)));
-        e.addContent(new Element("scanRC").setText(Boolean.toString(scanRC)));
         e.addContent(new Element("maxTruncations").setText(Integer.toString(maxTruncations)));
         e.addContent(new Element("maxGoodQualMMRatio").setText(Double.toString(maxGoodQualMMRatio)));
         e.addContent(new Element("maxLowQualityMMRatio").setText(Double.toString(maxLowQualityMMRatio)));
@@ -70,9 +58,7 @@ public class DemultiplexParameters implements ParameterSet{
     public static DemultiplexParameters fromXml(Element parent) {
         Element e = parent.getChild("DemultiplexParameters");
         return new DemultiplexParameters(
-                Boolean.parseBoolean(e.getChildTextTrim("performIlluminaRC")),
                 Boolean.parseBoolean(e.getChildTextTrim("orientedReads")),
-                Boolean.parseBoolean(e.getChildTextTrim("scanRC")),
                 Integer.parseInt(e.getChildTextTrim("maxTruncations")),
                 Double.parseDouble(e.getChildTextTrim("maxGoodQualMMRatio")),
                 Double.parseDouble(e.getChildTextTrim("maxLowQualityMMRatio")),
@@ -87,13 +73,11 @@ public class DemultiplexParameters implements ParameterSet{
 
         DemultiplexParameters that = (DemultiplexParameters) o;
 
-        if (illuminaReads != that.illuminaReads) return false;
         if (lowQualityThreshold != that.lowQualityThreshold) return false;
         if (Double.compare(that.maxGoodQualMMRatio, maxGoodQualMMRatio) != 0) return false;
         if (Double.compare(that.maxLowQualityMMRatio, maxLowQualityMMRatio) != 0) return false;
         if (maxTruncations != that.maxTruncations) return false;
         if (orientedReads != that.orientedReads) return false;
-        if (scanRC != that.scanRC) return false;
 
         return true;
     }
@@ -102,9 +86,7 @@ public class DemultiplexParameters implements ParameterSet{
     public int hashCode() {
         int result;
         long temp;
-        result = (illuminaReads ? 1 : 0);
-        result = 31 * result + (orientedReads ? 1 : 0);
-        result = 31 * result + (scanRC ? 1 : 0);
+        result = (orientedReads ? 1 : 0);
         result = 31 * result + maxTruncations;
         temp = Double.doubleToLongBits(maxGoodQualMMRatio);
         result = 31 * result + (int) (temp ^ (temp >>> 32));

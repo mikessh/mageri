@@ -19,8 +19,8 @@ import com.milaboratory.core.sequence.Range;
 import com.milaboratory.core.sequence.mutations.Mutations;
 import com.milaboratory.core.sequence.nucleotide.NucleotideAlphabet;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
-import com.milaboratory.oncomigec.core.align.reference.Reference;
 import com.milaboratory.oncomigec.core.consalign.entity.AlignedConsensus;
+import com.milaboratory.oncomigec.core.genomic.Reference;
 import com.milaboratory.oncomigec.core.haplotype.Haplotype;
 import com.milaboratory.oncomigec.core.mutations.MutationDifference;
 import com.milaboratory.oncomigec.core.mutations.wrappers.MutationWrapperCollection;
@@ -62,10 +62,9 @@ public final class CorrectedConsensus {
         return new Haplotype(this, haplotypeSequence, referenceSequence, maskedSequence);
     }
 
-    public static List<MutationDifference> getMutationDifferences(CorrectedConsensus parent, CorrectedConsensus child)
-            throws Exception {
+    public static List<MutationDifference> getMutationDifferences(CorrectedConsensus parent, CorrectedConsensus child) {
         if (parent.numberOfReferences != child.numberOfReferences)
-            throw new Exception("Different number of references");
+            throw new RuntimeException("Different number of references");
 
         List<MutationDifference> mutationDifferenceList = new ArrayList<>();
 
@@ -74,7 +73,7 @@ public final class CorrectedConsensus {
                     childReference = child.alignedConsensus.getReference(i);
 
             if (parentReference != childReference)
-                throw new Exception("Different reference set of parent and child");
+                throw new RuntimeException("Different reference set of parent and child");
 
             mutationDifferenceList.add(new MutationDifference(parentReference,
                     parent.mutationsList.get(i).getMutationCodes(),
@@ -93,10 +92,7 @@ public final class CorrectedConsensus {
 
             NucleotideSequence referenceSequence = reference.getSequence();
 
-            if (!reference.isDeNovo()) {
-                seq = seq.concatenate(Mutations.mutate(referenceSequence.getRange(range), mutations));
-            } else
-                seq = seq.concatenate(referenceSequence);
+            seq = seq.concatenate(Mutations.mutate(referenceSequence.getRange(range), mutations));
         }
         return seq;
     }

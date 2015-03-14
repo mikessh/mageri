@@ -19,18 +19,24 @@ import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.oncomigec.preproc.demultiplex.barcode.BarcodeSearcherResult;
 
 public final class PCheckoutResult extends CheckoutResult {
-    private final boolean masterFirst;
+    private final boolean orientation, masterFirst;
     private final BarcodeSearcherResult slaveResult;
 
-    public PCheckoutResult(int sampleId, String sampleName, boolean masterFirst, boolean foundInRC,
+    public PCheckoutResult(int sampleId, String sampleName, boolean orientation, boolean masterFirst,
                            BarcodeSearcherResult masterResult, BarcodeSearcherResult slaveResult) {
-        super(sampleId, sampleName, foundInRC, masterResult);
-        this.masterFirst = masterFirst;
+        super(sampleId, sampleName, masterResult);
         this.slaveResult = slaveResult;
+        this.orientation = orientation;
+        this.masterFirst = masterFirst;
     }
 
     @Override
-    public boolean masterFirst() {
+    public boolean getOrientation() {
+        return orientation;
+    }
+
+    @Override
+    public boolean getMasterFirst() {
         return masterFirst;
     }
 

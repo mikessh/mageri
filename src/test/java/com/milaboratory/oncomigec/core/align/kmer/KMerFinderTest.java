@@ -1,6 +1,6 @@
 package com.milaboratory.oncomigec.core.align.kmer;
 
-import com.milaboratory.oncomigec.core.align.reference.ReferenceLibrary;
+import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
 import com.milaboratory.oncomigec.util.testing.IntRange;
 import com.milaboratory.oncomigec.util.testing.PercentRange;
 import com.milaboratory.oncomigec.util.testing.generators.GeneratorMutationModel;

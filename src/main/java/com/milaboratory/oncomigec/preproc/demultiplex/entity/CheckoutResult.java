@@ -21,17 +21,19 @@ import com.milaboratory.oncomigec.preproc.demultiplex.barcode.BarcodeSearcherRes
 public class CheckoutResult {
     protected final int sampleId;
     protected final String sampleName;
-    protected final boolean foundInRC;
     protected final BarcodeSearcherResult masterResult;
 
-    protected CheckoutResult(int sampleId, String sampleName, boolean foundInRC, BarcodeSearcherResult masterResult) {
+    protected CheckoutResult(int sampleId, String sampleName, BarcodeSearcherResult masterResult) {
         this.sampleId = sampleId;
         this.sampleName = sampleName;
-        this.foundInRC = foundInRC;
         this.masterResult = masterResult;
     }
 
-    public boolean masterFirst() {
+    public boolean getOrientation() {
+        return true;
+    }
+
+    public boolean getMasterFirst() {
         return true;
     }
 
@@ -41,10 +43,6 @@ public class CheckoutResult {
 
     public String getSampleName() {
         return sampleName;
-    }
-
-    public boolean foundInRC() {
-        return foundInRC;
     }
 
     public boolean isGood(byte umiQualThreshold) {

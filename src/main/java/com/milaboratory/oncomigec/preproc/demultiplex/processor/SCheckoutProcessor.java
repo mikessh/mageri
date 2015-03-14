@@ -22,11 +22,7 @@ import com.milaboratory.oncomigec.preproc.demultiplex.entity.SCheckoutResult;
 
 public final class SCheckoutProcessor extends CheckoutProcessor<SCheckoutResult, SSequencingRead> {
     public SCheckoutProcessor(String[] sampleNames, BarcodeSearcher[] masterBarcodes) {
-        this(sampleNames, masterBarcodes, false);
-    }
-
-    public SCheckoutProcessor(String[] sampleNames, BarcodeSearcher[] masterBarcodes, boolean checkRC) {
-        super(sampleNames, masterBarcodes, checkRC);
+        super(sampleNames, masterBarcodes);
     }
 
     @Override
@@ -35,24 +31,14 @@ public final class SCheckoutProcessor extends CheckoutProcessor<SCheckoutResult,
 
         for (int i = 0; i < sampleNames.length; i++) {
             BarcodeSearcherResult barcodeSearcherResult = masterBarcodes[i].search(read.getData());
-            if (barcodeSearcherResult != null)
-                return new SCheckoutResult(i, sampleNames[i], false, barcodeSearcherResult);
-            if (checkRC) {
-                barcodeSearcherResult = masterBarcodes[i].search(read.getData().getRC());
-                if (barcodeSearcherResult != null) {
-                    masterCounters.incrementAndGet(i);
-                    return new SCheckoutResult(i, sampleNames[i], true, barcodeSearcherResult);
-                } else
-                    masterNotFoundCounter.incrementAndGet();
+            if (barcodeSearcherResult != null) {
+                return new SCheckoutResult(i, sampleNames[i], barcodeSearcherResult);
             }
         }
-        return null;
-    }
 
-    // no flipping/rc should be performed for external data
-    @Override
-    public boolean performIlluminaRC() {
-        return false;
+        masterNotFoundCounter.incrementAndGet();
+
+        return null;
     }
 
     @Override

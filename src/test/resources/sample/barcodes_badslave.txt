@@ -1,0 +1,2 @@
+#sample_name master_first    master_barcode  slave_barcode
+GOOD	1	NNNNNNNNNNNNNNtgatcttgacgTTGTAGAtgag	cccgacttCCCCAAGcagtcct

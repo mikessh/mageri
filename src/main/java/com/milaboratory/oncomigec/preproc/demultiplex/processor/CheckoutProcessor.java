@@ -35,12 +35,10 @@ public abstract class CheckoutProcessor<T extends CheckoutResult, V extends Sequ
     protected final List<String> sampleNameList = new ArrayList<>();
     protected final BarcodeSearcher[] masterBarcodes;
     protected final HashMap<String, List<Integer>> sampleNameToId = new HashMap<>();
-    protected final boolean checkRC;
 
-    protected CheckoutProcessor(String[] sampleNames, BarcodeSearcher[] masterBarcodes, boolean checkRC) {
+    protected CheckoutProcessor(String[] sampleNames, BarcodeSearcher[] masterBarcodes) {
         this.sampleNames = sampleNames;
         this.masterBarcodes = masterBarcodes;
-        this.checkRC = checkRC;
         this.masterNotFoundCounter = new AtomicLong();
         this.totalCounter = new AtomicLong();
         this.masterCounters = new AtomicLongArray(masterBarcodes.length);
@@ -81,8 +79,6 @@ public abstract class CheckoutProcessor<T extends CheckoutResult, V extends Sequ
         Arrays.fill(masterFirst, true);
         return masterFirst;
     }
-
-    public abstract boolean performIlluminaRC();
 
     @Override
     public String toString() {

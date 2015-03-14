@@ -2,28 +2,29 @@ package com.milaboratory.oncomigec.core.align.processor.aligners;
 
 import com.milaboratory.core.sequence.alignment.KAlignerParameters;
 import com.milaboratory.oncomigec.core.align.processor.AlignerFactory;
-import com.milaboratory.oncomigec.core.align.reference.ReferenceLibrary;
+import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
 
-public class SimpleExomeAlignerFactory implements AlignerFactory<SimpleExomeAligner> {
-    private final KAlignerParameters parameters;
-    private final LocalAlignmentEvaluator localAlignmentEvaluator;
+public class SimpleExomeAlignerFactory extends AlignerFactory<SimpleExomeAligner> {
+    private KAlignerParameters parameters = SimpleExomeAligner.DEFAULT_PARAMS;
 
-    public SimpleExomeAlignerFactory() {
-        this(LocalAlignmentEvaluator.STRICT, KAlignerParameters.getByName("strict"));
+    public SimpleExomeAlignerFactory(ReferenceLibrary referenceLibrary) {
+        super(referenceLibrary);
     }
 
-    public SimpleExomeAlignerFactory(LocalAlignmentEvaluator localAlignmentEvaluator) {
-        this(localAlignmentEvaluator, KAlignerParameters.getByName("strict"));
+    public SimpleExomeAlignerFactory(ReferenceLibrary referenceLibrary,
+                                     LocalAlignmentEvaluator localAlignmentEvaluator) {
+        super(referenceLibrary, localAlignmentEvaluator);
     }
 
-    public SimpleExomeAlignerFactory(LocalAlignmentEvaluator localAlignmentEvaluator,
+    public SimpleExomeAlignerFactory(ReferenceLibrary referenceLibrary,
+                                     LocalAlignmentEvaluator localAlignmentEvaluator,
                                      KAlignerParameters parameters) {
+        super(referenceLibrary, localAlignmentEvaluator);
         this.parameters = parameters;
-        this.localAlignmentEvaluator = localAlignmentEvaluator;
     }
 
     @Override
-    public SimpleExomeAligner fromReferenceLibrary(ReferenceLibrary referenceLibrary) {
+    public SimpleExomeAligner create() {
         return new SimpleExomeAligner(referenceLibrary, parameters, localAlignmentEvaluator);
     }
 
@@ -31,7 +32,7 @@ public class SimpleExomeAlignerFactory implements AlignerFactory<SimpleExomeAlig
         return parameters;
     }
 
-    public LocalAlignmentEvaluator getLocalAlignmentEvaluator() {
-        return localAlignmentEvaluator;
+    public void setParameters(KAlignerParameters parameters) {
+        this.parameters = parameters;
     }
 }

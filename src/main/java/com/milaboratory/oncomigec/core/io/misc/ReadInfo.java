@@ -20,13 +20,11 @@ import com.milaboratory.oncomigec.preproc.demultiplex.entity.CheckoutResult;
 
 public class ReadInfo {
     private final SequencingRead read;
-    private final boolean flipMe, rcMe;
     private final CheckoutResult checkoutResult;
 
-    public ReadInfo(SequencingRead read, boolean flipMe, boolean rcMe, CheckoutResult checkoutResult) {
+
+    public ReadInfo(SequencingRead read, CheckoutResult checkoutResult) {
         this.read = read;
-        this.flipMe = flipMe;
-        this.rcMe = rcMe;
         this.checkoutResult = checkoutResult;
     }
 
@@ -36,13 +34,5 @@ public class ReadInfo {
 
     public SequencingRead getRead() {
         return read;
-    }
-
-    public boolean flipMe() {
-        return flipMe;
-    }
-
-    public boolean rcMe() {
-        return rcMe;
     }
 }

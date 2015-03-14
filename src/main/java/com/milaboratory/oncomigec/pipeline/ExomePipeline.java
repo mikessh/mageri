@@ -15,15 +15,14 @@
  */
 package com.milaboratory.oncomigec.pipeline;
 
-import com.milaboratory.oncomigec.core.align.processor.AlignerFactoryWithReference;
 import com.milaboratory.oncomigec.core.align.processor.aligners.ExtendedExomeAlignerFactory;
-import com.milaboratory.oncomigec.core.align.reference.ReferenceLibrary;
 import com.milaboratory.oncomigec.core.assemble.misc.AssemblerFactory;
 import com.milaboratory.oncomigec.core.assemble.misc.PAssemblerFactory;
 import com.milaboratory.oncomigec.core.assemble.misc.SAssemblerFactory;
 import com.milaboratory.oncomigec.core.consalign.misc.ConsensusAlignerFactory;
 import com.milaboratory.oncomigec.core.consalign.misc.PConsensusAlignerFactory;
 import com.milaboratory.oncomigec.core.consalign.misc.SConsensusAlignerFactory;
+import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
 import com.milaboratory.oncomigec.core.io.misc.MigReaderParameters;
 import com.milaboratory.oncomigec.core.io.readers.MigReader;
 import com.milaboratory.oncomigec.core.io.readers.PMigReader;
@@ -51,9 +50,8 @@ public final class ExomePipeline extends MigecPipeline {
                 new PMigReader(fastq1, fastq2, sampleName,
                         MigReaderParameters.WITH_QUAL(presets.getReaderUmiQualThreshold())),
                 new PAssemblerFactory(presets.getAssemblerParameters()),
-                new PConsensusAlignerFactory(
-                        new AlignerFactoryWithReference(new ReferenceLibrary(references),
-                                new ExtendedExomeAlignerFactory())
+                new PConsensusAlignerFactory(new ExtendedExomeAlignerFactory(new ReferenceLibrary(references)),
+                        presets.getConsensusAlignerParameters()
                 ),
                 presets
         );
@@ -71,9 +69,7 @@ public final class ExomePipeline extends MigecPipeline {
                         MigReaderParameters.WITH_QUAL(presets.getReaderUmiQualThreshold())
                 ),
                 new PAssemblerFactory(presets.getAssemblerParameters()),
-                new PConsensusAlignerFactory(
-                        new AlignerFactoryWithReference(new ReferenceLibrary(references),
-                                new ExtendedExomeAlignerFactory()),
+                new PConsensusAlignerFactory(new ExtendedExomeAlignerFactory(new ReferenceLibrary(references)),
                         presets.getConsensusAlignerParameters()
                 ),
                 presets
@@ -89,10 +85,8 @@ public final class ExomePipeline extends MigecPipeline {
                 new SMigReader(fastq1, sampleName,
                         MigReaderParameters.WITH_QUAL(presets.getReaderUmiQualThreshold())),
                 new SAssemblerFactory(presets.getAssemblerParameters()),
-                new SConsensusAlignerFactory(
-                        new AlignerFactoryWithReference(new ReferenceLibrary(references),
-                                new ExtendedExomeAlignerFactory())
-                ),
+                new SConsensusAlignerFactory(new ExtendedExomeAlignerFactory(new ReferenceLibrary(references)),
+                        presets.getConsensusAlignerParameters()),
                 presets
         );
     }
@@ -109,10 +103,8 @@ public final class ExomePipeline extends MigecPipeline {
                         MigReaderParameters.WITH_QUAL(presets.getReaderUmiQualThreshold())
                 ),
                 new SAssemblerFactory(presets.getAssemblerParameters()),
-                new SConsensusAlignerFactory(
-                        new AlignerFactoryWithReference(new ReferenceLibrary(references),
-                                new ExtendedExomeAlignerFactory())
-                ),
+                new SConsensusAlignerFactory(new ExtendedExomeAlignerFactory(new ReferenceLibrary(references)),
+                        presets.getConsensusAlignerParameters()),
                 presets
         );
     }

@@ -16,8 +16,8 @@
 package com.milaboratory.oncomigec.core.consalign.processor;
 
 import com.milaboratory.oncomigec.core.align.processor.aligners.ExtendedExomeAligner;
-import com.milaboratory.oncomigec.core.align.reference.Reference;
-import com.milaboratory.oncomigec.core.align.reference.ReferenceLibrary;
+import com.milaboratory.oncomigec.core.genomic.Reference;
+import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
 import com.milaboratory.oncomigec.core.assemble.entity.Consensus;
 import com.milaboratory.oncomigec.core.assemble.misc.AssemblerParameters;
 import com.milaboratory.oncomigec.core.assemble.processor.Assembler;

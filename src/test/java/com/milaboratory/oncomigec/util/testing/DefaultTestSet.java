@@ -26,18 +26,26 @@ import static com.milaboratory.oncomigec.util.testing.TestUtil.getResourceAsStre
 import static org.apache.commons.io.IOUtils.readLines;
 
 public class DefaultTestSet {
-    public static String SAMPLE_NAME = "GOOD1";
-    
+    public static String SAMPLE_NAME = "GOOD";
+
     public static int getNumberOfReads() throws IOException {
         return readLines(getResourceAsStream("sample/R1.fastq.gz")).size() / 4;
     }
 
     public static List<String> getBarcodes() throws IOException {
-        InputStream barcodes = getResourceAsStream("sample/barcodes.txt");
+        return readLines(getResourceAsStream("sample/barcodes.txt"));
+    }
 
-        List<String> lines = readLines(barcodes);
+    public static List<String> getBarcodesGood() throws IOException {
+        return readLines(getResourceAsStream("sample/barcodes_good.txt"));
+    }
 
-        return lines;
+    public static List<String> getBarcodesBadSlave() throws IOException {
+        return readLines(getResourceAsStream("sample/barcodes_badslave.txt"));
+    }
+
+    public static List<String> getBarcodesSlaveFirst() throws IOException {
+        return readLines(getResourceAsStream("sample/barcodes_slavefirst.txt"));
     }
 
     public static InputStream getR1() throws IOException {

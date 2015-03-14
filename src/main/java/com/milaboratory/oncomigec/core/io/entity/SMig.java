@@ -21,6 +21,7 @@ package com.milaboratory.oncomigec.core.io.entity;
 import com.milaboratory.core.sequence.NucleotideSQPair;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class SMig extends Mig {
@@ -34,6 +35,14 @@ public class SMig extends Mig {
 
     public List<NucleotideSQPair> getReads() {
         return reads;
+    }
+
+    public List<NucleotideSequence> getSequences() {
+        List<NucleotideSequence> sequences = new ArrayList<>();
+        for (NucleotideSQPair read : reads) {
+            sequences.add(read.getSequence());
+        }
+        return sequences;
     }
 
     @Override

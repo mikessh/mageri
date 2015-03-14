@@ -19,7 +19,7 @@ import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.oncomigec.core.align.entity.SAlignmentResult;
 import com.milaboratory.oncomigec.core.align.processor.Aligner;
 import com.milaboratory.oncomigec.core.align.processor.AlignerFactory;
-import com.milaboratory.oncomigec.core.align.reference.ReferenceLibrary;
+import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
 import com.milaboratory.oncomigec.util.testing.PercentRange;
 import com.milaboratory.oncomigec.util.testing.generators.RandomIndelGenerator;
 import com.milaboratory.oncomigec.util.testing.generators.RandomReferenceGenerator;
@@ -29,6 +29,8 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 
+import static com.milaboratory.oncomigec.core.align.processor.aligners.LocalAlignmentEvaluator.FLEXIBLE;
+
 public class AlignersTest {
     int nReferences = 100, nRepetitions1 = 100, nRepetitions2 = 100;
 
@@ -37,23 +39,25 @@ public class AlignersTest {
             IllegalAccessException, NoSuchMethodException, URISyntaxException {
         System.out.println("Generating random mutated variants from reference library and testing aligners..");
 
-        randomizedSimilarityTest(new SimpleExomeAlignerFactory(),
+        ReferenceLibrary dummy = new ReferenceLibrary();
+
+        randomizedSimilarityTest(new SimpleExomeAlignerFactory(dummy),
                 PercentRange.createLowerBound("Similarity", "SimpleExomeAligner-Normal", 95));
 
 
-        randomizedSimilarityTest(new ExtendedExomeAlignerFactory(),
+        randomizedSimilarityTest(new ExtendedExomeAlignerFactory(dummy),
                 PercentRange.createLowerBound("Similarity", "ImprovedExomeAligner-Normal", 99));
 
         System.out.println("Testing aligners for deletions..");
 
         System.out.println("Simple");
-        randomizedIndelTest(new SimpleExomeAlignerFactory(LocalAlignmentEvaluator.FLEXIBLE),
+        randomizedIndelTest(new SimpleExomeAlignerFactory(dummy, FLEXIBLE),
                 RandomIndelGenerator.DEFAULT_DELETION,
                 PercentRange.createUpperBound("SubstitutionRate", "SimpleExomeAligner-Deletions", 20),
                 PercentRange.createLowerBound("AlignmentRate", "SimpleExomeAligner-Deletions", 50));
 
         System.out.println("Extended");
-        randomizedIndelTest(new ExtendedExomeAlignerFactory(LocalAlignmentEvaluator.FLEXIBLE),
+        randomizedIndelTest(new ExtendedExomeAlignerFactory(dummy, FLEXIBLE),
                 RandomIndelGenerator.DEFAULT_DELETION,
                 PercentRange.createUpperBound("SubstitutionRate", "ImprovedExomeAligner-Deletions", 5),
                 PercentRange.createLowerBound("AlignmentRate", "ImprovedExomeAligner-Deletions", 90));
@@ -61,13 +65,13 @@ public class AlignersTest {
         System.out.println("Testing aligners for insertions..");
 
         System.out.println("Simple");
-        randomizedIndelTest(new SimpleExomeAlignerFactory(LocalAlignmentEvaluator.FLEXIBLE),
+        randomizedIndelTest(new SimpleExomeAlignerFactory(dummy, FLEXIBLE),
                 RandomIndelGenerator.DEFAULT_INSERTION,
                 PercentRange.createUpperBound("SubstitutionRate", "SimpleExomeAligner-Insertions", 20),
                 PercentRange.createLowerBound("AlignmentRate", "SimpleExomeAligner-Insertions", 50));
 
         System.out.println("Extended");
-        randomizedIndelTest(new ExtendedExomeAlignerFactory(LocalAlignmentEvaluator.FLEXIBLE),
+        randomizedIndelTest(new ExtendedExomeAlignerFactory(dummy, FLEXIBLE),
                 RandomIndelGenerator.DEFAULT_INSERTION,
                 PercentRange.createUpperBound("SubstitutionRate", "ImprovedExomeAligner-Insertions", 5),
                 PercentRange.createLowerBound("AlignmentRate", "ImprovedExomeAligner-Insertions", 90));
@@ -80,7 +84,8 @@ public class AlignersTest {
         RandomReferenceGenerator randomReferenceGenerator = new RandomReferenceGenerator();
         for (int i = 0; i < nRepetitions1; i++) {
             ReferenceLibrary referenceLibrary = randomReferenceGenerator.nextReferenceLibrary(nReferences);
-            Aligner aligner = alignerFactory.fromReferenceLibrary(referenceLibrary);
+            alignerFactory.setReferenceLibrary(referenceLibrary);
+            Aligner aligner = alignerFactory.create();
 
             for (int j = 0; j < nRepetitions2; j++) {
                 NucleotideSequence seq = randomReferenceGenerator.nextMutatedReferenceSequence(referenceLibrary);
@@ -104,7 +109,8 @@ public class AlignersTest {
         float substitutionRate = 0;
         for (int i = 0; i < nRepetitions1; i++) {
             ReferenceLibrary referenceLibrary = randomReferenceGenerator.nextReferenceLibrary(nReferences);
-            Aligner aligner = alignerFactory.fromReferenceLibrary(referenceLibrary);
+            alignerFactory.setReferenceLibrary(referenceLibrary);
+            Aligner aligner = alignerFactory.create();
 
             for (int j = 0; j < nRepetitions2; j++) {
                 NucleotideSequence seq = randomReferenceGenerator.nextReferenceSequence(referenceLibrary);

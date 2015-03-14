@@ -1,6 +1,6 @@
 package com.milaboratory.oncomigec.core.align.kmer;
 
-import com.milaboratory.oncomigec.core.align.reference.Reference;
+import com.milaboratory.oncomigec.core.genomic.Reference;
 
 public class KMerFinderResult {
     private final double information;

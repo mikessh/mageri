@@ -5,7 +5,7 @@ import cc.redberry.pipe.blocks.Merger;
 import cc.redberry.pipe.blocks.ParallelProcessor;
 import cc.redberry.pipe.util.CountingOutputPort;
 import com.milaboratory.oncomigec.core.ReadSpecific;
-import com.milaboratory.oncomigec.core.align.reference.Reference;
+import com.milaboratory.oncomigec.core.genomic.Reference;
 import com.milaboratory.oncomigec.core.assemble.entity.Consensus;
 import com.milaboratory.oncomigec.core.assemble.misc.AssemblerFactory;
 import com.milaboratory.oncomigec.core.assemble.processor.Assembler;

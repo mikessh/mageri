@@ -13,35 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.milaboratory.oncomigec.core.align.reference;
+package com.milaboratory.oncomigec.core.genomic;
 
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 
-import java.util.List;
-
 public class Reference {
     private final int globalId;
-    private final String name, type, fullName;
+    private final String name, fullName;
     private final NucleotideSequence sequence;
     private final boolean reverseComplement;
-    private final boolean isDeNovo;
 
-    public Reference(int globalId, String name, String type, NucleotideSequence sequence, boolean reverseComplement) {
+    public Reference(int globalId, String name, NucleotideSequence sequence, boolean reverseComplement) {
         this.globalId = globalId;
         this.name = name;
-        this.type = type;
         this.sequence = sequence;
         this.reverseComplement = reverseComplement;
-        this.isDeNovo = false;
-        this.fullName = name + "_" + type + (reverseComplement ? "_RC" : "");
+        this.fullName = name + (reverseComplement ? "_RC" : "");
     }
 
     public int getGlobalId() {
         return globalId;
     }
 
+    @Deprecated
     public String getType() {
-        return type;
+        return ".";
     }
 
     public String getName() {
@@ -58,10 +54,6 @@ public class Reference {
 
     public NucleotideSequence getSequence() {
         return sequence;
-    }
-
-    public boolean isDeNovo() {
-        return isDeNovo;
     }
 
     @Override
@@ -82,19 +74,5 @@ public class Reference {
     @Override
     public String toString() {
         return ">" + fullName + "\n" + sequence.toString();
-    }
-
-    public static String toString(List<Reference> referenceList) {
-        StringBuilder sb = new StringBuilder();
-
-        int n = referenceList.size();
-
-        for (int i = 0; i < n - 1; i++) {
-            sb.append(referenceList.get(i).fullName);
-            sb.append(",");
-        }
-        sb.append(referenceList.get(n - 1).fullName);
-
-        return sb.toString();
     }
 }

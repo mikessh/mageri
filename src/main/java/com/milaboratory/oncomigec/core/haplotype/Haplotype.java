@@ -35,7 +35,7 @@ public final class Haplotype {
         this.maskedSequence = maskedSequence;
     }
 
-    public static List<MutationDifference> getMutationDifferences(Haplotype parent, Haplotype child) throws Exception {
+    public static List<MutationDifference> getMutationDifferences(Haplotype parent, Haplotype child) {
         return CorrectedConsensus.getMutationDifferences(parent.correctedConsensus,
                 child.correctedConsensus);
     }
