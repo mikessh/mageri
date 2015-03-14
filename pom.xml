@@ -8,14 +8,6 @@
     <packaging>jar</packaging>
     <name>OncoMIGEC</name>
 
-    <repositories>
-        <repository>
-            <id>in-project</id>
-            <name>In Project Repo</name>
-            <url>file://${project.basedir}/lib</url>
-        </repository>
-    </repositories>
-
     <parent>
         <groupId>org.sonatype.oss</groupId>
         <artifactId>oss-parent</artifactId>
