@@ -34,7 +34,7 @@ import static com.milaboratory.oncomigec.util.testing.DefaultTestSet.*;
 
 public class CheckoutProcessorTest {
     private static CheckoutProcessor runOnSampleData1() throws IOException {
-        SCheckoutProcessor processor = BarcodeListParser.generateSCheckoutProcessor(getBarcodes(),
+        SAdapterExtractor processor = BarcodeListParser.generateSCheckoutProcessor(getBarcodes(),
                 DemultiplexParameters.DEFAULT);
 
         SFastqReader reader = new SFastqReader(getR1(),
@@ -53,7 +53,7 @@ public class CheckoutProcessorTest {
     }
 
     private static CheckoutProcessor runOnSampleData2(List<String> barcodes) throws IOException {
-        PCheckoutProcessor processor = BarcodeListParser.generatePCheckoutProcessor(barcodes,
+        PAdapterExtractor processor = BarcodeListParser.generatePCheckoutProcessor(barcodes,
                 DemultiplexParameters.DEFAULT);
 
         PFastqReader reader = new PFastqReader(getR1(), getR2(),

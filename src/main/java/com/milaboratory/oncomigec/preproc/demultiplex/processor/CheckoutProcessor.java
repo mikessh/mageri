@@ -22,13 +22,14 @@ import com.milaboratory.oncomigec.preproc.demultiplex.barcode.BarcodeSearcher;
 import com.milaboratory.oncomigec.preproc.demultiplex.entity.CheckoutResult;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicLongArray;
 
-public abstract class CheckoutProcessor<T extends CheckoutResult, V extends SequencingRead> implements ReadSpecific, PipelineBlock {
+public abstract class CheckoutProcessor<ReadType extends SequencingRead, ResultType extends CheckoutResult>
+        implements ReadSpecific, PipelineBlock {
     protected final AtomicLongArray masterCounters;
     protected final AtomicLong masterNotFoundCounter, totalCounter;
     protected final String[] sampleNames;
@@ -63,21 +64,30 @@ public abstract class CheckoutProcessor<T extends CheckoutResult, V extends Sequ
         return count;
     }
 
-    public abstract T checkout(V read);
+
+    public abstract ResultType checkoutImpl(ReadType read);
+
+    public ResultType checkout(ReadType read) {
+        totalCounter.incrementAndGet();
+        ResultType result = checkoutImpl(read);
+
+        if (result == null)
+            masterNotFoundCounter.incrementAndGet();
+
+        return result;
+    }
 
     public List<String> getSampleNames() {
-        return sampleNameList;
+        return Collections.unmodifiableList(sampleNameList);
+    }
+
+    public double getMasterFirstRatio() {
+        return 1.0;
     }
 
     public double extractionRatio() {
         double total = totalCounter.get(), notFound = masterNotFoundCounter.get();
         return 1.0 - notFound / total;
-    }
-
-    public boolean[] getMasterFirst() {
-        boolean[] masterFirst = new boolean[masterBarcodes.length];
-        Arrays.fill(masterFirst, true);
-        return masterFirst;
     }
 
     @Override

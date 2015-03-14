@@ -8,32 +8,24 @@ import com.milaboratory.oncomigec.preproc.demultiplex.entity.SimpleCheckoutResul
 import com.milaboratory.oncomigec.util.Util;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
-public final class HeaderParser extends CheckoutProcessor<CheckoutResult, SequencingRead> {
+public final class HeaderExtractor extends CheckoutProcessor<SequencingRead, CheckoutResult> {
     private final String sampleName;
 
-    public HeaderParser(String sampleName) {
+    public HeaderExtractor(String sampleName) {
         super(new String[]{sampleName}, new BarcodeSearcher[1]);
         this.sampleName = sampleName;
     }
 
     @Override
-    public CheckoutResult checkout(SequencingRead sequencingRead) {
-        totalCounter.incrementAndGet();
+    public CheckoutResult checkoutImpl(SequencingRead sequencingRead) {
 
         NucleotideSQPair umiSQPair = Util.extractUmiWithQual(sequencingRead.getDescription(0));
 
         if (umiSQPair == null) {
-            masterNotFoundCounter.incrementAndGet();
             return null;
-        } else
+        } else {
             return new SimpleCheckoutResult(sampleName, umiSQPair);
-    }
-
-    // no flipping/rc should be performed for external data
-
-    @Override
-    public boolean[] getMasterFirst() {
-        return new boolean[]{true};
+        }
     }
 
     @Override

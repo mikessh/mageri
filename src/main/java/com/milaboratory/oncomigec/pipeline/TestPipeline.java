@@ -5,8 +5,8 @@ import com.milaboratory.oncomigec.core.io.readers.PMigReader;
 import com.milaboratory.oncomigec.core.io.readers.SMigReader;
 import com.milaboratory.oncomigec.preproc.demultiplex.config.BarcodeListParser;
 import com.milaboratory.oncomigec.preproc.demultiplex.processor.CheckoutProcessor;
-import com.milaboratory.oncomigec.preproc.demultiplex.processor.PCheckoutProcessor;
-import com.milaboratory.oncomigec.preproc.demultiplex.processor.SCheckoutProcessor;
+import com.milaboratory.oncomigec.preproc.demultiplex.processor.PAdapterExtractor;
+import com.milaboratory.oncomigec.preproc.demultiplex.processor.SAdapterExtractor;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -24,7 +24,7 @@ public class TestPipeline {
         );
 
         new PMigReader(fastq1, fastq2,
-                (PCheckoutProcessor) checkoutProcessor,
+                (PAdapterExtractor) checkoutProcessor,
                 migReaderParameters);
     }
 
@@ -38,7 +38,7 @@ public class TestPipeline {
         );
 
         new SMigReader(fastq1,
-                (SCheckoutProcessor) checkoutProcessor,
+                (SAdapterExtractor) checkoutProcessor,
                 migReaderParameters);
     }
 

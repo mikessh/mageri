@@ -16,6 +16,7 @@
 package com.milaboratory.oncomigec.preproc.demultiplex.barcode;
 
 
+import com.milaboratory.core.sequence.NucleotideSQPair;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 
 public class BarcodeSearcherResult {
@@ -37,6 +38,16 @@ public class BarcodeSearcherResult {
         this.truncations = truncations;
         this.from = from;
         this.to = to;
+    }
+
+    public BarcodeSearcherResult(NucleotideSQPair umiSQPair) {
+        this(umiSQPair.getSequence(), umiSQPair.getQuality().minValue(),
+                0, 0, 0, 0, 0);
+    }
+
+    public BarcodeSearcherResult(NucleotideSQPair umiSQPair, int from) {
+        this(umiSQPair.getSequence(), umiSQPair.getQuality().minValue(),
+                0, 0, 0, from, from + umiSQPair.size());
     }
 
     public NucleotideSequence getUmi() {

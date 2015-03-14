@@ -23,7 +23,7 @@ import com.milaboratory.oncomigec.core.io.misc.MigReaderParameters;
 import com.milaboratory.oncomigec.core.io.misc.UmiHistogram;
 import com.milaboratory.oncomigec.preproc.demultiplex.config.BarcodeListParser;
 import com.milaboratory.oncomigec.preproc.demultiplex.entity.DemultiplexParameters;
-import com.milaboratory.oncomigec.preproc.demultiplex.processor.PCheckoutProcessor;
+import com.milaboratory.oncomigec.preproc.demultiplex.processor.PAdapterExtractor;
 import com.milaboratory.oncomigec.util.Util;
 import com.milaboratory.util.CompressionType;
 import org.junit.Assert;
@@ -58,7 +58,7 @@ public class PMigReaderTest {
 
     @Test
     public void checkoutTest() throws Exception {
-        PCheckoutProcessor processor = BarcodeListParser.generatePCheckoutProcessor(getBarcodesGood(),
+        PAdapterExtractor processor = BarcodeListParser.generatePCheckoutProcessor(getBarcodesGood(),
                 DemultiplexParameters.DEFAULT),
                 processorSlaveFirst = BarcodeListParser.generatePCheckoutProcessor(getBarcodesSlaveFirst(),
                         DemultiplexParameters.DEFAULT);

@@ -5,9 +5,6 @@ import com.milaboratory.oncomigec.preproc.demultiplex.barcode.BarcodeSearcherRes
 
 public final class SimpleCheckoutResult extends CheckoutResult {
     public SimpleCheckoutResult(String sampleName, NucleotideSQPair umiSQPair) {
-        super(0, sampleName,
-                new BarcodeSearcherResult(
-                        umiSQPair.getSequence(), umiSQPair.getQuality().minValue(),
-                        0, 0, 0, 0, 0));
+        super(0, sampleName, new BarcodeSearcherResult(umiSQPair));
     }
 }

@@ -17,7 +17,7 @@ import com.milaboratory.oncomigec.core.io.misc.index.IndexingInfo;
 import com.milaboratory.oncomigec.core.io.misc.index.UmiIndexer;
 import com.milaboratory.oncomigec.pipeline.MigecCli;
 import com.milaboratory.oncomigec.preproc.demultiplex.processor.CheckoutProcessor;
-import com.milaboratory.oncomigec.preproc.demultiplex.processor.HeaderParser;
+import com.milaboratory.oncomigec.preproc.demultiplex.processor.HeaderExtractor;
 import com.milaboratory.oncomigec.util.ProcessorResultWrapper;
 
 import java.util.*;
@@ -53,7 +53,7 @@ public abstract class MigReader<MigType extends Mig> implements OutputPort<MigTy
         this.sampleNames = new ArrayList<>();
         sampleNames.add(sampleName);
         currentSample = sampleName;
-        this.checkoutProcessor = new HeaderParser(sampleName);
+        this.checkoutProcessor = new HeaderExtractor(sampleName);
         this.umiIndexer = new UmiIndexer(checkoutProcessor, migReaderParameters.getUmiQualThreshold());
     }
 

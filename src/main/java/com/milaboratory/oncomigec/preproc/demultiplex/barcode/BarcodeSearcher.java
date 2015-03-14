@@ -25,6 +25,9 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.milaboratory.oncomigec.preproc.demultiplex.barcode.BarcodeUtil.charToRegex;
+import static com.milaboratory.oncomigec.preproc.demultiplex.barcode.BarcodeUtil.compareRedundant;
+
 
 public class BarcodeSearcher implements Serializable {
     private final Pattern seed;
@@ -36,77 +39,6 @@ public class BarcodeSearcher implements Serializable {
     private final int maxTruncations;
     private final byte lowQualityThreshold;
     private final int maxGoodMMs, maxLowQualityMMs;
-
-    private static String charToRegex(char c) {
-        if (!Character.isUpperCase(c))
-            return "[ATGC]";
-
-        switch (c) {
-            case 'A':
-            case 'T':
-            case 'G':
-            case 'C':
-                return Character.toString(c);
-            case 'R':
-                return "[AG]";
-            case 'Y':
-                return "[CT]";
-            case 'M':
-                return "[AC]";
-            case 'S':
-                return "[GC]";
-            case 'W':
-                return "[AT]";
-            case 'K':
-                return "[GT]";
-            case 'V':
-                return "[ACG]";
-            case 'D':
-                return "[AGT]";
-            case 'H':
-                return "[ACT]";
-            case 'B':
-                return "[CGT]";
-            case 'N':
-                return "[ATGC]";
-            default:
-                throw new IllegalArgumentException("Illegal nucleotide character");
-        }
-    }
-
-    private static boolean compareRedundant(char base, char other) {
-        switch (base) {
-            case 'A':
-            case 'T':
-            case 'G':
-            case 'C':
-                return base == other;
-            case 'R':
-                return other == 'A' || other == 'G';
-            case 'Y':
-                return other == 'C' || other == 'T';
-            case 'M':
-                return other == 'A' || other == 'C';
-            case 'S':
-                return other == 'C' || other == 'G';
-            case 'W':
-                return other == 'A' || other == 'T';
-            case 'K':
-                return other == 'T' || other == 'G';
-            case 'V':
-                return other != 'T';
-            case 'D':
-                return other != 'C';
-            case 'H':
-                return other != 'G';
-            case 'B':
-                return other != 'A';
-            case 'N':
-                return true;
-            default:
-                throw new IllegalArgumentException("Illegar nucleotide character");
-        }
-    }
 
     public BarcodeSearcher(String signature) {
         this(signature, 2, 0.05, signature.length(), Util.PH33_LOW_QUAL);
@@ -167,10 +99,11 @@ public class BarcodeSearcher implements Serializable {
         Matcher matcher = seed.matcher(sequence);
 
         // Iterate
-        int seedPosition = -1, position = -1;
-        int nLeftTruncations = -1, nRightTruncations = -1, nTruncations = -1, goodMMs = -1, lowQualityMMs = -1;
-        boolean found = false;
-        String umi = "";
+        int seedPosition, position;
+        int nLeftTruncations, nRightTruncations, nTruncations, goodMMs, lowQualityMMs;
+        boolean found;
+        String umi;
+
         byte umiWorstQual = Byte.MAX_VALUE;
         while (matcher.find()) {
             seedPosition = matcher.start();

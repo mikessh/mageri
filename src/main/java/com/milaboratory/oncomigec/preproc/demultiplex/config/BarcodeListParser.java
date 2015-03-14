@@ -17,8 +17,8 @@ package com.milaboratory.oncomigec.preproc.demultiplex.config;
 
 import com.milaboratory.oncomigec.preproc.demultiplex.barcode.BarcodeSearcher;
 import com.milaboratory.oncomigec.preproc.demultiplex.entity.DemultiplexParameters;
-import com.milaboratory.oncomigec.preproc.demultiplex.processor.PCheckoutProcessor;
-import com.milaboratory.oncomigec.preproc.demultiplex.processor.SCheckoutProcessor;
+import com.milaboratory.oncomigec.preproc.demultiplex.processor.PAdapterExtractor;
+import com.milaboratory.oncomigec.preproc.demultiplex.processor.SAdapterExtractor;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -29,18 +29,18 @@ import java.util.regex.Pattern;
 public class BarcodeListParser {
     private static Pattern bcRgx = Pattern.compile("^[ATGCatgcNnRrYyMmSsWwKkVvDdHhBb]+$");
 
-    public static SCheckoutProcessor generateSCheckoutProcessor(List<String> lines) throws Exception {
+    public static SAdapterExtractor generateSCheckoutProcessor(List<String> lines) throws Exception {
         return generateSCheckoutProcessor(lines, DemultiplexParameters.DEFAULT);
     }
 
-    public static SCheckoutProcessor generateSCheckoutProcessor(List<String> lines,
+    public static SAdapterExtractor generateSCheckoutProcessor(List<String> lines,
                                                                 DemultiplexParameters demultiplexParameters) {
         return generateSCheckoutProcessor(lines,
                 demultiplexParameters.getMaxTruncations(), demultiplexParameters.getMaxGoodQualMMRatio(),
                 demultiplexParameters.getMaxLowQualityMMRatio(), demultiplexParameters.getLowQualityThreshold());
     }
 
-    public static SCheckoutProcessor generateSCheckoutProcessor(List<String> lines,
+    public static SAdapterExtractor generateSCheckoutProcessor(List<String> lines,
                                                                 int maxTruncations,
                                                                 double maxGoodMMRatio,
                                                                 double maxLowQualMMRatio,
@@ -73,23 +73,23 @@ public class BarcodeListParser {
             }
         }
 
-        return new SCheckoutProcessor(sampleNames.toArray(new String[sampleNames.size()]),
+        return new SAdapterExtractor(sampleNames.toArray(new String[sampleNames.size()]),
                 barcodeSearchers.toArray(new BarcodeSearcher[barcodeSearchers.size()]));
     }
 
 
-    public static PCheckoutProcessor generatePCheckoutProcessor(List<String> lines) {
+    public static PAdapterExtractor generatePCheckoutProcessor(List<String> lines) {
         return generatePCheckoutProcessor(lines, DemultiplexParameters.DEFAULT);
     }
 
-    public static PCheckoutProcessor generatePCheckoutProcessor(List<String> lines,
+    public static PAdapterExtractor generatePCheckoutProcessor(List<String> lines,
                                                                 DemultiplexParameters demultiplexParameters) {
         return generatePCheckoutProcessor(lines, demultiplexParameters.orientedReads(),
                 demultiplexParameters.getMaxTruncations(), demultiplexParameters.getMaxGoodQualMMRatio(),
                 demultiplexParameters.getMaxLowQualityMMRatio(), demultiplexParameters.getLowQualityThreshold());
     }
 
-    public static PCheckoutProcessor generatePCheckoutProcessor(List<String> lines,
+    public static PAdapterExtractor generatePCheckoutProcessor(List<String> lines,
                                                                 boolean oriented,
                                                                 int maxTruncations,
                                                                 double maxGoodMMRatio,
@@ -152,7 +152,7 @@ public class BarcodeListParser {
         for (int i = 0; i < masterFirstArr.length; i++)
             masterFirstArr[i] = masterFirstList.get(i);
 
-        return new PCheckoutProcessor(sampleNames.toArray(new String[sampleNames.size()]),
+        return new PAdapterExtractor(sampleNames.toArray(new String[sampleNames.size()]),
                 masterBarcodeSearchers.toArray(new BarcodeSearcher[masterBarcodeSearchers.size()]),
                 slaveBarcodeSearchers.toArray(new BarcodeSearcher[slaveBarcodeSearchers.size()]),
                 masterFirstArr, oriented);
