@@ -32,6 +32,14 @@ public class PPositionalExtractor extends CheckoutProcessor<PSequencingRead, PCh
     private final AtomicLong slaveNotFoundCounter;
     private final SPositionalExtractor extractor1, extractor2;
 
+    public PPositionalExtractor(String sampleName, int maxOffset1, String mask1) {
+        super(new String[]{sampleName}, new BarcodeSearcher[1]);
+        this.sampleName = sampleName;
+        this.extractor1 = new SPositionalExtractor(sampleName, maxOffset1, mask1);
+        this.extractor2 = null;
+        this.slaveNotFoundCounter = new AtomicLong();
+    }
+
     public PPositionalExtractor(String sampleName, int maxOffset1, String mask1,
                                 int maxOffset2, String mask2) {
         super(new String[]{sampleName}, new BarcodeSearcher[1]);
@@ -57,8 +65,11 @@ public class PPositionalExtractor extends CheckoutProcessor<PSequencingRead, PCh
         if (extractionResult1 == null)
             return null;
 
-        extractionResult2 = extractor2.checkoutImpl(sequencingRead.getSingleRead(1));
+        if (extractor2 == null)
+            return new PCheckoutResult(0, sampleName, true, true,
+                    extractionResult1.getMasterResult(), BarcodeSearcherResult.BLANK_RESULT);
 
+        extractionResult2 = extractor2.checkoutImpl(sequencingRead.getSingleRead(1));
 
         if (extractionResult2 == null) {
             slaveNotFoundCounter.incrementAndGet();
