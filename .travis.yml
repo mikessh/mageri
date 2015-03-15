@@ -1,4 +1,6 @@
+secure: "Z9/A+tvE+9H+xTyEvqpbpmpeqgKr/fTGGV+YsR8t1/fxe/VVoD2vRvQ2levPLZSbU17nqcDVNdwypntox5yfMZ2L2+kiY4KAjo69xGLNDi4/X1o5oRfj7P1Hwh/ldVRyTZsVaCNK25pJ5K8idOWb3DKfjuCsF+tIsjeOH5/E5f8="
 language: java
-
+install:
+  - mvn install -DskipTests=true -Dgpg.skip=true -q
 after_success:
-  - mvn clean cobertura:cobertura coveralls:report
+  - mvn clean cobertura:cobertura coveralls:report -Dcoveralls.token=${COVERALLS_TOKEN} -q
