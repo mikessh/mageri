@@ -2,42 +2,34 @@
   "project": "p72",
   "multiplex": [
     {
-      "index": "patients1-5",
-      "r1": "1-5.r1.fastq.gz",
-      "r2": "1-5.r2.fastq.gz",
+      "index": "patient1",
+      "r1": "1.r1.fastq.gz",
+      "r2": "1.r2.fastq.gz",
       "submultiplex": {
-        "barcodes": "barcodes1-5.txt"
+        "barcodes": "primers.txt"
       }
     },
     {
-      "index": "patients6-10",
-      "r1": "6-10.r1.fastq.gz",
-      "r2": "6-10.r2.fastq.gz",
+      "index": "patients2-5",
+      "r1": "2-5.r1.fastq.gz",
+      "r2": "2-5.r2.fastq.gz",
       "submultiplex": {
-        "barcodes": "barcodes6-10.txt"
+        "barcodes": "barcodes.txt"
       }
     },
     {
-      "index": "patient11",
-      "r1": "p11.r1.fastq.gz",
-      "r2": "p11.r2.fastq.gz",
+      "index": "patient6",
+      "r1": "p6.r1.fastq.gz",
+      "r2": "p6.r2.fastq.gz",
       "positional": {
         "maxOffset": 3,
         "mask": "NNNNtNNNNtNNNN"
       }
     },
     {
-      "index": "patient11",
-      "r1": "p12.r1.fastq.gz",
-      "positional": {
-        "maxOffset": 0,
-        "mask": "NNNtNNNtNNNtNNN"
-      }
-    },
-    {
-      "index": "patient12",
-      "r1": "p13.r1.fastq.gz",
-      "r2": "p13.r1.fastq.gz",
+      "index": "patient8",
+      "r1": "p7.r1.fastq.gz",
+      "r2": "p7.r1.fastq.gz",
       "preprocessed": {}
     }
   ]
