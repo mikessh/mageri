@@ -52,6 +52,10 @@ public class DefaultTestSet {
         return getResourceAsStream("sample/R1.fastq.gz");
     }
 
+    public static InputStream getR2RC() throws IOException {
+        return getResourceAsStream("sample/R2_RC.fastq.gz");
+    }
+
     public static InputStream getR2() throws IOException {
         return getResourceAsStream("sample/R2.fastq.gz");
     }

@@ -23,14 +23,15 @@ import com.milaboratory.oncomigec.core.io.misc.MigReaderParameters;
 import com.milaboratory.oncomigec.core.io.misc.UmiHistogram;
 import com.milaboratory.oncomigec.preproc.demultiplex.config.BarcodeListParser;
 import com.milaboratory.oncomigec.preproc.demultiplex.entity.DemultiplexParameters;
-import com.milaboratory.oncomigec.preproc.demultiplex.processor.PCheckoutProcessor;
+import com.milaboratory.oncomigec.preproc.demultiplex.processor.PAdapterExtractor;
 import com.milaboratory.oncomigec.util.Util;
+import com.milaboratory.oncomigec.util.testing.PercentRange;
 import com.milaboratory.util.CompressionType;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.io.InputStream;
+import java.util.*;
 
 import static com.milaboratory.oncomigec.util.testing.DefaultTestSet.*;
 
@@ -58,13 +59,10 @@ public class PMigReaderTest {
 
     @Test
     public void checkoutTest() throws Exception {
-        PCheckoutProcessor processor = BarcodeListParser.generatePCheckoutProcessor(getBarcodesGood(),
-                DemultiplexParameters.DEFAULT),
-                processorSlaveFirst = BarcodeListParser.generatePCheckoutProcessor(getBarcodesSlaveFirst(),
-                        DemultiplexParameters.DEFAULT);
+        PAdapterExtractor processor = BarcodeListParser.generatePCheckoutProcessor(getBarcodesGood(),
+                DemultiplexParameters.DEFAULT);
 
         PMigReader reader = new PMigReader(getR1(), getR2(), processor);
-        PMigReader slaveFirstReader = new PMigReader(getR1(), getR2(), processorSlaveFirst);
         PMigReader exactReader = new PMigReader(getR1(), getR2(), SAMPLE_NAME);
 
         UmiHistogram histogram = exactReader.getUmiHistogram(SAMPLE_NAME);
@@ -72,13 +70,8 @@ public class PMigReaderTest {
         double avgSizeDifference = 0;
         int readsWithDifferentUmisCount = 0, totalReads = 0;
 
-        Set<NucleotideSequence> set1 = new HashSet<>(), set2 = new HashSet<>(),
-                slaveFirstSet1 = new HashSet<>(), slaveFirstSet2 = new HashSet<>();
-
         PMig pMig, slaveFirstMig;
         while ((pMig = reader.take(SAMPLE_NAME, 5)) != null) {
-            slaveFirstMig = slaveFirstReader.take(SAMPLE_NAME, 5);
-
             NucleotideSequence umi = pMig.getUmi();
 
             totalReads += pMig.getMig1().size();
@@ -87,31 +80,85 @@ public class PMigReaderTest {
             int rawCount = histogram.migSize(umi);
 
             avgSizeDifference += 2.0 * (pMig.size() - rawCount) / (pMig.size() + rawCount);
-
-            // Add reads for comparison
-            set1.addAll(pMig.getMig1().getSequences());
-            set2.addAll(pMig.getMig2().getSequences());
-            slaveFirstSet1.addAll(slaveFirstMig.getMig1().getSequences());
-            slaveFirstSet2.addAll(slaveFirstMig.getMig2().getSequences());
         }
 
         double readsWithDifferentUmisRatio = readsWithDifferentUmisCount / (double) totalReads;
         avgSizeDifference /= histogram.getMigsTotal();
 
         Assert.assertTrue("Less than 0.1% reads have different UMIs assigned", readsWithDifferentUmisRatio < 0.001);
-        System.out.println("Average difference in MIG size is " + (int)(avgSizeDifference * 100) + "%");
+        System.out.println("Average difference in MIG size is " + (int) (avgSizeDifference * 100) + "%");
         Assert.assertTrue("Average MIG size difference if < 0.1%", Math.abs(avgSizeDifference) < 0.001);
+    }
 
-        // Compare slave first/master first
+    @Test
+    public void orientationTest() throws Exception {
+        System.out.println("Testing slave first attribute");
+        orientationTest(getR1(), getR2(), getBarcodesSlaveFirst());
+        System.out.println("Testing non-oriented reads");
+        orientationTest(getR2(), getR1(), getBarcodesGood());
+    }
 
-        // for sake of uneven master/slave barcode matching efficiency
-        int minSize1 = Math.min(set1.size(), slaveFirstSet1.size()),
-                minSize2 = Math.min(set2.size(), slaveFirstSet2.size());
+    private static void addToMap(Map<NucleotideSequence, Integer> coutners, List<NucleotideSequence> sequences) {
+        for (NucleotideSequence sequence : sequences) {
+            Integer counter = coutners.get(sequence);
+            counter = counter == null ? 1 : (counter + 1);
+            coutners.put(sequence, counter);
+        }
+    }
 
-        // intersection itself
-        set1.retainAll(slaveFirstSet1);
-        set2.retainAll(slaveFirstSet2);
+    private static double intersect(Map<NucleotideSequence, Integer> countersA,
+                                    Map<NucleotideSequence, Integer> countersB,
+                                    int totalA, int totalB) {
+        double intersection = 0;
+        Set<NucleotideSequence> sequences = new HashSet<>(countersA.keySet());
+        sequences.addAll(countersB.keySet());
+        for (NucleotideSequence sequence : sequences) {
+            Integer counterA = countersA.get(sequence),
+                    counterB = countersB.get(sequence);
+            counterA = counterA == null ? 0 : counterA;
+            counterB = counterB == null ? 0 : counterB;
+            intersection += Math.sqrt(counterA * counterB / (double) totalA / (double) totalB);
+        }
+        return intersection;
+    }
 
-        Assert.assertTrue("Slave first reads are the same", set1.size() == minSize1 && set2.size() == minSize2);
+    private void orientationTest(InputStream r1, InputStream r2,
+                                 List<String> barcodes) throws Exception {
+        PAdapterExtractor processor = BarcodeListParser.generatePCheckoutProcessor(getBarcodesGood(),
+                DemultiplexParameters.ORIENTED),
+                processorSlaveFirst = BarcodeListParser.generatePCheckoutProcessor(barcodes,
+                        DemultiplexParameters.DEFAULT);
+
+        PMigReader reader = new PMigReader(getR1(), getR2(), processor);
+        PMigReader slaveFirstReader = new PMigReader(r1, r2, processorSlaveFirst);
+
+        Map<NucleotideSequence, Integer> counters1 = new HashMap<>(), counters2 = new HashMap<>(),
+                slaveFirstCoutners1 = new HashMap<>(), slaveFirstCoutners2 = new HashMap<>();
+
+        int readsCount = 0, slaveFirstReadsCount = 0;
+
+        PMig mig, slaveFirstMig;
+        while ((mig = reader.take(SAMPLE_NAME, 5)) != null) {
+            slaveFirstMig = slaveFirstReader.take(SAMPLE_NAME, 5);
+
+            // Add reads for comparison
+            addToMap(counters1, mig.getMig1().getSequences());
+            addToMap(counters2, mig.getMig2().getSequences());
+            addToMap(slaveFirstCoutners1, slaveFirstMig.getMig1().getSequences());
+            addToMap(slaveFirstCoutners2, slaveFirstMig.getMig2().getSequences());
+
+            readsCount += mig.size();
+            slaveFirstReadsCount += slaveFirstMig.size();
+        }
+
+        PercentRange.createLowerBound("ReadOverlapEfficiency", "Master first", 99).
+                assertInRange(reader.getReadOverlapper().getOverlapEfficiency());
+        PercentRange.createLowerBound("ReadOverlapEfficiency", "Slave first", 99).
+                assertInRange(slaveFirstReader.getReadOverlapper().getOverlapEfficiency());
+
+        PercentRange.createLowerBound("MasterFirstSlaveFirstIntersection", "Read1", 95).
+                assertInRange(intersect(counters1, slaveFirstCoutners1, readsCount, slaveFirstReadsCount));
+        PercentRange.createLowerBound("MasterFirstSlaveFirstIntersection", "Read2", 95).
+                assertInRange(intersect(counters2, slaveFirstCoutners2, readsCount, slaveFirstReadsCount));
     }
 }

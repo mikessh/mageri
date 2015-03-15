@@ -19,43 +19,57 @@ import com.milaboratory.core.sequence.NucleotideSQPair;
 import com.milaboratory.core.sequencing.read.PSequencingRead;
 import com.milaboratory.oncomigec.preproc.demultiplex.barcode.BarcodeSearcher;
 import com.milaboratory.oncomigec.preproc.demultiplex.barcode.BarcodeSearcherResult;
+import com.milaboratory.oncomigec.preproc.demultiplex.barcode.SeedAndExtendBarcodeSearcher;
+import com.milaboratory.oncomigec.preproc.demultiplex.barcode.SlidingBarcodeSearcher;
 import com.milaboratory.oncomigec.preproc.demultiplex.entity.PCheckoutResult;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicLongArray;
 
-public final class PCheckoutProcessor extends CheckoutProcessor<PCheckoutResult, PSequencingRead> {
+public final class PAdapterExtractor extends CheckoutProcessor<PSequencingRead, PCheckoutResult> {
     private final AtomicLongArray slaveCounters;
-    private final AtomicLong slaveNotFoundCounter;
+    private final AtomicLong slaveNotFoundCounter, masterFirstCounter;
     private final BarcodeSearcher[] slaveBarcodes;
     private final boolean[] masterFirst;
     private final boolean orientedReads;
 
-    public PCheckoutProcessor(String[] sampleNames,
-                              BarcodeSearcher[] masterBarcodes, BarcodeSearcher[] slaveBarcodes,
-                              boolean[] masterFirst) {
+    public PAdapterExtractor(String[] sampleNames,
+                             SeedAndExtendBarcodeSearcher[] masterBarcodes, BarcodeSearcher[] slaveBarcodes,
+                             boolean[] masterFirst) {
         this(sampleNames, masterBarcodes, slaveBarcodes, masterFirst, true);
     }
 
-    public PCheckoutProcessor(String[] sampleNames,
-                              BarcodeSearcher[] masterBarcodes, BarcodeSearcher[] slaveBarcodes,
-                              boolean[] masterFirst, boolean orientedReads) {
+    public PAdapterExtractor(String[] sampleNames,
+                             SeedAndExtendBarcodeSearcher[] masterBarcodes, BarcodeSearcher[] slaveBarcodes,
+                             boolean[] masterFirst, boolean orientedReads) {
         super(sampleNames, masterBarcodes);
         if (masterBarcodes.length != slaveBarcodes.length)
             throw new RuntimeException("Number of master and slave barcodes provided doesn't agree");
 
-        this.slaveBarcodes = slaveBarcodes;
+        this.slaveBarcodes = new BarcodeSearcher[slaveBarcodes.length];
+        for (int i = 0; i < slaveBarcodes.length; i++) {
+            BarcodeSearcher slaveBarcode = slaveBarcodes[i];
+            // could also contain sliding barcode searcher
+            // in case no capital letters exist in barcode
+            // we of course don't forget to wrap it into SlidingBarcodeSearcherR
+            if (slaveBarcode instanceof SlidingBarcodeSearcher) {
+                this.slaveBarcodes[i] = ((SlidingBarcodeSearcher) slaveBarcode).getForSlave();
+            } else if (slaveBarcode instanceof SeedAndExtendBarcodeSearcher) {
+                this.slaveBarcodes[i] = slaveBarcode;
+            } else {
+                throw new RuntimeException("Unsupported barcode searcher: " + slaveBarcode.getClass().getName());
+            }
+        }
         this.orientedReads = orientedReads;
         this.masterFirst = masterFirst;
         this.slaveNotFoundCounter = new AtomicLong();
+        this.masterFirstCounter = new AtomicLong();
         this.slaveCounters = new AtomicLongArray(masterBarcodes.length);
     }
 
     @Override
-    public PCheckoutResult checkout(PSequencingRead read) {
-        totalCounter.incrementAndGet();
-
+    public PCheckoutResult checkoutImpl(PSequencingRead read) {
         boolean orientation;
 
         BarcodeSearcherResult masterResult, slaveResult;
@@ -73,9 +87,13 @@ public final class PCheckoutProcessor extends CheckoutProcessor<PCheckoutResult,
 
             // For non-oriented reads (master is not forced to be in read#1)
             // Search orientation#2
-            if (masterResult == null && !orientedReads) {
-                masterResult = masterBarcodes[i].search(read1o2);
-                orientation = false;
+            if (masterResult == null) {
+                if (!orientedReads) {
+                    masterResult = masterBarcodes[i].search(read1o2);
+                    orientation = false;
+                }
+            } else {
+                masterFirstCounter.incrementAndGet();
             }
 
             // If master is found check for slave
@@ -109,8 +127,6 @@ public final class PCheckoutProcessor extends CheckoutProcessor<PCheckoutResult,
             }
         }
 
-        masterNotFoundCounter.incrementAndGet();
-
         return null;
     }
 
@@ -125,8 +141,8 @@ public final class PCheckoutProcessor extends CheckoutProcessor<PCheckoutResult,
     }
 
     @Override
-    public boolean[] getMasterFirst() {
-        return masterFirst;
+    public double getMasterFirstRatio() {
+        return masterFirstCounter.get() / (double) totalCounter.get();
     }
 
     @Override

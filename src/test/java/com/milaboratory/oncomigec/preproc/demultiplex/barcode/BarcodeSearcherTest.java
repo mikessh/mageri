@@ -36,6 +36,7 @@ import java.util.Random;
 import java.util.Set;
 
 public class BarcodeSearcherTest {
+    // todo: more sliding barcode searcher tests
     private static Random rnd = new Random(2106803L);
     private static NucleotideMutationModel mm = new GenericNucleotideMutationModel(
             SubstitutionModels.getEmpiricalNucleotideSubstitutionModel(),
@@ -48,7 +49,7 @@ public class BarcodeSearcherTest {
     public void exactTest() {
         String left = "cagtggtcctc", seed = "ATTAC", right = "tactgcgggta",
                 signature = left + seed + right;
-        BarcodeSearcher bs = new BarcodeSearcher(signature);
+        SeedAndExtendBarcodeSearcher bs = new SeedAndExtendBarcodeSearcher(signature);
 
         // Check for correct determination of position
         for (int n = 0; n < 10000; n++) {
@@ -70,7 +71,7 @@ public class BarcodeSearcherTest {
     public void fuzzyTest1() {
         String left = "cagtggtcctcaga", seed = "ATTAC", right = "tactgcgggtagggtgctact",
                 signature = left + seed + right;
-        BarcodeSearcher bs = new BarcodeSearcher(signature);
+        BarcodeSearcher bs = new SeedAndExtendBarcodeSearcher(signature);
         NucleotideSequence leftRef = new NucleotideSequence(left), seedRef = new NucleotideSequence(seed),
                 rightRef = new NucleotideSequence(right);
         int[] mutations;
@@ -109,7 +110,7 @@ public class BarcodeSearcherTest {
     public void fuzzyTest2() {
         String left = "cagtggtcctcaga", seed = "ATTAC", right = "tactgcgggtagggtgctact",
                 signature = left + seed + right;
-        BarcodeSearcher bs = new BarcodeSearcher(signature);
+        SeedAndExtendBarcodeSearcher bs = new SeedAndExtendBarcodeSearcher(signature);
         NucleotideSequence leftRef = new NucleotideSequence(left), seedRef = new NucleotideSequence(seed),
                 rightRef = new NucleotideSequence(right);
         int[] mutations;
@@ -157,7 +158,7 @@ public class BarcodeSearcherTest {
     public void negativeTest() {
         String left = "cagtggtcctcaga", seed = "ATTAC", right = "tactgcgggtagggtgctact",
                 signature = left + seed + right;
-        BarcodeSearcher bs = new BarcodeSearcher(signature);
+        SeedAndExtendBarcodeSearcher bs = new SeedAndExtendBarcodeSearcher(signature);
 
         // Negative testing, mainly for purposes of catching errors
         for (int n = 0; n < 100000; n++) {
@@ -182,7 +183,7 @@ public class BarcodeSearcherTest {
                 CompressionType.None);
 
         String signature = "NNNNNNNNNNNNNNtgatcttGACGTTGtagatgag";
-        BarcodeSearcher bs = new BarcodeSearcher(signature);
+        SeedAndExtendBarcodeSearcher bs = new SeedAndExtendBarcodeSearcher(signature);
         SSequencingRead read;
         int badCount = 0;
 

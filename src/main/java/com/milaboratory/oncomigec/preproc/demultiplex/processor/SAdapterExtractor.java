@@ -16,27 +16,23 @@
 package com.milaboratory.oncomigec.preproc.demultiplex.processor;
 
 import com.milaboratory.core.sequencing.read.SSequencingRead;
-import com.milaboratory.oncomigec.preproc.demultiplex.barcode.BarcodeSearcher;
 import com.milaboratory.oncomigec.preproc.demultiplex.barcode.BarcodeSearcherResult;
+import com.milaboratory.oncomigec.preproc.demultiplex.barcode.SeedAndExtendBarcodeSearcher;
 import com.milaboratory.oncomigec.preproc.demultiplex.entity.SCheckoutResult;
 
-public final class SCheckoutProcessor extends CheckoutProcessor<SCheckoutResult, SSequencingRead> {
-    public SCheckoutProcessor(String[] sampleNames, BarcodeSearcher[] masterBarcodes) {
+public final class SAdapterExtractor extends CheckoutProcessor<SSequencingRead, SCheckoutResult> {
+    public SAdapterExtractor(String[] sampleNames, SeedAndExtendBarcodeSearcher[] masterBarcodes) {
         super(sampleNames, masterBarcodes);
     }
 
     @Override
-    public SCheckoutResult checkout(SSequencingRead read) {
-        totalCounter.incrementAndGet();
-
+    public SCheckoutResult checkoutImpl(SSequencingRead read) {
         for (int i = 0; i < sampleNames.length; i++) {
             BarcodeSearcherResult barcodeSearcherResult = masterBarcodes[i].search(read.getData());
             if (barcodeSearcherResult != null) {
                 return new SCheckoutResult(i, sampleNames[i], barcodeSearcherResult);
             }
         }
-
-        masterNotFoundCounter.incrementAndGet();
 
         return null;
     }
