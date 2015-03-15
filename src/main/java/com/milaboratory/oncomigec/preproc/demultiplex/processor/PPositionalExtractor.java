@@ -24,6 +24,7 @@ import com.milaboratory.oncomigec.preproc.demultiplex.barcode.BarcodeSearcherRes
 import com.milaboratory.oncomigec.preproc.demultiplex.barcode.SlidingBarcodeSearcerR;
 import com.milaboratory.oncomigec.preproc.demultiplex.barcode.SlidingBarcodeSearcher;
 import com.milaboratory.oncomigec.preproc.demultiplex.entity.PCheckoutResult;
+import com.sun.istack.internal.NotNull;
 
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -32,17 +33,17 @@ public class PPositionalExtractor extends CheckoutProcessor<PSequencingRead, PCh
     private final String sampleName;
     private final SlidingBarcodeSearcher masterBarcode, slaveBarcode;
 
-    public PPositionalExtractor(String sampleName,
-                                SlidingBarcodeSearcher masterBarcode) {
+    public PPositionalExtractor(@NotNull String sampleName,
+                                @NotNull SlidingBarcodeSearcher masterBarcode) {
         super(new String[]{sampleName}, new BarcodeSearcher[]{masterBarcode});
         this.sampleName = sampleName;
         this.masterBarcode = masterBarcode;
         this.slaveBarcode = null;
     }
 
-    public PPositionalExtractor(String sampleName,
-                                SlidingBarcodeSearcher masterBarcode,
-                                SlidingBarcodeSearcher slaveBarcode) {
+    public PPositionalExtractor(@NotNull String sampleName,
+                                @NotNull SlidingBarcodeSearcher masterBarcode,
+                                @NotNull SlidingBarcodeSearcher slaveBarcode) {
         super(new String[]{sampleName}, new BarcodeSearcher[]{masterBarcode});
         this.sampleName = sampleName;
         this.masterBarcode = masterBarcode;

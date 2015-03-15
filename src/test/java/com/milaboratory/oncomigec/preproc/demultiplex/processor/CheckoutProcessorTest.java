@@ -62,12 +62,17 @@ public class CheckoutProcessorTest {
     }
 
     private static CheckoutProcessor runOnSampleData2Positional() throws IOException {
-        return runOnSampleData2Positional(0, "NNNNNNNNNNNNNN");
+        return runOnSampleData2Positional(0, "NNNNNNNNNNNNNN", null);
     }
 
-    private static CheckoutProcessor runOnSampleData2Positional(int maxOffset, String mask) throws IOException {
-        PPositionalExtractor processor = new PPositionalExtractor(SAMPLE_NAME,
-                new SlidingBarcodeSearcher(maxOffset, mask));
+    private static CheckoutProcessor runOnSampleData2Positional(int maxOffset,
+                                                                String mask1,
+                                                                String mask2) throws IOException {
+        PPositionalExtractor processor = mask2 == null ? new PPositionalExtractor(SAMPLE_NAME,
+                new SlidingBarcodeSearcher(maxOffset, mask1)) :
+                new PPositionalExtractor(SAMPLE_NAME,
+                        new SlidingBarcodeSearcher(maxOffset, mask1),
+                        new SlidingBarcodeSearcher(maxOffset, mask2));
 
         PFastqReader reader = new PFastqReader(getR1(), getR2(),
                 QualityFormat.Phred33, CompressionType.None,
@@ -104,7 +109,8 @@ public class CheckoutProcessorTest {
     public void positionalSingleEnd() throws Exception {
         System.out.println("Running performance test for positional Checkout processor (single)");
 
-        CheckoutProcessor processor = runOnSampleData1Positional(3, "NNNNNNNNNNNtNNNNNtNNNNNTGTA");
+        CheckoutProcessor processor = runOnSampleData1Positional(3,
+                "NNNNNNNNNNNtNNNNNtNNNNNtgta");
 
         assertProcessor(processor);
     }
@@ -113,7 +119,9 @@ public class CheckoutProcessorTest {
     public void positionalPairedEnd() throws Exception {
         System.out.println("Running performance test for positional Checkout processor (paired-end)");
 
-        CheckoutProcessor processor = runOnSampleData2Positional(3, "NNNNNNNNNNNtNNNNNtNNNNNTGTA");
+        CheckoutProcessor processor = runOnSampleData2Positional(3,
+                "NNNNNNNNNNNtNNNNNtNNNNNtgta",
+                "aggactgNNNNNNNaagtc");
 
         assertProcessor(processor);
     }

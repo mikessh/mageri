@@ -43,6 +43,9 @@ public class SlidingBarcodeSearcerR extends SlidingBarcodeSearcher {
     public BarcodeSearcherResult search(NucleotideSQPair read) {
         BarcodeSearcherResult result = super.search(read);
 
+        if (result == null)
+            return null;
+
         return new BarcodeSearcherResult(
                 result.getUmi().getReverseComplement(), // we have searched in RC
                 result.getUmiWorstQual(),

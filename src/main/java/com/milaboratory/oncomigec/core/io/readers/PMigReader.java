@@ -176,6 +176,10 @@ public final class PMigReader extends MigReader<PMig> {
         return null;
     }
 
+    public ReadOverlapper getReadOverlapper() {
+        return readOverlapper;
+    }
+
     @Override
     public boolean isPairedEnd() {
         return true;

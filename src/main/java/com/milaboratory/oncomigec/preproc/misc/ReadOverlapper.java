@@ -49,12 +49,16 @@ public class ReadOverlapper {
         this(true, true, 5, 10, 5, 2, 0.1); // for default checkout output
     }
 
-    public AtomicLong getOverlappedCount() {
-        return overlappedCount;
+    public long getOverlappedCount() {
+        return overlappedCount.get();
     }
 
-    public AtomicLong getTotalCount() {
-        return totalCount;
+    public long getTotalCount() {
+        return totalCount.get();
+    }
+
+    public double getOverlapEfficiency() {
+        return overlappedCount.get() / (double) totalCount.get();
     }
 
     public OverlapResult overlap(PSequencingRead readPair) {
