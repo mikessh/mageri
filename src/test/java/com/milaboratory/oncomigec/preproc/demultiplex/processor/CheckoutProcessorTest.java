@@ -33,7 +33,89 @@ import java.util.List;
 import static com.milaboratory.oncomigec.util.testing.DefaultTestSet.*;
 
 public class CheckoutProcessorTest {
-    private static CheckoutProcessor runOnSampleData1() throws IOException {
+    private static void assertProcessor(CheckoutProcessor processor) {
+        System.out.println(processor);
+        double extractionRatio = processor.extractionRatio();
+
+        System.out.println("Extraction ratio = " + extractionRatio);
+        Assert.assertTrue("Extraction ratio in expected bounds", extractionRatio >= 0.99);
+    }
+    
+    private static CheckoutProcessor runOnSampleData1Positional() throws IOException {
+        return runOnSampleData1Positional(0, "NNNNNNNNNNNNNN");
+    }
+
+    private static CheckoutProcessor runOnSampleData1Positional(int maxOffset, String mask) throws IOException {
+        SPositionalExtractor processor = new SPositionalExtractor(SAMPLE_NAME, maxOffset, mask);
+
+        SFastqReader reader = new SFastqReader(getR1(),
+                CompressionType.None);
+
+        SSequencingRead read;
+        while ((read = reader.take()) != null) {
+            processor.checkout(read);
+        }
+
+        return processor;
+    }
+
+    private static CheckoutProcessor runOnSampleData2Positional() throws IOException {
+        return runOnSampleData2Positional(0, "NNNNNNNNNNNNNN");
+    }
+
+    private static CheckoutProcessor runOnSampleData2Positional(int maxOffset, String mask) throws IOException {
+        PPositionalExtractor processor = new PPositionalExtractor(SAMPLE_NAME, maxOffset, mask);
+
+        PFastqReader reader = new PFastqReader(getR1(), getR2(),
+                QualityFormat.Phred33, CompressionType.None,
+                null, false, false);
+
+        PSequencingRead read;
+        while ((read = reader.take()) != null) {
+            processor.checkout(read);
+        }
+
+        return processor;
+    }
+
+    @Test
+    public void headerParserTest() throws Exception {
+        System.out.println("Running performance test for Header parser");
+        HeaderExtractor processor = new HeaderExtractor(SAMPLE_NAME);
+
+        SFastqReader reader = new SFastqReader(getR1(),
+                CompressionType.None);
+
+        SSequencingRead read;
+        while ((read = reader.take()) != null) {
+            processor.checkout(read);
+        }
+
+        double extractionRatio = processor.extractionRatio();
+
+        System.out.println("Extraction ratio = " + extractionRatio);
+        Assert.assertTrue("Extraction ratio in expected bounds", extractionRatio == 1);
+    }
+
+    @Test
+    public void positionalSingleEnd() throws Exception {
+        System.out.println("Running performance test for positional Checkout processor (single)");
+
+        CheckoutProcessor processor = runOnSampleData1Positional(3, "NNNNNNNNNNNtNNNNNtNNNNNTGTA");
+
+        assertProcessor(processor);
+    }
+
+    @Test
+    public void positionalPairedEnd() throws Exception {
+        System.out.println("Running performance test for positional Checkout processor (paired-end)");
+
+        CheckoutProcessor processor = runOnSampleData2Positional(3, "NNNNNNNNNNNtNNNNNtNNNNNTGTA");
+
+        assertProcessor(processor);
+    }
+
+    private static CheckoutProcessor runOnSampleData1Adapter() throws IOException {
         SAdapterExtractor processor = BarcodeListParser.generateSCheckoutProcessor(getBarcodes(),
                 DemultiplexParameters.DEFAULT);
 
@@ -48,11 +130,11 @@ public class CheckoutProcessorTest {
         return processor;
     }
 
-    private static CheckoutProcessor runOnSampleData2() throws IOException {
-        return runOnSampleData2(getBarcodes());
+    private static CheckoutProcessor runOnSampleData2Adapter() throws IOException {
+        return runOnSampleData2Adapter(getBarcodes());
     }
 
-    private static CheckoutProcessor runOnSampleData2(List<String> barcodes) throws IOException {
+    private static CheckoutProcessor runOnSampleData2Adapter(List<String> barcodes) throws IOException {
         PAdapterExtractor processor = BarcodeListParser.generatePCheckoutProcessor(barcodes,
                 DemultiplexParameters.DEFAULT);
 
@@ -69,36 +151,28 @@ public class CheckoutProcessorTest {
     }
 
     @Test
-    public void test1() throws Exception {
-        System.out.println("Running performance test for Checkout processor (single)");
+    public void adapterSingleEnd() throws Exception {
+        System.out.println("Running performance test for vanilla Checkout processor (single)");
 
-        CheckoutProcessor processor = runOnSampleData1();
+        CheckoutProcessor processor = runOnSampleData1Adapter();
 
-        System.out.println(processor);
-        double extractionRatio = processor.extractionRatio();
-
-        System.out.println("Extraction ratio = " + extractionRatio);
-        Assert.assertTrue("Extraction ratio in expected bounds", extractionRatio >= 0.99);
+        assertProcessor(processor);
     }
 
     @Test
-    public void test2() throws Exception {
-        System.out.println("Running performance test for Checkout processor (paired-end)");
+    public void adapterPairedEnd() throws Exception {
+        System.out.println("Running performance test for vanilla Checkout processor (paired-end)");
 
-        CheckoutProcessor processor = runOnSampleData2();
+        CheckoutProcessor processor = runOnSampleData2Adapter();
 
-        System.out.println(processor);
-        double extractionRatio = processor.extractionRatio();
-
-        System.out.println("Extraction ratio = " + extractionRatio);
-        Assert.assertTrue("Extraction ratio in expected bounds", extractionRatio >= 0.99);
+        assertProcessor(processor);
     }
 
     @Test
-    public void test3() throws Exception {
-        System.out.println("Running performance test for Checkout processor (paired-end), bad slave barcode");
+    public void adapterBadSlave() throws Exception {
+        System.out.println("Running performance test for vanilla Checkout processor (paired-end), bad slave barcode");
 
-        CheckoutProcessor processor = runOnSampleData2(getBarcodesBadSlave());
+        CheckoutProcessor processor = runOnSampleData2Adapter(getBarcodesBadSlave());
 
         System.out.println(processor);
         double extractionRatio = processor.extractionRatio();
@@ -109,13 +183,21 @@ public class CheckoutProcessorTest {
 
     @Test
     public void serializationTest() throws IOException {
-        System.out.println("Running serialization test for Checkout processor");
+        System.out.println("Running serialization test for Checkout processors");
 
-        CheckoutProcessor processor = runOnSampleData1();
+        CheckoutProcessor processor = runOnSampleData1Positional();
 
         TestUtil.serializationCheckForOutputData(processor);
 
-        processor = runOnSampleData2();
+        processor = runOnSampleData2Positional();
+
+        TestUtil.serializationCheckForOutputData(processor);
+
+        processor = runOnSampleData1Adapter();
+
+        TestUtil.serializationCheckForOutputData(processor);
+
+        processor = runOnSampleData2Adapter();
 
         TestUtil.serializationCheckForOutputData(processor);
     }

@@ -47,7 +47,7 @@ public class SPositionalExtractor extends CheckoutProcessor<SSequencingRead, SCh
     public SCheckoutResult checkoutImpl(SSequencingRead sequencingRead) {
         int goodOffset = -1;
         
-        for (int i = 0; i < maxOffset; i++) {
+        for (int i = 0; i <= maxOffset; i++) {
             boolean match = true;
             for (int j = 0; j < mask.length(); j++) {
                 if (!BarcodeUtil.compareRedundant(mask.charAt(j),
