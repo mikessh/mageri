@@ -25,7 +25,6 @@ import com.milaboratory.oncomigec.core.assemble.misc.SAssemblerFactory;
 import com.milaboratory.oncomigec.core.consalign.misc.ConsensusAlignerFactory;
 import com.milaboratory.oncomigec.core.consalign.misc.PConsensusAlignerFactory;
 import com.milaboratory.oncomigec.core.consalign.misc.SConsensusAlignerFactory;
-import com.milaboratory.oncomigec.core.genomic.PrimerSet;
 import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
 import com.milaboratory.oncomigec.core.io.readers.MigReader;
 import com.milaboratory.oncomigec.pipeline.Presets;
@@ -39,7 +38,6 @@ import java.util.TreeMap;
 
 public class ProjectAnalysis {
     protected final ReferenceLibrary referenceLibrary;
-    protected final PrimerSet primers;
     protected final Project project;
     protected final Presets presets;
     protected final RuntimeParameters runtimeParameters;
@@ -56,7 +54,6 @@ public class ProjectAnalysis {
         this.project = Project.fromInput(input);
 
         this.referenceLibrary = ReferenceLibrary.fromInput(input.getReferences());
-        this.primers = PrimerSet.fromInput(input.getPrimers());
 
         this.pAssemblerFactory = new PAssemblerFactory(presets.getAssemblerParameters());
         this.sAssemblerFactory = new SAssemblerFactory(presets.getAssemblerParameters());

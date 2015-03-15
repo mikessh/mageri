@@ -27,17 +27,25 @@ import java.io.Serializable;
 import java.util.List;
 
 public class InputChunk implements ReadSpecific, Serializable {
-    private transient final InputStream inputStream1, inputStream2;
-    private final String index;
-    private final UmiRule umiRule;
-    private final List<SubMultiplexRule> subMultiplexRules;
+    protected transient final InputStream inputStream1, inputStream2;
+    protected final String index;
+    protected final CheckoutRule checkoutRule;
+    protected final List<SubMultiplexRule> subMultiplexRules;
 
     public InputChunk(@NotNull InputStream inputStream1, @Nullable InputStream inputStream2,
-                      @NotNull String index, @NotNull UmiRule umiRule, @NotNull List<SubMultiplexRule> subMultiplexRules) {
+                      @NotNull String index, @NotNull CheckoutRule checkoutRule,
+                      @NotNull List<SubMultiplexRule> subMultiplexRules) {
         this.inputStream1 = inputStream1;
         this.inputStream2 = inputStream2;
         this.index = index;
-        this.umiRule = umiRule;
+        this.checkoutRule = checkoutRule;
+        if ((inputStream2 == null) != checkoutRule.isPairedEnd()) {
+            throw new RuntimeException("Single/pair-end incompatibility: " +
+                    (inputStream2 == null ? "single-end" : "paired-end") + " reads provided, " +
+                    "while the checkout rule is " +
+                    (checkoutRule.isPairedEnd() ? "paired-end" : "single-end")
+            );
+        }
         this.subMultiplexRules = subMultiplexRules;
     }
 
@@ -57,8 +65,8 @@ public class InputChunk implements ReadSpecific, Serializable {
         return index;
     }
 
-    public UmiRule getUmiRule() {
-        return umiRule;
+    public CheckoutRule getCheckoutRule() {
+        return checkoutRule;
     }
 
     public List<SubMultiplexRule> getSubMultiplexRules() {
