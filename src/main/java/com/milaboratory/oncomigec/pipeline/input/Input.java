@@ -23,15 +23,18 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * An object representing input metadata that is provided in json + tab delimited format
+ */
 public class Input implements Serializable {
-    private final String projectName;
-    private transient final InputStream references, primers;
-    private final List<InputChunk> inputChunks;
+    protected final String projectName;
+    
+    protected transient final InputStream references;
+    protected final List<InputChunk> inputChunks;
 
-    public Input(String projectName, InputStream references, InputStream primers, List<InputChunk> inputChunks) {
+    public Input(String projectName, InputStream references, List<InputChunk> inputChunks) {
         this.projectName = projectName;
         this.references = references;
-        this.primers = primers;
         this.inputChunks = inputChunks;
     }
 
@@ -41,10 +44,6 @@ public class Input implements Serializable {
 
     public InputStream getReferences() {
         return references;
-    }
-
-    public InputStream getPrimers() {
-        return primers;
     }
 
     public List<InputChunk> getInputChunks() {

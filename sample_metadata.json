@@ -1,5 +1,6 @@
 {
   "project": "p72",
+  "references": "refs.fa",
   "multiplex": [
     {
       "index": "patient1",
@@ -22,8 +23,8 @@
       "r1": "p6.r1.fastq.gz",
       "r2": "p6.r2.fastq.gz",
       "positional": {
-        "maxOffset": 3,
-        "mask": "NNNNtNNNNtNNNN"
+        "mask1": "nnnnNNNNtNNNNtNNNN",
+        "mask2": "NNNNtNNNNtNNNNnnnn"
       }
     },
     {

@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+// Project structure that could be deduced from input
 public class Project implements Serializable {
     private final List<SampleGroup> sampleGroups = new ArrayList<>();
     private final List<Sample> samples = new ArrayList<>();
