@@ -12,7 +12,7 @@ import org.apache.commons.io.FileUtils;
 import java.io.File;
 
 public class TestPipeline {
-    private final CheckoutProcessor checkoutProcessor;
+    /*private final CheckoutProcessor checkoutProcessor;
 
     public TestPipeline(File fastq1, File fastq2,
                         File barcodes,
@@ -44,5 +44,5 @@ public class TestPipeline {
 
     public CheckoutProcessor getCheckoutProcessor() {
         return checkoutProcessor;
-    }
+    }*/
 }

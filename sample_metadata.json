@@ -3,7 +3,7 @@
   "references": "refs.fa",
   "multiplex": [
     {
-      "index": "patient1",
+      "index": "p1",
       "r1": "1.r1.fastq.gz",
       "r2": "1.r2.fastq.gz",
       "submultiplex": {
@@ -11,7 +11,7 @@
       }
     },
     {
-      "index": "patients2-5",
+      "index": "p2-5",
       "r1": "2-5.r1.fastq.gz",
       "r2": "2-5.r2.fastq.gz",
       "submultiplex": {
@@ -19,19 +19,22 @@
       }
     },
     {
-      "index": "patient6",
+      "index": "p6",
       "r1": "p6.r1.fastq.gz",
       "r2": "p6.r2.fastq.gz",
       "positional": {
+        "name": "patient6",
         "mask1": "nnnnNNNNtNNNNtNNNN",
         "mask2": "NNNNtNNNNtNNNNnnnn"
       }
     },
     {
-      "index": "patient8",
+      "index": "p7",
       "r1": "p7.r1.fastq.gz",
       "r2": "p7.r1.fastq.gz",
-      "preprocessed": {}
+      "preprocessed": {
+        "name": "patient7"
+      }
     }
   ]
 }

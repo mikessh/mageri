@@ -33,7 +33,8 @@ import org.apache.commons.io.FileUtils;
 import java.io.File;
 
 // todo: barcode matcher options
-public final class ExomePipeline extends MigecPipeline {
+public final class ExomePipeline{//} extends MigecPipeline {
+    /*
     private ExomePipeline(MigReader reader,
                           AssemblerFactory assemblerFactory,
                           ConsensusAlignerFactory consensusAlignerFactory,
@@ -107,5 +108,5 @@ public final class ExomePipeline extends MigecPipeline {
                         presets.getConsensusAlignerParameters()),
                 presets
         );
-    }
+    }*/
 }

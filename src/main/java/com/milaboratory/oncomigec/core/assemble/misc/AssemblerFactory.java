@@ -1,6 +1,6 @@
 package com.milaboratory.oncomigec.core.assemble.misc;
 
-import com.milaboratory.oncomigec.core.ReadSpecific;
+import com.milaboratory.oncomigec.ReadSpecific;
 import com.milaboratory.oncomigec.core.assemble.entity.Consensus;
 import com.milaboratory.oncomigec.core.assemble.processor.Assembler;
 import com.milaboratory.oncomigec.core.io.entity.Mig;

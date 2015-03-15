@@ -65,7 +65,7 @@ public class BarcodeListParser {
                     throw new RuntimeException("Duplicate barcode:\t" + line);
                 else
                     usedBarcodes.add(barcode);
-                if (barcode.equals("-"))
+                if (barcode.equals(EMPTY_BARCODE))
                     throw new RuntimeException("Blank master barcode not allowed:\t" + line);
                 if (!ALLOWED_CHARACTERS.matcher(barcode).matches())
                     throw new RuntimeException("Bad barcode character set:\t" + line);

@@ -17,9 +17,8 @@ package com.milaboratory.oncomigec.preproc.demultiplex.processor;
 
 import com.milaboratory.core.sequencing.read.SequencingRead;
 import com.milaboratory.oncomigec.core.PipelineBlock;
-import com.milaboratory.oncomigec.core.ReadSpecific;
+import com.milaboratory.oncomigec.ReadSpecific;
 import com.milaboratory.oncomigec.preproc.demultiplex.barcode.BarcodeSearcher;
-import com.milaboratory.oncomigec.preproc.demultiplex.barcode.SeedAndExtendBarcodeSearcher;
 import com.milaboratory.oncomigec.preproc.demultiplex.entity.CheckoutResult;
 
 import java.util.ArrayList;

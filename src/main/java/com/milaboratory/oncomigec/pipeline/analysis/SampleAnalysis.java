@@ -22,7 +22,7 @@ import cc.redberry.pipe.OutputPort;
 import cc.redberry.pipe.blocks.Merger;
 import cc.redberry.pipe.blocks.ParallelProcessor;
 import cc.redberry.pipe.util.CountingOutputPort;
-import com.milaboratory.oncomigec.core.ReadSpecific;
+import com.milaboratory.oncomigec.ReadSpecific;
 import com.milaboratory.oncomigec.core.assemble.entity.Consensus;
 import com.milaboratory.oncomigec.core.assemble.processor.Assembler;
 import com.milaboratory.oncomigec.core.consalign.entity.AlignedConsensus;
@@ -34,7 +34,8 @@ import com.milaboratory.oncomigec.core.correct.Corrector;
 import com.milaboratory.oncomigec.core.genomic.Reference;
 import com.milaboratory.oncomigec.core.haplotype.HaplotypeTree;
 import com.milaboratory.oncomigec.core.io.entity.Mig;
-import com.milaboratory.oncomigec.core.io.readers.MigReader;
+import com.milaboratory.oncomigec.core.io.misc.UmiHistogram;
+import com.milaboratory.oncomigec.core.io.readers.MigOutputPort;
 import com.milaboratory.oncomigec.model.classifier.BaseVariantClassifier;
 import com.milaboratory.oncomigec.model.classifier.VariantClassifier;
 import com.milaboratory.oncomigec.model.variant.VariantContainer;
@@ -53,7 +54,8 @@ public class SampleAnalysis implements ReadSpecific {
     protected final ProjectAnalysis parent;
     protected final Sample sample;
 
-    protected final MigReader reader;
+    protected final MigOutputPort reader;
+    protected final UmiHistogram umiHistogram;
     protected final Assembler assembler;
     protected final ConsensusAligner aligner;
     protected Corrector corrector;
@@ -68,10 +70,12 @@ public class SampleAnalysis implements ReadSpecific {
     @SuppressWarnings("unchecked")
     protected SampleAnalysis(ProjectAnalysis parent,
                              Sample sample,
-                             MigReader reader,
+                             UmiHistogram umiHistogram,
+                             MigOutputPort reader,
                              Assembler assembler,
                              ConsensusAligner consensusAligner) {
         this.parent = parent;
+        this.umiHistogram = umiHistogram;
         this.sample = sample;
         this.reader = reader;
         this.paired = reader.isPairedEnd();
@@ -85,23 +89,10 @@ public class SampleAnalysis implements ReadSpecific {
         this.variantClassifier = BaseVariantClassifier.BUILT_IN;
     }
 
-    public int getOverSeq(String sampleName) {
-        return parent.getPresets().forceOverseq() ? parent.getPresets().getDefaultOverseq() :
-                reader.getUmiHistogram(sampleName).getMigSizeThreshold();
-    }
-
     @SuppressWarnings("unchecked")
     public void runFirstStage() throws Exception {
         if (firstStageRan)
             return;
-
-        int overSeq = getOverSeq(sample.getName());
-
-        reader.setCurrentSample(sample.getName());
-        reader.setSizeThreshold(overSeq);
-
-        if (parent.getPresets().filterMismatchUmis())
-            reader.setMinMismatchRatio(parent.getPresets().getUmiMismatchFilterRatio());
 
         OutputPort<Mig> input = reader;
 
@@ -196,8 +187,8 @@ public class SampleAnalysis implements ReadSpecific {
         return variantContainer;
     }
 
-    public MigReader getReader() {
-        return reader;
+    public UmiHistogram getUmiHistogram() {
+        return umiHistogram;
     }
 
     public Assembler getAssembler() {

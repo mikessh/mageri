@@ -1,14 +1,12 @@
 package com.milaboratory.oncomigec.pipeline;
 
 import com.milaboratory.oncomigec.core.io.misc.MigReaderParameters;
-import com.milaboratory.oncomigec.core.io.misc.UmiHistogram;
 import com.milaboratory.oncomigec.model.classifier.BaseVariantClassifier;
 import com.milaboratory.oncomigec.model.classifier.VariantClassifier;
 import org.apache.commons.cli.*;
 import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
@@ -227,7 +225,7 @@ public final class MigecCli {
         File outputFolder = null;
         double dumpFreq = -1;
 
-        try {
+        //try {
             // parse the command line arguments
             CommandLine commandLine = parser.parse(options, args);
 
@@ -329,7 +327,7 @@ public final class MigecCli {
             );
 
             // --- test mode
-            if (commandLine.hasOption(OPT_TEST_SHORT)) {
+            /*if (commandLine.hasOption(OPT_TEST_SHORT)) {
                 if (!doCheckout)
                     throw new ParseException("Barcodes should be provided for testing mode");
 
@@ -370,10 +368,10 @@ public final class MigecCli {
                         "% barcodes extracted");
 
                 System.exit(0);
-            }
+            }*/
 
             // --- exome mode
-            if (commandLine.hasOption(OPT_EXOME_SHORT)) {
+            /*if (commandLine.hasOption(OPT_EXOME_SHORT)) {
                 print2("Preprocessing data");
                 if (!doCheckout) {
                     if (paired)
@@ -429,14 +427,14 @@ public final class MigecCli {
 
         if (variantClassifier != null) {
             // user-defined classifier
-            pipeline.setVariantClassifier(variantClassifier);
+            //pipeline.setVariantClassifier(variantClassifier);
         }
 
         runSecondStage(pipeline, outputFolder);
 
-        print2("Finished");
+        print2("Finished");*/
     }
-
+/*
     private static void checkPreprocess(MigecPipeline pipeline, File outputFolder) throws IOException {
         // Check molecule count & overseq
         writeStringToFile(new File(outputFolder.getAbsolutePath() + "/_checkout.txt"),
@@ -508,5 +506,5 @@ public final class MigecCli {
             e.printStackTrace();
             System.exit(-1);
         }
-    }
+    }*/
 }

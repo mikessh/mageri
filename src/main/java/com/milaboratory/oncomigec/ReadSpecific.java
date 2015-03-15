@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Last modified on 12.3.2015 by mikesh
+ * Last modified on 11.3.2015 by mikesh
  */
 
-package com.milaboratory.oncomigec.pipeline;
+package com.milaboratory.oncomigec;
 
-public class MigecPipelineIO {
+public interface ReadSpecific {
+    public boolean isPairedEnd();
 }

@@ -28,6 +28,7 @@ import com.milaboratory.oncomigec.core.io.misc.MigReaderParameters;
 import com.milaboratory.oncomigec.core.io.misc.ReadInfo;
 import com.milaboratory.oncomigec.preproc.demultiplex.barcode.BarcodeSearcherResult;
 import com.milaboratory.oncomigec.preproc.demultiplex.entity.PCheckoutResult;
+import com.milaboratory.oncomigec.preproc.demultiplex.processor.CheckoutProcessor;
 import com.milaboratory.oncomigec.preproc.demultiplex.processor.PAdapterExtractor;
 import com.milaboratory.oncomigec.preproc.misc.ReadOverlapper;
 import com.milaboratory.util.CompressionType;
@@ -43,7 +44,7 @@ import java.util.Map;
 public final class PMigReader extends MigReader<PMig> {
     private final ReadOverlapper readOverlapper = new ReadOverlapper(true);
 
-    public PMigReader(PFastqReader reader, PAdapterExtractor checkoutProcessor, MigReaderParameters migReaderParameters)
+    public PMigReader(PFastqReader reader, CheckoutProcessor checkoutProcessor, MigReaderParameters migReaderParameters)
             throws IOException, InterruptedException {
         super(migReaderParameters, checkoutProcessor);
 
@@ -51,25 +52,25 @@ public final class PMigReader extends MigReader<PMig> {
     }
 
     public PMigReader(File file1, File file2,
-                      PAdapterExtractor checkoutProcessor) throws IOException, InterruptedException {
+                      CheckoutProcessor checkoutProcessor) throws IOException, InterruptedException {
         this(file1, file2, checkoutProcessor, MigReaderParameters.DEFAULT);
     }
 
     public PMigReader(File file1, File file2,
-                      PAdapterExtractor checkoutProcessor, MigReaderParameters migReaderParameters)
+                      CheckoutProcessor checkoutProcessor, MigReaderParameters migReaderParameters)
             throws IOException, InterruptedException {
         this(new PFastqReader(file1, file2, QualityFormat.Phred33), checkoutProcessor, migReaderParameters);
     }
 
-    PMigReader(InputStream inputStream1, InputStream inputStream2,
-               PAdapterExtractor checkoutProcessor, MigReaderParameters migReaderParameters)
+    public PMigReader(InputStream inputStream1, InputStream inputStream2,
+                      CheckoutProcessor checkoutProcessor, MigReaderParameters migReaderParameters)
             throws IOException, InterruptedException {
         this(new PFastqReader(inputStream1, inputStream2, QualityFormat.Phred33, CompressionType.None, null, false, false),
                 checkoutProcessor, migReaderParameters);
     }
 
-    PMigReader(InputStream inputStream1, InputStream inputStream2,
-               PAdapterExtractor checkoutProcessor)
+    public PMigReader(InputStream inputStream1, InputStream inputStream2,
+                      CheckoutProcessor checkoutProcessor)
             throws IOException, InterruptedException {
         this(inputStream1, inputStream2, checkoutProcessor, MigReaderParameters.DEFAULT);
     }

@@ -32,6 +32,10 @@ public class SPositionalExtractor extends CheckoutProcessor<SSequencingRead, SCh
         this.masterBarcode = masterBarcode;
     }
 
+    public SPositionalExtractor(String sampleName, String mask) {
+        this(sampleName, new SlidingBarcodeSearcher(mask));
+    }
+
     @Override
     public SCheckoutResult checkoutImpl(SSequencingRead sequencingRead) {
         BarcodeSearcherResult result = masterBarcode.search(sequencingRead.getData());

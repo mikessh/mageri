@@ -19,11 +19,32 @@
 package com.milaboratory.oncomigec.pipeline.input;
 
 import com.milaboratory.oncomigec.preproc.demultiplex.processor.CheckoutProcessor;
+import com.milaboratory.oncomigec.preproc.demultiplex.processor.HeaderExtractor;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public interface CheckoutRule {
-    public CheckoutProcessor getProcessor();
-    public List<String> getSampleNames();
-    public boolean hasSubMultiplexing();
+public final class PreprocessedRule implements CheckoutRule {
+    private final String sampleName;
+
+    public PreprocessedRule(String sampleName) {
+        this.sampleName = sampleName;
+    }
+
+    @Override
+    public CheckoutProcessor getProcessor() {
+        return new HeaderExtractor(sampleName);
+    }
+
+    @Override
+    public List<String> getSampleNames() {
+        List<String> sampleNames = new ArrayList<>();
+        sampleNames.add(sampleName);
+        return sampleNames;
+    }
+
+    @Override
+    public boolean hasSubMultiplexing() {
+        return false;
+    }
 }

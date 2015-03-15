@@ -13,29 +13,57 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Last modified on 12.3.2015 by mikesh
+ * Last modified on 16.3.2015 by mikesh
  */
 
 package com.milaboratory.oncomigec.pipeline.input;
 
-import java.io.Serializable;
+import com.milaboratory.oncomigec.preproc.demultiplex.config.BarcodeListParser;
+import com.milaboratory.oncomigec.preproc.demultiplex.entity.DemultiplexParameters;
+import com.milaboratory.oncomigec.preproc.demultiplex.processor.CheckoutProcessor;
+import com.sun.istack.internal.NotNull;
+import org.apache.commons.io.FileUtils;
 
-public class SubMultiplexRule extends UmiRule implements Serializable {
-    private final String multiplexId;
-    private final String multiplexBarcode;
+import java.io.File;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 
-    public SubMultiplexRule(UmiLocation umiLocation, String umiString,
-                            String multiplexId, String multiplexBarcode) {
-        super(umiLocation, umiString);
-        this.multiplexId = multiplexId;
-        this.multiplexBarcode = multiplexBarcode;
+public final class SubMultiplexRule implements CheckoutRule {
+    private final List<String> barcodes;
+    private final boolean paired;
+    private DemultiplexParameters demultiplexParameters = DemultiplexParameters.DEFAULT;
+
+    public SubMultiplexRule(@NotNull String barcodesFileName, boolean paired) throws IOException {
+        this.barcodes = FileUtils.readLines(new File(barcodesFileName));
+        this.paired = paired;
     }
 
-    public String getMultiplexId() {
-        return multiplexId;
+    @Override
+    public CheckoutProcessor getProcessor() {
+        return paired ? BarcodeListParser.generatePCheckoutProcessor(barcodes, demultiplexParameters) :
+                BarcodeListParser.generateSCheckoutProcessor(barcodes, demultiplexParameters);
     }
 
-    public String getMultiplexBarcode() {
-        return multiplexBarcode;
+    public DemultiplexParameters getDemultiplexParameters() {
+        return demultiplexParameters;
+    }
+
+    public void setDemultiplexParameters(DemultiplexParameters demultiplexParameters) {
+        this.demultiplexParameters = demultiplexParameters;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<String> getSampleNames() {
+        // parse list every time
+        // but who knows, maybe demultiplex parameters will tell
+        // to skip some samples in future imp
+        return Collections.unmodifiableList(getProcessor().getSampleNames());
+    }
+
+    @Override
+    public boolean hasSubMultiplexing() {
+        return true;
     }
 }

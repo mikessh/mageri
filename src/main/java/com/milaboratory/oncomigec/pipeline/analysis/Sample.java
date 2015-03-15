@@ -18,17 +18,17 @@
 
 package com.milaboratory.oncomigec.pipeline.analysis;
 
-import com.milaboratory.oncomigec.pipeline.input.SubMultiplexRule;
 import com.sun.istack.internal.NotNull;
+import com.sun.istack.internal.Nullable;
 
 import java.io.Serializable;
 
 public class Sample implements Comparable<Sample>, Serializable {
     private final SampleGroup parent;
-    private final SubMultiplexRule subMultiplexRule;
+    private final String name;
 
-    Sample(SubMultiplexRule subMultiplexRule, @NotNull SampleGroup parent) {
-        this.subMultiplexRule = subMultiplexRule;
+    Sample(@Nullable String name, @NotNull SampleGroup parent) {
+        this.name = name;
         this.parent = parent;
     }
 
@@ -37,15 +37,11 @@ public class Sample implements Comparable<Sample>, Serializable {
     }
 
     public String getName() {
-        return subMultiplexRule != null ? subMultiplexRule.getMultiplexId() : parent.getName();
+        return name != null ? name : parent.getName();
     }
 
     public String getFullName() {
-        return parent.getFullName() + (subMultiplexRule != null ? ("." + subMultiplexRule.getMultiplexId()) : "");
-    }
-
-    SubMultiplexRule getSubMultiplexRule() {
-        return subMultiplexRule;
+        return parent.getFullName() + (name != null ? ("." + name) : "");
     }
 
     @Override

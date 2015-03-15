@@ -8,7 +8,7 @@ import cc.redberry.pipe.util.CountLimitingOutputPort;
 import cc.redberry.pipe.util.CountingOutputPort;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.core.sequencing.read.SequencingRead;
-import com.milaboratory.oncomigec.core.ReadSpecific;
+import com.milaboratory.oncomigec.ReadSpecific;
 import com.milaboratory.oncomigec.core.io.entity.Mig;
 import com.milaboratory.oncomigec.core.io.misc.MigReaderParameters;
 import com.milaboratory.oncomigec.core.io.misc.ReadInfo;
@@ -22,11 +22,9 @@ import com.milaboratory.oncomigec.util.ProcessorResultWrapper;
 
 import java.util.*;
 
-public abstract class MigReader<MigType extends Mig> implements OutputPort<MigType>, ReadSpecific {
+public abstract class MigReader<MigType extends Mig> implements ReadSpecific {
     private static final boolean ENABLE_BUFFERING = false;
 
-    protected int sizeThreshold;
-    protected String currentSample;
     protected double minMismatchRatio = -1;
 
     protected final MigReaderParameters migReaderParameters;
@@ -44,7 +42,6 @@ public abstract class MigReader<MigType extends Mig> implements OutputPort<MigTy
         this.migReaderParameters = migReaderParameters;
         this.checkoutProcessor = checkoutProcessor;
         this.sampleNames = checkoutProcessor.getSampleNames();
-        currentSample = sampleNames.get(0);
         this.umiIndexer = new UmiIndexer(checkoutProcessor, migReaderParameters.getUmiQualThreshold());
     }
 
@@ -52,7 +49,6 @@ public abstract class MigReader<MigType extends Mig> implements OutputPort<MigTy
         this.migReaderParameters = migReaderParameters;
         this.sampleNames = new ArrayList<>();
         sampleNames.add(sampleName);
-        currentSample = sampleName;
         this.checkoutProcessor = new HeaderExtractor(sampleName);
         this.umiIndexer = new UmiIndexer(checkoutProcessor, migReaderParameters.getUmiQualThreshold());
     }
@@ -144,10 +140,6 @@ public abstract class MigReader<MigType extends Mig> implements OutputPort<MigTy
                 !umiHistogramBySample.get(sampleName).isMismatch(umi, minMismatchRatio);
     }
 
-    public MigType take() {
-        return take(currentSample, sizeThreshold);
-    }
-
     protected abstract MigType take(String sampleName, int sizeThreshold);
 
     public List<String> getSampleNames() {
@@ -162,27 +154,11 @@ public abstract class MigReader<MigType extends Mig> implements OutputPort<MigTy
         return checkoutProcessor;
     }
 
-    public String getCurrentSample() {
-        return currentSample;
-    }
-
-    public int getSizeThreshold() {
-        return sizeThreshold;
-    }
-
-    public void setSizeThreshold(int sizeThreshold) {
-        this.sizeThreshold = sizeThreshold;
-    }
-
     public double getMinMismatchRatio() {
         return minMismatchRatio;
     }
 
     public void setMinMismatchRatio(double minMismatchRatio) {
         this.minMismatchRatio = minMismatchRatio;
-    }
-
-    public void setCurrentSample(String currentSample) {
-        this.currentSample = currentSample;
     }
 }

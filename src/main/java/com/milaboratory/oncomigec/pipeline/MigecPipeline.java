@@ -4,7 +4,7 @@ import cc.redberry.pipe.OutputPort;
 import cc.redberry.pipe.blocks.Merger;
 import cc.redberry.pipe.blocks.ParallelProcessor;
 import cc.redberry.pipe.util.CountingOutputPort;
-import com.milaboratory.oncomigec.core.ReadSpecific;
+import com.milaboratory.oncomigec.ReadSpecific;
 import com.milaboratory.oncomigec.core.genomic.Reference;
 import com.milaboratory.oncomigec.core.assemble.entity.Consensus;
 import com.milaboratory.oncomigec.core.assemble.misc.AssemblerFactory;
@@ -32,8 +32,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-public class MigecPipeline implements ReadSpecific {
-    private static final boolean ENABLE_BUFFERING = true, VERBOSE = true;
+public class MigecPipeline {//implements ReadSpecific {
+   /* private static final boolean ENABLE_BUFFERING = true, VERBOSE = true;
     private static final int THREADS = Runtime.getRuntime().availableProcessors();   // todo: as parameter
     protected final boolean paired;
     protected final MigReader reader;
@@ -250,5 +250,5 @@ public class MigecPipeline implements ReadSpecific {
     @Override
     public boolean isPairedEnd() {
         return paired;
-    }
+    }*/
 }

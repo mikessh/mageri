@@ -17,7 +17,7 @@ package com.milaboratory.oncomigec.core.assemble.processor;
 
 import cc.redberry.pipe.Processor;
 import com.milaboratory.oncomigec.core.PipelineBlock;
-import com.milaboratory.oncomigec.core.ReadSpecific;
+import com.milaboratory.oncomigec.ReadSpecific;
 import com.milaboratory.oncomigec.core.assemble.entity.Consensus;
 import com.milaboratory.oncomigec.core.io.entity.Mig;
 import com.milaboratory.oncomigec.util.ProcessorResultWrapper;

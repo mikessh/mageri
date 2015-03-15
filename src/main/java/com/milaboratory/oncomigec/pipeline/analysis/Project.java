@@ -20,7 +20,6 @@ package com.milaboratory.oncomigec.pipeline.analysis;
 
 import com.milaboratory.oncomigec.pipeline.input.Input;
 import com.milaboratory.oncomigec.pipeline.input.InputChunk;
-import com.milaboratory.oncomigec.pipeline.input.SubMultiplexRule;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -38,9 +37,9 @@ public class Project implements Serializable {
 
         for (InputChunk inputChunk : input.getInputChunks()) {
             SampleGroup group = new SampleGroup(inputChunk, project);
-            if (inputChunk.hasSubMultiplexing()) {
-                for (SubMultiplexRule subMultiplexRule : inputChunk.getSubMultiplexRules()) {
-                    Sample sample = new Sample(subMultiplexRule, group);
+            if (inputChunk.getCheckoutRule().hasSubMultiplexing()) {
+                for (String sampleName : inputChunk.getCheckoutRule().getSampleNames()) {
+                    Sample sample = new Sample(sampleName, group);
                     project.samples.add(sample);
                 }
             } else {
@@ -66,6 +65,6 @@ public class Project implements Serializable {
     }
 
     public List<SampleGroup> getSampleGroups() {
-        return sampleGroups;
+        return Collections.unmodifiableList(sampleGroups);
     }
 }

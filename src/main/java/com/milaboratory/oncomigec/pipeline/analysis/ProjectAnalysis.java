@@ -26,7 +26,7 @@ import com.milaboratory.oncomigec.core.consalign.misc.ConsensusAlignerFactory;
 import com.milaboratory.oncomigec.core.consalign.misc.PConsensusAlignerFactory;
 import com.milaboratory.oncomigec.core.consalign.misc.SConsensusAlignerFactory;
 import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
-import com.milaboratory.oncomigec.core.io.readers.MigReader;
+import com.milaboratory.oncomigec.core.io.readers.MigOutputPort;
 import com.milaboratory.oncomigec.pipeline.Presets;
 import com.milaboratory.oncomigec.pipeline.RuntimeParameters;
 import com.milaboratory.oncomigec.pipeline.input.Input;
@@ -68,15 +68,17 @@ public class ProjectAnalysis {
 
     public void run() throws Exception {
         for (SampleGroup sampleGroup : project.getSampleGroups()) {
-            MigReaderFactory migReaderFactory = new MigReaderFactory(sampleGroup);
+            Preprocessor preprocessor = new Preprocessor(presets, sampleGroup);
             for (Sample sample : sampleGroup.getSamples()) {
-                MigReader reader = migReaderFactory.create(sample);
+                MigOutputPort reader = preprocessor.create(sample);
 
-                SampleAnalysis sampleAnalysis = reader.isPairedEnd() ? new SampleAnalysis(this, sample,
+                SampleAnalysis sampleAnalysis = reader.isPairedEnd() ? new SampleAnalysis(
+                        this, sample, preprocessor.getUmiHistogram(sample),
                         reader,
                         pAssemblerFactory.create(),
                         pConsensusAlignerFactory.create()
-                ) : new SampleAnalysis(this, sample,
+                ) : new SampleAnalysis(
+                        this, sample, preprocessor.getUmiHistogram(sample),
                         reader,
                         sAssemblerFactory.create(),
                         sConsensusAlignerFactory.create()
