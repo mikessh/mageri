@@ -19,6 +19,8 @@
 package com.milaboratory.oncomigec.preproc.demultiplex.barcode;
 
 public class BarcodeUtil {
+    public static final char UMI_MARK = 'N', PROTECTIVE_N = 'n';
+
     public static char complement(char c) {
         switch (c) {
             case 'A':
@@ -153,7 +155,7 @@ public class BarcodeUtil {
             case 'N':
                 return true;
             default:
-                throw new IllegalArgumentException("Illegar nucleotide character");
+                throw new IllegalArgumentException("Illegar nucleotide character " + base);
         }
     }
 }

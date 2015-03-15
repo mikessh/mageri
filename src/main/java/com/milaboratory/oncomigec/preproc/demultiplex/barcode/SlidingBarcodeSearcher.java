@@ -23,30 +23,49 @@ import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.core.sequence.quality.SequenceQualityPhred;
 
 public class SlidingBarcodeSearcher implements BarcodeSearcher {
-    protected final int maxOffset;
+    protected final int minOffset, umiPositionsCount;
     protected final boolean[] umiPositions;
-    protected final String mask;
+    protected final String _mask, mask;
     protected final int matchPositionsCount;
     protected final double maxMismatchRatio;
 
-    public SlidingBarcodeSearcher(int maxOffset, String mask) {
-        this(maxOffset, mask, 0.1);
+    public SlidingBarcodeSearcher(String mask) {
+        this(mask, 0.1);
     }
 
-    public SlidingBarcodeSearcher(int maxOffset, String mask, double maxMismatchRatio) {
-        this.maxOffset = maxOffset;
+    public SlidingBarcodeSearcher(String mask, double maxMismatchRatio) {
         this.umiPositions = new boolean[mask.length()];
-        int matchPositionsCount = 0;
+        int umiPositionsCount = 0, matchPositionsCount = 0, minOffset = 0;
         for (int i = 0; i < mask.length(); i++) {
-            boolean hasN = mask.charAt(i) == 'N';
+            boolean hasN = mask.charAt(i) == BarcodeUtil.UMI_MARK;
             if (hasN) {
                 umiPositions[i] = true;
+                umiPositionsCount++;
+            } else if (mask.charAt(i) == BarcodeUtil.PROTECTIVE_N) {
+                // Protective n's
+                // when added to the beginning of barcode, several offsets will be scanned
+                // could also be added to regulate read shifting
+                // E.g.  nnnNNNNtct
+                //
+                // tATGCtct
+                // nnnNNNNtct - bad
+                // nnNNNNtct  - bad
+                // nNNNNtct   - good
+                // NNNNtct    - bad
+                minOffset++;
             } else {
+                if (Character.isUpperCase(mask.charAt(i))) {
+                    throw new RuntimeException("The only uppercase character allowed for " +
+                            "sliding barcode searcher mask is " + BarcodeUtil.UMI_MARK);
+                }
                 matchPositionsCount++;
             }
         }
+        this.minOffset = minOffset;
+        this.umiPositionsCount = umiPositionsCount;
         this.maxMismatchRatio = maxMismatchRatio;
         this.matchPositionsCount = matchPositionsCount;
+        this._mask = mask;
         this.mask = mask.toUpperCase();
     }
 
@@ -54,12 +73,12 @@ public class SlidingBarcodeSearcher implements BarcodeSearcher {
     public BarcodeSearcherResult search(NucleotideSQPair read) {
         int goodOffset = -1;
 
-        for (int i = 0; i <= maxOffset; i++) {
+        for (int i = 0; i <= minOffset; i++) {
             int mismatches = 0;
             boolean match = true;
-            for (int j = 0; j < mask.length(); j++) {
-                if (!BarcodeUtil.compareRedundant(mask.charAt(j),
-                        read.getSequence().charFromCodeAt(i + j)) &&
+            for (int j = 0; j < mask.length() - i; j++) {
+                if (!BarcodeUtil.compareRedundant(mask.charAt(i + j),
+                        read.getSequence().charFromCodeAt(j)) &&
                         (++mismatches / (double) matchPositionsCount) >= maxMismatchRatio) {
                     match = false;
                     break;
@@ -72,13 +91,15 @@ public class SlidingBarcodeSearcher implements BarcodeSearcher {
         }
 
         NucleotideSQPair umiSQPair = null;
+        int i = 0;
         if (goodOffset >= 0) {
-            char[] seq = new char[mask.length()];
-            byte[] qual = new byte[mask.length()];
-            for (int j = 0; j < mask.length(); j++) {
-                if (umiPositions[j]) {
-                    seq[j] = read.getSequence().charFromCodeAt(goodOffset + j);
-                    qual[j] = read.getQuality().value(goodOffset + j);
+            char[] seq = new char[umiPositionsCount];
+            byte[] qual = new byte[umiPositionsCount];
+            for (int j = 0; j < mask.length() - goodOffset; j++) {
+                if (umiPositions[goodOffset + j]) {
+                    seq[i] = read.getSequence().charFromCodeAt(j);
+                    qual[i] = read.getQuality().value(j);
+                    i++;
                 }
             }
             umiSQPair = new NucleotideSQPair(new NucleotideSequence(seq),
@@ -89,5 +110,43 @@ public class SlidingBarcodeSearcher implements BarcodeSearcher {
             return null;
         } else
             return new BarcodeSearcherResult(umiSQPair, goodOffset);
+    }
+
+    public SlidingBarcodeSearcher getForSlave() {
+        return new SlidingBarcodeSearcerR(this);
+    }
+
+    private static class SlidingBarcodeSearcerR extends SlidingBarcodeSearcher {
+        public SlidingBarcodeSearcerR(SlidingBarcodeSearcher slidingBarcodeSearcher) {
+            super(convertMask(slidingBarcodeSearcher._mask),
+                    slidingBarcodeSearcher.maxMismatchRatio);
+        }
+
+        private static String convertMask(String mask) {
+            // To write the code concise (not repeat the extraction procedure from SPositionalProcessor)
+            // we'll search in the slave mate as is (it is the RC in respect to master mate)
+            // we are going to search for RC pattern and then transform the coordinates & RC UMI sequence
+            char[] maskRC = new char[mask.length()];
+            for (int i = 0; i < mask.length(); i++) {
+                maskRC[mask.length() - i - 1] = BarcodeUtil.complement(mask.charAt(i));
+            }
+
+            return new String(maskRC);
+        }
+
+        @Override
+        public BarcodeSearcherResult search(NucleotideSQPair read) {
+            BarcodeSearcherResult result = super.search(read);
+
+            if (result == null)
+                return null;
+
+            return new BarcodeSearcherResult(
+                    result.getUmi().getReverseComplement(), // we have searched in RC
+                    result.getUmiWorstQual(),
+                    0, 0, 0, // unused
+                    read.size() - result.getTo() + 1, // transform the coordinates, respect inclusive/exclusive
+                    read.size() - result.getFrom() - 1);
+        }
     }
 }

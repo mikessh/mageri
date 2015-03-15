@@ -15,7 +15,9 @@
  */
 package com.milaboratory.oncomigec.preproc.demultiplex.config;
 
+import com.milaboratory.oncomigec.preproc.demultiplex.barcode.BarcodeSearcher;
 import com.milaboratory.oncomigec.preproc.demultiplex.barcode.SeedAndExtendBarcodeSearcher;
+import com.milaboratory.oncomigec.preproc.demultiplex.barcode.SlidingBarcodeSearcher;
 import com.milaboratory.oncomigec.preproc.demultiplex.entity.DemultiplexParameters;
 import com.milaboratory.oncomigec.preproc.demultiplex.processor.PAdapterExtractor;
 import com.milaboratory.oncomigec.preproc.demultiplex.processor.SAdapterExtractor;
@@ -27,30 +29,33 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 public class BarcodeListParser {
-    private static Pattern bcRgx = Pattern.compile("^[ATGCatgcNnRrYyMmSsWwKkVvDdHhBb]+$");
+    public static final String COMMENT = "#",
+            EMPTY_BARCODE = ".", MASTER_FIRST_TRUE = "1", MASTER_FIRST_FALSE = "0";
+    public static final Pattern ALLOWED_CHARACTERS = Pattern.compile("^[ATGCatgcNnRrYyMmSsWwKkVvDdHhBb]+$"),
+            NO_SEED_SLAVE = Pattern.compile("^[atgcNnrymswkvdhb]+$");
 
     public static SAdapterExtractor generateSCheckoutProcessor(List<String> lines) throws Exception {
         return generateSCheckoutProcessor(lines, DemultiplexParameters.DEFAULT);
     }
 
     public static SAdapterExtractor generateSCheckoutProcessor(List<String> lines,
-                                                                DemultiplexParameters demultiplexParameters) {
+                                                               DemultiplexParameters demultiplexParameters) {
         return generateSCheckoutProcessor(lines,
                 demultiplexParameters.getMaxTruncations(), demultiplexParameters.getMaxGoodQualMMRatio(),
                 demultiplexParameters.getMaxLowQualityMMRatio(), demultiplexParameters.getLowQualityThreshold());
     }
 
     public static SAdapterExtractor generateSCheckoutProcessor(List<String> lines,
-                                                                int maxTruncations,
-                                                                double maxGoodMMRatio,
-                                                                double maxLowQualMMRatio,
-                                                                byte lowQualityThreshold) {
+                                                               int maxTruncations,
+                                                               double maxGoodMMRatio,
+                                                               double maxLowQualMMRatio,
+                                                               byte lowQualityThreshold) {
         List<SeedAndExtendBarcodeSearcher> barcodeSearchers = new ArrayList<>();
         List<String> sampleNames = new ArrayList<>();
         Set<String> usedBarcodes = new HashSet<>();
 
         for (String line : lines) {
-            if (!line.startsWith("#")) {
+            if (!line.startsWith(COMMENT)) {
                 String[] splitLine = line.split("\t");
                 if (splitLine.length < 3)
                     throw new RuntimeException("Bad barcode line:\t" + line);
@@ -62,7 +67,7 @@ public class BarcodeListParser {
                     usedBarcodes.add(barcode);
                 if (barcode.equals("-"))
                     throw new RuntimeException("Blank master barcode not allowed:\t" + line);
-                if (!bcRgx.matcher(barcode).matches())
+                if (!ALLOWED_CHARACTERS.matcher(barcode).matches())
                     throw new RuntimeException("Bad barcode character set:\t" + line);
 
                 SeedAndExtendBarcodeSearcher bs = new SeedAndExtendBarcodeSearcher(barcode, maxTruncations,
@@ -83,26 +88,26 @@ public class BarcodeListParser {
     }
 
     public static PAdapterExtractor generatePCheckoutProcessor(List<String> lines,
-                                                                DemultiplexParameters demultiplexParameters) {
+                                                               DemultiplexParameters demultiplexParameters) {
         return generatePCheckoutProcessor(lines, demultiplexParameters.orientedReads(),
                 demultiplexParameters.getMaxTruncations(), demultiplexParameters.getMaxGoodQualMMRatio(),
                 demultiplexParameters.getMaxLowQualityMMRatio(), demultiplexParameters.getLowQualityThreshold());
     }
 
     public static PAdapterExtractor generatePCheckoutProcessor(List<String> lines,
-                                                                boolean oriented,
-                                                                int maxTruncations,
-                                                                double maxGoodMMRatio,
-                                                                double maxLowQualMMRatio,
-                                                                byte lowQualityThreshold) {
-        List<SeedAndExtendBarcodeSearcher> masterBarcodeSearchers = new ArrayList<>(),
-                slaveBarcodeSearchers = new ArrayList<>();
+                                                               boolean oriented,
+                                                               int maxTruncations,
+                                                               double maxGoodMMRatio,
+                                                               double maxLowQualMMRatio,
+                                                               byte lowQualityThreshold) {
+        List<SeedAndExtendBarcodeSearcher> masterBarcodeSearchers = new ArrayList<>();
+        List<BarcodeSearcher> slaveBarcodeSearchers = new ArrayList<>();
         List<Boolean> masterFirstList = new ArrayList<>();
         List<String> sampleNames = new ArrayList<>();
         Set<String> usedBarcodes = new HashSet<>(), usedMasterBarcodes = new HashSet<>();
 
         for (String line : lines) {
-            if (!line.startsWith("#")) {
+            if (!line.startsWith(COMMENT)) {
                 String[] splitLine = line.split("\t");
 
                 if (splitLine.length < 4)
@@ -110,8 +115,9 @@ public class BarcodeListParser {
 
                 String sampleName = splitLine[0];
 
-                if (!(splitLine[1].equals("0") || splitLine[1].equals("1")))
-                    throw new RuntimeException("Values in master first column should be either 0 or 1:\t" + line);
+                if (!(splitLine[1].equals(MASTER_FIRST_FALSE) || splitLine[1].equals(MASTER_FIRST_TRUE)))
+                    throw new RuntimeException("Values in master first column should be either " + MASTER_FIRST_FALSE +
+                            " or " + MASTER_FIRST_TRUE + ":\t" + line);
 
                 boolean masterFirst = Integer.parseInt(splitLine[1]) > 0;
                 masterFirstList.add(masterFirst);
@@ -123,24 +129,33 @@ public class BarcodeListParser {
                         // already has same master without slave specified
                         usedBarcodes.contains(noSlaveBarcode) ||
                         // slave not specified here, but master barcode already used
-                        (slaveBarcode.equals("-") && usedMasterBarcodes.contains(masterBarcode)))
+                        (slaveBarcode.equals(EMPTY_BARCODE) && usedMasterBarcodes.contains(masterBarcode)))
                     throw new RuntimeException("Duplicate barcode:\t" + line);
                 else {
                     usedBarcodes.add(barcode);
                     usedMasterBarcodes.add(masterBarcode);
                 }
 
-                if (masterBarcode.equals("-"))
+                if (masterBarcode.equals(EMPTY_BARCODE))
                     throw new RuntimeException("Blank master barcode not allowed:\t" + line);
 
-                if (!bcRgx.matcher(masterBarcode).matches() ||
-                        (!slaveBarcode.equals("-") && !bcRgx.matcher(slaveBarcode).matches()))
-                    throw new RuntimeException("Bad barcode character set:\t" + line);
+                if (!ALLOWED_CHARACTERS.matcher(masterBarcode).matches())
+                    throw new RuntimeException("Bad master barcode character set:\t" + line);
+
+                if (!slaveBarcode.equals(EMPTY_BARCODE) && !ALLOWED_CHARACTERS.matcher(slaveBarcode).matches())
+                    throw new RuntimeException("Bad slave barcode character set:\t" + line);
 
                 SeedAndExtendBarcodeSearcher masterBs = new SeedAndExtendBarcodeSearcher(masterBarcode, maxTruncations,
-                        maxGoodMMRatio, maxLowQualMMRatio, lowQualityThreshold),
-                        slaveBs = slaveBarcode.equals("-") ? null : new SeedAndExtendBarcodeSearcher(slaveBarcode, maxTruncations,
-                                maxGoodMMRatio, maxLowQualMMRatio, lowQualityThreshold);
+                        maxGoodMMRatio, maxLowQualMMRatio, lowQualityThreshold);
+
+                BarcodeSearcher slaveBs = slaveBarcode.equals(EMPTY_BARCODE) ? null :
+                        (NO_SEED_SLAVE.matcher(slaveBarcode).matches() ?
+                                // no upper case characters in slave - positional extraction
+                                new SlidingBarcodeSearcher(slaveBarcode) :
+                                // seed-and-extend otherwise
+                                new SeedAndExtendBarcodeSearcher(slaveBarcode, maxTruncations,
+                                        maxGoodMMRatio, maxLowQualMMRatio, lowQualityThreshold)
+                        );
 
                 sampleNames.add(sampleName);
                 masterBarcodeSearchers.add(masterBs);
@@ -154,7 +169,7 @@ public class BarcodeListParser {
 
         return new PAdapterExtractor(sampleNames.toArray(new String[sampleNames.size()]),
                 masterBarcodeSearchers.toArray(new SeedAndExtendBarcodeSearcher[masterBarcodeSearchers.size()]),
-                slaveBarcodeSearchers.toArray(new SeedAndExtendBarcodeSearcher[slaveBarcodeSearchers.size()]),
+                slaveBarcodeSearchers.toArray(new BarcodeSearcher[slaveBarcodeSearchers.size()]),
                 masterFirstArr, oriented);
     }
 }

@@ -85,7 +85,7 @@ public class SeedAndExtendBarcodeSearcher implements BarcodeSearcher {
         for (int i = 0; i < signature.length(); i++) {
             if (Character.isUpperCase(signature.charAt(i))) {
                 seedPositions.add(i);
-                if (signature.charAt(i) == 'N')
+                if (signature.charAt(i) == BarcodeUtil.UMI_MARK)
                     umiPositions.add(i);
             }
         }

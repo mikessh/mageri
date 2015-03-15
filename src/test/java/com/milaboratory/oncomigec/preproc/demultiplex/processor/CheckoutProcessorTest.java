@@ -23,6 +23,8 @@ import com.milaboratory.core.sequencing.read.SSequencingRead;
 import com.milaboratory.oncomigec.preproc.demultiplex.barcode.SlidingBarcodeSearcher;
 import com.milaboratory.oncomigec.preproc.demultiplex.config.BarcodeListParser;
 import com.milaboratory.oncomigec.preproc.demultiplex.entity.DemultiplexParameters;
+import com.milaboratory.oncomigec.preproc.demultiplex.entity.PCheckoutResult;
+import com.milaboratory.oncomigec.util.testing.PercentRange;
 import com.milaboratory.oncomigec.util.testing.TestUtil;
 import com.milaboratory.util.CompressionType;
 import org.junit.Assert;
@@ -43,12 +45,12 @@ public class CheckoutProcessorTest {
     }
 
     private static CheckoutProcessor runOnSampleData1Positional() throws IOException {
-        return runOnSampleData1Positional(0, "NNNNNNNNNNNNNN");
+        return runOnSampleData1Positional("NNNNNNNNNNNNNN");
     }
 
-    private static CheckoutProcessor runOnSampleData1Positional(int maxOffset, String mask) throws IOException {
+    private static CheckoutProcessor runOnSampleData1Positional(String mask) throws IOException {
         SPositionalExtractor processor = new SPositionalExtractor(SAMPLE_NAME,
-                new SlidingBarcodeSearcher(maxOffset, mask));
+                new SlidingBarcodeSearcher(mask));
 
         SFastqReader reader = new SFastqReader(getR1(),
                 CompressionType.None);
@@ -62,26 +64,39 @@ public class CheckoutProcessorTest {
     }
 
     private static CheckoutProcessor runOnSampleData2Positional() throws IOException {
-        return runOnSampleData2Positional(0, "NNNNNNNNNNNNNN", null);
+        return runOnSampleData2Positional("NNNNNNNNNNNNNN", null, null);
     }
 
-    private static CheckoutProcessor runOnSampleData2Positional(int maxOffset,
-                                                                String mask1,
-                                                                String mask2) throws IOException {
+    private static CheckoutProcessor runOnSampleData2Positional(String mask1,
+                                                                String mask2,
+                                                                String seed) throws IOException {
         PPositionalExtractor processor = mask2 == null ? new PPositionalExtractor(SAMPLE_NAME,
-                new SlidingBarcodeSearcher(maxOffset, mask1)) :
+                new SlidingBarcodeSearcher(mask1)) :
                 new PPositionalExtractor(SAMPLE_NAME,
-                        new SlidingBarcodeSearcher(maxOffset, mask1),
-                        new SlidingBarcodeSearcher(maxOffset, mask2));
+                        new SlidingBarcodeSearcher(mask1),
+                        new SlidingBarcodeSearcher(mask2));
 
         PFastqReader reader = new PFastqReader(getR1(), getR2(),
                 QualityFormat.Phred33, CompressionType.None,
                 null, false, false);
 
         PSequencingRead read;
+
+        int nReads = 0, seedFound = 0;
+
         while ((read = reader.take()) != null) {
-            processor.checkout(read);
+            PCheckoutResult checkoutResult = processor.checkout(read);
+            if (checkoutResult != null &&
+                    checkoutResult.slaveFound() &&
+                    seed != null &&
+                    checkoutResult.getSlaveResult().getUmi().toString().equals(seed)) {
+                seedFound++;
+            }
+            nReads++;
         }
+
+        if (mask2 != null && seed != null)
+            PercentRange.createLowerBound("CorrectUMIExtracted", "SlaveSlidingSearcher", 95).assertInRange(seedFound, nReads);
 
         return processor;
     }
@@ -109,8 +124,7 @@ public class CheckoutProcessorTest {
     public void positionalSingleEnd() throws Exception {
         System.out.println("Running performance test for positional Checkout processor (single)");
 
-        CheckoutProcessor processor = runOnSampleData1Positional(3,
-                "NNNNNNNNNNNtNNNNNtNNNNNtgta");
+        CheckoutProcessor processor = runOnSampleData1Positional("nnnnnnNNNNNNNNNNNtNNNNNtNNNNNtgta");
 
         assertProcessor(processor);
     }
@@ -119,9 +133,10 @@ public class CheckoutProcessorTest {
     public void positionalPairedEnd() throws Exception {
         System.out.println("Running performance test for positional Checkout processor (paired-end)");
 
-        CheckoutProcessor processor = runOnSampleData2Positional(3,
-                "NNNNNNNNNNNtNNNNNtNNNNNtgta",
-                "aggactgNNNNNNNaagtc");
+        CheckoutProcessor processor = runOnSampleData2Positional(
+                "nnnnnnNNNNNNNNNNNtNNNNNtNNNNNtgta",
+                "aggactgNNNNNNNaagtcgggnnnnnn",
+                "CTTAAAG");
 
         assertProcessor(processor);
     }

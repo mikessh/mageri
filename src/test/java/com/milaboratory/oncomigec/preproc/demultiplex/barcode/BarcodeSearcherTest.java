@@ -36,6 +36,7 @@ import java.util.Random;
 import java.util.Set;
 
 public class BarcodeSearcherTest {
+    // todo: more sliding barcode searcher tests
     private static Random rnd = new Random(2106803L);
     private static NucleotideMutationModel mm = new GenericNucleotideMutationModel(
             SubstitutionModels.getEmpiricalNucleotideSubstitutionModel(),
@@ -70,7 +71,7 @@ public class BarcodeSearcherTest {
     public void fuzzyTest1() {
         String left = "cagtggtcctcaga", seed = "ATTAC", right = "tactgcgggtagggtgctact",
                 signature = left + seed + right;
-        SeedAndExtendBarcodeSearcher bs = new SeedAndExtendBarcodeSearcher(signature);
+        BarcodeSearcher bs = new SeedAndExtendBarcodeSearcher(signature);
         NucleotideSequence leftRef = new NucleotideSequence(left), seedRef = new NucleotideSequence(seed),
                 rightRef = new NucleotideSequence(right);
         int[] mutations;

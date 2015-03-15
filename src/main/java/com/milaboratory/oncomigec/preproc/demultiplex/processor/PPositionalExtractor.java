@@ -21,7 +21,6 @@ package com.milaboratory.oncomigec.preproc.demultiplex.processor;
 import com.milaboratory.core.sequencing.read.PSequencingRead;
 import com.milaboratory.oncomigec.preproc.demultiplex.barcode.BarcodeSearcher;
 import com.milaboratory.oncomigec.preproc.demultiplex.barcode.BarcodeSearcherResult;
-import com.milaboratory.oncomigec.preproc.demultiplex.barcode.SlidingBarcodeSearcerR;
 import com.milaboratory.oncomigec.preproc.demultiplex.barcode.SlidingBarcodeSearcher;
 import com.milaboratory.oncomigec.preproc.demultiplex.entity.PCheckoutResult;
 import com.sun.istack.internal.NotNull;
@@ -47,7 +46,7 @@ public class PPositionalExtractor extends CheckoutProcessor<PSequencingRead, PCh
         super(new String[]{sampleName}, new BarcodeSearcher[]{masterBarcode});
         this.sampleName = sampleName;
         this.masterBarcode = masterBarcode;
-        this.slaveBarcode = new SlidingBarcodeSearcerR(slaveBarcode);
+        this.slaveBarcode = slaveBarcode.getForSlave();
     }
 
     @Override
