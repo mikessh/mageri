@@ -24,34 +24,44 @@ import com.milaboratory.oncomigec.preproc.demultiplex.barcode.BarcodeSearcher;
 import com.milaboratory.oncomigec.preproc.demultiplex.barcode.BarcodeSearcherResult;
 import com.milaboratory.oncomigec.preproc.demultiplex.barcode.BarcodeUtil;
 import com.milaboratory.oncomigec.preproc.demultiplex.entity.SCheckoutResult;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 public class SPositionalExtractor extends CheckoutProcessor<SSequencingRead, SCheckoutResult> {
     private final String sampleName;
     private final int maxOffset;
     private final boolean[] umiPositions;
     private final String mask;
+    private final int matchPositionsCount;
+    private final double maxMismatchRatio = 0.1;
 
     public SPositionalExtractor(String sampleName, int maxOffset, String mask) {
         super(new String[]{sampleName}, new BarcodeSearcher[1]);
         this.sampleName = sampleName;
         this.maxOffset = maxOffset;
         this.umiPositions = new boolean[mask.length()];
+        int matchPositionsCount = 0;
         for (int i = 0; i < mask.length(); i++) {
-            umiPositions[i] = mask.charAt(i) == 'N';
+            boolean hasN = mask.charAt(i) == 'N';
+            if (hasN) {
+                umiPositions[i] = true;
+            } else {
+                matchPositionsCount++;
+            }
         }
+        this.matchPositionsCount = matchPositionsCount;
         this.mask = mask.toUpperCase();
     }
 
     @Override
     public SCheckoutResult checkoutImpl(SSequencingRead sequencingRead) {
         int goodOffset = -1;
-        
+
         for (int i = 0; i <= maxOffset; i++) {
+            int mismatches = 0;
             boolean match = true;
             for (int j = 0; j < mask.length(); j++) {
                 if (!BarcodeUtil.compareRedundant(mask.charAt(j),
-                        sequencingRead.getData().getSequence().charFromCodeAt(i + j))) {
+                        sequencingRead.getData().getSequence().charFromCodeAt(i + j)) &&
+                        (++mismatches / (double) matchPositionsCount) >= maxMismatchRatio) {
                     match = false;
                     break;
                 }
