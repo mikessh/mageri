@@ -17,8 +17,8 @@ package com.milaboratory.oncomigec.preproc.demultiplex.processor;
 
 import com.milaboratory.core.sequence.NucleotideSQPair;
 import com.milaboratory.core.sequencing.read.PSequencingRead;
-import com.milaboratory.oncomigec.preproc.demultiplex.barcode.BarcodeSearcher;
 import com.milaboratory.oncomigec.preproc.demultiplex.barcode.BarcodeSearcherResult;
+import com.milaboratory.oncomigec.preproc.demultiplex.barcode.SeedAndExtendBarcodeSearcher;
 import com.milaboratory.oncomigec.preproc.demultiplex.entity.PCheckoutResult;
 
 import java.util.List;
@@ -28,18 +28,18 @@ import java.util.concurrent.atomic.AtomicLongArray;
 public final class PAdapterExtractor extends CheckoutProcessor<PSequencingRead, PCheckoutResult> {
     private final AtomicLongArray slaveCounters;
     private final AtomicLong slaveNotFoundCounter, masterFirstCounter;
-    private final BarcodeSearcher[] slaveBarcodes;
+    private final SeedAndExtendBarcodeSearcher[] slaveBarcodes;
     private final boolean[] masterFirst;
     private final boolean orientedReads;
 
     public PAdapterExtractor(String[] sampleNames,
-                             BarcodeSearcher[] masterBarcodes, BarcodeSearcher[] slaveBarcodes,
+                             SeedAndExtendBarcodeSearcher[] masterBarcodes, SeedAndExtendBarcodeSearcher[] slaveBarcodes,
                              boolean[] masterFirst) {
         this(sampleNames, masterBarcodes, slaveBarcodes, masterFirst, true);
     }
 
     public PAdapterExtractor(String[] sampleNames,
-                             BarcodeSearcher[] masterBarcodes, BarcodeSearcher[] slaveBarcodes,
+                             SeedAndExtendBarcodeSearcher[] masterBarcodes, SeedAndExtendBarcodeSearcher[] slaveBarcodes,
                              boolean[] masterFirst, boolean orientedReads) {
         super(sampleNames, masterBarcodes);
         if (masterBarcodes.length != slaveBarcodes.length)

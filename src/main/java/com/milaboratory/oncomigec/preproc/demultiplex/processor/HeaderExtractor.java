@@ -12,13 +12,12 @@ public final class HeaderExtractor extends CheckoutProcessor<SequencingRead, Che
     private final String sampleName;
 
     public HeaderExtractor(String sampleName) {
-        super(new String[]{sampleName}, new BarcodeSearcher[1]);
+        super(new String[]{sampleName}, new BarcodeSearcher[]{null});
         this.sampleName = sampleName;
     }
 
     @Override
     public CheckoutResult checkoutImpl(SequencingRead sequencingRead) {
-
         NucleotideSQPair umiSQPair = Util.extractUmiWithQual(sequencingRead.getDescription(0));
 
         if (umiSQPair == null) {

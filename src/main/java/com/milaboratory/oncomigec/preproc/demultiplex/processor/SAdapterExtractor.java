@@ -16,12 +16,12 @@
 package com.milaboratory.oncomigec.preproc.demultiplex.processor;
 
 import com.milaboratory.core.sequencing.read.SSequencingRead;
-import com.milaboratory.oncomigec.preproc.demultiplex.barcode.BarcodeSearcher;
 import com.milaboratory.oncomigec.preproc.demultiplex.barcode.BarcodeSearcherResult;
+import com.milaboratory.oncomigec.preproc.demultiplex.barcode.SeedAndExtendBarcodeSearcher;
 import com.milaboratory.oncomigec.preproc.demultiplex.entity.SCheckoutResult;
 
 public final class SAdapterExtractor extends CheckoutProcessor<SSequencingRead, SCheckoutResult> {
-    public SAdapterExtractor(String[] sampleNames, BarcodeSearcher[] masterBarcodes) {
+    public SAdapterExtractor(String[] sampleNames, SeedAndExtendBarcodeSearcher[] masterBarcodes) {
         super(sampleNames, masterBarcodes);
     }
 

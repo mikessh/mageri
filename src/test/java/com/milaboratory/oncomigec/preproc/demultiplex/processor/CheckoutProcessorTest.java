@@ -20,6 +20,7 @@ import com.milaboratory.core.sequencing.io.fastq.PFastqReader;
 import com.milaboratory.core.sequencing.io.fastq.SFastqReader;
 import com.milaboratory.core.sequencing.read.PSequencingRead;
 import com.milaboratory.core.sequencing.read.SSequencingRead;
+import com.milaboratory.oncomigec.preproc.demultiplex.barcode.SlidingBarcodeSearcher;
 import com.milaboratory.oncomigec.preproc.demultiplex.config.BarcodeListParser;
 import com.milaboratory.oncomigec.preproc.demultiplex.entity.DemultiplexParameters;
 import com.milaboratory.oncomigec.util.testing.TestUtil;
@@ -40,13 +41,14 @@ public class CheckoutProcessorTest {
         System.out.println("Extraction ratio = " + extractionRatio);
         Assert.assertTrue("Extraction ratio in expected bounds", extractionRatio >= 0.99);
     }
-    
+
     private static CheckoutProcessor runOnSampleData1Positional() throws IOException {
         return runOnSampleData1Positional(0, "NNNNNNNNNNNNNN");
     }
 
     private static CheckoutProcessor runOnSampleData1Positional(int maxOffset, String mask) throws IOException {
-        SPositionalExtractor processor = new SPositionalExtractor(SAMPLE_NAME, maxOffset, mask);
+        SPositionalExtractor processor = new SPositionalExtractor(SAMPLE_NAME,
+                new SlidingBarcodeSearcher(maxOffset, mask));
 
         SFastqReader reader = new SFastqReader(getR1(),
                 CompressionType.None);
@@ -64,7 +66,8 @@ public class CheckoutProcessorTest {
     }
 
     private static CheckoutProcessor runOnSampleData2Positional(int maxOffset, String mask) throws IOException {
-        PPositionalExtractor processor = new PPositionalExtractor(SAMPLE_NAME, maxOffset, mask);
+        PPositionalExtractor processor = new PPositionalExtractor(SAMPLE_NAME,
+                new SlidingBarcodeSearcher(maxOffset, mask));
 
         PFastqReader reader = new PFastqReader(getR1(), getR2(),
                 QualityFormat.Phred33, CompressionType.None,

@@ -15,7 +15,7 @@
  */
 package com.milaboratory.oncomigec.preproc.demultiplex.config;
 
-import com.milaboratory.oncomigec.preproc.demultiplex.barcode.BarcodeSearcher;
+import com.milaboratory.oncomigec.preproc.demultiplex.barcode.SeedAndExtendBarcodeSearcher;
 import com.milaboratory.oncomigec.preproc.demultiplex.entity.DemultiplexParameters;
 import com.milaboratory.oncomigec.preproc.demultiplex.processor.PAdapterExtractor;
 import com.milaboratory.oncomigec.preproc.demultiplex.processor.SAdapterExtractor;
@@ -45,7 +45,7 @@ public class BarcodeListParser {
                                                                 double maxGoodMMRatio,
                                                                 double maxLowQualMMRatio,
                                                                 byte lowQualityThreshold) {
-        List<BarcodeSearcher> barcodeSearchers = new ArrayList<>();
+        List<SeedAndExtendBarcodeSearcher> barcodeSearchers = new ArrayList<>();
         List<String> sampleNames = new ArrayList<>();
         Set<String> usedBarcodes = new HashSet<>();
 
@@ -65,7 +65,7 @@ public class BarcodeListParser {
                 if (!bcRgx.matcher(barcode).matches())
                     throw new RuntimeException("Bad barcode character set:\t" + line);
 
-                BarcodeSearcher bs = new BarcodeSearcher(barcode, maxTruncations,
+                SeedAndExtendBarcodeSearcher bs = new SeedAndExtendBarcodeSearcher(barcode, maxTruncations,
                         maxGoodMMRatio, maxLowQualMMRatio, lowQualityThreshold);
 
                 sampleNames.add(sampleName);
@@ -74,7 +74,7 @@ public class BarcodeListParser {
         }
 
         return new SAdapterExtractor(sampleNames.toArray(new String[sampleNames.size()]),
-                barcodeSearchers.toArray(new BarcodeSearcher[barcodeSearchers.size()]));
+                barcodeSearchers.toArray(new SeedAndExtendBarcodeSearcher[barcodeSearchers.size()]));
     }
 
 
@@ -95,7 +95,7 @@ public class BarcodeListParser {
                                                                 double maxGoodMMRatio,
                                                                 double maxLowQualMMRatio,
                                                                 byte lowQualityThreshold) {
-        List<BarcodeSearcher> masterBarcodeSearchers = new ArrayList<>(),
+        List<SeedAndExtendBarcodeSearcher> masterBarcodeSearchers = new ArrayList<>(),
                 slaveBarcodeSearchers = new ArrayList<>();
         List<Boolean> masterFirstList = new ArrayList<>();
         List<String> sampleNames = new ArrayList<>();
@@ -137,9 +137,9 @@ public class BarcodeListParser {
                         (!slaveBarcode.equals("-") && !bcRgx.matcher(slaveBarcode).matches()))
                     throw new RuntimeException("Bad barcode character set:\t" + line);
 
-                BarcodeSearcher masterBs = new BarcodeSearcher(masterBarcode, maxTruncations,
+                SeedAndExtendBarcodeSearcher masterBs = new SeedAndExtendBarcodeSearcher(masterBarcode, maxTruncations,
                         maxGoodMMRatio, maxLowQualMMRatio, lowQualityThreshold),
-                        slaveBs = slaveBarcode.equals("-") ? null : new BarcodeSearcher(slaveBarcode, maxTruncations,
+                        slaveBs = slaveBarcode.equals("-") ? null : new SeedAndExtendBarcodeSearcher(slaveBarcode, maxTruncations,
                                 maxGoodMMRatio, maxLowQualMMRatio, lowQualityThreshold);
 
                 sampleNames.add(sampleName);
@@ -153,8 +153,8 @@ public class BarcodeListParser {
             masterFirstArr[i] = masterFirstList.get(i);
 
         return new PAdapterExtractor(sampleNames.toArray(new String[sampleNames.size()]),
-                masterBarcodeSearchers.toArray(new BarcodeSearcher[masterBarcodeSearchers.size()]),
-                slaveBarcodeSearchers.toArray(new BarcodeSearcher[slaveBarcodeSearchers.size()]),
+                masterBarcodeSearchers.toArray(new SeedAndExtendBarcodeSearcher[masterBarcodeSearchers.size()]),
+                slaveBarcodeSearchers.toArray(new SeedAndExtendBarcodeSearcher[slaveBarcodeSearchers.size()]),
                 masterFirstArr, oriented);
     }
 }

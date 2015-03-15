@@ -21,77 +21,60 @@ package com.milaboratory.oncomigec.preproc.demultiplex.processor;
 import com.milaboratory.core.sequencing.read.PSequencingRead;
 import com.milaboratory.oncomigec.preproc.demultiplex.barcode.BarcodeSearcher;
 import com.milaboratory.oncomigec.preproc.demultiplex.barcode.BarcodeSearcherResult;
-import com.milaboratory.oncomigec.preproc.demultiplex.barcode.BarcodeUtil;
+import com.milaboratory.oncomigec.preproc.demultiplex.barcode.SlidingBarcodeSearcerR;
+import com.milaboratory.oncomigec.preproc.demultiplex.barcode.SlidingBarcodeSearcher;
 import com.milaboratory.oncomigec.preproc.demultiplex.entity.PCheckoutResult;
-import com.milaboratory.oncomigec.preproc.demultiplex.entity.SCheckoutResult;
 
 import java.util.concurrent.atomic.AtomicLong;
 
 public class PPositionalExtractor extends CheckoutProcessor<PSequencingRead, PCheckoutResult> {
+    private final AtomicLong slaveNotFoundCounter = new AtomicLong();
     private final String sampleName;
-    private final AtomicLong slaveNotFoundCounter;
-    private final SPositionalExtractor extractor1, extractor2;
+    private final SlidingBarcodeSearcher masterBarcode, slaveBarcode;
 
-    public PPositionalExtractor(String sampleName, int maxOffset1, String mask1) {
-        super(new String[]{sampleName}, new BarcodeSearcher[1]);
+    public PPositionalExtractor(String sampleName,
+                                SlidingBarcodeSearcher masterBarcode) {
+        super(new String[]{sampleName}, new BarcodeSearcher[]{masterBarcode});
         this.sampleName = sampleName;
-        this.extractor1 = new SPositionalExtractor(sampleName, maxOffset1, mask1);
-        this.extractor2 = null;
-        this.slaveNotFoundCounter = new AtomicLong();
+        this.masterBarcode = masterBarcode;
+        this.slaveBarcode = null;
     }
 
-    public PPositionalExtractor(String sampleName, int maxOffset1, String mask1,
-                                int maxOffset2, String mask2) {
-        super(new String[]{sampleName}, new BarcodeSearcher[1]);
+    public PPositionalExtractor(String sampleName,
+                                SlidingBarcodeSearcher masterBarcode,
+                                SlidingBarcodeSearcher slaveBarcode) {
+        super(new String[]{sampleName}, new BarcodeSearcher[]{masterBarcode});
         this.sampleName = sampleName;
-        this.extractor1 = new SPositionalExtractor(sampleName, maxOffset1, mask1);
-
-        // To write the code concise (not repeat the extraction procedure from SPositionalProcessor)
-        // we'll search in the slave mate as is (it is the RC in respect to master mate)
-        // we are going to search for RC pattern and then transform the coordinates & RC UMI sequence
-        char[] mask2RC = new char[mask2.length()];
-        for (int i = 0; i < mask2.length(); i++) {
-            mask2RC[mask2.length() - i - 1] = BarcodeUtil.complement(mask2.charAt(i));
-        }
-
-        this.extractor2 = new SPositionalExtractor(sampleName, maxOffset2, new String(mask2RC));
-        this.slaveNotFoundCounter = new AtomicLong();
+        this.masterBarcode = masterBarcode;
+        this.slaveBarcode = new SlidingBarcodeSearcerR(slaveBarcode);
     }
 
     @Override
     public PCheckoutResult checkoutImpl(PSequencingRead sequencingRead) {
-        SCheckoutResult extractionResult1 = extractor1.checkoutImpl(sequencingRead.getSingleRead(0)), extractionResult2;
+        BarcodeSearcherResult masterResult = masterBarcode.search(sequencingRead.getData(0)),
+                slaveResult;
 
-        if (extractionResult1 == null)
+        if (masterResult == null)
             return null;
 
-        if (extractor2 == null)
+        if (slaveBarcode == null)
             return new PCheckoutResult(0, sampleName, true, true,
-                    extractionResult1.getMasterResult(), BarcodeSearcherResult.BLANK_RESULT);
+                    masterResult, BarcodeSearcherResult.BLANK_RESULT);
 
-        extractionResult2 = extractor2.checkoutImpl(sequencingRead.getSingleRead(1));
+        slaveResult = slaveBarcode.search(sequencingRead.getData(1));
 
-        if (extractionResult2 == null) {
+        if (slaveResult == null) {
             slaveNotFoundCounter.incrementAndGet();
             return new PCheckoutResult(0, sampleName, true, true,
-                    extractionResult1.getMasterResult(), BarcodeSearcherResult.BLANK_RESULT);
+                    masterResult, BarcodeSearcherResult.BLANK_RESULT);
         } else {
-            int len = sequencingRead.getData(1).size();
-
-            BarcodeSearcherResult slaveResult = new BarcodeSearcherResult(
-                    extractionResult2.getMasterResult().getUmi().getReverseComplement(), // we have searched in RC
-                    extractionResult2.getMasterResult().getUmiWorstQual(),
-                    0, 0, 0, // unused
-                    len - extractionResult2.getMasterResult().getTo() + 1, // transform the coordinates, respect inclusive/exclusive
-                    len - extractionResult2.getMasterResult().getFrom() - 1);
-
             return new PCheckoutResult(0, sampleName, true, true,
-                    extractionResult1.getMasterResult(), slaveResult);
+                    masterResult, slaveResult);
         }
     }
 
     public long getSlaveCounter(String sampleName) throws Exception {
-        if (sampleName == null)
+        if (!this.sampleName.equals(sampleName))
             throw new Exception("Sample " + sampleName + " doesn't exist");
         return totalCounter.get() - masterNotFoundCounter.get() - slaveNotFoundCounter.get();
     }
