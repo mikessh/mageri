@@ -18,9 +18,7 @@ package com.milaboratory.oncomigec.core.genomic;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.core.sequencing.io.fasta.FastaReader;
 import com.milaboratory.core.sequencing.read.SSequencingRead;
-import com.milaboratory.oncomigec.util.Util;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
@@ -86,6 +84,14 @@ public class ReferenceLibrary {
         if (globalId < 0 || globalId >= references.size())
             throw new IndexOutOfBoundsException();
         return references.get(globalId);
+    }
+
+    public Reference getByName(String name, boolean rc) {
+        return getByGlobalId(nameToId.get(name + (rc ? "_RC" : "")));
+    }
+
+    public Reference getByName(String name) {
+        return getByName(name, false);
     }
 
     public List<Reference> getReferences() {

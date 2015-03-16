@@ -19,6 +19,7 @@ import com.milaboratory.core.sequence.Range;
 import com.milaboratory.oncomigec.core.genomic.Reference;
 import com.milaboratory.oncomigec.core.mutations.MigecMutationsCollection;
 
+import java.util.Collections;
 import java.util.List;
 
 public final class AlignedConsensus {

@@ -135,6 +135,10 @@ public final class CorrectedConsensus {
         return alignedConsensus.getReference(referenceIndex);
     }
 
+    public Reference getReference() {
+        return getReference(0);
+    }
+
     public int getMigSize() {
         return migSize;
     }

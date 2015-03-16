@@ -1,0 +1,5 @@
+#sample_name master_first    master_barcode  slave_barcode
+TOO_LONG_UMI	1	NNNNNNNNNNNNNNNNNNNNNNNNNNNNtgaTCTTGACgttgtagatgag	aggactgCTTAAAGaagtcggg
+BAD_MASTER	1	NNNNNNNNNNNNNNtgatcttGCCCCTGtagatgag	aggactgCTTAAAGaagtcggg
+GOOD	1	NNNNNNNNNNNNNNtgatcttGACGTTGtagatgag	aggactgCTTAAAGaagtcggg
+GOOD_UNREACHED	1	NNNNNNNNNNNNNNtgatctTGACGTTgtagatgag	aggactgCTTAAAGaagtcggg

@@ -56,6 +56,10 @@ public final class Haplotype {
         return maskedSequence;
     }
 
+    public CorrectedConsensus getCorrectedConsensus() {
+        return correctedConsensus;
+    }
+
     public String getMutationsSignature() {
         StringBuilder sb = new StringBuilder();
 
