@@ -5,7 +5,7 @@
     {
       "tabular": {
         "file": "pipeline/index.txt",
-        "primers": {
+        "primer": {
           "file": "pipeline/primers.txt"
         }
       }
