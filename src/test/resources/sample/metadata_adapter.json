@@ -1,0 +1,40 @@
+{
+  "project": "p92",
+  "references": "refs.fa",
+  "multiplex": [
+    {
+      "index": "p1",
+      "r1": "1.r1.fastq.gz",
+      "r2": "1.r2.fastq.gz",
+      "submultiplex": {
+        "barcodes": "primers.txt"
+      }
+    },
+    {
+      "index": "p2-5",
+      "r1": "2-5.r1.fastq.gz",
+      "r2": "2-5.r2.fastq.gz",
+      "submultiplex": {
+        "barcodes": "barcodes.txt"
+      }
+    },
+    {
+      "index": "p6",
+      "r1": "p6.r1.fastq.gz",
+      "r2": "p6.r2.fastq.gz",
+      "positional": {
+        "name": "patient6",
+        "mask1": "nnnnNNNNtNNNNtNNNN",
+        "mask2": "NNNNtNNNNtNNNNnnnn"
+      }
+    },
+    {
+      "index": "p7",
+      "r1": "p7.r1.fastq.gz",
+      "r2": "p7.r1.fastq.gz",
+      "preprocessed": {
+        "name": "patient7"
+      }
+    }
+  ]
+}

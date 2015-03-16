@@ -18,13 +18,11 @@
 
 package com.milaboratory.oncomigec.pipeline;
 
-import com.milaboratory.oncomigec.core.io.misc.UmiHistogram;
-import com.milaboratory.oncomigec.preproc.demultiplex.processor.CheckoutProcessor;
 import org.apache.commons.io.FileUtils;
 
 import java.io.*;
 
-public class IOUtils {
+public class SerializationUtils {
     /*
      * Base IO routines
      */

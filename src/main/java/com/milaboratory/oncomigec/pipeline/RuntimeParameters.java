@@ -23,6 +23,12 @@ import org.jdom.Element;
 
 public class RuntimeParameters implements ParameterSet {
     private final int numberOfThreads;
+    
+    public static RuntimeParameters DEFAULT = new RuntimeParameters();
+
+    private RuntimeParameters() {
+        this(Runtime.getRuntime().availableProcessors());
+    }
 
     public RuntimeParameters(int numberOfThreads) {
         this.numberOfThreads = numberOfThreads;

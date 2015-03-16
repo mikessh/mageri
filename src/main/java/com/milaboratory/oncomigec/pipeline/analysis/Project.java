@@ -32,7 +32,7 @@ public class Project implements Serializable {
     private final List<Sample> samples = new ArrayList<>();
     private final Input input;
 
-    public static Project fromInput(Input input) {
+    static Project fromInput(Input input) {
         Project project = new Project(input);
 
         for (InputChunk inputChunk : input.getInputChunks()) {
@@ -44,12 +44,20 @@ public class Project implements Serializable {
                 }
             } else {
                 Sample sample = new Sample(null, group);
+                project.tryAddSample(sample);
                 group.addSample(sample);
-                project.samples.add(sample);
             }
+            project.sampleGroups.add(group);
         }
 
         return project;
+    }
+
+    private void tryAddSample(Sample sample) {
+        if (samples.contains(sample))
+            throw new RuntimeException("Sample " + sample.getFullName() +
+                    " already exists in project " + getName());
+        samples.add(sample);
     }
 
     private Project(Input input) {

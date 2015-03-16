@@ -34,7 +34,9 @@ public class Presets implements ParameterSet {
     private final static boolean TEST_VERSION;
     private final static String VERSION = (TEST_VERSION = (DEDUCE_VERSION() == null)) ? "TEST" : DEDUCE_VERSION();
 
-    public Presets() {
+    public static final Presets DEFAULT = new Presets();
+
+    private Presets() {
         this(AssemblerParameters.DEFAULT);
     }
 

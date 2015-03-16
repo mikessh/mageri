@@ -37,7 +37,7 @@ public class Sample implements Comparable<Sample>, Serializable {
     }
 
     public String getName() {
-        return name != null ? name : parent.getName();
+        return name != null ? (parent.getName() + "." + name) : parent.getName();
     }
 
     public String getFullName() {

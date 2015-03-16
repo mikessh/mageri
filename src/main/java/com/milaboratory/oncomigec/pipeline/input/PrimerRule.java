@@ -20,17 +20,17 @@ package com.milaboratory.oncomigec.pipeline.input;
 
 import com.milaboratory.oncomigec.preproc.demultiplex.config.BarcodeListParser;
 import com.sun.istack.internal.NotNull;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
-public class SubMultiplexRule extends AdapterRule {
+public class PrimerRule extends AdapterRule {
     private final String sampleName;
 
-    public SubMultiplexRule(@NotNull String sampleName,
-                            @NotNull List<String> barcodes, boolean paired) throws IOException {
+    public PrimerRule(@NotNull String sampleName,
+                      @NotNull List<String> barcodes, boolean paired) throws IOException {
         super(barcodes, paired);
         this.sampleName = sampleName;
     }
@@ -39,23 +39,25 @@ public class SubMultiplexRule extends AdapterRule {
     protected List<String> prepareBarcodes(List<String> barcodes) {
         List<String> newBarcodes = new ArrayList<>();
         for (int i = 0; i < barcodes.size(); i++) {
-            if (!barcodes.get(i).startsWith(BarcodeListParser.COMMENT))
-                newBarcodes.add(i, sampleName + "." + barcodes.get(i));
+            if (!barcodes.get(i).startsWith(BarcodeListParser.COMMENT)) {
+                String line = barcodes.get(i);
+                String[] tokenized = line.split(BarcodeListParser.SEPARATOR);
+                tokenized[0] = sampleName; // replace reference name by sample name
+                newBarcodes.add(i, StringUtils.join(tokenized, BarcodeListParser.SEPARATOR));
+            }
         }
         return newBarcodes;
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public List<String> getSampleNames() {
-        // parse list every time
-        // but who knows, maybe demultiplex parameters will tell
-        // to skip some samples in future imp
-        return Collections.unmodifiableList(getProcessor().getSampleNames());
+        List<String> sampleNames = new ArrayList<>();
+        sampleNames.add(sampleName);
+        return sampleNames;
     }
 
     @Override
     public boolean hasSubMultiplexing() {
-        return true;
+        return false;
     }
 }

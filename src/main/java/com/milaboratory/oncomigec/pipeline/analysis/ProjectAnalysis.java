@@ -46,6 +46,10 @@ public class ProjectAnalysis {
 
     private final Map<Sample, SampleAnalysis> analysisBySample = new TreeMap<>();
 
+    public ProjectAnalysis(Input input) {
+        this(input, Presets.DEFAULT, RuntimeParameters.DEFAULT);
+    }
+    
     public ProjectAnalysis(Input input,
                            Presets presets,
                            RuntimeParameters runtimeParameters) {

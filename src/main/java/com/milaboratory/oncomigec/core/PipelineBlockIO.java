@@ -18,7 +18,7 @@
 
 package com.milaboratory.oncomigec.core;
 
-import com.milaboratory.oncomigec.pipeline.IOUtils;
+import com.milaboratory.oncomigec.pipeline.SerializationUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,19 +33,19 @@ public class PipelineBlockIO<BlockType extends PipelineBlock> {
     }
 
     protected void writeToTabular(BlockType block, String outputPrefix) throws IOException {
-        IOUtils.writeStringToFile(new File(outputPrefix + ".txt"), block.toString());
+        SerializationUtils.writeStringToFile(new File(outputPrefix + ".txt"), block.toString());
     }
 
     public void writeTo(BlockType block, String outputPrefix, boolean binaryOnly) throws IOException {
         outputPrefix = outputPrefix + "." + stage + "." + name;
-        IOUtils.writeObjectToFile(new File(outputPrefix + ".bin"), block);
+        SerializationUtils.writeObjectToFile(new File(outputPrefix + ".bin"), block);
         if (!binaryOnly)
             writeToTabular(block, outputPrefix);
     }
 
     @SuppressWarnings("unchecked")
     public BlockType readFrom(String outputPrefix) throws IOException, ClassNotFoundException {
-        return (BlockType) IOUtils.readObjectFromFile(new File(outputPrefix + "." + stage + "." + name + ".bin"));
+        return (BlockType) SerializationUtils.readObjectFromFile(new File(outputPrefix + "." + stage + "." + name + ".bin"));
     }
 
     public String getName() {

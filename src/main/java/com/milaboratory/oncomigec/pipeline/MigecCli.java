@@ -1,17 +1,13 @@
 package com.milaboratory.oncomigec.pipeline;
 
-import com.milaboratory.oncomigec.core.io.misc.MigReaderParameters;
 import com.milaboratory.oncomigec.model.classifier.BaseVariantClassifier;
 import com.milaboratory.oncomigec.model.classifier.VariantClassifier;
 import org.apache.commons.cli.*;
-import org.apache.commons.io.FilenameUtils;
 
 import java.io.File;
 import java.nio.file.Paths;
 import java.util.Date;
 import java.util.concurrent.TimeUnit;
-
-import static com.milaboratory.oncomigec.pipeline.IOUtils.writeStringToFile;
 
 public final class MigecCli {
     public static boolean VERBOSE = true;
