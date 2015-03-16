@@ -4,7 +4,9 @@ import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.core.sequencing.read.SequencingRead;
 import com.milaboratory.oncomigec.util.QualityHistogram;
 
-public interface Consensus {
+import java.io.Serializable;
+
+public interface Consensus extends Serializable {
     public int size();
 
     public int fullSize();

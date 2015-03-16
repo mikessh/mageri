@@ -19,9 +19,10 @@ import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.oncomigec.core.correct.CorrectedConsensus;
 import com.milaboratory.oncomigec.core.mutations.MutationDifference;
 
+import java.io.Serializable;
 import java.util.List;
 
-public final class Haplotype {
+public final class Haplotype implements Serializable {
     private final CorrectedConsensus correctedConsensus;
     private final NucleotideSequence haplotypeSequence, referenceSequence;
     private final String maskedSequence;

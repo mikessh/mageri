@@ -17,7 +17,9 @@ package com.milaboratory.oncomigec.core.genomic;
 
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 
-public class Reference {
+import java.io.Serializable;
+
+public class Reference implements Serializable {
     private final int globalId;
     private final String name, fullName;
     private final NucleotideSequence sequence;

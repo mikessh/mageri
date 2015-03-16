@@ -15,7 +15,9 @@
  */
 package com.milaboratory.oncomigec.core.haplotype;
 
-public final class HaplotypeCounters {
+import java.io.Serializable;
+
+public final class HaplotypeCounters implements Serializable {
     private int count = 0, readCount = 0;
     private double pValue = 0;
 

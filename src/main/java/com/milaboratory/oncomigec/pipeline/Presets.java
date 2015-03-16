@@ -143,6 +143,7 @@ public class Presets implements ParameterSet {
         e.addContent(new Element("version").setText(VERSION));
         e.addContent(demultiplexParameters.toXml());
         e.addContent(preprocessorParameters.toXml());
+        e.addContent(assemblerParameters.toXml());
         e.addContent(consensusAlignerParameters.toXml());
         e.addContent(correctorParameters.toXml());
         e.addContent(haplotypeTreeParameters.toXml());

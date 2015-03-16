@@ -36,19 +36,20 @@ import com.milaboratory.oncomigec.pipeline.input.Input;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-public class ProjectAnalysis {
+public class ProjectAnalysis implements Serializable {
     protected final ReferenceLibrary referenceLibrary;
     protected final Project project;
     protected final Presets presets;
     protected final RuntimeParameters runtimeParameters;
-    private final AssemblerFactory pAssemblerFactory, sAssemblerFactory;
-    private final ConsensusAlignerFactory pConsensusAlignerFactory, sConsensusAlignerFactory;
-    protected final VariantClassifier classifier;
+    private transient final AssemblerFactory pAssemblerFactory, sAssemblerFactory;
+    private transient final ConsensusAlignerFactory pConsensusAlignerFactory, sConsensusAlignerFactory;
+    protected transient final VariantClassifier classifier;
 
     private final Map<Sample, SampleAnalysis> analysisBySample = new TreeMap<>();
 
@@ -88,14 +89,14 @@ public class ProjectAnalysis {
         sout("Started analysis.", 1);
         for (SampleGroup sampleGroup : project.getSampleGroups()) {
             sout("Pre-processing sample group " + sampleGroup.getName() + ".", 1);
-            Preprocessor preprocessor = new Preprocessor(sampleGroup,
+            final Preprocessor preprocessor = new Preprocessor(sampleGroup,
                     presets.getDemultiplexParameters(),
                     presets.getPreprocessorParameters(),
                     runtimeParameters);
 
             sout("Running analysis for sample group " + sampleGroup.getName() + ".", 1);
             for (Sample sample : sampleGroup.getSamples()) {
-                MigOutputPort reader = preprocessor.create(sample);
+                final MigOutputPort reader = preprocessor.create(sample);
 
                 SampleAnalysis sampleAnalysis = reader.isPairedEnd() ? new SampleAnalysis(
                         this, sample, preprocessor.getUmiHistogram(sample),
@@ -116,6 +117,7 @@ public class ProjectAnalysis {
                 analysisBySample.put(sample, sampleAnalysis);
             }
         }
+        
         sout("Finished analysis.", 1);
     }
 

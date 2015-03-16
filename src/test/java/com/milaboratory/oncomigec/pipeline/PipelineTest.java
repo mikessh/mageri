@@ -24,6 +24,7 @@ import com.milaboratory.oncomigec.pipeline.analysis.ProjectAnalysis;
 import com.milaboratory.oncomigec.pipeline.analysis.Sample;
 import com.milaboratory.oncomigec.pipeline.input.Input;
 import com.milaboratory.oncomigec.pipeline.input.InputParser;
+import com.milaboratory.oncomigec.util.testing.TestUtil;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -47,5 +48,7 @@ public class PipelineTest {
                         haplotype.getCorrectedConsensus().getReference());
             }
         }
+
+        TestUtil.serializationCheck(projectAnalysis);
     }
 }

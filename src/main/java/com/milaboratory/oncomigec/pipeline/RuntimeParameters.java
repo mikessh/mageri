@@ -18,7 +18,9 @@
 
 package com.milaboratory.oncomigec.pipeline;
 
-public class RuntimeParameters {
+import java.io.Serializable;
+
+public class RuntimeParameters implements Serializable {
     // todo: verbosity levels
     // 0 - silent (errors only)
     // 1 - major steps (pre-processing, assembly, ...)

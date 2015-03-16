@@ -18,14 +18,15 @@
 
 package com.milaboratory.oncomigec.model.variant;
 
+import com.milaboratory.oncomigec.core.consalign.entity.AlignerReferenceLibrary;
 import com.milaboratory.oncomigec.core.genomic.Reference;
 import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
-import com.milaboratory.oncomigec.core.consalign.entity.AlignerReferenceLibrary;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class VariantLibrary {
+public class VariantLibrary implements Serializable {
     private final Map<Reference, VariantContainer> variantContainerMap = new HashMap<>();
     private final ReferenceLibrary referenceLibrary;
 

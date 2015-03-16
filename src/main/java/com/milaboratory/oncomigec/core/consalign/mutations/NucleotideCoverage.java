@@ -15,12 +15,13 @@
  */
 package com.milaboratory.oncomigec.core.consalign.mutations;
 
+import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicIntegerArray;
 
 /**
  * Singapore-style atomic coverage container.
  */
-public final class NucleotideCoverage {
+public final class NucleotideCoverage implements Serializable {
     final AtomicIntegerArray coverage;
     final int size;
 

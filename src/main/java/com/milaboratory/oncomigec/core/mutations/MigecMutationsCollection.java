@@ -4,6 +4,7 @@ import com.milaboratory.core.sequence.Range;
 import com.milaboratory.core.sequence.mutations.Mutations;
 import com.milaboratory.oncomigec.core.genomic.Reference;
 
+import java.io.Serializable;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;

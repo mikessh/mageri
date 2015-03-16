@@ -21,9 +21,10 @@ import com.milaboratory.core.sequencing.read.SSequencingRead;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.util.*;
 
-public class ReferenceLibrary {
+public class ReferenceLibrary implements Serializable {
     private final List<Reference> references = new ArrayList<>();
     private final Map<String, Integer> nameToId = new HashMap<>();
     private final Set<NucleotideSequence> referenceSequences = new HashSet<>();
@@ -96,5 +97,14 @@ public class ReferenceLibrary {
 
     public List<Reference> getReferences() {
         return Collections.unmodifiableList(references);
+    }
+
+    @Override
+    public String toString() {
+        String out = "#ReferenceLibrary{total=" + references.size() + "}";
+        for (Reference reference : references) {
+            out += "\n" + reference.toString();
+        }
+        return out;
     }
 }

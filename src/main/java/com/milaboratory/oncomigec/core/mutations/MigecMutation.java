@@ -4,7 +4,9 @@ import com.milaboratory.core.sequence.mutations.MutationType;
 import com.milaboratory.core.sequence.mutations.Mutations;
 import com.milaboratory.core.sequence.nucleotide.NucleotideAlphabet;
 
-public final class MigecMutation {
+import java.io.Serializable;
+
+public final class MigecMutation implements Serializable {
     private final int code;
     private final MigecMutationsCollection parent;
     private boolean filtered = false;

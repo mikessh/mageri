@@ -44,10 +44,11 @@ import com.milaboratory.oncomigec.pipeline.Speaker;
 import com.milaboratory.oncomigec.util.ProcessorResultWrapper;
 import org.apache.commons.math.MathException;
 
+import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 
-public class SampleAnalysis implements ReadSpecific {
+public class SampleAnalysis implements ReadSpecific, Serializable {
     private static final boolean ENABLE_BUFFERING = true;
     protected final boolean paired;
 
@@ -55,6 +56,7 @@ public class SampleAnalysis implements ReadSpecific {
     protected final Sample sample;
 
     protected final MigOutputPort reader;
+    
     protected final UmiHistogram umiHistogram;
     protected final Assembler assembler;
     protected final ConsensusAligner aligner;

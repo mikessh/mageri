@@ -19,12 +19,13 @@ import com.milaboratory.core.sequence.Range;
 import com.milaboratory.core.sequence.alignment.LocalAlignment;
 import com.milaboratory.core.sequence.mutations.Mutations;
 import com.milaboratory.core.sequence.nucleotide.NucleotideAlphabet;
-import com.milaboratory.oncomigec.core.genomic.Reference;
 import com.milaboratory.oncomigec.core.assemble.entity.SConsensus;
+import com.milaboratory.oncomigec.core.genomic.Reference;
 import com.milaboratory.oncomigec.core.mutations.MigecMutation;
 import com.milaboratory.oncomigec.core.mutations.MigecMutationsCollection;
 import com.milaboratory.oncomigec.util.Basics;
 
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -34,7 +35,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicIntegerArray;
 import java.util.concurrent.atomic.AtomicLongArray;
 
-public final class MutationsAndCoverage {
+public final class MutationsAndCoverage implements Serializable {
     private final Reference reference;
     private final int referenceLength;
     private final ConcurrentHashMap<Integer, AtomicInteger> majorIndelMigCountMap, minorIndelMigCountMap,

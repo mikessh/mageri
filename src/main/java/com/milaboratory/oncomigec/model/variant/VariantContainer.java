@@ -21,6 +21,7 @@ package com.milaboratory.oncomigec.model.variant;
 import com.milaboratory.core.sequence.nucleotide.NucleotideAlphabet;
 import com.milaboratory.oncomigec.core.consalign.mutations.MutationsAndCoverage;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -31,7 +32,7 @@ import java.util.List;
  * corresponding background error frequencies, an information that could be further used
  * in error filtering process.
  */
-public class VariantContainer {
+public class VariantContainer implements Serializable {
     private final MutationsAndCoverage mutationsAndCoverage;
     private final List<Variant> variantList = new LinkedList<>();
     private final Variant[][] variants;

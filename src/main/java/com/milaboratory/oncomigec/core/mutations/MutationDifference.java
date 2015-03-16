@@ -4,10 +4,11 @@ import com.milaboratory.core.sequence.mutations.Mutations;
 import com.milaboratory.oncomigec.core.genomic.Reference;
 import org.apache.commons.collections.iterators.ArrayIterator;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Iterator;
 
-public class MutationDifference implements Iterable<Integer> {
+public class MutationDifference implements Iterable<Integer>, Serializable {
     private final Reference reference;
     private final int[] difference;
 

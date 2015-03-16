@@ -22,8 +22,10 @@ import cc.redberry.pipe.OutputPort;
 import com.milaboratory.oncomigec.ReadSpecific;
 import com.milaboratory.oncomigec.core.io.entity.Mig;
 
-public class MigOutputPort<MigType extends Mig> implements OutputPort<MigType>, ReadSpecific {
-    private final MigReader<MigType> migReader;
+import java.io.Serializable;
+
+public class MigOutputPort<MigType extends Mig> implements OutputPort<MigType>, ReadSpecific, Serializable {
+    private transient final MigReader<MigType> migReader;
     private final String sampleName;
     private final int sizeThreshold;
 

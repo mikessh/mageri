@@ -6,7 +6,7 @@
       "tabular": {
         "file": "pipeline/index.txt",
         "submultiplex": {
-          "file": "primers.txt"
+          "file": "pipeline/primers.txt"
         }
       }
     }

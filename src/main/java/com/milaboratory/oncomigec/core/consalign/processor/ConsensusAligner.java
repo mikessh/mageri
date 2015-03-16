@@ -28,7 +28,7 @@ import com.milaboratory.oncomigec.util.ProcessorResultWrapper;
 public abstract class ConsensusAligner<T extends Consensus>
         implements Processor<ProcessorResultWrapper<T>, ProcessorResultWrapper<AlignedConsensus>>,
         ReadSpecific, PipelineBlock {
-    protected final Aligner aligner;
+    protected transient final Aligner aligner;
     protected final AlignerReferenceLibrary alignerReferenceLibrary;
     protected final ConsensusAlignerParameters parameters;
 

@@ -25,11 +25,12 @@ import com.milaboratory.oncomigec.core.haplotype.Haplotype;
 import com.milaboratory.oncomigec.core.mutations.MutationDifference;
 import com.milaboratory.oncomigec.core.mutations.wrappers.MutationWrapperCollection;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-public final class CorrectedConsensus {
+public final class CorrectedConsensus implements Serializable {
     private final AlignedConsensus alignedConsensus;
     private final List<MutationWrapperCollection> mutationsList;
     private final Set<Integer> coverageMask;
