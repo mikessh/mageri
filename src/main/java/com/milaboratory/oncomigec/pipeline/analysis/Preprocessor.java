@@ -20,34 +20,52 @@ package com.milaboratory.oncomigec.pipeline.analysis;
 
 import com.milaboratory.oncomigec.ReadSpecific;
 import com.milaboratory.oncomigec.core.io.entity.Mig;
+import com.milaboratory.oncomigec.core.io.misc.PreprocessorParameters;
 import com.milaboratory.oncomigec.core.io.misc.UmiHistogram;
 import com.milaboratory.oncomigec.core.io.readers.MigOutputPort;
 import com.milaboratory.oncomigec.core.io.readers.MigReader;
 import com.milaboratory.oncomigec.core.io.readers.PMigReader;
 import com.milaboratory.oncomigec.core.io.readers.SMigReader;
-import com.milaboratory.oncomigec.pipeline.Presets;
+import com.milaboratory.oncomigec.pipeline.RuntimeParameters;
+import com.milaboratory.oncomigec.pipeline.input.CheckoutRule;
 import com.milaboratory.oncomigec.pipeline.input.InputChunk;
+import com.milaboratory.oncomigec.preproc.demultiplex.entity.DemultiplexParameters;
 
 import java.io.IOException;
 
 public class Preprocessor<MigType extends Mig> implements ReadSpecific {
-    private final Presets presets;
+    private final PreprocessorParameters preprocessorParameters;
     private final SampleGroup sampleGroup;
     private final MigReader migReader;
 
-    public Preprocessor(Presets presets, SampleGroup sampleGroup) throws IOException, InterruptedException {
-        this.presets = presets;
+    public Preprocessor(SampleGroup sampleGroup) throws IOException, InterruptedException {
+        this(sampleGroup, DemultiplexParameters.DEFAULT, PreprocessorParameters.DEFAULT);
+    }
+
+    public Preprocessor(SampleGroup sampleGroup,
+                        DemultiplexParameters demultiplexParameters,
+                        PreprocessorParameters preprocessorParameters) throws IOException, InterruptedException {
+        this(sampleGroup, demultiplexParameters, preprocessorParameters, RuntimeParameters.DEFAULT);
+    }
+
+    public Preprocessor(SampleGroup sampleGroup,
+                        DemultiplexParameters demultiplexParameters,
+                        PreprocessorParameters preprocessorParameters,
+                        RuntimeParameters runtimeParameters) throws IOException, InterruptedException {
+        this.preprocessorParameters = preprocessorParameters;
         this.sampleGroup = sampleGroup;
         InputChunk inputChunk = sampleGroup.getInputChunk();
+
+        CheckoutRule checkoutRule = inputChunk.getCheckoutRule();
+
+        checkoutRule.setDemultiplexParameters(demultiplexParameters);
+
         this.migReader = inputChunk.isPairedEnd() ?
                 new PMigReader(inputChunk.getInputStream1(), inputChunk.getInputStream2(),
-                        inputChunk.getCheckoutRule().getProcessor())
+                        checkoutRule.getProcessor(), preprocessorParameters, runtimeParameters)
                 :
                 new SMigReader(inputChunk.getInputStream1(),
-                        inputChunk.getCheckoutRule().getProcessor());
-
-        if (presets.filterMismatchUmis())
-            migReader.setMinMismatchRatio(presets.getUmiMismatchFilterRatio());
+                        checkoutRule.getProcessor(), preprocessorParameters, runtimeParameters);
     }
 
     public UmiHistogram getUmiHistogram(Sample sample) {
@@ -68,7 +86,8 @@ public class Preprocessor<MigType extends Mig> implements ReadSpecific {
     }
 
     public int getOverSeq(String sampleName) {
-        return presets.forceOverseq() ? presets.getDefaultOverseq() :
+        return preprocessorParameters.forceOverseq() ?
+                preprocessorParameters.getDefaultOverseq() :
                 migReader.getUmiHistogram(sampleName).getMigSizeThreshold();
     }
 

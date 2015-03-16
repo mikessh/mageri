@@ -1,6 +1,7 @@
 {
   "project": "p72",
   "references": "refs.fa",
+  "classifier": "classifier.mdl",
   "structure": [
     {
       "tabular": {

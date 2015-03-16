@@ -24,16 +24,15 @@ import com.milaboratory.core.sequencing.read.PSequencingReadImpl;
 import com.milaboratory.core.sequencing.read.SequencingRead;
 import com.milaboratory.oncomigec.core.io.entity.PMig;
 import com.milaboratory.oncomigec.core.io.entity.SMig;
-import com.milaboratory.oncomigec.core.io.misc.MigReaderParameters;
+import com.milaboratory.oncomigec.core.io.misc.PreprocessorParameters;
 import com.milaboratory.oncomigec.core.io.misc.ReadInfo;
+import com.milaboratory.oncomigec.pipeline.RuntimeParameters;
 import com.milaboratory.oncomigec.preproc.demultiplex.barcode.BarcodeSearcherResult;
 import com.milaboratory.oncomigec.preproc.demultiplex.entity.PCheckoutResult;
 import com.milaboratory.oncomigec.preproc.demultiplex.processor.CheckoutProcessor;
-import com.milaboratory.oncomigec.preproc.demultiplex.processor.PAdapterExtractor;
 import com.milaboratory.oncomigec.preproc.misc.ReadOverlapper;
 import com.milaboratory.util.CompressionType;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -42,67 +41,45 @@ import java.util.List;
 import java.util.Map;
 
 public final class PMigReader extends MigReader<PMig> {
-    private final ReadOverlapper readOverlapper = new ReadOverlapper(true);
+    private final ReadOverlapper readOverlapper = new ReadOverlapper();
 
-    public PMigReader(PFastqReader reader, CheckoutProcessor checkoutProcessor, MigReaderParameters migReaderParameters)
+    public PMigReader(PFastqReader reader,
+                      CheckoutProcessor checkoutProcessor,
+                      PreprocessorParameters preprocessorParameters,
+                      RuntimeParameters runtimeParameters)
             throws IOException, InterruptedException {
-        super(migReaderParameters, checkoutProcessor);
+        super(preprocessorParameters,
+                checkoutProcessor,
+                runtimeParameters);
 
         buildUmiIndex(new PairedReaderWrapper(reader));
     }
 
-    public PMigReader(File file1, File file2,
-                      CheckoutProcessor checkoutProcessor) throws IOException, InterruptedException {
-        this(file1, file2, checkoutProcessor, MigReaderParameters.DEFAULT);
-    }
-
-    public PMigReader(File file1, File file2,
-                      CheckoutProcessor checkoutProcessor, MigReaderParameters migReaderParameters)
+    public PMigReader(InputStream inputStream1, InputStream inputStream2,
+                      CheckoutProcessor checkoutProcessor,
+                      PreprocessorParameters preprocessorParameters,
+                      RuntimeParameters runtimeParameters)
             throws IOException, InterruptedException {
-        this(new PFastqReader(file1, file2, QualityFormat.Phred33), checkoutProcessor, migReaderParameters);
+        this(new PFastqReader(inputStream1, inputStream2, QualityFormat.Phred33, CompressionType.None, null, false, false),
+                checkoutProcessor,
+                preprocessorParameters, runtimeParameters);
     }
 
     public PMigReader(InputStream inputStream1, InputStream inputStream2,
-                      CheckoutProcessor checkoutProcessor, MigReaderParameters migReaderParameters)
+                      CheckoutProcessor checkoutProcessor,
+                      PreprocessorParameters preprocessorParameters)
             throws IOException, InterruptedException {
-        this(new PFastqReader(inputStream1, inputStream2, QualityFormat.Phred33, CompressionType.None, null, false, false),
-                checkoutProcessor, migReaderParameters);
+        this(inputStream1, inputStream2,
+                checkoutProcessor,
+                preprocessorParameters, RuntimeParameters.DEFAULT);
     }
 
     public PMigReader(InputStream inputStream1, InputStream inputStream2,
                       CheckoutProcessor checkoutProcessor)
             throws IOException, InterruptedException {
-        this(inputStream1, inputStream2, checkoutProcessor, MigReaderParameters.DEFAULT);
-    }
-
-    public PMigReader(PFastqReader reader, String sampleName, MigReaderParameters migReaderParameters)
-            throws IOException, InterruptedException {
-        super(migReaderParameters, sampleName);
-
-        buildUmiIndex(new PairedReaderWrapper(reader));
-    }
-
-    public PMigReader(File file1, File file2,
-                      String sampleName) throws Exception {
-        this(file1, file2, sampleName, MigReaderParameters.DEFAULT);
-    }
-
-    public PMigReader(File file1, File file2, String sampleName,
-                      MigReaderParameters migReaderParameters) throws Exception {
-        this(new PFastqReader(file1, file2, QualityFormat.Phred33), sampleName, migReaderParameters);
-    }
-
-    PMigReader(InputStream inputStream1, InputStream inputStream2,
-               String sampleName, MigReaderParameters migReaderParameters)
-            throws IOException, InterruptedException {
-        this(new PFastqReader(inputStream1, inputStream2, QualityFormat.Phred33, CompressionType.None, null, false, false),
-                sampleName, migReaderParameters);
-    }
-
-    PMigReader(InputStream inputStream1, InputStream inputStream2,
-               String sampleName)
-            throws IOException, InterruptedException {
-        this(inputStream1, inputStream2, sampleName, MigReaderParameters.DEFAULT);
+        this(inputStream1, inputStream2,
+                checkoutProcessor,
+                PreprocessorParameters.DEFAULT);
     }
 
     @Override
@@ -110,7 +87,7 @@ public final class PMigReader extends MigReader<PMig> {
         Iterator<Map.Entry<NucleotideSequence, List<ReadInfo>>> iterator = iteratorMap.get(sampleName);
         while (iterator.hasNext()) {
             Map.Entry<NucleotideSequence, List<ReadInfo>> entry = iterator.next();
-            if (entry.getValue().size() >= sizeThreshold && checkUmiMismatch(sampleName, entry.getKey())) {
+            if (entry.getValue().size() >= sizeThreshold && !checkUmiMismatch(sampleName, entry.getKey())) {
                 List<NucleotideSQPair> readList1 = new ArrayList<>(),
                         readList2 = new ArrayList<>();
 
@@ -135,7 +112,7 @@ public final class PMigReader extends MigReader<PMig> {
                         // and UMIs were de-novo extracted using adapter search
                         int barcodeOffset = 0;
 
-                        if (migReaderParameters.trimAdapters() &&
+                        if (preprocessorParameters.trimAdapters() &&
                                 readInfo.getCheckoutResult() instanceof PCheckoutResult) {
 
                             // Trim adapters if required

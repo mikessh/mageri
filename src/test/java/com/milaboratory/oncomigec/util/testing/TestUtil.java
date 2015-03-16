@@ -29,15 +29,22 @@ import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
 
 public class TestUtil {
-    public static Serializable serializationCheck(Serializable object) {
-        byte[] data = SerializationUtils.serialize(object);
+    public static void serializationCheck(Serializable original) {
+        byte[] data = SerializationUtils.serialize(original);
         assertTrue("Serialization successful", data.length > 0);
-        return SerializationUtils.deserialize(data);
-    }
 
-    public static void serializationCheckForOutputData(Serializable object) {
-        Serializable recovered = serializationCheck(object);
-        assertEquals("Plain-text data match", recovered.toString(), object.toString());
+        boolean providesOutput = false; // is toString overridden?
+
+        try {
+            providesOutput = original.getClass().getMethod("toString").getDeclaringClass() != Object.class;
+        } catch (NoSuchMethodException ignored) {
+
+        }
+
+        if (providesOutput) {
+            Serializable recovered = SerializationUtils.deserialize(data);
+            assertEquals("Plain-text data match", recovered.toString(), original.toString());
+        }
     }
 
     public static InputStream getResourceAsStream(String resourceName) throws IOException {

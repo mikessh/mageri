@@ -31,8 +31,8 @@ import com.milaboratory.util.CompressionType
  */
 
 
-def reader = new SFastqReader("R2.fastq.gz"),
-    writer = new SFastqWriter("R2_RC.fastq.gz", QualityFormat.Phred33, CompressionType.GZIP)
+def reader = new SFastqReader("${args[0]}.fastq.gz"),
+    writer = new SFastqWriter("${args[0]}_RC.fastq.gz", QualityFormat.Phred33, CompressionType.GZIP)
 
 def read
 int i = 0

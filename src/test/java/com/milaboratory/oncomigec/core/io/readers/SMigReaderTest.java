@@ -18,7 +18,8 @@ package com.milaboratory.oncomigec.core.io.readers;
 import com.milaboratory.core.sequencing.io.fastq.SFastqReader;
 import com.milaboratory.core.sequencing.read.SSequencingRead;
 import com.milaboratory.oncomigec.core.io.entity.SMig;
-import com.milaboratory.oncomigec.core.io.misc.MigReaderParameters;
+import com.milaboratory.oncomigec.core.io.misc.PreprocessorParameters;
+import com.milaboratory.oncomigec.preproc.demultiplex.processor.HeaderExtractor;
 import com.milaboratory.oncomigec.util.Util;
 import com.milaboratory.util.CompressionType;
 import org.junit.Assert;
@@ -30,7 +31,7 @@ import static com.milaboratory.oncomigec.util.testing.DefaultTestSet.getR1;
 public class SMigReaderTest {
     @Test
     public void run() throws Exception {
-        SMigReader reader = new SMigReader(getR1(), SAMPLE_NAME, MigReaderParameters.IGNORE_QUAL);
+        SMigReader reader = new SMigReader(getR1(), new HeaderExtractor(SAMPLE_NAME), PreprocessorParameters.IGNORE_QUAL);
 
         SMig sMig;
         while ((sMig = reader.take(SAMPLE_NAME, 5)) != null) {

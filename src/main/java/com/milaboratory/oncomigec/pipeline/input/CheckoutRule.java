@@ -18,12 +18,29 @@
 
 package com.milaboratory.oncomigec.pipeline.input;
 
+import com.milaboratory.oncomigec.preproc.demultiplex.entity.DemultiplexParameters;
 import com.milaboratory.oncomigec.preproc.demultiplex.processor.CheckoutProcessor;
 
 import java.util.List;
 
-public interface CheckoutRule {
-    public CheckoutProcessor getProcessor();
-    public List<String> getSampleNames();
-    public boolean hasSubMultiplexing();
+public abstract class CheckoutRule {
+    protected DemultiplexParameters demultiplexParameters = DemultiplexParameters.DEFAULT;
+
+    protected CheckoutRule() {
+
+    }
+
+    public abstract CheckoutProcessor getProcessor();
+
+    public abstract List<String> getSampleNames();
+
+    public abstract boolean hasSubMultiplexing();
+
+    public DemultiplexParameters getDemultiplexParameters() {
+        return demultiplexParameters;
+    }
+
+    public void setDemultiplexParameters(DemultiplexParameters demultiplexParameters) {
+        this.demultiplexParameters = demultiplexParameters;
+    }
 }

@@ -208,18 +208,18 @@ public class CheckoutProcessorTest {
 
         CheckoutProcessor processor = runOnSampleData1Positional();
 
-        TestUtil.serializationCheckForOutputData(processor);
+        TestUtil.serializationCheck(processor);
 
         processor = runOnSampleData2Positional();
 
-        TestUtil.serializationCheckForOutputData(processor);
+        TestUtil.serializationCheck(processor);
 
         processor = runOnSampleData1Adapter();
 
-        TestUtil.serializationCheckForOutputData(processor);
+        TestUtil.serializationCheck(processor);
 
         processor = runOnSampleData2Adapter();
 
-        TestUtil.serializationCheckForOutputData(processor);
+        TestUtil.serializationCheck(processor);
     }
 }

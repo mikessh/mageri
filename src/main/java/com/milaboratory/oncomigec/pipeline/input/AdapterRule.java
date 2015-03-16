@@ -26,7 +26,7 @@ import com.sun.istack.internal.NotNull;
 import java.io.IOException;
 import java.util.List;
 
-public abstract class AdapterRule implements CheckoutRule {
+public abstract class AdapterRule extends CheckoutRule {
     protected final String index;
     protected final List<String> barcodes;
     protected final boolean paired;
@@ -46,17 +46,6 @@ public abstract class AdapterRule implements CheckoutRule {
         return paired ? BarcodeListParser.generatePCheckoutProcessor(barcodes, demultiplexParameters) :
                 BarcodeListParser.generateSCheckoutProcessor(barcodes, demultiplexParameters);
     }
-
-    public DemultiplexParameters getDemultiplexParameters() {
-        return demultiplexParameters;
-    }
-
-    public void setDemultiplexParameters(DemultiplexParameters demultiplexParameters) {
-        this.demultiplexParameters = demultiplexParameters;
-    }
-
-    @Override
-    public abstract List<String> getSampleNames();
 
     @Override
     public abstract boolean hasSubMultiplexing();

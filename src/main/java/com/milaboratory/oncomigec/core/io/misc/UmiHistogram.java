@@ -23,8 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class UmiHistogram implements PipelineBlock {
-    // todo: from mixture
-    // todo: UMI redundancy/entropy
+    private final PreprocessorParameters preprocessorParameters;
     private transient final ConcurrentHashMap<NucleotideSequence, AtomicInteger> umiCounterMap =
             new ConcurrentHashMap<>();
 
@@ -43,7 +42,18 @@ public class UmiHistogram implements PipelineBlock {
     private int migsTotal;
     private static final double base = Math.log(2.0);
 
-    public boolean isMismatch(NucleotideSequence umi, double mismatchRatio) {
+    public UmiHistogram(PreprocessorParameters preprocessorParameters) {
+        this.preprocessorParameters = preprocessorParameters;
+    }
+
+    public UmiHistogram() {
+        this(PreprocessorParameters.DEFAULT);
+    }
+
+    public boolean isMismatch(NucleotideSequence umi) {
+        if (preprocessorParameters.getMinUmiMismatchRatio() < 1)
+            return false;
+
         Bit2Array innerData = umi.getInnerData();
         int counter = umiCounterMap.get(umi).get();
 
@@ -57,7 +67,7 @@ public class UmiHistogram implements PipelineBlock {
                     AtomicInteger otherCounter = umiCounterMap.get(otherUmi);
 
                     if (otherCounter != null &&
-                            counter * mismatchRatio < otherCounter.get())
+                            counter * preprocessorParameters.getMinUmiMismatchRatio() < otherCounter.get())
                         return true;
                 }
             }

@@ -33,7 +33,8 @@ public class PipelineTest {
     @Test
     public void fullTest() throws Exception {
         Input input = INPUT_PARSER.parseJson("pipeline/tabular.pri.json");
-        System.out.println(input);
+        
+        //System.out.println(input);
         ProjectAnalysis projectAnalysis = new ProjectAnalysis(input);
         projectAnalysis.run();
 

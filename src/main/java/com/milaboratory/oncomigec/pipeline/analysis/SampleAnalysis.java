@@ -40,7 +40,7 @@ import com.milaboratory.oncomigec.model.classifier.BaseVariantClassifier;
 import com.milaboratory.oncomigec.model.classifier.VariantClassifier;
 import com.milaboratory.oncomigec.model.variant.VariantContainer;
 import com.milaboratory.oncomigec.model.variant.VariantLibrary;
-import com.milaboratory.oncomigec.pipeline.MigecCli;
+import com.milaboratory.oncomigec.pipeline.Speaker;
 import com.milaboratory.oncomigec.util.ProcessorResultWrapper;
 import org.apache.commons.math.MathException;
 
@@ -61,7 +61,6 @@ public class SampleAnalysis implements ReadSpecific {
     protected Corrector corrector;
     protected VariantLibrary variantLibrary;
     protected HaplotypeTree haplotypeTree;
-    protected VariantClassifier variantClassifier;
 
     private boolean firstStageRan = false, secondStageRan = false;
 
@@ -86,13 +85,19 @@ public class SampleAnalysis implements ReadSpecific {
 
         this.assembler = assembler;
         this.aligner = consensusAligner;
-        this.variantClassifier = BaseVariantClassifier.BUILT_IN;
+    }
+
+    private void sout(String message, int verbosityLevel) {
+        Speaker.INSTANCE.sout("[" + parent.getProject().getName() + "] [" + sample.getFullName() + "] " +
+                message, verbosityLevel);
     }
 
     @SuppressWarnings("unchecked")
     public void runFirstStage() throws Exception {
         if (firstStageRan)
             return;
+
+        sout("Running first stage.", 1);
 
         OutputPort<Mig> input = reader;
 
@@ -114,8 +119,7 @@ public class SampleAnalysis implements ReadSpecific {
                     while (!countingInput.isClosed()) {
                         long count = countingInput.getCount();
                         if (prevCount != count) {
-                            MigecCli.print2("Running first stage of MIGEC for " + sample.getName() +
-                                    ", " + count + " MIGs processed..");
+                            sout("Assemblying & aligning consensuses, " + count + " MIGs processed..", 2);
                             prevCount = count;
                         }
                         Thread.sleep(10000);
@@ -138,8 +142,8 @@ public class SampleAnalysis implements ReadSpecific {
             if (alignmentDataWrapped.hasResult())
                 alignmentDataList.add(alignmentDataWrapped.getResult());
 
-        MigecCli.print2("Finished first stage of MIGEC for " + sample.getName() +
-                ", " + countingInput.getCount() + " MIGs processed in total");
+
+        sout("Finished first stage, " + countingInput.getCount() + " MIGs processed in total.", 1);
 
         firstStageRan = true;
     }
@@ -151,14 +155,20 @@ public class SampleAnalysis implements ReadSpecific {
         if (secondStageRan)
             return;
 
+        sout("Running second stage.", 1);
+
+        sout("Correcting variants.", 1);
+
         // Find major and minor mutations
         this.corrector = new Corrector(aligner.getAlignerReferenceLibrary(),
                 parent.getPresets().getCorrectorParameters(),
-                variantClassifier);
+                parent.getClassifier());
 
         // Error statistics for haplotype filtering using binomial test
         // Store here for output summary purposes
         variantLibrary = corrector.getCorrectorReferenceLibrary().getVariantLibrary();
+
+        sout("Assemblying haplotypes.", 1);
 
         // Haplotype 1-mm graph
         this.haplotypeTree = new HaplotypeTree(
@@ -176,6 +186,8 @@ public class SampleAnalysis implements ReadSpecific {
         haplotypeTree.calculatePValues();
 
         secondStageRan = true;
+
+        sout("Finished second stage, " + haplotypeTree.getHaplotypes().size() + " haplotypes assembled.", 1);
     }
 
     public VariantContainer dumpMinorVariants(Reference reference, double threshold) {

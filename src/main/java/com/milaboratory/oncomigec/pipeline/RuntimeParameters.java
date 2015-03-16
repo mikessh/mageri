@@ -18,30 +18,38 @@
 
 package com.milaboratory.oncomigec.pipeline;
 
-import com.milaboratory.oncomigec.util.ParameterSet;
-import org.jdom.Element;
+public class RuntimeParameters {
+    // todo: verbosity levels
+    // 0 - silent (errors only)
+    // 1 - major steps (pre-processing, assembly, ...)
+    // 2 - minor steps (reads parsed, migs processed, etc)
+    // 3 - full
 
-public class RuntimeParameters implements ParameterSet {
     private final int numberOfThreads;
-    
+    private final long readLimit;
+    private final byte verbosityLevel;
+
     public static RuntimeParameters DEFAULT = new RuntimeParameters();
 
     private RuntimeParameters() {
-        this(Runtime.getRuntime().availableProcessors());
+        this(Runtime.getRuntime().availableProcessors(), -1, (byte) 3);
     }
 
-    public RuntimeParameters(int numberOfThreads) {
+    public RuntimeParameters(int numberOfThreads, long readLimit, byte verbosityLevel) {
         this.numberOfThreads = numberOfThreads;
+        this.readLimit = readLimit;
+        this.verbosityLevel = verbosityLevel;
     }
 
     public int getNumberOfThreads() {
         return numberOfThreads;
     }
 
-    @Override
-    public Element toXml() {
-        Element e = new Element("MigecRuntimeParameters");
-        e.addContent(new Element("numberOfThreads").setText(Integer.toString(numberOfThreads)));
-        return e;
+    public long getReadLimit() {
+        return readLimit;
+    }
+
+    public byte getVerbosityLevel() {
+        return verbosityLevel;
     }
 }

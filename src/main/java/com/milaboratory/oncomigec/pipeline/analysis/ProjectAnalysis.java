@@ -27,9 +27,13 @@ import com.milaboratory.oncomigec.core.consalign.misc.PConsensusAlignerFactory;
 import com.milaboratory.oncomigec.core.consalign.misc.SConsensusAlignerFactory;
 import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
 import com.milaboratory.oncomigec.core.io.readers.MigOutputPort;
+import com.milaboratory.oncomigec.model.classifier.BaseVariantClassifier;
+import com.milaboratory.oncomigec.model.classifier.VariantClassifier;
 import com.milaboratory.oncomigec.pipeline.Presets;
 import com.milaboratory.oncomigec.pipeline.RuntimeParameters;
+import com.milaboratory.oncomigec.pipeline.Speaker;
 import com.milaboratory.oncomigec.pipeline.input.Input;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -44,16 +48,18 @@ public class ProjectAnalysis {
     protected final RuntimeParameters runtimeParameters;
     private final AssemblerFactory pAssemblerFactory, sAssemblerFactory;
     private final ConsensusAlignerFactory pConsensusAlignerFactory, sConsensusAlignerFactory;
+    protected final VariantClassifier classifier;
 
     private final Map<Sample, SampleAnalysis> analysisBySample = new TreeMap<>();
 
     public ProjectAnalysis(Input input) throws IOException {
-        this(input, Presets.DEFAULT, RuntimeParameters.DEFAULT);
+        this(input, Presets.DEFAULT, RuntimeParameters.DEFAULT, BaseVariantClassifier.BUILT_IN);
     }
 
     public ProjectAnalysis(Input input,
                            Presets presets,
-                           RuntimeParameters runtimeParameters) throws IOException {
+                           RuntimeParameters runtimeParameters,
+                           VariantClassifier classifier) throws IOException {
         this.presets = presets;
         this.runtimeParameters = runtimeParameters;
         this.project = Project.fromInput(input);
@@ -65,15 +71,29 @@ public class ProjectAnalysis {
 
         ExtendedExomeAlignerFactory alignerFactory = new ExtendedExomeAlignerFactory(referenceLibrary);
 
-        this.pConsensusAlignerFactory = new PConsensusAlignerFactory(alignerFactory, presets.getConsensusAlignerParameters());
-        this.sConsensusAlignerFactory = new SConsensusAlignerFactory(alignerFactory, presets.getConsensusAlignerParameters());
+        this.pConsensusAlignerFactory = new PConsensusAlignerFactory(alignerFactory,
+                presets.getConsensusAlignerParameters());
+        this.sConsensusAlignerFactory = new SConsensusAlignerFactory(alignerFactory,
+                presets.getConsensusAlignerParameters());
 
-        // Create reader factory
+        this.classifier = classifier;
+    }
+
+    private void sout(String message, int verbosityLevel) {
+        Speaker.INSTANCE.sout("[" + project.getName() + "] " +
+                message, verbosityLevel);
     }
 
     public void run() throws Exception {
+        sout("Started analysis.", 1);
         for (SampleGroup sampleGroup : project.getSampleGroups()) {
-            Preprocessor preprocessor = new Preprocessor(presets, sampleGroup);
+            sout("Pre-processing sample group " + sampleGroup.getName() + ".", 1);
+            Preprocessor preprocessor = new Preprocessor(sampleGroup,
+                    presets.getDemultiplexParameters(),
+                    presets.getPreprocessorParameters(),
+                    runtimeParameters);
+
+            sout("Running analysis for sample group " + sampleGroup.getName() + ".", 1);
             for (Sample sample : sampleGroup.getSamples()) {
                 MigOutputPort reader = preprocessor.create(sample);
 
@@ -96,6 +116,7 @@ public class ProjectAnalysis {
                 analysisBySample.put(sample, sampleAnalysis);
             }
         }
+        sout("Finished analysis.", 1);
     }
 
     public ReferenceLibrary getReferenceLibrary() {
@@ -114,6 +135,10 @@ public class ProjectAnalysis {
         return runtimeParameters;
     }
 
+    public VariantClassifier getClassifier() {
+        return classifier;
+    }
+
     public SampleAnalysis getAnalysis(Sample sample) {
         return analysisBySample.get(sample);
     }
@@ -124,5 +149,9 @@ public class ProjectAnalysis {
             analysises.add(getAnalysis(sample));
         }
         return analysises;
+    }
+
+    public void serialize(String path, boolean noBinary) {
+        throw new NotImplementedException();
     }
 }

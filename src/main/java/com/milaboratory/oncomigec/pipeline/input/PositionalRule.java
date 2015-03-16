@@ -27,7 +27,7 @@ import com.sun.istack.internal.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PositionalRule implements CheckoutRule {
+public class PositionalRule extends CheckoutRule {
     private final String sampleName, mask1, mask2;
     private final boolean paired;
 

@@ -24,7 +24,7 @@ import com.milaboratory.oncomigec.preproc.demultiplex.processor.HeaderExtractor;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class PreprocessedRule implements CheckoutRule {
+public final class PreprocessedRule extends CheckoutRule {
     private final String sampleName;
 
     public PreprocessedRule(String sampleName) {
