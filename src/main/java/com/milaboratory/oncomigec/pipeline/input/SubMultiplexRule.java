@@ -27,20 +27,18 @@ import java.util.Collections;
 import java.util.List;
 
 public class SubMultiplexRule extends AdapterRule {
-    private final String sampleName;
 
     public SubMultiplexRule(@NotNull String sampleName,
                             @NotNull List<String> barcodes, boolean paired) throws IOException {
-        super(barcodes, paired);
-        this.sampleName = sampleName;
+        super(sampleName, barcodes, paired);
     }
 
     @Override
     protected List<String> prepareBarcodes(List<String> barcodes) {
         List<String> newBarcodes = new ArrayList<>();
-        for (int i = 0; i < barcodes.size(); i++) {
-            if (!barcodes.get(i).startsWith(BarcodeListParser.COMMENT))
-                newBarcodes.add(i, sampleName + "." + barcodes.get(i));
+        for (String barcode : barcodes) {
+            if (!barcode.startsWith(BarcodeListParser.COMMENT))
+                newBarcodes.add(index + "." + barcode);
         }
         return newBarcodes;
     }

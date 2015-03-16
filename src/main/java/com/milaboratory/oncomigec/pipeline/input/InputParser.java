@@ -132,22 +132,25 @@ public class InputParser {
                                          boolean paired) throws IOException {
         CheckoutRule checkoutRule = null;
         if (rule.has("submultiplex")) {
-            String barcodesFileName = rule.getString("file");
+            JSONObject details = rule.getJSONObject("submultiplex");
+            String barcodesFileName = details.getString("file");
             checkoutRule = new SubMultiplexRule(chunkName,
                     ioProvider.readLines(barcodesFileName), paired);
         }
         if (rule.has("primer")) {
             if (checkoutRule != null)
                 throw new RuntimeException("More than one multiplex rule is specified for chunk " + chunkName);
-            String barcodesFileName = rule.getString("file");
+            JSONObject details = rule.getJSONObject("primer");
+            String barcodesFileName = details.getString("file");
             checkoutRule = new PrimerRule(chunkName,
                     ioProvider.readLines(barcodesFileName), paired);
         }
         if (rule.has("positional")) {
             if (checkoutRule != null)
                 throw new RuntimeException("More than one multiplex rule is specified for chunk " + chunkName);
-            String mask1 = rule.getString("mask1"),
-                    mask2 = rule.has("mask2") ? rule.getString("mask2") : null;
+            JSONObject details = rule.getJSONObject("positional");
+            String mask1 = details.getString("mask1"),
+                    mask2 = details.has("mask2") ? details.getString("mask2") : null;
 
             checkoutRule = new PositionalRule(chunkName, mask1, mask2, paired);
         }

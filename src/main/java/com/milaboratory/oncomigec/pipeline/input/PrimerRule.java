@@ -27,23 +27,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PrimerRule extends AdapterRule {
-    private final String sampleName;
-
     public PrimerRule(@NotNull String sampleName,
                       @NotNull List<String> barcodes, boolean paired) throws IOException {
-        super(barcodes, paired);
-        this.sampleName = sampleName;
+        super(sampleName, barcodes, paired);
     }
 
     @Override
     protected List<String> prepareBarcodes(List<String> barcodes) {
         List<String> newBarcodes = new ArrayList<>();
-        for (int i = 0; i < barcodes.size(); i++) {
-            if (!barcodes.get(i).startsWith(BarcodeListParser.COMMENT)) {
-                String line = barcodes.get(i);
-                String[] tokenized = line.split(BarcodeListParser.SEPARATOR);
-                tokenized[0] = sampleName; // replace reference name by sample name
-                newBarcodes.add(i, StringUtils.join(tokenized, BarcodeListParser.SEPARATOR));
+        for (String barcode : barcodes) {
+            if (!barcode.startsWith(BarcodeListParser.COMMENT)) {
+                String[] tokenized = barcode.split(BarcodeListParser.SEPARATOR);
+                tokenized[0] = index; // replace reference name by sample name
+                newBarcodes.add(StringUtils.join(tokenized, BarcodeListParser.SEPARATOR));
             }
         }
         return newBarcodes;
@@ -52,17 +48,12 @@ public class PrimerRule extends AdapterRule {
     @Override
     public List<String> getSampleNames() {
         List<String> sampleNames = new ArrayList<>();
-        sampleNames.add(sampleName);
+        sampleNames.add(index);
         return sampleNames;
     }
 
     @Override
     public boolean hasSubMultiplexing() {
         return false;
-    }
-
-    @Override
-    public String toString() {
-        return  "primer_rule\n-submultiplex:" + hasSubMultiplexing() + "\n-samples:" + sampleName;
     }
 }

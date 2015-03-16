@@ -62,4 +62,9 @@ public class PositionalRule implements CheckoutRule {
     public boolean hasSubMultiplexing() {
         return false;
     }
+
+    @Override
+    public String toString() {
+        return "preprocessed_rule\n-submultiplex:" + hasSubMultiplexing() + "\n-samples:" + sampleName;
+    }
 }

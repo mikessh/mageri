@@ -27,13 +27,16 @@ import java.io.IOException;
 import java.util.List;
 
 public abstract class AdapterRule implements CheckoutRule {
-    private final List<String> barcodes;
-    private final boolean paired;
+    protected final String index;
+    protected final List<String> barcodes;
+    protected final boolean paired;
     private DemultiplexParameters demultiplexParameters = DemultiplexParameters.DEFAULT;
 
-    public AdapterRule(@NotNull List<String> barcodes, boolean paired) throws IOException {
-        this.barcodes = prepareBarcodes(barcodes);
+    public AdapterRule(@NotNull String index,
+                       @NotNull List<String> barcodes, boolean paired) throws IOException {
+        this.index = index;
         this.paired = paired;
+        this.barcodes = prepareBarcodes(barcodes);
     }
 
     protected abstract List<String> prepareBarcodes(List<String> barcodes);
