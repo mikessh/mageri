@@ -47,4 +47,9 @@ public final class PreprocessedRule implements CheckoutRule {
     public boolean hasSubMultiplexing() {
         return false;
     }
+
+    @Override
+    public String toString() {
+        return "preprocessed\n-submultiplex:" + hasSubMultiplexing() + "\n-samples:" + sampleName;
+    }
 }

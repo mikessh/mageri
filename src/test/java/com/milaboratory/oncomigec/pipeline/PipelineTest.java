@@ -28,8 +28,10 @@ public class PipelineTest {
 
     @Test
     public void fullTest() throws Exception {
-        Input input = INPUT_PARSER.parseJson("sample/project.json");
+        Input input = INPUT_PARSER.parseJson("pipeline/tabular.pre.json");
+        System.out.println(input);
         ProjectAnalysis projectAnalysis = new ProjectAnalysis(input);
         projectAnalysis.run();
+        System.out.println(projectAnalysis.getAnalysis(projectAnalysis.getProject().getSamples().get(0)).getHaplotypeTree());
     }
 }

@@ -57,4 +57,13 @@ public abstract class AdapterRule implements CheckoutRule {
 
     @Override
     public abstract boolean hasSubMultiplexing();
+
+    @Override
+    public String toString() {
+        String out = "adapter_rule\n-submultiplex:" + hasSubMultiplexing() + "\n-samples:";
+        for (String str : getSampleNames()) {
+            out += "\n--" + str;
+        }
+        return out;
+    }
 }

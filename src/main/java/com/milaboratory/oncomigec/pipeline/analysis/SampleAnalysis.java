@@ -140,6 +140,8 @@ public class SampleAnalysis implements ReadSpecific {
 
         MigecCli.print2("Finished first stage of MIGEC for " + sample.getName() +
                 ", " + countingInput.getCount() + " MIGs processed in total");
+
+        firstStageRan = true;
     }
 
     public void runSecondStage() throws MathException {

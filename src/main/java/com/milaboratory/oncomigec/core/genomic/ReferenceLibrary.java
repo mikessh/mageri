@@ -16,9 +16,9 @@
 package com.milaboratory.oncomigec.core.genomic;
 
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
+import com.milaboratory.core.sequencing.io.fasta.FastaReader;
 import com.milaboratory.core.sequencing.read.SSequencingRead;
 import com.milaboratory.oncomigec.util.Util;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,16 +31,18 @@ public class ReferenceLibrary {
     private final Set<NucleotideSequence> referenceSequences = new HashSet<>();
     private int globalId = 0;
 
-    public static ReferenceLibrary fromInput(InputStream input) {
-        throw new NotImplementedException();
+    public static ReferenceLibrary fromInput(InputStream input) throws IOException {
+        FastaReader reader = new FastaReader(input, false);
+        List<SSequencingRead> records = new LinkedList<>();
+        SSequencingRead record;
+        while ((record = reader.take()) != null) {
+            records.add(record);
+        }
+        return new ReferenceLibrary(records);
     }
 
     public ReferenceLibrary() {
 
-    }
-
-    public ReferenceLibrary(File referenceFile) throws IOException {
-        this(Util.readFasta(referenceFile));
     }
 
     public ReferenceLibrary(Collection<SSequencingRead> fastaRecords) {

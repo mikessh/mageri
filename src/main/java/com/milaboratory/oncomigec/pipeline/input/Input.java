@@ -31,7 +31,6 @@ public class Input implements Serializable {
     protected transient final InputStream references;
     protected final List<InputChunk> inputChunks;
 
-
     public Input(String projectName, InputStream references, List<InputChunk> inputChunks) {
         this.projectName = projectName;
         this.references = references;
@@ -48,6 +47,18 @@ public class Input implements Serializable {
 
     public List<InputChunk> getInputChunks() {
         return Collections.unmodifiableList(inputChunks);
+    }
+
+    @Override
+    public String toString() {
+        String out = projectName;
+        for (InputChunk chunk : inputChunks) {
+            String[] tokens = chunk.toString().split("\n");
+            for (String token : tokens) {
+                out += "\n-" + token;
+            }
+        }
+        return out;
     }
 }
 

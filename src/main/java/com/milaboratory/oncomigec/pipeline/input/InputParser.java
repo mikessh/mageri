@@ -43,18 +43,25 @@ public class InputParser {
 
         JSONObject rootObject = new JSONObject(jsonStr);
 
+        // Parse project structure
         List<InputChunk> chunks = new ArrayList<>();
 
-        // parse json chunks
-        if (rootObject.has("byindex")) {
-            JSONArray byindex = rootObject.getJSONArray("byindex");
-            chunks.addAll(parseChunks(byindex));
-        }
+        JSONArray structureArr = rootObject.getJSONArray("structure");
 
-        // parse chunks that are listed in tabular format
-        if (rootObject.has("tabular")) {
-            JSONObject tabular = rootObject.getJSONObject("tabular");
-            chunks.addAll(parseChunks(tabular));
+        for (int i = 0; i < structureArr.length(); i++) {
+            JSONObject structureObject = structureArr.getJSONObject(i);
+
+            // parse json chunks
+            if (structureObject.has("byindex")) {
+                JSONArray byindex = structureObject.getJSONArray("byindex");
+                chunks.addAll(parseChunks(byindex));
+            }
+
+            // parse chunks that are listed in tabular format
+            if (structureObject.has("tabular")) {
+                JSONObject tabular = structureObject.getJSONObject("tabular");
+                chunks.addAll(parseChunks(tabular));
+            }
         }
 
         String projectName = rootObject.getString("project"),
@@ -68,7 +75,7 @@ public class InputParser {
         List<InputChunk> chunks = new ArrayList<>();
 
         // index(tab)fastq1(tab)fastq2 table
-        String indexTablePath = table.getString("filename");
+        String indexTablePath = table.getString("file");
 
         List<String> rows = ioProvider.readLines(indexTablePath);
 

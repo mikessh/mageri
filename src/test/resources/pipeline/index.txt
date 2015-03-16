@@ -1,0 +1,4 @@
+#index	fastq1	fastq2
+1_23	pipeline/1_23_R1.fastq.gz	pipeline/1_23_R2.fastq.gz
+7_6	pipeline/7_6_R1.fastq.gz	pipeline/7_6_R2.fastq.gz
+7_27	pipeline/7_27_R1.fastq.gz	pipeline/7_27_R2.fastq.gz

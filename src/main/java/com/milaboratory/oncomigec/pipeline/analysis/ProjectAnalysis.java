@@ -31,6 +31,7 @@ import com.milaboratory.oncomigec.pipeline.Presets;
 import com.milaboratory.oncomigec.pipeline.RuntimeParameters;
 import com.milaboratory.oncomigec.pipeline.input.Input;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -46,13 +47,13 @@ public class ProjectAnalysis {
 
     private final Map<Sample, SampleAnalysis> analysisBySample = new TreeMap<>();
 
-    public ProjectAnalysis(Input input) {
+    public ProjectAnalysis(Input input) throws IOException {
         this(input, Presets.DEFAULT, RuntimeParameters.DEFAULT);
     }
-    
+
     public ProjectAnalysis(Input input,
                            Presets presets,
-                           RuntimeParameters runtimeParameters) {
+                           RuntimeParameters runtimeParameters) throws IOException {
         this.presets = presets;
         this.runtimeParameters = runtimeParameters;
         this.project = Project.fromInput(input);

@@ -251,7 +251,7 @@ public final class MigecCli {
             } else if (commandLine.hasOption(OPT_LOAD_PRESET)) {
                 parameterSet = Presets.fromPreset(commandLine.getOptionValue(OPT_LOAD_PRESET));
             } else
-                parameterSet = new Presets();
+                parameterSet = Presets.DEFAULT;
 
             if (commandLine.hasOption(OPT_EXPORT_PRESET)) {
                 File exportPresetFile = new File(commandLine.getOptionValue(OPT_EXPORT_PRESET));

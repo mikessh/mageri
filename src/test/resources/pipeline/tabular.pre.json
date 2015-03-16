@@ -1,0 +1,12 @@
+{
+  "project": "test",
+  "references": "pipeline/refs.fa",
+  "structure": [
+    {
+      "tabular": {
+        "file": "pipeline/index.txt",        
+        "preprocessed": {}
+      }
+    }
+  ]
+}

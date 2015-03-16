@@ -24,7 +24,6 @@ import com.sun.istack.internal.Nullable;
 
 import java.io.InputStream;
 import java.io.Serializable;
-import java.util.List;
 
 public class InputChunk implements ReadSpecific, Serializable {
     protected transient final InputStream inputStream1, inputStream2;
@@ -58,5 +57,15 @@ public class InputChunk implements ReadSpecific, Serializable {
     @Override
     public boolean isPairedEnd() {
         return inputStream2 != null;
+    }
+
+    @Override
+    public String toString() {
+        String out = index + "\n-paired:" + isPairedEnd() + "\n-checkout:";
+        String[] tokens = checkoutRule.toString().split("\n");
+        for (String token : tokens) {
+            out += "\n-" + token;
+        }
+        return out;
     }
 }

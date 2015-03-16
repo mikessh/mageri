@@ -60,4 +60,9 @@ public class PrimerRule extends AdapterRule {
     public boolean hasSubMultiplexing() {
         return false;
     }
+
+    @Override
+    public String toString() {
+        return  "primer_rule\n-submultiplex:" + hasSubMultiplexing() + "\n-samples:" + sampleName;
+    }
 }
