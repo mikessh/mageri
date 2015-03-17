@@ -207,4 +207,15 @@ public class VariantContainer implements Serializable {
     public MutationsAndCoverage getMutationsAndCoverage() {
         return mutationsAndCoverage;
     }
+
+    /**
+     * Gets variant data at specified position
+     *
+     * @param pos coordinate
+     * @param nt  nucleotide
+     * @return variant data or null if no minor variant exists
+     */
+    public Variant getAt(int pos, byte nt) {
+        return variants[pos][nt];
+    }
 }

@@ -3,7 +3,7 @@ package com.milaboratory.oncomigec.pipeline;
 import com.milaboratory.oncomigec.core.assemble.misc.AssemblerParameters;
 import com.milaboratory.oncomigec.core.consalign.misc.ConsensusAlignerParameters;
 import com.milaboratory.oncomigec.core.correct.CorrectorParameters;
-import com.milaboratory.oncomigec.core.haplotype.HaplotypeTreeParameters;
+import com.milaboratory.oncomigec.core.haplotype.HaplotypeAssemblerParameters;
 import com.milaboratory.oncomigec.core.io.misc.PreprocessorParameters;
 import com.milaboratory.oncomigec.preproc.demultiplex.entity.DemultiplexParameters;
 import com.milaboratory.oncomigec.util.ParameterSet;
@@ -23,7 +23,7 @@ public class Presets implements ParameterSet {
     private final AssemblerParameters assemblerParameters;
     private final ConsensusAlignerParameters consensusAlignerParameters;
     private final CorrectorParameters correctorParameters;
-    private final HaplotypeTreeParameters haplotypeTreeParameters;
+    private final HaplotypeAssemblerParameters haplotypeAssemblerParameters;
     private final DemultiplexParameters demultiplexParameters;
 
     private static String DEDUCE_VERSION() {
@@ -43,7 +43,7 @@ public class Presets implements ParameterSet {
                 assemblerParameters,
                 ConsensusAlignerParameters.DEFAULT,
                 CorrectorParameters.DEFAULT,
-                HaplotypeTreeParameters.DEFAULT);
+                HaplotypeAssemblerParameters.DEFAULT);
     }
 
     public Presets(DemultiplexParameters demultiplexParameters,
@@ -51,12 +51,12 @@ public class Presets implements ParameterSet {
                    AssemblerParameters assemblerParameters,
                    ConsensusAlignerParameters consensusAlignerParameters,
                    CorrectorParameters correctorParameters,
-                   HaplotypeTreeParameters haplotypeTreeParameters) {
+                   HaplotypeAssemblerParameters haplotypeAssemblerParameters) {
         this.preprocessorParameters = preprocessorParameters;
         this.assemblerParameters = assemblerParameters;
         this.consensusAlignerParameters = consensusAlignerParameters;
         this.correctorParameters = correctorParameters;
-        this.haplotypeTreeParameters = haplotypeTreeParameters;
+        this.haplotypeAssemblerParameters = haplotypeAssemblerParameters;
         this.demultiplexParameters = demultiplexParameters;
     }
 
@@ -81,8 +81,8 @@ public class Presets implements ParameterSet {
         return correctorParameters;
     }
 
-    public HaplotypeTreeParameters getHaplotypeTreeParameters() {
-        return haplotypeTreeParameters;
+    public HaplotypeAssemblerParameters getHaplotypeAssemblerParameters() {
+        return haplotypeAssemblerParameters;
     }
 
     public static Presets loadFromFile(File xmlFile) throws JDOMException, IOException {
@@ -146,7 +146,7 @@ public class Presets implements ParameterSet {
         e.addContent(assemblerParameters.toXml());
         e.addContent(consensusAlignerParameters.toXml());
         e.addContent(correctorParameters.toXml());
-        e.addContent(haplotypeTreeParameters.toXml());
+        e.addContent(haplotypeAssemblerParameters.toXml());
         return e;
     }
 
@@ -164,7 +164,7 @@ public class Presets implements ParameterSet {
                 AssemblerParameters.fromXml(e),
                 ConsensusAlignerParameters.fromXml(e),
                 CorrectorParameters.fromXml(e),
-                HaplotypeTreeParameters.fromXml(e)
+                HaplotypeAssemblerParameters.fromXml(e)
         );
     }
 
@@ -179,7 +179,7 @@ public class Presets implements ParameterSet {
         if (!consensusAlignerParameters.equals(presets.consensusAlignerParameters)) return false;
         if (!correctorParameters.equals(presets.correctorParameters)) return false;
         if (!demultiplexParameters.equals(presets.demultiplexParameters)) return false;
-        if (!haplotypeTreeParameters.equals(presets.haplotypeTreeParameters)) return false;
+        if (!haplotypeAssemblerParameters.equals(presets.haplotypeAssemblerParameters)) return false;
         if (!preprocessorParameters.equals(presets.preprocessorParameters)) return false;
 
         return true;
@@ -191,7 +191,7 @@ public class Presets implements ParameterSet {
         result = 31 * result + assemblerParameters.hashCode();
         result = 31 * result + consensusAlignerParameters.hashCode();
         result = 31 * result + correctorParameters.hashCode();
-        result = 31 * result + haplotypeTreeParameters.hashCode();
+        result = 31 * result + haplotypeAssemblerParameters.hashCode();
         result = 31 * result + demultiplexParameters.hashCode();
         return result;
     }

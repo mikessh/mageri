@@ -16,7 +16,7 @@ import java.nio.file.Paths;
 @SuppressWarnings("static-access")
 public final class MigecCli {
     private static final Class ME = MigecCli.class;
-    private static final String MY_PATH = ME.getProtectionDomain().getCodeSource().getLocation().getFile(),
+    public static final String MY_PATH = ME.getProtectionDomain().getCodeSource().getLocation().getFile(),
             MY_VERSION = ME.getPackage().getImplementationVersion();
 
     public static void main(String[] args) throws Exception {
@@ -131,7 +131,7 @@ public final class MigecCli {
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Run
         projectAnalysis.run();
-        
+
         // todo: dump variants
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////

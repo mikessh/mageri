@@ -33,7 +33,7 @@ import com.milaboratory.oncomigec.core.consalign.processor.ConsensusAligner;
 import com.milaboratory.oncomigec.core.correct.CorrectedConsensus;
 import com.milaboratory.oncomigec.core.correct.Corrector;
 import com.milaboratory.oncomigec.core.genomic.Reference;
-import com.milaboratory.oncomigec.core.haplotype.HaplotypeTree;
+import com.milaboratory.oncomigec.core.haplotype.HaplotypeAssembler;
 import com.milaboratory.oncomigec.core.io.entity.Mig;
 import com.milaboratory.oncomigec.core.io.misc.UmiHistogram;
 import com.milaboratory.oncomigec.core.io.readers.MigOutputPort;
@@ -61,7 +61,7 @@ public class SampleAnalysis implements ReadSpecific, Serializable {
     protected final ConsensusAligner aligner;
     protected Corrector corrector;
     protected VariantLibrary variantLibrary;
-    protected HaplotypeTree haplotypeTree;
+    protected HaplotypeAssembler haplotypeAssembler;
 
     private boolean firstStageRan = false, secondStageRan = false;
 
@@ -172,25 +172,26 @@ public class SampleAnalysis implements ReadSpecific, Serializable {
         sout("Assemblying haplotypes.", 1);
 
         // Haplotype 1-mm graph
-        this.haplotypeTree = new HaplotypeTree(
+        this.haplotypeAssembler = new HaplotypeAssembler(
                 corrector.getCorrectorReferenceLibrary(),
-                parent.getPresets().getHaplotypeTreeParameters());
+                parent.getPresets().getHaplotypeAssemblerParameters());
 
         // Correction processing (MIGEC)
         for (AlignedConsensus alignmentData : alignmentDataList) {
             CorrectedConsensus correctedConsensus = corrector.correct(alignmentData);
             if (correctedConsensus != null)
-                haplotypeTree.add(correctedConsensus);
+                haplotypeAssembler.add(correctedConsensus);
         }
 
         // Haplotype filtering
-        haplotypeTree.calculatePValues();
+        haplotypeAssembler.assemble();
 
         secondStageRan = true;
 
-        sout("Finished second stage, " + haplotypeTree.getHaplotypes().size() + " haplotypes assembled.", 1);
+        sout("Finished second stage, " + haplotypeAssembler.getAssembledClonotypes().size() + " haplotypes assembled.", 1);
     }
 
+    // todo: necessary for classifier
     public VariantContainer dumpMinorVariants(Reference reference, double threshold) {
         if (!firstStageRan)
             throw new RuntimeException("Should run first stage first.");
@@ -230,8 +231,8 @@ public class SampleAnalysis implements ReadSpecific, Serializable {
         return parent;
     }
 
-    public HaplotypeTree getHaplotypeTree() {
-        return haplotypeTree;
+    public HaplotypeAssembler getHaplotypeAssembler() {
+        return haplotypeAssembler;
     }
 
     public VariantLibrary getVariantLibrary() {
@@ -252,8 +253,7 @@ public class SampleAnalysis implements ReadSpecific, Serializable {
                 assembler,
                 aligner,
                 corrector,
-                variantLibrary,
-                haplotypeTree
+                haplotypeAssembler
         );
     }
 

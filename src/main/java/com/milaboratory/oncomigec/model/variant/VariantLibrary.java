@@ -18,8 +18,6 @@
 
 package com.milaboratory.oncomigec.model.variant;
 
-import com.milaboratory.core.sequence.nucleotide.NucleotideAlphabet;
-import com.milaboratory.oncomigec.core.PipelineBlock;
 import com.milaboratory.oncomigec.core.consalign.entity.AlignerReferenceLibrary;
 import com.milaboratory.oncomigec.core.genomic.Reference;
 import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
@@ -27,12 +25,12 @@ import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
 import java.util.HashMap;
 import java.util.Map;
 
-public class VariantLibrary extends PipelineBlock {
+public class VariantLibrary {// extends PipelineBlock {
     private final Map<Reference, VariantContainer> variantContainerMap = new HashMap<>();
     private final ReferenceLibrary referenceLibrary;
 
     public VariantLibrary(AlignerReferenceLibrary alignerReferenceLibrary) {
-        super("substitution.matrix");
+        // super("substitution.matrix");
         this.referenceLibrary = alignerReferenceLibrary.getReferenceLibrary();
         for (Reference reference : referenceLibrary.getReferences()) {
             variantContainerMap.put(reference,
@@ -97,7 +95,7 @@ public class VariantLibrary extends PipelineBlock {
     public double getBgFreqRead(Reference reference, byte from, byte to) {
         return variantContainerMap.get(reference).getBgFreqRead(from, to, false);
     }
-
+/*
     @Override
     public String getHeader() {
         return "reference\ttype\tfrom\tto\tfreq";
@@ -129,5 +127,5 @@ public class VariantLibrary extends PipelineBlock {
             }
         }
         return stringBuilder.toString();
-    }
+    }*/
 }
