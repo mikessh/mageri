@@ -75,6 +75,10 @@ public class MutationDifference implements Iterable<Integer>, Serializable {
         return difference.length;
     }
 
+    public boolean isEmpty() {
+        return difference.length == 0;
+    }
+
     @Override
     public Iterator<Integer> iterator() {
         return new ArrayIterator(difference);

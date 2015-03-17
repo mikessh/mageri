@@ -15,94 +15,157 @@
  */
 package com.milaboratory.oncomigec.core.haplotype;
 
+import com.milaboratory.core.sequence.NucleotideSQPair;
+import com.milaboratory.core.sequence.Range;
+import com.milaboratory.core.sequence.mutations.Mutations;
+import com.milaboratory.core.sequence.nucleotide.NucleotideAlphabet;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
-import com.milaboratory.oncomigec.core.correct.CorrectedConsensus;
+import com.milaboratory.core.sequencing.read.SSequencingRead;
+import com.milaboratory.core.sequencing.read.SSequencingReadImpl;
+import com.milaboratory.oncomigec.core.genomic.Reference;
 import com.milaboratory.oncomigec.core.mutations.MutationDifference;
+import com.milaboratory.oncomigec.core.mutations.wrappers.MutationWrapper;
+import com.milaboratory.oncomigec.core.mutations.wrappers.MutationWrapperCollection;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.Serializable;
-import java.util.List;
+import java.util.*;
 
 public final class Haplotype implements Serializable {
-    private final CorrectedConsensus correctedConsensus;
-    private final NucleotideSequence haplotypeSequence, referenceSequence;
-    private final String maskedSequence;
+    protected final Reference reference;
+    protected double worstPvalue;
+    protected LinkedList<Range> ranges;
+    protected Range span;
+    protected final HaplotypeCounters haplotypeCounters;
+    protected int[] mutations;
+    protected final Set<Integer> coverageMask;
 
-    public Haplotype(CorrectedConsensus correctedConsensus,
-                     NucleotideSequence haplotypeSequence, NucleotideSequence referenceSequence,
-                     String maskedSequence) {
-        this.correctedConsensus = correctedConsensus;
-        this.haplotypeSequence = haplotypeSequence;
-        this.referenceSequence = referenceSequence;
-        this.maskedSequence = maskedSequence;
+    public Haplotype(Reference reference,
+                     int[] mutations,
+                     int migSize, double worstPvalue,
+                     Set<Integer> coverageMask,
+                     List<Range> ranges) {
+        this.reference = reference;
+        this.haplotypeCounters = new HaplotypeCounters();
+        this.mutations = mutations;
+        haplotypeCounters.incrementCount();
+        haplotypeCounters.incrementReadCount(migSize);
+        this.worstPvalue = worstPvalue;
+        this.coverageMask = coverageMask;
+        this.ranges = new LinkedList<>(ranges);
     }
 
-    public static List<MutationDifference> getMutationDifferences(Haplotype parent, Haplotype child) {
-        return CorrectedConsensus.getMutationDifferences(parent.correctedConsensus,
-                child.correctedConsensus);
+    private void simplifyRanges() {
+        Collections.sort(ranges, RangeComparator.INSTANCE);
+
+        LinkedList<Range> newRanges = new LinkedList<>();
+
+        Range currentRange = null;
+
+        for (Range range : ranges) {
+            if (currentRange != null) {
+                if (currentRange.intersectsWithOrTouches(range)) {
+                    // append and continue sliding
+                    currentRange = new Range(currentRange.getFrom(), range.getTo());
+                } else {
+                    // failed to overlap with previous one
+                    newRanges.add(currentRange);
+                    // start sliding with me
+                    currentRange = range;
+                }
+            } else {
+                // start sliding with me
+                currentRange = range;
+            }
+        }
+
+        // add last
+        newRanges.add(currentRange);
+
+        this.ranges = newRanges;
+
+        computeSpan();
     }
 
-    public NucleotideSequence getReferenceSequence() {
-        return referenceSequence;
+    private void computeSpan() {
+        Range firstRange = ranges.getFirst(), lastRange = ranges.getLast();
+
+        span = new Range(firstRange.getFrom(), lastRange.getTo());
     }
 
-    public NucleotideSequence getHaplotypeSequence() {
-        return haplotypeSequence;
+    void merge(Haplotype haplotype) {
+        haplotypeCounters.incrementCount();
+        haplotypeCounters.incrementReadCount(haplotype.haplotypeCounters.getReadCount());
+        worstPvalue = Math.max(worstPvalue, haplotype.worstPvalue);
+        ranges.addAll(haplotype.ranges);
+        coverageMask.addAll(haplotype.coverageMask);
+        mutations = Mutations.combineMutations(mutations, haplotype.mutations);
+        simplifyRanges();
     }
 
-    public double getWorstPointPvalue() {
-        return correctedConsensus.getWorstPValue();
+    private NucleotideSequence getMutatedSequence() {
+        return Mutations.mutate(reference.getSequence(), mutations);
     }
 
     public String getMaskedSequence() {
-        return maskedSequence;
-    }
+        NucleotideSequence haplotypeSequence = getMutatedSequence();
 
-    public CorrectedConsensus getCorrectedConsensus() {
-        return correctedConsensus;
-    }
-
-    public String getMutationsSignature() {
         StringBuilder sb = new StringBuilder();
 
-        int n = correctedConsensus.getNumberOfReferences();
+        // todo: mismatches, insertions - lower case, deletions '-'
 
-        for (int i = 0; i < n - 1; i++) {
-            sb.append(correctedConsensus.getMajorMutations(i));
-            sb.append(";");
-        }
-        sb.append(correctedConsensus.getMajorMutations(n - 1));
+        for (int i = 0; i < haplotypeSequence.size(); i++)
+            if (coverageMask.contains(i))
+                sb.append('N');
+            else
+                sb.append(NucleotideAlphabet.INSTANCE.symbolFromCode(haplotypeSequence.codeAt(i)));
 
         return sb.toString();
     }
 
-    public String getReferencesSignature() {
-        StringBuilder sb = new StringBuilder();
+    public MutationDifference getMutationDifference(Haplotype other, Range range) {
+        int[] myMutations = Mutations.extractMutationsForRange(mutations, range),
+                hisMutations = Mutations.extractMutationsForRange(other.mutations, range);
 
-        int n = correctedConsensus.getNumberOfReferences();
+        return new MutationDifference(reference,
+                myMutations,
+                hisMutations);
+    }
 
-        for (int i = 0; i < n - 1; i++) {
-            sb.append(correctedConsensus.getReference(i).getFullName());
-            sb.append(";");
+    public double getWorstPointPvalue() {
+        return worstPvalue;
+    }
+
+    public MutationWrapperCollection getMutations() {
+        return new MutationWrapperCollection(reference, mutations);
+    }
+
+    public SSequencingRead asFastaRecord(int id) {
+        return new SSequencingReadImpl(">" + id +
+                " reference=" + getReference().getFullName() +
+                " mutations=" + getMutationSignature(),
+                new NucleotideSQPair(getMaskedSequence()), id);
+    }
+
+    public String getMutationSignature() {
+        List<String> mutationSignatures = new ArrayList<>();
+        for (MutationWrapper mutation : getMutations().getMutations()) {
+            mutationSignatures.add(mutation.toString());
         }
-        sb.append(correctedConsensus.getReference(n - 1).getFullName());
+        Collections.sort(mutationSignatures);
 
-        return sb.toString();
+        return StringUtils.join(mutationSignatures, ",");
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        Haplotype haplotype = (Haplotype) o;
-
-        if (!haplotypeSequence.equals(haplotype.haplotypeSequence)) return false;
-
-        return true;
+    public HaplotypeCounters getHaplotypeCounters() {
+        return haplotypeCounters;
     }
 
-    @Override
-    public int hashCode() {
-        return haplotypeSequence.hashCode();
+    public Reference getReference() {
+        return reference;
+    }
+
+    public Range getSpan() {
+        return span;
     }
 }

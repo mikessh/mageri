@@ -56,7 +56,7 @@ public class MigecMutationsCollection implements Iterable<MigecMutation>, Mutati
         }
     }
 
-    private MigecMutationsCollection(Reference reference) {
+    public MigecMutationsCollection(Reference reference) {
         this.reference = reference;
     }
 

@@ -13,15 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Last modified on 12.3.2015 by mikesh
+ * Last modified on 18.3.2015 by mikesh
  */
 
 package com.milaboratory.oncomigec.core.haplotype;
 
-import com.milaboratory.oncomigec.core.PipelineBlockIO;
+import java.util.Comparator;
 
-public class HaplotypeTreeIO extends PipelineBlockIO<HaplotypeAssembler> {
-    public HaplotypeTreeIO() {
-        super("haplotype", 5);
+public class SpanComparator implements Comparator<Haplotype> {
+    public static SpanComparator INSTANCE = new SpanComparator();
+
+    private SpanComparator() {
+    }
+
+    @Override
+    public int compare(Haplotype o1, Haplotype o2) {
+        return RangeComparator.INSTANCE.compare(o1.getSpan(), o2.getSpan());
     }
 }

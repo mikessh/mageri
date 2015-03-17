@@ -19,7 +19,7 @@
 package com.milaboratory.oncomigec.pipeline;
 
 import com.milaboratory.oncomigec.core.haplotype.Haplotype;
-import com.milaboratory.oncomigec.core.haplotype.HaplotypeTree;
+import com.milaboratory.oncomigec.core.haplotype.HaplotypeAssembler;
 import com.milaboratory.oncomigec.pipeline.analysis.ProjectAnalysis;
 import com.milaboratory.oncomigec.pipeline.analysis.Sample;
 import com.milaboratory.oncomigec.pipeline.input.Input;
@@ -40,12 +40,12 @@ public class PipelineTest {
         projectAnalysis.run();
 
         for (Sample sample : projectAnalysis.getProject().getSamples()) {
-            HaplotypeTree haplotypeTree = projectAnalysis.getAnalysis(sample).getHaplotypeTree();
-            Assert.assertTrue(haplotypeTree.getHaplotypes().size() > 0);
-            for (Haplotype haplotype : haplotypeTree.getHaplotypes()) {
+            HaplotypeAssembler haplotypeAssembler = projectAnalysis.getAnalysis(sample).getHaplotypeAssembler();
+            Assert.assertTrue(haplotypeAssembler.getAssembledClonotypes().size() > 0);
+            for (Haplotype haplotype : haplotypeAssembler.getAssembledClonotypes()) {
                 Assert.assertEquals(
                         projectAnalysis.getReferenceLibrary().getByName("SPIKE1"),
-                        haplotype.getCorrectedConsensus().getReference());
+                        haplotype.getReference());
             }
         }
 

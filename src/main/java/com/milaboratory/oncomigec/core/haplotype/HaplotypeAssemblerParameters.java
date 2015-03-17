@@ -3,15 +3,15 @@ package com.milaboratory.oncomigec.core.haplotype;
 import com.milaboratory.oncomigec.util.ParameterSet;
 import org.jdom.Element;
 
-public final class HaplotypeTreeParameters implements ParameterSet {
+public final class HaplotypeAssemblerParameters implements ParameterSet {
     private final double errorMaskingTestMajorRatio, errorMaskingTestPvalueThreshold;
     private final int depth;
 
-    public static HaplotypeTreeParameters DEFAULT = new HaplotypeTreeParameters(2.0, 0.05, 2),
-            NO_MASKING_TEST = new HaplotypeTreeParameters(2.0, 1.0, 2);
+    public static HaplotypeAssemblerParameters DEFAULT = new HaplotypeAssemblerParameters(2.0, 0.05, 2),
+            NO_MASKING_TEST = new HaplotypeAssemblerParameters(2.0, 1.0, 2);
 
-    public HaplotypeTreeParameters(double errorMaskingTestMajorRatio,
-                                   double errorMaskingTestPvalueThreshold, int depth) {
+    public HaplotypeAssemblerParameters(double errorMaskingTestMajorRatio,
+                                        double errorMaskingTestPvalueThreshold, int depth) {
         this.errorMaskingTestMajorRatio = errorMaskingTestMajorRatio;
         this.errorMaskingTestPvalueThreshold = errorMaskingTestPvalueThreshold;
         this.depth = depth;
@@ -37,16 +37,16 @@ public final class HaplotypeTreeParameters implements ParameterSet {
 
     @Override
     public Element toXml() {
-        Element e = new Element("HaplotypeTreeParameters");
+        Element e = new Element("HaplotypeAssemblerParameters");
         e.addContent(new Element("errorMaskingTestMajorRatio").setText(Double.toString(errorMaskingTestMajorRatio)));
         e.addContent(new Element("errorMaskingTestPvalueThreshold").setText(Double.toString(errorMaskingTestPvalueThreshold)));
         e.addContent(new Element("depth").setText(Integer.toString(depth)));
         return e;
     }
 
-    public static HaplotypeTreeParameters fromXml(Element parent) {
-        Element e = parent.getChild("HaplotypeTreeParameters");
-        return new HaplotypeTreeParameters(
+    public static HaplotypeAssemblerParameters fromXml(Element parent) {
+        Element e = parent.getChild("HaplotypeAssemblerParameters");
+        return new HaplotypeAssemblerParameters(
                 Double.parseDouble(e.getChildTextTrim("errorMaskingTestMajorRatio")),
                 Double.parseDouble(e.getChildTextTrim("errorMaskingTestPvalueThreshold")),
                 Integer.parseInt(e.getChildTextTrim("depth"))
@@ -58,7 +58,7 @@ public final class HaplotypeTreeParameters implements ParameterSet {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        HaplotypeTreeParameters that = (HaplotypeTreeParameters) o;
+        HaplotypeAssemblerParameters that = (HaplotypeAssemblerParameters) o;
 
         if (Double.compare(that.errorMaskingTestMajorRatio, errorMaskingTestMajorRatio) != 0) return false;
         if (depth != that.depth) return false;

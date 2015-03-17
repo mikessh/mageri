@@ -91,7 +91,7 @@ public class HaplotypeTreeDataTest {
         System.out.println();
         System.out.println(haplotypeTree);
 
-        Set<Haplotype> finalHaplotypes = haplotypeTree.getHaplotypes(0.05);
+        Set<Haplotype> finalHaplotypes = haplotypeTree.getAssembledClonotypes(0.05);
         Set<NucleotideSequence> finalHaplotypeSequences = new HashSet<>();
         for (Haplotype hsd : finalHaplotypes)
             finalHaplotypeSequences.add(hsd.getHaplotypeSequence());
