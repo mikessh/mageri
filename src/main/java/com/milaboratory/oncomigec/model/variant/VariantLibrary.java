@@ -18,19 +18,21 @@
 
 package com.milaboratory.oncomigec.model.variant;
 
+import com.milaboratory.core.sequence.nucleotide.NucleotideAlphabet;
+import com.milaboratory.oncomigec.core.PipelineBlock;
 import com.milaboratory.oncomigec.core.consalign.entity.AlignerReferenceLibrary;
 import com.milaboratory.oncomigec.core.genomic.Reference;
 import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
 
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class VariantLibrary implements Serializable {
+public class VariantLibrary extends PipelineBlock {
     private final Map<Reference, VariantContainer> variantContainerMap = new HashMap<>();
     private final ReferenceLibrary referenceLibrary;
 
     public VariantLibrary(AlignerReferenceLibrary alignerReferenceLibrary) {
+        super("substitution.matrix");
         this.referenceLibrary = alignerReferenceLibrary.getReferenceLibrary();
         for (Reference reference : referenceLibrary.getReferences()) {
             variantContainerMap.put(reference,
@@ -97,15 +99,35 @@ public class VariantLibrary implements Serializable {
     }
 
     @Override
-    public String toString() {
-        StringBuilder stringBuilder = new StringBuilder("#" + super.toString());
+    public String getHeader() {
+        return "reference\ttype\tfrom\tto\tfreq";
+    }
 
+    @Override
+    public String getBody() {
+        StringBuilder stringBuilder = new StringBuilder();
         for (Reference reference : referenceLibrary.getReferences()) {
-            stringBuilder
-                    .append("\n").append(reference.toString())
-                    .append("\n").append(variantContainerMap.get(reference).toString());
+            for (byte i = 0; i < 4; i++) {
+                stringBuilder.append("\n").append(NucleotideAlphabet.INSTANCE.symbolFromCode(i));
+                for (byte j = 0; j < 4; j++) {
+                    stringBuilder.append(reference.getFullName()).append("\t").
+                            append("mig\t").
+                            append(NucleotideAlphabet.INSTANCE.symbolFromCode(i)).append("\t").
+                            append(NucleotideAlphabet.INSTANCE.symbolFromCode(j)).append("\t").
+                            append(getBgFreqMig(reference, i, j)).append("\n");
+                }
+            }
+            for (byte i = 0; i < 4; i++) {
+                stringBuilder.append("\n").append(NucleotideAlphabet.INSTANCE.symbolFromCode(i));
+                for (byte j = 0; j < 4; j++) {
+                    stringBuilder.append(reference.getFullName()).append("\t").
+                            append("read\t").
+                            append(NucleotideAlphabet.INSTANCE.symbolFromCode(i)).append("\t").
+                            append(NucleotideAlphabet.INSTANCE.symbolFromCode(j)).append("\t").
+                            append(getBgFreqRead(reference, i, j)).append("\n");
+                }
+            }
         }
-
         return stringBuilder.toString();
     }
 }

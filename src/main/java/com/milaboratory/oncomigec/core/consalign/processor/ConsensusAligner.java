@@ -16,8 +16,8 @@
 package com.milaboratory.oncomigec.core.consalign.processor;
 
 import cc.redberry.pipe.Processor;
-import com.milaboratory.oncomigec.core.PipelineBlock;
 import com.milaboratory.oncomigec.ReadSpecific;
+import com.milaboratory.oncomigec.core.PipelineBlock;
 import com.milaboratory.oncomigec.core.align.processor.Aligner;
 import com.milaboratory.oncomigec.core.assemble.entity.Consensus;
 import com.milaboratory.oncomigec.core.consalign.entity.AlignedConsensus;
@@ -25,9 +25,12 @@ import com.milaboratory.oncomigec.core.consalign.entity.AlignerReferenceLibrary;
 import com.milaboratory.oncomigec.core.consalign.misc.ConsensusAlignerParameters;
 import com.milaboratory.oncomigec.util.ProcessorResultWrapper;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 public abstract class ConsensusAligner<T extends Consensus>
         implements Processor<ProcessorResultWrapper<T>, ProcessorResultWrapper<AlignedConsensus>>,
         ReadSpecific, PipelineBlock {
+    protected final AtomicInteger alignedMigs = new AtomicInteger(), droppedMigs = new AtomicInteger();
     protected transient final Aligner aligner;
     protected final AlignerReferenceLibrary alignerReferenceLibrary;
     protected final ConsensusAlignerParameters parameters;
@@ -42,10 +45,13 @@ public abstract class ConsensusAligner<T extends Consensus>
     public ProcessorResultWrapper<AlignedConsensus> process(ProcessorResultWrapper<T> consensus) {
         if (consensus.hasResult()) {
             AlignedConsensus alignmentData = align(consensus.getResult());
-            if (alignmentData == null)
+            if (alignmentData == null) {
+                droppedMigs.incrementAndGet();
                 return ProcessorResultWrapper.BLANK;
-            else
+            } else {
+                alignedMigs.incrementAndGet();
                 return new ProcessorResultWrapper<>(alignmentData);
+            }
         } else
             return ProcessorResultWrapper.BLANK;
     }
@@ -54,5 +60,13 @@ public abstract class ConsensusAligner<T extends Consensus>
 
     public AlignerReferenceLibrary getAlignerReferenceLibrary() {
         return alignerReferenceLibrary;
+    }
+
+    public int getAlignedMigs() {
+        return alignedMigs.get();
+    }
+
+    public int getDroppedMigs() {
+        return droppedMigs.get();
     }
 }

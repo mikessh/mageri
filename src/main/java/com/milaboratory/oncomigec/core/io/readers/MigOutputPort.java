@@ -20,11 +20,13 @@ package com.milaboratory.oncomigec.core.io.readers;
 
 import cc.redberry.pipe.OutputPort;
 import com.milaboratory.oncomigec.ReadSpecific;
+import com.milaboratory.oncomigec.core.PipelineBlock;
 import com.milaboratory.oncomigec.core.io.entity.Mig;
+import com.milaboratory.oncomigec.preproc.demultiplex.processor.CheckoutProcessor;
 
 import java.io.Serializable;
 
-public class MigOutputPort<MigType extends Mig> implements OutputPort<MigType>, ReadSpecific, Serializable {
+public class MigOutputPort<MigType extends Mig> implements OutputPort<MigType>, ReadSpecific {
     private transient final MigReader<MigType> migReader;
     private final String sampleName;
     private final int sizeThreshold;
@@ -44,4 +46,5 @@ public class MigOutputPort<MigType extends Mig> implements OutputPort<MigType>, 
     public boolean isPairedEnd() {
         return migReader.isPairedEnd();
     }
+
 }

@@ -18,6 +18,7 @@
 
 package com.milaboratory.oncomigec.util.testing;
 
+import com.milaboratory.oncomigec.core.PipelineBlock;
 import org.apache.commons.lang3.SerializationUtils;
 
 import java.io.IOException;
@@ -33,17 +34,10 @@ public class TestUtil {
         byte[] data = SerializationUtils.serialize(original);
         assertTrue("Serialization successful", data.length > 0);
 
-        boolean providesOutput = false; // is toString overridden?
-
-        try {
-            providesOutput = original.getClass().getMethod("toString").getDeclaringClass() != Object.class;
-        } catch (NoSuchMethodException ignored) {
-
-        }
-
-        if (providesOutput) {
-            Serializable recovered = SerializationUtils.deserialize(data);
-            assertEquals("Plain-text data match", recovered.toString(), original.toString());
+        Serializable recovered = SerializationUtils.deserialize(data);
+        if (original instanceof PipelineBlock) {
+            assertEquals("Plain-text data match", ((PipelineBlock) original).getBody(),
+                    ((PipelineBlock) recovered).getBody());
         }
     }
 

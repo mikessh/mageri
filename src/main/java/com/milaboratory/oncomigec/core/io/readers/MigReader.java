@@ -20,14 +20,15 @@ import com.milaboratory.oncomigec.pipeline.Speaker;
 import com.milaboratory.oncomigec.preproc.demultiplex.processor.CheckoutProcessor;
 import com.milaboratory.oncomigec.util.ProcessorResultWrapper;
 
+import java.io.Serializable;
 import java.util.*;
 
-public abstract class MigReader<MigType extends Mig> implements ReadSpecific {
+public abstract class MigReader<MigType extends Mig> implements Serializable, ReadSpecific {
     private static final boolean ENABLE_BUFFERING = false;
 
     protected final PreprocessorParameters preprocessorParameters;
     protected final RuntimeParameters runtimeParameters;
-    private final UmiIndexer umiIndexer;
+    private transient final UmiIndexer umiIndexer;
     protected final List<String> sampleNames;
 
     // Umi index is here

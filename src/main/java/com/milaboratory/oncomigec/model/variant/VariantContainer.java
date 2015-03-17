@@ -18,7 +18,6 @@
 
 package com.milaboratory.oncomigec.model.variant;
 
-import com.milaboratory.core.sequence.nucleotide.NucleotideAlphabet;
 import com.milaboratory.oncomigec.core.consalign.mutations.MutationsAndCoverage;
 
 import java.io.Serializable;
@@ -207,43 +206,5 @@ public class VariantContainer implements Serializable {
      */
     public MutationsAndCoverage getMutationsAndCoverage() {
         return mutationsAndCoverage;
-    }
-
-    /**
-     * Gets variant data at specified position
-     *
-     * @param pos coordinate
-     * @param nt  nucleotide
-     * @return variant data or null if no minor variant exists
-     */
-    public Variant getAt(int pos, byte nt) {
-        return variants[pos][nt];
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder stringBuilder = new StringBuilder("#" + super.toString());
-        StringBuilder matrixHeader = new StringBuilder();
-
-        for (byte i = 0; i < 4; i++)
-            matrixHeader.append("\t").append(NucleotideAlphabet.INSTANCE.symbolFromCode(i));
-
-        stringBuilder.append("\n").append("MigBased").append(matrixHeader);
-        for (byte i = 0; i < 4; i++) {
-            stringBuilder.append("\n").append(NucleotideAlphabet.INSTANCE.symbolFromCode(i));
-            for (byte j = 0; j < 4; j++) {
-                stringBuilder.append("\t").append(getBgFreqMig(i, j));
-            }
-        }
-
-        stringBuilder.append("\n").append("ReadBased").append(matrixHeader);
-        for (byte i = 0; i < 4; i++) {
-            stringBuilder.append("\n").append(NucleotideAlphabet.INSTANCE.symbolFromCode(i));
-            for (byte j = 0; j < 4; j++) {
-                stringBuilder.append("\t").append(getBgFreqRead(i, j));
-            }
-        }
-
-        return stringBuilder.toString();
     }
 }

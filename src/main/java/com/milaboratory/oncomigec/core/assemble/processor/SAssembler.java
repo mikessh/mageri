@@ -299,11 +299,6 @@ public final class SAssembler extends Assembler<SConsensus, SMig> {
     }
 
     @Override
-    public String formattedSequenceHeader() {
-        return SConsensus.formattedSequenceHeader();
-    }
-
-    @Override
     public boolean isPairedEnd() {
         return false;
     }

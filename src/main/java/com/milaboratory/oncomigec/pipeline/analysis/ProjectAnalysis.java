@@ -18,23 +18,19 @@
 
 package com.milaboratory.oncomigec.pipeline.analysis;
 
+import com.milaboratory.oncomigec.core.PipelineBlock;
 import com.milaboratory.oncomigec.core.align.processor.aligners.ExtendedExomeAlignerFactory;
-import com.milaboratory.oncomigec.core.assemble.misc.AssemblerFactory;
-import com.milaboratory.oncomigec.core.assemble.misc.PAssemblerFactory;
-import com.milaboratory.oncomigec.core.assemble.misc.SAssemblerFactory;
-import com.milaboratory.oncomigec.core.consalign.misc.ConsensusAlignerFactory;
-import com.milaboratory.oncomigec.core.consalign.misc.PConsensusAlignerFactory;
-import com.milaboratory.oncomigec.core.consalign.misc.SConsensusAlignerFactory;
 import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
 import com.milaboratory.oncomigec.core.io.readers.MigOutputPort;
 import com.milaboratory.oncomigec.model.classifier.BaseVariantClassifier;
 import com.milaboratory.oncomigec.model.classifier.VariantClassifier;
 import com.milaboratory.oncomigec.pipeline.Presets;
 import com.milaboratory.oncomigec.pipeline.RuntimeParameters;
+import com.milaboratory.oncomigec.pipeline.SerializationUtils;
 import com.milaboratory.oncomigec.pipeline.Speaker;
 import com.milaboratory.oncomigec.pipeline.input.Input;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -47,8 +43,10 @@ public class ProjectAnalysis implements Serializable {
     protected final Project project;
     protected final Presets presets;
     protected final RuntimeParameters runtimeParameters;
-    private transient final AssemblerFactory pAssemblerFactory, sAssemblerFactory;
-    private transient final ConsensusAlignerFactory pConsensusAlignerFactory, sConsensusAlignerFactory;
+
+    private final PreprocessorFactory preprocessorFactory;
+    private final PipelineAssemblerFactory pipelineAssemblerFactory;
+    private final PipelineConsensusAlignerFactory pipelineConsensusAlignerFactory;
     protected transient final VariantClassifier classifier;
 
     private final Map<Sample, SampleAnalysis> analysisBySample = new TreeMap<>();
@@ -67,14 +65,14 @@ public class ProjectAnalysis implements Serializable {
 
         this.referenceLibrary = ReferenceLibrary.fromInput(input.getReferences());
 
-        this.pAssemblerFactory = new PAssemblerFactory(presets.getAssemblerParameters());
-        this.sAssemblerFactory = new SAssemblerFactory(presets.getAssemblerParameters());
+        this.preprocessorFactory = new PreprocessorFactory(presets.getDemultiplexParameters(),
+                presets.getPreprocessorParameters());
+
+        this.pipelineAssemblerFactory = new PipelineAssemblerFactory(presets.getAssemblerParameters());
 
         ExtendedExomeAlignerFactory alignerFactory = new ExtendedExomeAlignerFactory(referenceLibrary);
 
-        this.pConsensusAlignerFactory = new PConsensusAlignerFactory(alignerFactory,
-                presets.getConsensusAlignerParameters());
-        this.sConsensusAlignerFactory = new SConsensusAlignerFactory(alignerFactory,
+        this.pipelineConsensusAlignerFactory = new PipelineConsensusAlignerFactory(alignerFactory,
                 presets.getConsensusAlignerParameters());
 
         this.classifier = classifier;
@@ -89,25 +87,17 @@ public class ProjectAnalysis implements Serializable {
         sout("Started analysis.", 1);
         for (SampleGroup sampleGroup : project.getSampleGroups()) {
             sout("Pre-processing sample group " + sampleGroup.getName() + ".", 1);
-            final Preprocessor preprocessor = new Preprocessor(sampleGroup,
-                    presets.getDemultiplexParameters(),
-                    presets.getPreprocessorParameters(),
-                    runtimeParameters);
+            final Preprocessor preprocessor = preprocessorFactory.create(sampleGroup, runtimeParameters);
 
             sout("Running analysis for sample group " + sampleGroup.getName() + ".", 1);
             for (Sample sample : sampleGroup.getSamples()) {
                 final MigOutputPort reader = preprocessor.create(sample);
 
-                SampleAnalysis sampleAnalysis = reader.isPairedEnd() ? new SampleAnalysis(
+                SampleAnalysis sampleAnalysis = new SampleAnalysis(
                         this, sample, preprocessor.getUmiHistogram(sample),
                         reader,
-                        pAssemblerFactory.create(),
-                        pConsensusAlignerFactory.create()
-                ) : new SampleAnalysis(
-                        this, sample, preprocessor.getUmiHistogram(sample),
-                        reader,
-                        sAssemblerFactory.create(),
-                        sConsensusAlignerFactory.create()
+                        pipelineAssemblerFactory.create(sample),
+                        pipelineConsensusAlignerFactory.create(sample)
                 );
 
                 sampleAnalysis.runFirstStage();
@@ -117,7 +107,7 @@ public class ProjectAnalysis implements Serializable {
                 analysisBySample.put(sample, sampleAnalysis);
             }
         }
-        
+
         sout("Finished analysis.", 1);
     }
 
@@ -153,7 +143,20 @@ public class ProjectAnalysis implements Serializable {
         return analysises;
     }
 
-    public void serialize(String path, boolean noBinary) {
-        throw new NotImplementedException();
+    public void serialize(String path, boolean noBinary) throws IOException {
+        String prefix = path + "/" + project.getName();
+
+        preprocessorFactory.writePlainText(prefix);
+        pipelineAssemblerFactory.writePlainText(prefix);
+
+        for (SampleAnalysis sampleAnalysis : analysisBySample.values()) {
+            for (PipelineBlock pipelineBlock : sampleAnalysis.getBlocks()) {
+                pipelineBlock.writePlainText(prefix + "." + sampleAnalysis.getSample().getFullName());
+            }
+        }
+
+        if (!noBinary) {
+            SerializationUtils.writeObjectToFile(new File(prefix + ".mi"), this);
+        }
     }
 }

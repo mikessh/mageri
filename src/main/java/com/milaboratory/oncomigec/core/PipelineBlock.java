@@ -18,8 +18,40 @@
 
 package com.milaboratory.oncomigec.core;
 
+import com.milaboratory.oncomigec.pipeline.SerializationUtils;
+
+import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 
-public interface PipelineBlock extends Serializable {
-    
+public abstract class PipelineBlock implements Serializable {
+    private final String name;
+
+    protected PipelineBlock(String name) {
+        this.name = name;
+    }
+
+    public void writePlainText(String pathPrefix) throws IOException {
+        SerializationUtils.writeStringToFile(new File(pathPrefix + "." + name + ".txt"), toTabular());
+    }
+
+    // R-compatible output
+    private String toTabular() {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (String commentLine : toString().split("\n")) {
+            stringBuilder.append("#").append(commentLine).append("\n");
+        }
+        stringBuilder.append(getHeader());
+        stringBuilder.append("\n").append(getBody());
+        return stringBuilder.toString();
+    }
+
+    public abstract String getHeader();
+
+    public abstract String getBody();
+
+    @Override
+    public String toString() {
+        return "pipeline_block";
+    }
 }

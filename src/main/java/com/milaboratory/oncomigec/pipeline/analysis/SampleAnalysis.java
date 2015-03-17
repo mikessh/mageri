@@ -23,6 +23,7 @@ import cc.redberry.pipe.blocks.Merger;
 import cc.redberry.pipe.blocks.ParallelProcessor;
 import cc.redberry.pipe.util.CountingOutputPort;
 import com.milaboratory.oncomigec.ReadSpecific;
+import com.milaboratory.oncomigec.core.PipelineBlock;
 import com.milaboratory.oncomigec.core.assemble.entity.Consensus;
 import com.milaboratory.oncomigec.core.assemble.processor.Assembler;
 import com.milaboratory.oncomigec.core.consalign.entity.AlignedConsensus;
@@ -36,8 +37,6 @@ import com.milaboratory.oncomigec.core.haplotype.HaplotypeTree;
 import com.milaboratory.oncomigec.core.io.entity.Mig;
 import com.milaboratory.oncomigec.core.io.misc.UmiHistogram;
 import com.milaboratory.oncomigec.core.io.readers.MigOutputPort;
-import com.milaboratory.oncomigec.model.classifier.BaseVariantClassifier;
-import com.milaboratory.oncomigec.model.classifier.VariantClassifier;
 import com.milaboratory.oncomigec.model.variant.VariantContainer;
 import com.milaboratory.oncomigec.model.variant.VariantLibrary;
 import com.milaboratory.oncomigec.pipeline.Speaker;
@@ -45,6 +44,7 @@ import com.milaboratory.oncomigec.util.ProcessorResultWrapper;
 import org.apache.commons.math.MathException;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -56,7 +56,6 @@ public class SampleAnalysis implements ReadSpecific, Serializable {
     protected final Sample sample;
 
     protected final MigOutputPort reader;
-    
     protected final UmiHistogram umiHistogram;
     protected final Assembler assembler;
     protected final ConsensusAligner aligner;
@@ -203,6 +202,10 @@ public class SampleAnalysis implements ReadSpecific, Serializable {
         return variantContainer;
     }
 
+    public MigOutputPort getReader() {
+        return reader;
+    }
+
     public UmiHistogram getUmiHistogram() {
         return umiHistogram;
     }
@@ -241,6 +244,17 @@ public class SampleAnalysis implements ReadSpecific, Serializable {
 
     public boolean isSecondStageRan() {
         return secondStageRan;
+    }
+
+    public List<PipelineBlock> getBlocks() {
+        return Arrays.asList(
+                umiHistogram,
+                assembler,
+                aligner,
+                corrector,
+                variantLibrary,
+                haplotypeTree
+        );
     }
 
     @Override

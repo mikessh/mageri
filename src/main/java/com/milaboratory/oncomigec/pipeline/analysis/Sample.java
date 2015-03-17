@@ -18,12 +18,13 @@
 
 package com.milaboratory.oncomigec.pipeline.analysis;
 
+import com.milaboratory.oncomigec.ReadSpecific;
 import com.sun.istack.internal.NotNull;
 import com.sun.istack.internal.Nullable;
 
 import java.io.Serializable;
 
-public class Sample implements Comparable<Sample>, Serializable {
+public class Sample implements Comparable<Sample>, Serializable, ReadSpecific {
     private final SampleGroup parent;
     private final String name;
 
@@ -64,5 +65,10 @@ public class Sample implements Comparable<Sample>, Serializable {
     @Override
     public int hashCode() {
         return getFullName().hashCode();
+    }
+
+    @Override
+    public boolean isPairedEnd() {
+        return parent.isPairedEnd();
     }
 }

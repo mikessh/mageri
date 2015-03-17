@@ -18,6 +18,7 @@
 
 package com.milaboratory.oncomigec.pipeline.analysis;
 
+import com.milaboratory.oncomigec.ReadSpecific;
 import com.milaboratory.oncomigec.pipeline.input.InputChunk;
 
 import java.io.Serializable;
@@ -25,7 +26,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class SampleGroup implements Serializable {
+public class SampleGroup implements Serializable, ReadSpecific {
     private final Project parent;
     private final InputChunk inputChunk;
     private final List<Sample> samples = new ArrayList<>();
@@ -57,5 +58,10 @@ public class SampleGroup implements Serializable {
 
     InputChunk getInputChunk() {
         return inputChunk;
+    }
+
+    @Override
+    public boolean isPairedEnd() {
+        return inputChunk.isPairedEnd();
     }
 }

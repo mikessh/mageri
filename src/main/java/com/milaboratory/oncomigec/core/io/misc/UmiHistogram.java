@@ -22,7 +22,7 @@ import com.milaboratory.util.Bit2Array;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class UmiHistogram implements PipelineBlock {
+public class UmiHistogram extends PipelineBlock {
     private final PreprocessorParameters preprocessorParameters;
     private transient final ConcurrentHashMap<NucleotideSequence, AtomicInteger> umiCounterMap =
             new ConcurrentHashMap<>();
@@ -43,6 +43,7 @@ public class UmiHistogram implements PipelineBlock {
     private static final double base = Math.log(2.0);
 
     public UmiHistogram(PreprocessorParameters preprocessorParameters) {
+        super("umi.histogram");
         this.preprocessorParameters = preprocessorParameters;
     }
 
@@ -157,18 +158,21 @@ public class UmiHistogram implements PipelineBlock {
 
 
     @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder("#").append("UmiHistogram")
-                .append("\n#OverseqEstimate=").append(getMigSizeThreshold())
-                .append("\nMigSize");
-        for (int i = 0; i < N; i++)
-            sb.append("\t").append(convertToValue(i));
-        sb.append("\nNumberOfMigs");
-        for (int i = 0; i < N; i++)
-            sb.append("\t").append(migHistogram[i]);
-        sb.append("\nNumberOfReads");
-        for (int i = 0; i < N; i++)
-            sb.append("\t").append(readHistogram[i]);
-        return sb.toString();
+    protected String getHeader() {
+        return "mig.size.bin\tmig.count\tread.count\tmig.size.threshold";
+    }
+
+    @Override
+    protected String getBody() {
+        StringBuilder stringBuilder = new StringBuilder();
+
+        for (int i = 0; i < N; i++) {
+            stringBuilder.append(convertToValue(i)).append("\t").
+                    append(migHistogram[i]).append("\t").
+                    append(readHistogram[i]).append("\t").
+                    append(getMigSizeThreshold()).append("\n");
+        }
+
+        return stringBuilder.toString();
     }
 }

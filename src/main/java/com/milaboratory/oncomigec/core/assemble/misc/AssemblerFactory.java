@@ -13,7 +13,7 @@ public abstract class AssemblerFactory<T extends Consensus, V extends Mig> imple
     }
 
     protected AssemblerFactory() {
-        this.parameters = AssemblerParameters.DEFAULT;
+        this(AssemblerParameters.DEFAULT);
     }
 
     public abstract Assembler<T, V> create();

@@ -19,6 +19,7 @@
 package com.milaboratory.oncomigec.pipeline.analysis;
 
 import com.milaboratory.oncomigec.ReadSpecific;
+import com.milaboratory.oncomigec.core.PipelineBlock;
 import com.milaboratory.oncomigec.core.io.entity.Mig;
 import com.milaboratory.oncomigec.core.io.misc.PreprocessorParameters;
 import com.milaboratory.oncomigec.core.io.misc.UmiHistogram;
@@ -30,10 +31,12 @@ import com.milaboratory.oncomigec.pipeline.RuntimeParameters;
 import com.milaboratory.oncomigec.pipeline.input.CheckoutRule;
 import com.milaboratory.oncomigec.pipeline.input.InputChunk;
 import com.milaboratory.oncomigec.preproc.demultiplex.entity.DemultiplexParameters;
+import com.milaboratory.oncomigec.preproc.demultiplex.processor.CheckoutProcessor;
 
 import java.io.IOException;
+import java.io.Serializable;
 
-public class Preprocessor<MigType extends Mig> implements ReadSpecific {
+public class Preprocessor<MigType extends Mig> implements ReadSpecific, Serializable {
     private final PreprocessorParameters preprocessorParameters;
     private final SampleGroup sampleGroup;
     private final MigReader migReader;
@@ -89,6 +92,14 @@ public class Preprocessor<MigType extends Mig> implements ReadSpecific {
         return preprocessorParameters.forceOverseq() ?
                 preprocessorParameters.getDefaultOverseq() :
                 migReader.getUmiHistogram(sampleName).getMigSizeThreshold();
+    }
+
+    public SampleGroup getSampleGroup() {
+        return sampleGroup;
+    }
+    
+    public CheckoutProcessor getCheckoutProcessor(){
+        return migReader.getCheckoutProcessor();
     }
 
     @Override
