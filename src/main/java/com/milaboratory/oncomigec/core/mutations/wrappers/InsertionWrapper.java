@@ -30,6 +30,7 @@ public final class InsertionWrapper extends IndelWrapper {
 
     @Override
     public String toString() {
-        return new StringBuilder("I").append(start).append(":").append(sequence.toString()).toString();
+        return new StringBuilder("I").append(start + 1). // 1-based
+                append(":").append(sequence.toString()).toString();
     }
 }

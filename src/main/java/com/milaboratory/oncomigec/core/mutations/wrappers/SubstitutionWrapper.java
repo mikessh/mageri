@@ -30,7 +30,8 @@ public final class SubstitutionWrapper extends MutationWrapper {
 
     @Override
     public String toString() {
-        return new StringBuilder("S").append(at).append(":").append(NucleotideAlphabet.INSTANCE.symbolFromCode(from)).
+        return new StringBuilder("S").append(at + 1).append(":"). //1-based
+                append(NucleotideAlphabet.INSTANCE.symbolFromCode(from)).
                 append(">").append(NucleotideAlphabet.INSTANCE.symbolFromCode(to)).toString();
     }
 }
