@@ -16,6 +16,7 @@
 package com.milaboratory.oncomigec.core.correct;
 
 import com.milaboratory.core.sequence.Range;
+import com.milaboratory.core.sequence.nucleotide.NucleotideAlphabet;
 import com.milaboratory.oncomigec.core.PipelineBlock;
 import com.milaboratory.oncomigec.core.consalign.entity.AlignedConsensus;
 import com.milaboratory.oncomigec.core.consalign.entity.AlignerReferenceLibrary;
@@ -25,11 +26,13 @@ import com.milaboratory.oncomigec.core.mutations.MigecMutationsCollection;
 import com.milaboratory.oncomigec.model.classifier.BaseVariantClassifier;
 import com.milaboratory.oncomigec.model.classifier.VariantClassifier;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public final class Corrector implements PipelineBlock {
+public final class Corrector extends PipelineBlock {
     private final AtomicInteger goodConsensuses = new AtomicInteger(),
             totalConsensuses = new AtomicInteger();
     private final CorrectorReferenceLibrary correctorReferenceLibrary;
@@ -40,6 +43,7 @@ public final class Corrector implements PipelineBlock {
 
     public Corrector(AlignerReferenceLibrary referenceLibraryWithStatistics,
                      CorrectorParameters parameters, VariantClassifier variantClassifier) {
+        super("corrector");
         this.correctorReferenceLibrary = new CorrectorReferenceLibrary(referenceLibraryWithStatistics,
                 parameters, variantClassifier);
     }
@@ -51,12 +55,23 @@ public final class Corrector implements PipelineBlock {
 
         double maxPValue = 0;
         int offset = 0;
+        Reference mainReference = alignedConsensus.getReference(0);
+        MigecMutationsCollection totalMutations = new MigecMutationsCollection(mainReference);
+        List<Range> ranges = new ArrayList<>();
+
         for (int i = 0; i < alignedConsensus.getNumberOfReferences(); i++) {
             Reference reference = alignedConsensus.getReference(i);
+
+            if (!mainReference.equals(reference)) {
+                throw new RuntimeException("Chimeric alignments not allowed in here.");
+            }
 
             MigecMutationsCollection mutations = alignedConsensus.getMajorMutations(i);
             MutationFilter mutationFilter = correctorReferenceLibrary.getMutationFilter(reference);
             Range range = alignedConsensus.getRange(i);
+
+            totalMutations.append(mutations);
+            ranges.add(range);
 
             if (!mutationFilter.good())
                 return null; // badly covered consensus
@@ -100,7 +115,8 @@ public final class Corrector implements PipelineBlock {
 
         goodConsensuses.incrementAndGet();
 
-        return new CorrectedConsensus(alignedConsensus, coverageMask, maxPValue);
+        return new CorrectedConsensus(mainReference, totalMutations.getMutationCodes(),
+                coverageMask, maxPValue, alignedConsensus.getMigSize(), ranges);
     }
 
     public CorrectorReferenceLibrary getCorrectorReferenceLibrary() {
@@ -108,12 +124,39 @@ public final class Corrector implements PipelineBlock {
     }
 
     @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder("#").append(super.toString()).append('\n').
-                append("Total consensuses: ").append(totalConsensuses.get()).
-                append("Corrected consensuses: ").append(goodConsensuses.get()).
-                append('\n')
-                .append(correctorReferenceLibrary);
-        return sb.toString();
+    public String getHeader() {
+        String subst = "", substP = "";
+        for (byte i = 0; i < 4; i++) {
+            char bp = NucleotideAlphabet.INSTANCE.symbolFromCode(i);
+            subst += "\t" + bp;
+            substP += "\t" + bp + ".prob";
+        }
+        return "reference\tpos\thas.reference\tgood.coverage\tgood.quality\t" +
+                subst + substP;
+    }
+
+    @Override
+    public String getBody() {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (Reference reference : correctorReferenceLibrary.getReferenceLibrary().getReferences()) {
+            MutationFilter mutationFilter = correctorReferenceLibrary.getMutationFilter(reference);
+            for (int i = 0; i < reference.getSequence().size(); i++) {
+                stringBuilder.append(reference.getFullName()).append("\t").
+                        append(i).append("\t").
+                        append(mutationFilter.hasReference(i)).append("\t").
+                        append(mutationFilter.goodCoverage(i)).append("\t").
+                        append(mutationFilter.goodQuality(i)).append("\t");
+
+                for (byte j = 0; j < 4; j++) {
+                    stringBuilder.append("\t").append(correctorReferenceLibrary.getMajorCount(reference, i, j));
+                }
+                for (byte j = 0; j < 4; j++) {
+                    stringBuilder.append("\t").append(1.0 - correctorReferenceLibrary.getPValue(reference, i, j));
+                }
+
+                stringBuilder.append("\n");
+            }
+        }
+        return stringBuilder.toString();
     }
 }

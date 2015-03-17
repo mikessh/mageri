@@ -70,7 +70,8 @@ public class PipelineConsensusAlignerFactory extends PipelineBlock {
             referenceNames.add(reference.getFullName());
 
         return "sample.group\tsample\t" +
-                "migs.aligned\tmigs.dropped\t" + StringUtils.join(referenceNames, "\t");
+                "migs.aligned\tmigs.bad\tmigs.chimeric\t" +
+                StringUtils.join(referenceNames, "\t");
     }
 
     @Override
@@ -81,7 +82,9 @@ public class PipelineConsensusAlignerFactory extends PipelineBlock {
             stringBuilder.append(sample.getParent().getName()).append("\t").
                     append(sample.getName()).append("\t").
                     append(aligner.getAlignedMigs()).append("\t").
-                    append(aligner.getDroppedMigs());
+                    append(aligner.getBadMigs()).append("\t").
+                    append(aligner.getChimericMigs()).append("\t").
+                    append(aligner.getSkippedMigs());
 
             for (Reference reference : references) {
                 MutationsAndCoverage mutationsAndCoverage =

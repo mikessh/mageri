@@ -80,7 +80,7 @@ public class CorrectorTest {
             for (AlignedConsensus alignedConsensus : alignedConsensuses) {
                 CorrectedConsensus correctedConsensus = corrector.correct(alignedConsensus);
                 if (correctedConsensus != null)
-                    stage2ErrorFrequency += correctedConsensus.getMajorMutations(0).substitutionCount();
+                    stage2ErrorFrequency += correctedConsensus.getMajorMutations().substitutionCount();
             }
             stage2ErrorFrequency /= alignedConsensuses.size();
             stage2ErrorFrequency /= reference.getSequence().size();

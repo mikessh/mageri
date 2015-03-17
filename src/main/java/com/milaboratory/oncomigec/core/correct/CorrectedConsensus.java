@@ -16,136 +16,61 @@
 package com.milaboratory.oncomigec.core.correct;
 
 import com.milaboratory.core.sequence.Range;
-import com.milaboratory.core.sequence.mutations.Mutations;
-import com.milaboratory.core.sequence.nucleotide.NucleotideAlphabet;
-import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
-import com.milaboratory.oncomigec.core.consalign.entity.AlignedConsensus;
 import com.milaboratory.oncomigec.core.genomic.Reference;
-import com.milaboratory.oncomigec.core.haplotype.Haplotype;
-import com.milaboratory.oncomigec.core.mutations.MutationDifference;
+import com.milaboratory.oncomigec.core.mutations.MigecMutationsCollection;
 import com.milaboratory.oncomigec.core.mutations.wrappers.MutationWrapperCollection;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 public final class CorrectedConsensus implements Serializable {
-    private final AlignedConsensus alignedConsensus;
-    private final List<MutationWrapperCollection> mutationsList;
+    private final Reference reference;
+    private final int[] mutations;
     private final Set<Integer> coverageMask;
-    private final int numberOfReferences;
     private final int migSize;
     private final double maxPValue;
+    private final List<Range> ranges;
 
-    public CorrectedConsensus(AlignedConsensus alignedConsensus,
+    public CorrectedConsensus(Reference reference,
+                              int[] mutations,
                               Set<Integer> coverageMask,
-                              double maxPValue) {
-        this.alignedConsensus = alignedConsensus;
-        this.mutationsList = new ArrayList<>();
+                              double maxPValue,
+                              int migSize,
+                              List<Range> ranges) {
+        this.reference = reference;
         this.coverageMask = coverageMask;
-        this.numberOfReferences = alignedConsensus.getNumberOfReferences();
-
-        for (int i = 0; i < numberOfReferences; i++) {
-            mutationsList.add(new MutationWrapperCollection(alignedConsensus.getReference(i),
-                    alignedConsensus.getMajorMutations(i).getMutationCodes()));
-        }
-
-        this.migSize = alignedConsensus.getMigSize();
+        this.mutations = mutations;
+        this.migSize = migSize;
         this.maxPValue = maxPValue;
-    }
-
-    public Haplotype generateHaplotype() {
-        NucleotideSequence haplotypeSequence = getHaplotypeSequence();
-        NucleotideSequence referenceSequence = getFullReferenceSequence();
-        String maskedSequence = getMaskedSequence(haplotypeSequence);
-
-        return new Haplotype(this, haplotypeSequence, referenceSequence, maskedSequence);
-    }
-
-    public static List<MutationDifference> getMutationDifferences(CorrectedConsensus parent, CorrectedConsensus child) {
-        if (parent.numberOfReferences != child.numberOfReferences)
-            throw new RuntimeException("Different number of references");
-
-        List<MutationDifference> mutationDifferenceList = new ArrayList<>();
-
-        for (int i = 0; i < parent.numberOfReferences; i++) {
-            Reference parentReference = parent.alignedConsensus.getReference(i),
-                    childReference = child.alignedConsensus.getReference(i);
-
-            if (parentReference != childReference)
-                throw new RuntimeException("Different reference set of parent and child");
-
-            mutationDifferenceList.add(new MutationDifference(parentReference,
-                    parent.mutationsList.get(i).getMutationCodes(),
-                    child.mutationsList.get(i).getMutationCodes()));
-        }
-
-        return mutationDifferenceList;
-    }
-
-    private NucleotideSequence getHaplotypeSequence() {
-        NucleotideSequence seq = NucleotideSequence.EMPTY_NUCLEOTIDE_SEUQUENCE;
-        for (int i = 0; i < numberOfReferences; i++) {
-            Reference reference = alignedConsensus.getReference(i);
-            Range range = alignedConsensus.getRange(i);
-            int[] mutations = mutationsList.get(i).getMutationCodes();
-
-            NucleotideSequence referenceSequence = reference.getSequence();
-
-            seq = seq.concatenate(Mutations.mutate(referenceSequence.getRange(range), mutations));
-        }
-        return seq;
-    }
-
-    private String getMaskedSequence(NucleotideSequence haplotypeSequence) {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < haplotypeSequence.size(); i++)
-            if (coverageMask.contains(i))
-                sb.append('N');
-            else
-                sb.append(NucleotideAlphabet.INSTANCE.symbolFromCode(haplotypeSequence.codeAt(i)));
-        return sb.toString();
-    }
-
-    private NucleotideSequence getFullReferenceSequence() {
-        NucleotideSequence seq = NucleotideSequence.EMPTY_NUCLEOTIDE_SEUQUENCE;
-        for (int i = 0; i < numberOfReferences; i++) {
-            Reference reference = alignedConsensus.getReference(i);
-            Range range = alignedConsensus.getRange(i);
-            NucleotideSequence referenceSequence = reference.getSequence();
-
-            seq = seq.concatenate(referenceSequence.getRange(range));
-        }
-        return seq;
+        this.ranges = ranges;
     }
 
     public double getWorstPValue() {
         return maxPValue;
     }
 
-    public int getNumberOfReferences() {
-        return numberOfReferences;
-    }
-
-    public MutationWrapperCollection getMajorMutations(int referenceIndex) {
-        return mutationsList.get(referenceIndex);
-    }
-
-    public Reference getReference(int referenceIndex) {
-        return alignedConsensus.getReference(referenceIndex);
-    }
-
     public Reference getReference() {
-        return getReference(0);
+        return reference;
+    }
+
+    public List<Range> getRanges() {
+        return ranges;
+    }
+
+    public int[] getMutations() {
+        return mutations;
+    }
+
+    public Set<Integer> getCoverageMask() {
+        return coverageMask;
+    }
+
+    public double getMaxPValue() {
+        return maxPValue;
     }
 
     public int getMigSize() {
         return migSize;
-    }
-
-    @Override
-    public String toString() {
-        return getMaskedSequence(getHaplotypeSequence());
     }
 }

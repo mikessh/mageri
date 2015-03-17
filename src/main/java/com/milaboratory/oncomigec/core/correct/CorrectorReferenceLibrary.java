@@ -20,6 +20,7 @@ import com.milaboratory.core.sequence.nucleotide.NucleotideAlphabet;
 import com.milaboratory.oncomigec.core.consalign.entity.AlignerReferenceLibrary;
 import com.milaboratory.oncomigec.core.consalign.mutations.MutationsAndCoverage;
 import com.milaboratory.oncomigec.core.genomic.Reference;
+import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
 import com.milaboratory.oncomigec.model.classifier.ClassifierResult;
 import com.milaboratory.oncomigec.model.classifier.VariantClassifier;
 import com.milaboratory.oncomigec.model.variant.Variant;
@@ -241,6 +242,10 @@ public final class CorrectorReferenceLibrary implements Serializable {
 
     public MutationFilter getMutationFilter(Reference reference) {
         return mutationFilterByReference.get(reference);
+    }
+
+    public ReferenceLibrary getReferenceLibrary() {
+        return alignerReferenceLibrary.getReferenceLibrary();
     }
 
     private Reference currentReference = null;
