@@ -46,8 +46,8 @@ public class ProjectAnalysis implements Serializable {
     protected final RuntimeParameters runtimeParameters;
 
     private final PreprocessorFactory preprocessorFactory;
-    private final PipelineAssemblerFactory pipelineAssemblerFactory;
-    private final PipelineConsensusAlignerFactory pipelineConsensusAlignerFactory;
+    private transient final PipelineAssemblerFactory pipelineAssemblerFactory;
+    private transient final PipelineConsensusAlignerFactory pipelineConsensusAlignerFactory;
     protected transient final VariantClassifier classifier;
 
     private final Map<Sample, SampleAnalysis> analysisBySample = new TreeMap<>();
@@ -135,6 +135,10 @@ public class ProjectAnalysis implements Serializable {
 
     public SampleAnalysis getAnalysis(Sample sample) {
         return analysisBySample.get(sample);
+    }
+
+    public Preprocessor getPreprocessor(SampleGroup sampleGroup) {
+        return preprocessorFactory.getPreprocessor(sampleGroup);
     }
 
     public List<SampleAnalysis> getAnalysis(SampleGroup sampleGroup) {

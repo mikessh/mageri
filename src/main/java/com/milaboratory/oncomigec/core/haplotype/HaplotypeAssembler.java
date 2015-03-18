@@ -32,10 +32,11 @@ import java.util.*;
 
 public class HaplotypeAssembler extends PipelineBlock {
     private final HaplotypeAssemblerParameters parameters;
-    private transient final Map<Reference, List<Haplotype>> haplotypesByReference = new HashMap<>();
-    private final List<Haplotype> assembledHaplotypes = new LinkedList<>();
+    private final List<Haplotype> filteredHaplotypes = new LinkedList<>();
     private final CorrectorReferenceLibrary correctorReferenceLibrary;
-    private final VariantLibrary variantLibrary;
+    
+    private transient final Map<Reference, List<Haplotype>> haplotypesByReference = new HashMap<>();
+    private final transient VariantLibrary variantLibrary;
 
     public HaplotypeAssembler(CorrectorReferenceLibrary correctorReferenceLibrary) {
         this(correctorReferenceLibrary, HaplotypeAssemblerParameters.DEFAULT);
@@ -61,43 +62,23 @@ public class HaplotypeAssembler extends PipelineBlock {
 
         if (haplotypeList == null) {
             haplotypeList = new ArrayList<>();
+            haplotypeList.add(haplotype);
             haplotypesByReference.put(reference, haplotypeList);
-        }
-
-        haplotypeList.add(haplotype);
-    }
-
-    public void assemble() throws MathException {
-        for (List<Haplotype> haplotypeList : haplotypesByReference.values()) {
-            // Sort, otherwise it's going to take eternity
-            Collections.sort(haplotypeList, SpanComparator.INSTANCE);
-
-            // Sliding merge
-            Haplotype currentHaplotype = null;
-            for (Haplotype haplotype : haplotypeList) {
-                if (currentHaplotype != null) {
-                    // NOTE: !embedded/touching and two-pass merge can be implemented for long inserts
-                    if (new HaplotypeIntersection(currentHaplotype, haplotype, true).good()) {
-                        // append and continue sliding
-                        haplotype.merge(haplotype);
-                    } else {
-                        // failed to overlap with previous one
-                        assembledHaplotypes.add(currentHaplotype);
-                        // start sliding with me
-                        currentHaplotype = haplotype;
-                    }
-                } else {
-                    // start sliding with me
-                    currentHaplotype = haplotype;
+        } else {
+            for (Haplotype other : haplotypeList) {
+                HaplotypeIntersection intersection = new HaplotypeIntersection(other, haplotype, true);
+                if (intersection.good()) {
+                    haplotype.merge(haplotype, intersection.getIntersections());
                 }
             }
+        }
+    }
 
-            // add last
-            assembledHaplotypes.add(currentHaplotype);
-
+    public void filterEscaped() throws MathException {
+        for (List<Haplotype> haplotypeList : haplotypesByReference.values()) {
             // Compute "correction missed" p-values
-            for (Haplotype haplotype1 : assembledHaplotypes) {
-                for (Haplotype haplotype2 : assembledHaplotypes) {
+            for (Haplotype haplotype1 : haplotypeList) {
+                for (Haplotype haplotype2 : haplotypeList) {
                     if (haplotype1 != haplotype2) {
                         if (haplotype1.getHaplotypeCounters().getCount() >
                                 haplotype2.getHaplotypeCounters().getCount()) {
@@ -107,6 +88,11 @@ public class HaplotypeAssembler extends PipelineBlock {
                         }
                     }
                 }
+            }
+            for (Haplotype haplotype : haplotypeList) {
+                HaplotypeCounters counters = haplotype.getHaplotypeCounters();
+                if (counters.getpValue() <= parameters.getPValueThreshold())
+                    filteredHaplotypes.add(haplotype);
             }
         }
     }
@@ -188,23 +174,7 @@ public class HaplotypeAssembler extends PipelineBlock {
                 binomialDistribution.probability(childCount);
     }
 
-    public List<Haplotype> getAssembledClonotypes() {
-        return assembledHaplotypes;
-    }
-
     public List<Haplotype> getFilteredHaplotypes() {
-        return getFileredHaplotypes(parameters.getPValueThreshold());
-    }
-
-    public List<Haplotype> getFileredHaplotypes(double pValueThreshold) {
-        List<Haplotype> filteredHaplotypes = new LinkedList<>();
-
-        for (Haplotype haplotype : assembledHaplotypes) {
-            HaplotypeCounters counters = haplotype.getHaplotypeCounters();
-            if (counters.getpValue() <= pValueThreshold)
-                filteredHaplotypes.add(haplotype);
-        }
-
         return filteredHaplotypes;
     }
 
@@ -217,7 +187,7 @@ public class HaplotypeAssembler extends PipelineBlock {
     public String getBody() {
         StringBuilder sb = new StringBuilder();
 
-        for (Haplotype haplotype : getAssembledClonotypes()) {
+        for (Haplotype haplotype : filteredHaplotypes) {
             sb.append(haplotype.getReference().getFullName());
             sb.append(haplotype.getMaskedSequence());
 
@@ -242,7 +212,7 @@ public class HaplotypeAssembler extends PipelineBlock {
 
         int id = 0;
 
-        for (Haplotype haplotype : assembledHaplotypes) {
+        for (Haplotype haplotype : filteredHaplotypes) {
             writer.write(haplotype.asFastaRecord(id++));
         }
 

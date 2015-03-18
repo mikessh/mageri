@@ -53,6 +53,7 @@ public final class Haplotype implements Serializable {
         this.worstPvalue = worstPvalue;
         this.coverageMask = coverageMask;
         this.ranges = new LinkedList<>(ranges);
+        simplifyRanges();
     }
 
     private void simplifyRanges() {
@@ -93,14 +94,45 @@ public final class Haplotype implements Serializable {
         span = new Range(firstRange.getFrom(), lastRange.getTo());
     }
 
-    void merge(Haplotype haplotype) {
+    void merge(Haplotype haplotype, List<Range> intersectionRanges) {
         haplotypeCounters.incrementCount();
         haplotypeCounters.incrementReadCount(haplotype.haplotypeCounters.getReadCount());
         worstPvalue = Math.max(worstPvalue, haplotype.worstPvalue);
         ranges.addAll(haplotype.ranges);
         coverageMask.addAll(haplotype.coverageMask);
-        mutations = Mutations.combineMutations(mutations, haplotype.mutations);
+        mutations = combineMutations(mutations, haplotype.mutations, intersectionRanges);
         simplifyRanges();
+    }
+
+    private static int[] combineMutations(int[] mutations1, int[] mutations2, List<Range> intersectionRanges) {
+        List<Integer> mutationList = new LinkedList<>();
+
+        for (int i = 0; i < mutations2.length; i++) {
+            int mutation = mutations2[i];
+            int pos = Mutations.getPosition(mutation);
+            boolean duplicate = false;
+            for (Range range : intersectionRanges) {
+                if (range.contains(pos)) {
+                    duplicate = true;
+                    break;
+                }
+            }
+            if (!duplicate)
+                mutationList.add(mutation);
+        }
+
+        int[] combinedMutations = new int[mutations1.length + mutationList.size()];
+
+        int i = 0;
+        for (; i < mutations1.length; i++) {
+            combinedMutations[i] = mutations1[i];
+        }
+
+        for (Integer mutation : mutationList) {
+            combinedMutations[i++] = mutation;
+        }
+
+        return combinedMutations;
     }
 
     private NucleotideSequence getMutatedSequence() {

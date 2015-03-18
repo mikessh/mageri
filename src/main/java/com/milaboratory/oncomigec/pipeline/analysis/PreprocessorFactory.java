@@ -26,13 +26,13 @@ import com.milaboratory.oncomigec.preproc.demultiplex.processor.CheckoutProcesso
 import com.milaboratory.oncomigec.preproc.demultiplex.processor.PAdapterExtractor;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 public class PreprocessorFactory extends PipelineBlock {
     private final DemultiplexParameters demultiplexParameters;
     private final PreprocessorParameters preprocessorParameters;
-    private final List<Preprocessor> preprocessors = new ArrayList<>();
+    private final Map<SampleGroup, Preprocessor> preprocessorBySampleGroup = new HashMap<>();
 
     public PreprocessorFactory(DemultiplexParameters demultiplexParameters, PreprocessorParameters preprocessorParameters) {
         super("checkout");
@@ -50,9 +50,13 @@ public class PreprocessorFactory extends PipelineBlock {
                 preprocessorParameters,
                 runtimeParameters);
 
-        preprocessors.add(preprocessor);
+        preprocessorBySampleGroup.put(sampleGroup, preprocessor);
 
         return preprocessor;
+    }
+    
+    public Preprocessor getPreprocessor(SampleGroup sampleGroup){
+        return preprocessorBySampleGroup.get(sampleGroup);
     }
 
     @Override
@@ -63,7 +67,7 @@ public class PreprocessorFactory extends PipelineBlock {
     @Override
     public String getBody() {
         StringBuilder stringBuilder = new StringBuilder();
-        for (Preprocessor preprocessor : preprocessors) {
+        for (Preprocessor preprocessor : preprocessorBySampleGroup.values()) {
             for (Sample sample : preprocessor.getSampleGroup().getSamples()) {
                 CheckoutProcessor checkoutProcessor = preprocessor.getCheckoutProcessor();
                 String sampleName = sample.getName();

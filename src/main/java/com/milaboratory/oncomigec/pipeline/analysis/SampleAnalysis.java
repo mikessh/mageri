@@ -55,12 +55,13 @@ public class SampleAnalysis implements ReadSpecific, Serializable {
     protected final ProjectAnalysis parent;
     protected final Sample sample;
 
-    protected final MigOutputPort reader;
+    protected transient final MigOutputPort reader;
+    protected transient VariantLibrary variantLibrary;
+    
     protected final UmiHistogram umiHistogram;
     protected final Assembler assembler;
     protected final ConsensusAligner aligner;
     protected Corrector corrector;
-    protected VariantLibrary variantLibrary;
     protected HaplotypeAssembler haplotypeAssembler;
 
     private boolean firstStageRan = false, secondStageRan = false;
@@ -184,11 +185,11 @@ public class SampleAnalysis implements ReadSpecific, Serializable {
         }
 
         // Haplotype filtering
-        haplotypeAssembler.assemble();
+        haplotypeAssembler.filterEscaped();
 
         secondStageRan = true;
 
-        sout("Finished second stage, " + haplotypeAssembler.getAssembledClonotypes().size() + " haplotypes assembled.", 1);
+        sout("Finished second stage, " + haplotypeAssembler.getFilteredHaplotypes().size() + " haplotypes assembled.", 1);
     }
 
     // todo: necessary for classifier

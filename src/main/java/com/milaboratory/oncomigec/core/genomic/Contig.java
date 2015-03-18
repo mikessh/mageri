@@ -18,7 +18,9 @@
 
 package com.milaboratory.oncomigec.core.genomic;
 
-public class Contig implements Comparable<Contig> {
+import java.io.Serializable;
+
+public class Contig implements Comparable<Contig>, Serializable {
     private final String ID, assembly;
 
     public Contig(String ID, String assembly) {

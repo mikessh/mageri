@@ -41,8 +41,8 @@ public class PipelineTest {
 
         for (Sample sample : projectAnalysis.getProject().getSamples()) {
             HaplotypeAssembler haplotypeAssembler = projectAnalysis.getAnalysis(sample).getHaplotypeAssembler();
-            Assert.assertTrue(haplotypeAssembler.getAssembledClonotypes().size() > 0);
-            for (Haplotype haplotype : haplotypeAssembler.getAssembledClonotypes()) {
+            Assert.assertTrue(haplotypeAssembler.getFilteredHaplotypes().size() > 0);
+            for (Haplotype haplotype : haplotypeAssembler.getFilteredHaplotypes()) {
                 Assert.assertEquals(
                         projectAnalysis.getReferenceLibrary().getByName("SPIKE1"),
                         haplotype.getReference());

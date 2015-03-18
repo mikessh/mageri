@@ -39,10 +39,10 @@ public final class CorrectorReferenceLibrary implements Serializable {
     private final HashMap<Reference, double[]> majorInsertionPvalueMap = new HashMap<>(),
             majorDeletionPvalueMap = new HashMap<>();
 
-    private final VariantLibrary variantLibrary;
     private final AlignerReferenceLibrary alignerReferenceLibrary;
     private final List<Reference> references;
 
+    private transient final VariantLibrary variantLibrary;
     private transient final VariantClassifier variantClassifier;
 
     // Filtering

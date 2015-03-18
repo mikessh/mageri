@@ -72,9 +72,10 @@ public class ReferenceLibrary implements Serializable {
     }
 
     synchronized void addReference(String name, NucleotideSequence sequence, boolean rc) {
-        Reference reference = new Reference(this, globalId, name, sequence, rc);
-
         sequence = rc ? sequence.getReverseComplement() : sequence;
+
+        Reference reference = new Reference(this, globalId, name, sequence, rc);
+        
         String fullName = reference.getFullName();
 
         if (referenceSequences.contains(sequence))

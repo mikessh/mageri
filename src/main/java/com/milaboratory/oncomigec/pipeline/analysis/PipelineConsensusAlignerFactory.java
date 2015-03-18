@@ -48,12 +48,11 @@ public class PipelineConsensusAlignerFactory extends PipelineBlock {
         Collections.sort(references, new Comparator<Reference>() {
             @Override
             public int compare(Reference o1, Reference o2) {
-                if (o1.isReverseComplement() && o2.isReverseComplement())
+                if (o1.isReverseComplement() == o2.isReverseComplement())
                     return o1.getName().compareTo(o2.getName());
                 return o1.isReverseComplement() ? 1 : -1;
             }
         });
-
     }
 
     public ConsensusAligner create(Sample sample) {

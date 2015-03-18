@@ -4,7 +4,6 @@ import com.milaboratory.core.sequence.Range;
 import com.milaboratory.core.sequence.mutations.Mutations;
 import com.milaboratory.oncomigec.core.genomic.Reference;
 
-import java.io.Serializable;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -64,8 +63,12 @@ public class MigecMutationsCollection implements Iterable<MigecMutation>, Mutati
         if (other.reference != this.reference)
             throw new IllegalArgumentException("References don't match");
         // Don't forget to change parent
-        for (MigecMutation mutation : other.mutations)
-            this.mutations.add(new MigecMutation(mutation.code(), this));
+        for (MigecMutation mutation : other.mutations) {
+            MigecMutation newMutation = new MigecMutation(mutation.code(), this);
+            this.mutations.add(newMutation);
+            if (mutation.isFiltered())
+                newMutation.filter();
+        }
     }
 
     public Reference getReference() {

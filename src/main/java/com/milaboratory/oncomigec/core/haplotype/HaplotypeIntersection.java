@@ -20,7 +20,6 @@ package com.milaboratory.oncomigec.core.haplotype;
 
 import com.milaboratory.core.sequence.Range;
 import com.milaboratory.oncomigec.core.mutations.MutationDifference;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.Collections;
 import java.util.LinkedList;
@@ -30,7 +29,7 @@ public class HaplotypeIntersection {
     private final Haplotype haplotype1, haplotype2;
     private boolean embeddedOrTouching, intersects, matches = true;
     private boolean fast;
-    private List<Range> intersections;
+    private List<Range> intersections = new LinkedList<>();
     private List<MutationDifference> mutationDifferences;
 
     public HaplotypeIntersection(Haplotype haplotype1, Haplotype haplotype2, boolean fast) {
@@ -41,7 +40,6 @@ public class HaplotypeIntersection {
 
         if (intersects) {
             if (!fast) {
-                intersections = new LinkedList<>();
                 mutationDifferences = new LinkedList<>();
             }
 
@@ -61,8 +59,9 @@ public class HaplotypeIntersection {
                                 break outerloop; // if we are on append run, just leave
                         }
 
+                        intersections.add(intersection);
+
                         if (!fast) {
-                            intersections.add(intersection);
                             mutationDifferences.add(mutationDifference);
                         }
                     }
@@ -71,8 +70,7 @@ public class HaplotypeIntersection {
             }
         }
 
-        if (!fast)
-            embeddedOrTouching = intersects && intersections.isEmpty();
+        embeddedOrTouching = intersects && intersections.isEmpty();
     }
 
     public Haplotype getHaplotype1() {
@@ -84,8 +82,6 @@ public class HaplotypeIntersection {
     }
 
     public boolean embeddedOrTouching() {
-        if (fast)
-            throw new NotImplementedException();
         return embeddedOrTouching;
     }
 
@@ -102,14 +98,12 @@ public class HaplotypeIntersection {
     }
 
     public List<Range> getIntersections() {
-        if (fast)
-            throw new NotImplementedException();
         return Collections.unmodifiableList(intersections);
     }
 
     public List<MutationDifference> getMutationDifferences() {
         if (fast)
-            throw new NotImplementedException();
+            throw new RuntimeException("Not available for unmatched haplotypes.");
         return Collections.unmodifiableList(mutationDifferences);
     }
 }

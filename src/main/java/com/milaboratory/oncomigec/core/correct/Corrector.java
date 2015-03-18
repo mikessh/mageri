@@ -70,7 +70,6 @@ public final class Corrector extends PipelineBlock {
             MutationFilter mutationFilter = correctorReferenceLibrary.getMutationFilter(reference);
             Range range = alignedConsensus.getRange(i);
 
-            totalMutations.append(mutations);
             ranges.add(range);
 
             if (!mutationFilter.good())
@@ -108,6 +107,9 @@ public final class Corrector extends PipelineBlock {
             // Check if we've covered all holes in the reference, discard otherwise
             if (mustHaveMutationsCount < mutationFilter.getMustHaveMutationsCount())
                 return null;
+            
+            // Collect corrected mutations
+            totalMutations.append(mutations);
 
             // Shift coverage mask
             offset += range.length();
