@@ -132,7 +132,7 @@ public final class Corrector extends PipelineBlock {
             char bp = NucleotideAlphabet.INSTANCE.symbolFromCode(i);
             subst += "\t" + bp;
             substP += "\t" + bp + ".prob";
-            substV += "\t" + bp + ".varinat";
+            substV += "\t" + bp + ".varinat.pass";
         }
         return "reference\tpos\thas.reference\tgood.coverage\tgood.quality" +
                 subst + substP + substV;

@@ -68,6 +68,8 @@ public class MigecMutationsCollection implements Iterable<MigecMutation>, Mutati
             this.mutations.add(newMutation);
             if (mutation.isFiltered())
                 newMutation.filter();
+            if (mutation.isSubstitution())
+                substitutionCount.incrementAndGet();
         }
     }
 

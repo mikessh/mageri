@@ -34,7 +34,7 @@ public class HaplotypeAssembler extends PipelineBlock {
     private final HaplotypeAssemblerParameters parameters;
     private final List<Haplotype> filteredHaplotypes = new LinkedList<>();
     private final CorrectorReferenceLibrary correctorReferenceLibrary;
-    
+
     private transient final Map<Reference, List<Haplotype>> haplotypesByReference = new HashMap<>();
     private final transient VariantLibrary variantLibrary;
 
@@ -65,12 +65,14 @@ public class HaplotypeAssembler extends PipelineBlock {
             haplotypeList.add(haplotype);
             haplotypesByReference.put(reference, haplotypeList);
         } else {
-            for (Haplotype other : haplotypeList) {
-                HaplotypeIntersection intersection = new HaplotypeIntersection(other, haplotype, true);
+            for (Haplotype existing : haplotypeList) {
+                HaplotypeIntersection intersection = new HaplotypeIntersection(existing, haplotype, true);
                 if (intersection.good()) {
-                    haplotype.merge(haplotype, intersection.getIntersections());
+                    existing.merge(haplotype, intersection.getIntersections());
+                    return;
                 }
             }
+            haplotypeList.add(haplotype);
         }
     }
 
@@ -188,8 +190,8 @@ public class HaplotypeAssembler extends PipelineBlock {
         StringBuilder sb = new StringBuilder();
 
         for (Haplotype haplotype : filteredHaplotypes) {
-            sb.append(haplotype.getReference().getFullName());
-            sb.append(haplotype.getMaskedSequence());
+            sb.append(haplotype.getReference().getFullName()).append("\t").
+                    append(haplotype.getMaskedSequence());
 
             HaplotypeCounters counters = haplotype.getHaplotypeCounters();
             sb.append("\t").append(haplotype.getMutationSignature()).
