@@ -48,6 +48,8 @@ public class PipelineTest {
                         haplotype.getReference());
             }
         }
+        
+        projectAnalysis.serialize("./test_output/", false);
 
         TestUtil.serializationCheck(projectAnalysis);
     }

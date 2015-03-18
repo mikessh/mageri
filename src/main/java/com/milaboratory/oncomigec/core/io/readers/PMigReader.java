@@ -126,6 +126,9 @@ public final class PMigReader extends MigReader<PMig> {
                         }
 
                         // Try to overlap reads
+                        // NOTE: the overlapper just creates a pair of reads
+                        // those are non-overlapping and have overlap region equally distributed upon mates
+                        // this is done for code conciseness sake
                         ReadOverlapper.OverlapResult overlapResult =
                                 readOverlapper.overlap(new PSequencingReadImpl(0, null, null, read1, read2),
                                         barcodeOffset);
@@ -139,9 +142,11 @@ public final class PMigReader extends MigReader<PMig> {
                             read2 = overlapResult.getReadPair().getData(0).getRC();
                         }
                     }
+                    // NOTE: Otherwise the checkout processor is a HeaderExtractor
+                    // For preprocessed data, we have a convention that
+                    // a) header of both reads contains UMI sequence (UMI:seq:qual)
+                    // b) reads are oriented in correct direction, they are overlapped if possible and on the same strand
 
-                    // Note that we don't need to worry for Illumina RC of mates
-                    // even if Overlapper has failed, it performs Illumina RC
                     readList1.add(read1);
                     readList2.add(read2);
                 }

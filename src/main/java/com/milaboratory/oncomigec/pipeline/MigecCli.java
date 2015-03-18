@@ -140,7 +140,7 @@ public final class MigecCli {
     }
 
     private static final String OPT_HELP_SHORT = "h", OPT_HELP_LONG = "help", OPT_VERSION_SHORT = "v", OPT_VERSION_LONG = "version",
-            OPT_VERBOSITY = "VERBOSITY", OPT_THREADS = "threads", OPT_LIMIT = "limit",
+            OPT_VERBOSITY = "verbosity", OPT_THREADS = "threads", OPT_LIMIT = "limit",
             OPT_INSTRUMENT = "instrument", OPT_IMPORT_PRESET = "import-preset", OPT_EXPORT_PRESET = "export-preset",
             OPT_CLASSIFIER_FILE = "classifier", OPT_INPUT_LONG = "input", OPT_INPUT_SHORT = "I",
             OPT_OUTPUT_LONG = "output-path", OPT_OUTPUT_SHORT = "O", OPT_NO_BINARY = "no-binary", OPT_VARIANT_DUMP = "variant-dump";

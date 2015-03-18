@@ -149,11 +149,16 @@ public class ProjectAnalysis implements Serializable {
         return analysises;
     }
 
+    public void serialize(String path) throws IOException {
+        serialize(path, false);
+    }
+
     public void serialize(String path, boolean noBinary) throws IOException {
         String prefix = path + "/" + project.getName();
 
         preprocessorFactory.writePlainText(prefix);
         pipelineAssemblerFactory.writePlainText(prefix);
+        pipelineConsensusAlignerFactory.writePlainText(prefix);
 
         for (SampleAnalysis sampleAnalysis : analysisBySample.values()) {
             for (PipelineBlock pipelineBlock : sampleAnalysis.getBlocks()) {

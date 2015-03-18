@@ -17,6 +17,7 @@ package com.milaboratory.oncomigec.core.consalign.processor;
 
 import cc.redberry.pipe.Processor;
 import com.milaboratory.core.sequence.mutations.Mutations;
+import com.milaboratory.core.sequence.nucleotide.NucleotideAlphabet;
 import com.milaboratory.oncomigec.ReadSpecific;
 import com.milaboratory.oncomigec.core.PipelineBlock;
 import com.milaboratory.oncomigec.core.align.processor.Aligner;
@@ -79,7 +80,7 @@ public abstract class ConsensusAligner<T extends Consensus> extends PipelineBloc
     public int getAlignedMigs() {
         return alignedMigs.get();
     }
-    
+
     public int getSkippedMigs() {
         return skippedMigs.get();
     }
@@ -96,6 +97,13 @@ public abstract class ConsensusAligner<T extends Consensus> extends PipelineBloc
     public String getHeader() {
         String header = "reference\tpos", subst = "", ins = "", del = "";
 
+        for (byte i = 0; i < 4; i++) {
+            char symbol = NucleotideAlphabet.INSTANCE.symbolFromCode(i);
+            subst += "\t" + symbol;
+            ins += "\tI:" + symbol;
+            del += "\tD:" + symbol;
+        }
+
         return header + subst + ins + del;
     }
 
@@ -103,18 +111,22 @@ public abstract class ConsensusAligner<T extends Consensus> extends PipelineBloc
     public String getBody() {
         StringBuilder stringBuilder = new StringBuilder();
         for (Reference reference : alignerReferenceLibrary.getReferenceLibrary().getReferences()) {
-            for (int i = 0; i < reference.getSequence().size(); i++) {
-                stringBuilder.append(reference.getFullName()).append("\t").
-                        append(i + 1);
-                StringBuilder subst = new StringBuilder(), ins = new StringBuilder(), del = new StringBuilder();
-                for (byte j = 0; j < 4; j++) {
-                    int insCode = Mutations.createInsertion(i, j), delCode = Mutations.createDeletion(i, j);
-                    MutationsAndCoverage mutationsAndCoverage = alignerReferenceLibrary.getMutationsAndCoverage(reference);
-                    subst.append("\t").append(mutationsAndCoverage.getMajorNucleotideMigCount(i, j));
-                    ins.append("\t").append(mutationsAndCoverage.getMajorIndelMigCount(insCode));
-                    del.append("\t").append(mutationsAndCoverage.getMajorIndelMigCount(delCode));
+            MutationsAndCoverage mutationsAndCoverage = alignerReferenceLibrary.getMutationsAndCoverage(reference);
+
+            if (mutationsAndCoverage.wasUpdated()) {
+                for (int i = 0; i < reference.getSequence().size(); i++) {
+                    stringBuilder.append(reference.getFullName()).append("\t").
+                            append(i + 1);
+                    StringBuilder subst = new StringBuilder(), ins = new StringBuilder(), del = new StringBuilder();
+                    for (byte j = 0; j < 4; j++) {
+                        int insCode = Mutations.createInsertion(i, j), delCode = Mutations.createDeletion(i, j);
+
+                        subst.append("\t").append(mutationsAndCoverage.getMajorNucleotideMigCount(i, j));
+                        ins.append("\t").append(mutationsAndCoverage.getMajorIndelMigCount(insCode));
+                        del.append("\t").append(mutationsAndCoverage.getMajorIndelMigCount(delCode));
+                    }
+                    stringBuilder.append(subst).append(ins).append(del).append("\n");
                 }
-                stringBuilder.append(subst).append(ins).append(del).append("\n");
             }
         }
         return stringBuilder.toString();

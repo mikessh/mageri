@@ -107,7 +107,7 @@ public final class Corrector extends PipelineBlock {
             // Check if we've covered all holes in the reference, discard otherwise
             if (mustHaveMutationsCount < mutationFilter.getMustHaveMutationsCount())
                 return null;
-            
+
             // Collect corrected mutations
             totalMutations.append(mutations);
 
@@ -127,14 +127,15 @@ public final class Corrector extends PipelineBlock {
 
     @Override
     public String getHeader() {
-        String subst = "", substP = "";
+        String subst = "", substP = "", substV = "";
         for (byte i = 0; i < 4; i++) {
             char bp = NucleotideAlphabet.INSTANCE.symbolFromCode(i);
             subst += "\t" + bp;
             substP += "\t" + bp + ".prob";
+            substV += "\t" + bp + ".varinat";
         }
-        return "reference\tpos\thas.reference\tgood.coverage\tgood.quality\t" +
-                subst + substP;
+        return "reference\tpos\thas.reference\tgood.coverage\tgood.quality" +
+                subst + substP + substV;
     }
 
     @Override
@@ -142,21 +143,26 @@ public final class Corrector extends PipelineBlock {
         StringBuilder stringBuilder = new StringBuilder();
         for (Reference reference : correctorReferenceLibrary.getReferenceLibrary().getReferences()) {
             MutationFilter mutationFilter = correctorReferenceLibrary.getMutationFilter(reference);
-            for (int i = 0; i < reference.getSequence().size(); i++) {
-                stringBuilder.append(reference.getFullName()).append("\t").
-                        append(i).append("\t").
-                        append(mutationFilter.hasReference(i)).append("\t").
-                        append(mutationFilter.goodCoverage(i)).append("\t").
-                        append(mutationFilter.goodQuality(i)).append("\t");
+            if (mutationFilter.updated()) {
+                for (int i = 0; i < reference.getSequence().size(); i++) {
+                    stringBuilder.append(reference.getFullName()).append("\t").
+                            append(i).append("\t").
+                            append(mutationFilter.hasReference(i) ? 1 : 0).append("\t").
+                            append(mutationFilter.goodCoverage(i) ? 1 : 0).append("\t").
+                            append(mutationFilter.goodQuality(i) ? 1 : 0);
 
-                for (byte j = 0; j < 4; j++) {
-                    stringBuilder.append("\t").append(correctorReferenceLibrary.getMajorCount(reference, i, j));
-                }
-                for (byte j = 0; j < 4; j++) {
-                    stringBuilder.append("\t").append(1.0 - correctorReferenceLibrary.getPValue(reference, i, j));
-                }
+                    for (byte j = 0; j < 4; j++) {
+                        stringBuilder.append("\t").append(correctorReferenceLibrary.getMajorCount(reference, i, j));
+                    }
+                    for (byte j = 0; j < 4; j++) {
+                        stringBuilder.append("\t").append(1.0 - correctorReferenceLibrary.getPValue(reference, i, j));
+                    }
+                    for (byte j = 0; j < 4; j++) {
+                        stringBuilder.append("\t").append(mutationFilter.hasSubstitution(i, j) ? 1 : 0);
+                    }
 
-                stringBuilder.append("\n");
+                    stringBuilder.append("\n");
+                }
             }
         }
         return stringBuilder.toString();

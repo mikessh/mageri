@@ -21,19 +21,20 @@ import java.util.Set;
 public final class MutationFilter implements Serializable {
     private final boolean[][] substitutionMask;
     private final boolean[] referenceMask, qualityMask, coverageMask;
-    private final boolean good;
+    private final boolean good, updated;
     private final int mustHaveMutationsCount;
     private final Set<Integer> indels;
 
     public MutationFilter(boolean[][] substitutionMask, boolean[] referenceMask,
                           boolean[] qualityMask, boolean[] coverageMask, Set<Integer> indels,
-                          boolean good, int mustHaveMutationsCount) {
+                          boolean good, boolean updated, int mustHaveMutationsCount) {
         this.substitutionMask = substitutionMask;
         this.referenceMask = referenceMask;
         this.coverageMask = coverageMask;
         this.qualityMask = qualityMask;
         this.indels = indels;
         this.good = good;
+        this.updated = updated;
         this.mustHaveMutationsCount = mustHaveMutationsCount;
     }
 
@@ -64,6 +65,10 @@ public final class MutationFilter implements Serializable {
 
     public boolean good() {
         return good;
+    }
+
+    public boolean updated() {
+        return updated;
     }
 
     public int getMustHaveMutationsCount() {

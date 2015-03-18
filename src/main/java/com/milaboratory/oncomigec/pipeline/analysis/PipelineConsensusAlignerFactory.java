@@ -69,7 +69,7 @@ public class PipelineConsensusAlignerFactory extends PipelineBlock {
             referenceNames.add(reference.getFullName());
 
         return "sample.group\tsample\t" +
-                "migs.aligned\tmigs.bad\tmigs.chimeric\t" +
+                "migs.aligned\tmigs.bad\tmigs.chimeric\tmigs.skipped\t" +
                 StringUtils.join(referenceNames, "\t");
     }
 

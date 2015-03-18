@@ -78,25 +78,28 @@ public final class CorrectorReferenceLibrary implements Serializable {
     }
 
     private void init() {
-        Collection<Reference> skippedReferences = new LinkedList<>();
-
         for (Reference reference : references) {
             MutationsAndCoverage mutationsAndCoverage =
                     alignerReferenceLibrary.getMutationsAndCoverage(reference);
 
-            if (mutationsAndCoverage.wasUpdated()) {
-                int n = reference.getSequence().size();
-                int numberOfMigs = mutationsAndCoverage.getMigCount();
-                boolean[][] substitutionsByPosition = new boolean[n][4];
-                int[][] majorSubstitutionCounts = new int[n][4];
-                int[] majorInsertionCounts = new int[n], majorDeletionCounts = new int[n];
-                double[][] majorSubstitutionPvalues = new double[n][4];
-                double[] majorInsertionPvalues = new double[n], majorDeletionPvalues = new double[n];
-                boolean[] referencePresenceByPosition = new boolean[n],
-                        coverageFilterByPosition = new boolean[n],
-                        qualityFilterByPosition = new boolean[n];
+            int n = reference.getSequence().size();
+            int numberOfMigs = mutationsAndCoverage.getMigCount();
+            boolean[][] substitutionsByPosition = new boolean[n][4];
+            int[][] majorSubstitutionCounts = new int[n][4];
+            int[] majorInsertionCounts = new int[n], majorDeletionCounts = new int[n];
+            double[][] majorSubstitutionPvalues = new double[n][4];
+            double[] majorInsertionPvalues = new double[n], majorDeletionPvalues = new double[n];
+            boolean[] referencePresenceByPosition = new boolean[n],
+                    coverageFilterByPosition = new boolean[n],
+                    qualityFilterByPosition = new boolean[n];
 
-                int nMustHaveMutations = 0, nBadBases = 0;
+            int nMustHaveMutations = 0, nBadBases = 0;
+
+            boolean good = false, updated = mutationsAndCoverage.wasUpdated();
+
+            Set<Integer> indels = new HashSet<>();
+
+            if (updated) {
 
                 final VariantContainer variantContainer = variantLibrary.getVariantContainer(reference);
 
@@ -156,12 +159,12 @@ public final class CorrectorReferenceLibrary implements Serializable {
                 }
 
                 // Is sufficiently covered?
-                boolean good = (nBadBases / (double) n) <= maxBasePairsMaskedRatio &&
+                good = (nBadBases / (double) n) <= maxBasePairsMaskedRatio &&
                         mutationsAndCoverage.getMigCount() >= minMigCount;
 
                 // Finally deal with INDELS
                 // NOTE completely frequency-based for now
-                Set<Integer> indels = new HashSet<>();
+                indels = new HashSet<>();
                 for (Integer indel : mutationsAndCoverage.getMajorIndelCodes()) {
                     int majorCount = mutationsAndCoverage.getMajorIndelMigCount(indel);
                     boolean isDeletion = Mutations.isDeletion(indel);
@@ -182,24 +185,22 @@ public final class CorrectorReferenceLibrary implements Serializable {
                         majorInsertionPvalues[pos] = Double.NaN;
                 }
 
-                // Mutation filter -
 
-                mutationFilterByReference.put(reference, new MutationFilter(substitutionsByPosition,
-                        referencePresenceByPosition, qualityFilterByPosition, coverageFilterByPosition,
-                        indels, good, nMustHaveMutations));
+            }
 
-                majorSubstitutionCountMap.put(reference, majorSubstitutionCounts);
-                majorInsertionCountMap.put(reference, majorInsertionCounts);
-                majorDeletionCountMap.put(reference, majorDeletionCounts);
+            // Mutation filter -
+            mutationFilterByReference.put(reference, new MutationFilter(substitutionsByPosition,
+                    referencePresenceByPosition, qualityFilterByPosition, coverageFilterByPosition,
+                    indels, good, updated, nMustHaveMutations));
 
-                majorSubstitutionPvalueMap.put(reference, majorSubstitutionPvalues);
-                majorInsertionPvalueMap.put(reference, majorInsertionPvalues);
-                majorDeletionPvalueMap.put(reference, majorDeletionPvalues);
-            } else
-                skippedReferences.add(reference);
+            majorSubstitutionCountMap.put(reference, majorSubstitutionCounts);
+            majorInsertionCountMap.put(reference, majorInsertionCounts);
+            majorDeletionCountMap.put(reference, majorDeletionCounts);
+
+            majorSubstitutionPvalueMap.put(reference, majorSubstitutionPvalues);
+            majorInsertionPvalueMap.put(reference, majorInsertionPvalues);
+            majorDeletionPvalueMap.put(reference, majorDeletionPvalues);
         }
-
-        this.references.removeAll(skippedReferences);
     }
 
     /*
