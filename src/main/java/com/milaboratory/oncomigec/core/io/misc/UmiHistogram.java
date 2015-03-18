@@ -158,12 +158,12 @@ public class UmiHistogram extends PipelineBlock {
 
 
     @Override
-    protected String getHeader() {
+    public String getHeader() {
         return "mig.size.bin\tmig.count\tread.count\tmig.size.threshold";
     }
 
     @Override
-    protected String getBody() {
+    public String getBody() {
         StringBuilder stringBuilder = new StringBuilder();
 
         for (int i = 0; i < N; i++) {

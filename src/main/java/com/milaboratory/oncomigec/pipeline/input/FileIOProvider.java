@@ -18,6 +18,7 @@
 
 package com.milaboratory.oncomigec.pipeline.input;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,6 +26,7 @@ import java.util.zip.GZIPInputStream;
 
 public class FileIOProvider extends IOProvider {
     public FileIOProvider() {
+        super("file://");
     }
 
     @Override
@@ -34,5 +36,10 @@ public class FileIOProvider extends IOProvider {
         if (path.endsWith(".gz"))
             inputStream = new GZIPInputStream(inputStream);
         return inputStream;
+    }
+
+    @Override
+    public InputStreamWrapper getWrappedStream(String path) throws IOException {
+        return new InputStreamWrapper(protocol, new File(path).getAbsolutePath(), getStream(path));
     }
 }

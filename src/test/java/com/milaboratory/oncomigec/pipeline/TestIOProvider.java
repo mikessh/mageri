@@ -25,6 +25,11 @@ import java.io.IOException;
 import java.io.InputStream;
 
 public class TestIOProvider extends IOProvider {
+
+    public TestIOProvider() {
+        super("resources://");
+    }
+
     @Override
     public InputStream getStream(String path) throws IOException {
         return TestUtil.getResourceAsStream(path);

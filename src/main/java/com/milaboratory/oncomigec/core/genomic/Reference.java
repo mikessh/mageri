@@ -24,8 +24,14 @@ public class Reference implements Serializable {
     private final String name, fullName;
     private final NucleotideSequence sequence;
     private final boolean reverseComplement;
+    private final ReferenceLibrary parent;
+    private GenomicInfo genomicInfo;
 
-    public Reference(int globalId, String name, NucleotideSequence sequence, boolean reverseComplement) {
+    public Reference(ReferenceLibrary parent,
+                     int globalId, String name,
+                     NucleotideSequence sequence,
+                     boolean reverseComplement) {
+        this.parent = parent;
         this.globalId = globalId;
         this.name = name;
         this.sequence = sequence;
@@ -56,6 +62,18 @@ public class Reference implements Serializable {
 
     public NucleotideSequence getSequence() {
         return sequence;
+    }
+
+    public GenomicInfo getGenomicInfo() {
+        return genomicInfo;
+    }
+
+    public void setGenomicInfo(GenomicInfo genomicInfo) {
+        this.genomicInfo = genomicInfo;
+    }
+
+    public ReferenceLibrary getParent() {
+        return parent;
     }
 
     @Override

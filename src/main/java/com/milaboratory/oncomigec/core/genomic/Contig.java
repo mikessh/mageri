@@ -13,28 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Last modified on 16.3.2015 by mikesh
+ * Last modified on 17.3.2015 by mikesh
  */
 
 package com.milaboratory.oncomigec.core.genomic;
 
-import com.milaboratory.oncomigec.pipeline.TestIOProvider;
-import com.milaboratory.oncomigec.util.testing.TestUtil;
-import org.junit.Assert;
-import org.junit.Test;
+public class Contig implements Comparable<Contig> {
+    private final String ID, assembly;
 
-import java.io.IOException;
+    public Contig(String ID, String assembly) {
+        this.ID = ID;
+        this.assembly = assembly;
+    }
 
-public class ReferenceLibraryTest {
-    @Test
-    public void test() throws IOException {
+    public String getID() {
+        return ID;
+    }
 
-        ReferenceLibrary referenceLibrary = ReferenceLibrary.fromInput(
-                new TestIOProvider().getWrappedStream("pipeline/refs.fa"),
-                new BasicGenomicInfoProvider());
+    public String getAssembly() {
+        return assembly;
+    }
 
-        Assert.assertTrue(!referenceLibrary.getReferences().isEmpty());
-
-        TestUtil.serializationCheck(referenceLibrary);
+    @Override
+    public int compareTo(Contig o) {
+        return ID.compareTo(o.ID);
     }
 }

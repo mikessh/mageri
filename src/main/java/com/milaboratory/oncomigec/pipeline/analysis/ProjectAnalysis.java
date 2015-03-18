@@ -20,6 +20,7 @@ package com.milaboratory.oncomigec.pipeline.analysis;
 
 import com.milaboratory.oncomigec.core.PipelineBlock;
 import com.milaboratory.oncomigec.core.align.processor.aligners.ExtendedExomeAlignerFactory;
+import com.milaboratory.oncomigec.core.genomic.BasicGenomicInfoProvider;
 import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
 import com.milaboratory.oncomigec.core.io.readers.MigOutputPort;
 import com.milaboratory.oncomigec.model.classifier.BaseVariantClassifier;
@@ -63,7 +64,8 @@ public class ProjectAnalysis implements Serializable {
         this.runtimeParameters = runtimeParameters;
         this.project = Project.fromInput(input);
 
-        this.referenceLibrary = ReferenceLibrary.fromInput(input.getReferences());
+        this.referenceLibrary = ReferenceLibrary.fromInput(input.getReferences(),
+                new BasicGenomicInfoProvider()); // todo: implement genomic info
 
         this.preprocessorFactory = new PreprocessorFactory(presets.getDemultiplexParameters(),
                 presets.getPreprocessorParameters());

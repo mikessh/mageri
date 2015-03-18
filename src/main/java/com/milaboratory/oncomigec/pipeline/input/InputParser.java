@@ -66,7 +66,7 @@ public class InputParser {
 
         String projectName = rootObject.getString("project"),
                 referencesFileName = rootObject.getString("references");
-        InputStream references = ioProvider.getStream(referencesFileName);
+        InputStreamWrapper references = ioProvider.getWrappedStream(referencesFileName);
 
         return new Input(projectName, references, chunks);
     }

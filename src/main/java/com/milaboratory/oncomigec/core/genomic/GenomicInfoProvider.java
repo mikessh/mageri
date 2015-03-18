@@ -13,16 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Last modified on 12.3.2015 by mikesh
+ * Last modified on 17.3.2015 by mikesh
  */
 
-package com.milaboratory.oncomigec.preproc.demultiplex.entity;
+package com.milaboratory.oncomigec.core.genomic;
 
-import com.milaboratory.oncomigec.core.PipelineBlockIO;
-import com.milaboratory.oncomigec.preproc.demultiplex.processor.CheckoutProcessor;
+import java.io.Serializable;
+import java.util.List;
 
-public class CheckoutIO extends PipelineBlockIO<CheckoutProcessor> {
-    public CheckoutIO() {
-        super("checkout", 0);
-    }
+public interface GenomicInfoProvider extends Serializable{
+    public void annotate(Reference reference);
+
+    public List<Contig> getContigs();
 }

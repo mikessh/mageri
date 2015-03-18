@@ -27,10 +27,17 @@ import java.io.InputStream;
 import java.util.List;
 
 public abstract class IOProvider {
-    public IOProvider() {
+    protected final String protocol;
+    
+    public IOProvider(String protocol) {
+        this.protocol = protocol;
     }
 
     public abstract InputStream getStream(String path) throws IOException;
+
+    public InputStreamWrapper getWrappedStream(String path) throws IOException{
+        return new InputStreamWrapper(protocol, path, getStream(path));
+    }
 
     public List<String> readLines(String path) throws IOException {
         InputStream inputStream = getStream(path);

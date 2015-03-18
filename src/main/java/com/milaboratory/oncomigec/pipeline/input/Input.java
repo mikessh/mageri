@@ -18,7 +18,6 @@
 
 package com.milaboratory.oncomigec.pipeline.input;
 
-import java.io.InputStream;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
@@ -28,10 +27,10 @@ import java.util.List;
  */
 public class Input implements Serializable {
     protected final String projectName;
-    protected transient final InputStream references;
+    protected final InputStreamWrapper references;
     protected final List<InputChunk> inputChunks;
 
-    public Input(String projectName, InputStream references, List<InputChunk> inputChunks) {
+    public Input(String projectName, InputStreamWrapper references, List<InputChunk> inputChunks) {
         this.projectName = projectName;
         this.references = references;
         this.inputChunks = inputChunks;
@@ -41,7 +40,7 @@ public class Input implements Serializable {
         return projectName;
     }
 
-    public InputStream getReferences() {
+    public InputStreamWrapper getReferences() {
         return references;
     }
 
