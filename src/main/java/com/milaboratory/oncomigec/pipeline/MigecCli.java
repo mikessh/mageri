@@ -1,16 +1,5 @@
 package com.milaboratory.oncomigec.pipeline;
 
-<<<<<<< HEAD
-import com.milaboratory.core.sequence.quality.QualityFormat;
-import com.milaboratory.core.sequencing.io.fastq.PFastqWriter;
-import com.milaboratory.core.sequencing.io.fastq.SFastqWriter;
-import com.milaboratory.oncomigec.core.assemble.entity.PConsensus;
-import com.milaboratory.oncomigec.core.assemble.entity.SConsensus;
-import com.milaboratory.oncomigec.core.assemble.processor.Assembler;
-import com.milaboratory.oncomigec.core.io.misc.MigReaderParameters;
-import com.milaboratory.oncomigec.core.io.misc.UmiHistogram;
-=======
->>>>>>> structure
 import com.milaboratory.oncomigec.model.classifier.BaseVariantClassifier;
 import com.milaboratory.oncomigec.model.classifier.VariantClassifier;
 import com.milaboratory.oncomigec.pipeline.analysis.ProjectAnalysis;
@@ -135,46 +124,9 @@ public final class MigecCli {
             System.exit(-1);
         }
 
-<<<<<<< HEAD
-        try {
-            for (String sampleName : pipeline.getSamples()) {
-                String samplePrefix = outputFolder.getAbsolutePath() + "/" + sampleName;
-                writeStringToFile(new File(samplePrefix + ".1.assembler.txt"),
-                        pipeline.getAssemblerOutput(sampleName));
-
-                Assembler assembler = pipeline.getAssemblerBySample(sampleName);
-                if (assembler.isPairedEnd()) {
-                    PFastqWriter writer = new PFastqWriter(samplePrefix + ".1.assembler.C1.fastq.gz",
-                            samplePrefix + ".1.assembler.C2.fastq.gz", QualityFormat.Phred33);
-                    for (Object obj : assembler.getConsensusList()) {
-                        PConsensus consensus = (PConsensus) obj;
-                        writer.write(consensus.asRead());
-                    }
-                    writer.close();
-                } else {
-                    SFastqWriter writer = new SFastqWriter(samplePrefix + ".1.assembler.C1.fastq.gz",
-                            QualityFormat.Phred33);
-                    for (Object obj : assembler.getConsensusList()) {
-                        SConsensus consensus = (SConsensus) obj;
-                        writer.write(consensus.asRead());
-                    }
-                    writer.close();
-                }
-
-                writeStringToFile(new File(samplePrefix + ".1.consaligner.txt"),
-                        pipeline.getConsAlignerOutput(sampleName));
-            }
-        } catch (IOException e) {
-            System.err.println("Error writing output: " + e.toString());
-            e.printStackTrace();
-            System.exit(-1);
-        }
-    }
-=======
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Analyze
         ProjectAnalysis projectAnalysis = new ProjectAnalysis(input, presets, runtimeParameters, variantClassifier);
->>>>>>> structure
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Run
