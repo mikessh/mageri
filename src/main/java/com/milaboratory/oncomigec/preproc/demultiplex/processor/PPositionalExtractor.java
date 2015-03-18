@@ -41,12 +41,23 @@ public class PPositionalExtractor extends CheckoutProcessor<PSequencingRead, PCh
     }
 
     public PPositionalExtractor(@NotNull String sampleName,
+                                @NotNull String mask1) {
+        this(sampleName, new SlidingBarcodeSearcher(mask1));
+    }
+
+    public PPositionalExtractor(@NotNull String sampleName,
                                 @NotNull SlidingBarcodeSearcher masterBarcode,
                                 @NotNull SlidingBarcodeSearcher slaveBarcode) {
         super(new String[]{sampleName}, new BarcodeSearcher[]{masterBarcode});
         this.sampleName = sampleName;
         this.masterBarcode = masterBarcode;
         this.slaveBarcode = slaveBarcode.getForSlave();
+    }
+
+    public PPositionalExtractor(@NotNull String sampleName,
+                                @NotNull String mask1,
+                                @NotNull String mask2) {
+        this(sampleName, new SlidingBarcodeSearcher(mask1), new SlidingBarcodeSearcher(mask2));
     }
 
     @Override

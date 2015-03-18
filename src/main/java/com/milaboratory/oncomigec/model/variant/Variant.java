@@ -21,7 +21,9 @@ package com.milaboratory.oncomigec.model.variant;
 import com.milaboratory.core.sequence.nucleotide.NucleotideAlphabet;
 import com.milaboratory.oncomigec.core.genomic.Reference;
 
-public class Variant {
+import java.io.Serializable;
+
+public class Variant implements Serializable {
     private final int pos;
     private final byte to;
     private final double[] fromWeights;

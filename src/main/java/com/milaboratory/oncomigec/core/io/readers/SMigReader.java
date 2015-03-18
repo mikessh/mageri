@@ -22,13 +22,13 @@ import com.milaboratory.core.sequence.quality.QualityFormat;
 import com.milaboratory.core.sequencing.io.fastq.SFastqReader;
 import com.milaboratory.core.sequencing.read.SequencingRead;
 import com.milaboratory.oncomigec.core.io.entity.SMig;
-import com.milaboratory.oncomigec.core.io.misc.MigReaderParameters;
+import com.milaboratory.oncomigec.core.io.misc.PreprocessorParameters;
 import com.milaboratory.oncomigec.core.io.misc.ReadInfo;
+import com.milaboratory.oncomigec.pipeline.RuntimeParameters;
 import com.milaboratory.oncomigec.preproc.demultiplex.entity.CheckoutResult;
-import com.milaboratory.oncomigec.preproc.demultiplex.processor.SAdapterExtractor;
+import com.milaboratory.oncomigec.preproc.demultiplex.processor.CheckoutProcessor;
 import com.milaboratory.util.CompressionType;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -37,65 +37,41 @@ import java.util.List;
 import java.util.Map;
 
 public final class SMigReader extends MigReader<SMig> {
-    public SMigReader(SFastqReader reader, SAdapterExtractor checkoutProcessor, MigReaderParameters migReaderParameters)
+    public SMigReader(SFastqReader reader,
+                      CheckoutProcessor checkoutProcessor,
+                      PreprocessorParameters preprocessorParameters,
+                      RuntimeParameters runtimeParameters)
             throws IOException, InterruptedException {
-        super(migReaderParameters, checkoutProcessor);
+        super(preprocessorParameters, checkoutProcessor, runtimeParameters);
 
         buildUmiIndex(new SingleReaderWrapper(reader));
     }
 
-    public SMigReader(File file1,
-                      SAdapterExtractor checkoutProcessor) throws IOException, InterruptedException {
-        this(file1, checkoutProcessor, MigReaderParameters.DEFAULT);
-    }
-
-    public SMigReader(File file1,
-                      SAdapterExtractor checkoutProcessor, MigReaderParameters migReaderParameters)
-            throws IOException, InterruptedException {
-        this(new SFastqReader(file1), checkoutProcessor, migReaderParameters);
-    }
-
-    SMigReader(InputStream inputStream1,
-               SAdapterExtractor checkoutProcessor, MigReaderParameters migReaderParameters)
+    public SMigReader(InputStream inputStream1,
+                      CheckoutProcessor checkoutProcessor,
+                      PreprocessorParameters preprocessorParameters,
+                      RuntimeParameters runtimeParameters)
             throws IOException, InterruptedException {
         this(new SFastqReader(inputStream1, QualityFormat.Phred33, CompressionType.None),
-                checkoutProcessor, migReaderParameters);
+                checkoutProcessor,
+                preprocessorParameters, runtimeParameters);
     }
 
-    SMigReader(InputStream inputStream1,
-               SAdapterExtractor checkoutProcessor)
+    public SMigReader(InputStream inputStream1,
+                      CheckoutProcessor checkoutProcessor,
+                      PreprocessorParameters preprocessorParameters)
             throws IOException, InterruptedException {
-        this(inputStream1, checkoutProcessor, MigReaderParameters.DEFAULT);
+        this(inputStream1,
+                checkoutProcessor,
+                preprocessorParameters, RuntimeParameters.DEFAULT);
     }
 
-    public SMigReader(SFastqReader reader, String sampleName, MigReaderParameters migReaderParameters)
+    public SMigReader(InputStream inputStream1,
+                      CheckoutProcessor checkoutProcessor)
             throws IOException, InterruptedException {
-        super(migReaderParameters, sampleName);
-
-        buildUmiIndex(new SingleReaderWrapper(reader));
-    }
-
-    public SMigReader(File file1,
-                      String sampleName) throws Exception {
-        this(file1, sampleName, MigReaderParameters.DEFAULT);
-    }
-
-    public SMigReader(File file1, String sampleName,
-                      MigReaderParameters migReaderParameters) throws Exception {
-        this(new SFastqReader(file1), sampleName, migReaderParameters);
-    }
-
-    SMigReader(InputStream inputStream1,
-               String sampleName, MigReaderParameters migReaderParameters)
-            throws IOException, InterruptedException {
-        this(new SFastqReader(inputStream1, QualityFormat.Phred33, CompressionType.None),
-                sampleName, migReaderParameters);
-    }
-
-    SMigReader(InputStream inputStream1,
-               String sampleName)
-            throws IOException, InterruptedException {
-        this(inputStream1, sampleName, MigReaderParameters.DEFAULT);
+        this(inputStream1,
+                checkoutProcessor,
+                PreprocessorParameters.DEFAULT);
     }
 
     @Override
@@ -108,8 +84,10 @@ public final class SMigReader extends MigReader<SMig> {
 
                 for (ReadInfo readInfo : entry.getValue()) {
                     NucleotideSQPair read = readInfo.getRead().getData(0);
-                    CheckoutResult result = readInfo.getCheckoutResult();
-                    read = read.getRange(result.getMasterResult().getTo(), read.size());
+                    if (preprocessorParameters.trimAdapters()) {
+                        CheckoutResult result = readInfo.getCheckoutResult();
+                        read = read.getRange(result.getMasterResult().getTo(), read.size());
+                    }
                     readList.add(read);
                 }
 

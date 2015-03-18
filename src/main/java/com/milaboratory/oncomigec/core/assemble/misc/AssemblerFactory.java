@@ -1,6 +1,6 @@
 package com.milaboratory.oncomigec.core.assemble.misc;
 
-import com.milaboratory.oncomigec.core.ReadSpecific;
+import com.milaboratory.oncomigec.ReadSpecific;
 import com.milaboratory.oncomigec.core.assemble.entity.Consensus;
 import com.milaboratory.oncomigec.core.assemble.processor.Assembler;
 import com.milaboratory.oncomigec.core.io.entity.Mig;
@@ -13,7 +13,7 @@ public abstract class AssemblerFactory<T extends Consensus, V extends Mig> imple
     }
 
     protected AssemblerFactory() {
-        this.parameters = AssemblerParameters.DEFAULT;
+        this(AssemblerParameters.DEFAULT);
     }
 
     public abstract Assembler<T, V> create();

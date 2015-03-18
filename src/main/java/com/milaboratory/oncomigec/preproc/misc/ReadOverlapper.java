@@ -19,11 +19,12 @@ import com.milaboratory.core.sequence.NucleotideSQPair;
 import com.milaboratory.core.sequencing.read.PSequencingRead;
 import com.milaboratory.core.sequencing.read.PSequencingReadImpl;
 
+import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class ReadOverlapper {
+public class ReadOverlapper implements Serializable {
     private final int maxOverlapOffset, overlapFuzzySize, overlapSeedSize, maxConsMms;
     private final boolean orientedOverlap, allowPartialOverlap;
     private final double maxOverlapMismatchRatio;

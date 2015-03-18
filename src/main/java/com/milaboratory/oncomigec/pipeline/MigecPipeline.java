@@ -1,39 +1,7 @@
 package com.milaboratory.oncomigec.pipeline;
 
-import cc.redberry.pipe.OutputPort;
-import cc.redberry.pipe.blocks.Merger;
-import cc.redberry.pipe.blocks.ParallelProcessor;
-import cc.redberry.pipe.util.CountingOutputPort;
-import com.milaboratory.oncomigec.core.ReadSpecific;
-import com.milaboratory.oncomigec.core.genomic.Reference;
-import com.milaboratory.oncomigec.core.assemble.entity.Consensus;
-import com.milaboratory.oncomigec.core.assemble.misc.AssemblerFactory;
-import com.milaboratory.oncomigec.core.assemble.processor.Assembler;
-import com.milaboratory.oncomigec.core.consalign.entity.AlignedConsensus;
-import com.milaboratory.oncomigec.core.consalign.entity.AlignerReferenceLibrary;
-import com.milaboratory.oncomigec.core.consalign.misc.ConsensusAlignerFactory;
-import com.milaboratory.oncomigec.core.consalign.mutations.MutationsAndCoverage;
-import com.milaboratory.oncomigec.core.consalign.processor.ConsensusAligner;
-import com.milaboratory.oncomigec.core.correct.CorrectedConsensus;
-import com.milaboratory.oncomigec.core.correct.Corrector;
-import com.milaboratory.oncomigec.core.haplotype.HaplotypeTree;
-import com.milaboratory.oncomigec.core.io.entity.Mig;
-import com.milaboratory.oncomigec.core.io.misc.UmiHistogram;
-import com.milaboratory.oncomigec.core.io.readers.MigReader;
-import com.milaboratory.oncomigec.model.classifier.BaseVariantClassifier;
-import com.milaboratory.oncomigec.model.classifier.VariantClassifier;
-import com.milaboratory.oncomigec.model.variant.Variant;
-import com.milaboratory.oncomigec.model.variant.VariantContainer;
-import com.milaboratory.oncomigec.model.variant.VariantLibrary;
-import com.milaboratory.oncomigec.util.ProcessorResultWrapper;
-
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
-public class MigecPipeline implements ReadSpecific {
-    private static final boolean ENABLE_BUFFERING = true, VERBOSE = true;
+public class MigecPipeline {//implements ReadSpecific {
+   /* private static final boolean ENABLE_BUFFERING = true, VERBOSE = true;
     private static final int THREADS = Runtime.getRuntime().availableProcessors();   // todo: as parameter
     protected final boolean paired;
     protected final MigReader reader;
@@ -255,5 +223,5 @@ public class MigecPipeline implements ReadSpecific {
     @Override
     public boolean isPairedEnd() {
         return paired;
-    }
+    }*/
 }

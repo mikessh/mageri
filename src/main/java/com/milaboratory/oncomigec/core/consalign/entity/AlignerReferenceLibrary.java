@@ -22,10 +22,11 @@ import com.milaboratory.oncomigec.core.assemble.entity.SConsensus;
 import com.milaboratory.oncomigec.core.consalign.mutations.MutationsAndCoverage;
 import com.milaboratory.oncomigec.core.mutations.MigecMutationsCollection;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-public final class AlignerReferenceLibrary {
+public final class AlignerReferenceLibrary implements Serializable {
     private final Map<Reference, MutationsAndCoverage> mutationsAndCoverageByReference =
             new HashMap<>();
 

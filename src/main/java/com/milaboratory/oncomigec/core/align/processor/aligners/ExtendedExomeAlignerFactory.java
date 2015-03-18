@@ -7,14 +7,16 @@ import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
 public class ExtendedExomeAlignerFactory extends AlignerFactory<ExtendedExomeAligner> {
     private int k = KMerFinder.DEFAULT_K;
     private KMerFinder kMerFinder = new KMerFinder(new ReferenceLibrary(), k);
-    
+
     public ExtendedExomeAlignerFactory(ReferenceLibrary referenceLibrary) {
         super(referenceLibrary);
+        setReferenceLibrary(referenceLibrary);
     }
 
     public ExtendedExomeAlignerFactory(ReferenceLibrary referenceLibrary,
                                        LocalAlignmentEvaluator localAlignmentEvaluator) {
         super(referenceLibrary, localAlignmentEvaluator);
+        setReferenceLibrary(referenceLibrary);
     }
 
     public ExtendedExomeAlignerFactory(ReferenceLibrary referenceLibrary,

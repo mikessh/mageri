@@ -18,6 +18,7 @@
 
 package com.milaboratory.oncomigec.util.testing;
 
+import com.milaboratory.oncomigec.core.PipelineBlock;
 import org.apache.commons.lang3.SerializationUtils;
 
 import java.io.IOException;
@@ -29,15 +30,15 @@ import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
 
 public class TestUtil {
-    public static Serializable serializationCheck(Serializable object) {
-        byte[] data = SerializationUtils.serialize(object);
+    public static void serializationCheck(Serializable original) {
+        byte[] data = SerializationUtils.serialize(original);
         assertTrue("Serialization successful", data.length > 0);
-        return SerializationUtils.deserialize(data);
-    }
 
-    public static void serializationCheckForOutputData(Serializable object) {
-        Serializable recovered = serializationCheck(object);
-        assertEquals("Plain-text data match", recovered.toString(), object.toString());
+        Serializable recovered = SerializationUtils.deserialize(data);
+        if (original instanceof PipelineBlock) {
+            assertEquals("Plain-text data match", ((PipelineBlock) original).getBody(),
+                    ((PipelineBlock) recovered).getBody());
+        }
     }
 
     public static InputStream getResourceAsStream(String resourceName) throws IOException {

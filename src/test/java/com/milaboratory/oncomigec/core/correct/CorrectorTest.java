@@ -15,6 +15,7 @@
  */
 package com.milaboratory.oncomigec.core.correct;
 
+import com.milaboratory.core.sequence.mutations.Mutations;
 import com.milaboratory.oncomigec.core.align.processor.aligners.ExtendedExomeAligner;
 import com.milaboratory.oncomigec.core.genomic.Reference;
 import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
@@ -80,7 +81,7 @@ public class CorrectorTest {
             for (AlignedConsensus alignedConsensus : alignedConsensuses) {
                 CorrectedConsensus correctedConsensus = corrector.correct(alignedConsensus);
                 if (correctedConsensus != null)
-                    stage2ErrorFrequency += correctedConsensus.getMajorMutations(0).substitutionCount();
+                    stage2ErrorFrequency += Mutations.substitutions(correctedConsensus.getMutations());
             }
             stage2ErrorFrequency /= alignedConsensuses.size();
             stage2ErrorFrequency /= reference.getSequence().size();

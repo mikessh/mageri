@@ -29,7 +29,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 public class BarcodeListParser {
-    public static final String COMMENT = "#",
+    public static final String COMMENT = "#", SEPARATOR = "\t",
             EMPTY_BARCODE = ".", MASTER_FIRST_TRUE = "1", MASTER_FIRST_FALSE = "0";
     public static final Pattern ALLOWED_CHARACTERS = Pattern.compile("^[ATGCatgcNnRrYyMmSsWwKkVvDdHhBb]+$"),
             NO_SEED_SLAVE = Pattern.compile("^[atgcNnrymswkvdhb]+$");
@@ -56,7 +56,7 @@ public class BarcodeListParser {
 
         for (String line : lines) {
             if (!line.startsWith(COMMENT)) {
-                String[] splitLine = line.split("\t");
+                String[] splitLine = line.split(SEPARATOR);
                 if (splitLine.length < 3)
                     throw new RuntimeException("Bad barcode line:\t" + line);
                 String sampleName = splitLine[0];
@@ -65,7 +65,7 @@ public class BarcodeListParser {
                     throw new RuntimeException("Duplicate barcode:\t" + line);
                 else
                     usedBarcodes.add(barcode);
-                if (barcode.equals("-"))
+                if (barcode.equals(EMPTY_BARCODE))
                     throw new RuntimeException("Blank master barcode not allowed:\t" + line);
                 if (!ALLOWED_CHARACTERS.matcher(barcode).matches())
                     throw new RuntimeException("Bad barcode character set:\t" + line);
@@ -108,7 +108,7 @@ public class BarcodeListParser {
 
         for (String line : lines) {
             if (!line.startsWith(COMMENT)) {
-                String[] splitLine = line.split("\t");
+                String[] splitLine = line.split(SEPARATOR);
 
                 if (splitLine.length < 4)
                     throw new RuntimeException("Bad barcode line:\t" + line.replace("\t", "(tab)"));

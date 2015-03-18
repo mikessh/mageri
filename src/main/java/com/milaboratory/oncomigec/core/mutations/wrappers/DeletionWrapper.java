@@ -31,7 +31,7 @@ public final class DeletionWrapper extends IndelWrapper {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("D").append(start);
+        StringBuilder sb = new StringBuilder("D").append(start + 1); //1-based
         if (end - start == 1)
             return sb.toString();
         else

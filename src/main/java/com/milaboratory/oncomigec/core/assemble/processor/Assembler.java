@@ -16,25 +16,37 @@
 package com.milaboratory.oncomigec.core.assemble.processor;
 
 import cc.redberry.pipe.Processor;
+import com.milaboratory.core.sequence.quality.QualityFormat;
+import com.milaboratory.core.sequencing.io.fastq.PFastqWriter;
+import com.milaboratory.core.sequencing.io.fastq.SFastqWriter;
+import com.milaboratory.oncomigec.ReadSpecific;
 import com.milaboratory.oncomigec.core.PipelineBlock;
-import com.milaboratory.oncomigec.core.ReadSpecific;
 import com.milaboratory.oncomigec.core.assemble.entity.Consensus;
 import com.milaboratory.oncomigec.core.io.entity.Mig;
+import com.milaboratory.oncomigec.util.FastqWriter;
+import com.milaboratory.oncomigec.util.PFastqFastqWriterWrapper;
 import com.milaboratory.oncomigec.util.ProcessorResultWrapper;
-import com.milaboratory.oncomigec.util.QualityHistogram;
+import com.milaboratory.oncomigec.util.SFastqFastqWriterWrapper;
+import com.milaboratory.util.CompressionType;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-public abstract class Assembler<ConsensusType extends Consensus, MigType extends Mig>
-        implements Processor<MigType, ProcessorResultWrapper<ConsensusType>>, PipelineBlock, ReadSpecific {
+// pipeline block - qual histogram
+public abstract class Assembler<ConsensusType extends Consensus, MigType extends Mig> extends PipelineBlock
+        implements Processor<MigType, ProcessorResultWrapper<ConsensusType>>, ReadSpecific {
     protected final AtomicLong readsTotal = new AtomicLong(), readsAssembled = new AtomicLong();
     protected final AtomicInteger migsTotal = new AtomicInteger(), migsAssembled = new AtomicInteger();
     protected final List<ConsensusType> consensusList = Collections.synchronizedList(new LinkedList<ConsensusType>());
     protected boolean storeConsensuses = true;
+
+    protected Assembler() {
+        super("assemble");
+    }
 
     @Override
     @SuppressWarnings("unchecked")
@@ -48,6 +60,22 @@ public abstract class Assembler<ConsensusType extends Consensus, MigType extends
 
     public abstract ConsensusType assemble(MigType mig);
 
+    public long getReadsTotal() {
+        return readsTotal.get();
+    }
+
+    public long getReadsAssembled() {
+        return readsAssembled.get();
+    }
+
+    public long getMigsTotal() {
+        return migsTotal.get();
+    }
+
+    public long getMigsAssembled() {
+        return migsAssembled.get();
+    }
+
     public abstract long getReadsDroppedShortR1();
 
     public abstract long getReadsDroppedErrorR1();
@@ -56,42 +84,47 @@ public abstract class Assembler<ConsensusType extends Consensus, MigType extends
 
     public abstract long getReadsDroppedErrorR2();
 
-    public abstract String formattedSequenceHeader();
-
     public List<ConsensusType> getConsensusList() {
         return Collections.synchronizedList(consensusList);
     }
 
+
     @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder("#").append(super.toString()).
-                append("\nreadsTotal\t").append(readsTotal.get()).
-                append("\nreadsAssembled\t").append(readsAssembled.get()).
-                append("\nreadsDroppedShortR1\t").append(getReadsDroppedShortR1()).
-                append("\nreadsDroppedErrorR1\t").append(getReadsDroppedErrorR1()).
-                append("\nreadsDroppedShortR2\t").append(getReadsDroppedShortR2()).
-                append("\nreadsDroppedErrorR2\t").append(getReadsDroppedErrorR2()).
-                append("\nmigsTotal\t").append(migsTotal.get()).
-                append("\nmigsAssembled\t").append(migsAssembled.get());
+    public String getHeader() {
+        return "umi\treads.assembled\treads.total\tmin.qual\tavg.qual\tmax.qual";
+    }
 
-        // Quality histogram
-        QualityHistogram qualityHistogram = new QualityHistogram();
+    @Override
+    public String getBody() {
+        StringBuilder stringBuilder = new StringBuilder();
+
         for (Consensus consensus : consensusList)
-            qualityHistogram.append(consensus.getQualityHistogram());
-
-        sb.append("\nqualityHistogram:\n").append(qualityHistogram.toString());
-
-        sb.append("\nconsensuses:");
-
-        // Consensus list
-
-        sb.append("\nUMI\tAssembledReads\tTotalReads\t").append(formattedSequenceHeader());
-        for (Consensus consensus : consensusList)
-            sb.append('\n').append(consensus.getUmi()).
+            stringBuilder.append(consensus.getUmi()).
                     append('\t').append(consensus.size()).
                     append('\t').append(consensus.fullSize()).
-                    append('\t').append(consensus.formattedSequence());
+                    append('\t').append(consensus.getMinQual()).
+                    append('\t').append(consensus.getAvgQual()).
+                    append('\t').append(consensus.getMaxQual()).
+                    append('\n');
 
-        return sb.toString();
+        return stringBuilder.toString();
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public void writePlainText(String pathPrefix) throws IOException {
+        super.writePlainText(pathPrefix);
+        FastqWriter writer = isPairedEnd() ?
+                new PFastqFastqWriterWrapper(
+                        new PFastqWriter(pathPrefix + ".assemble.R1.fastq.gz", pathPrefix + ".assemble.R2.fastq.gz",
+                                QualityFormat.Phred33, CompressionType.GZIP)
+                ) :
+                new SFastqFastqWriterWrapper(
+                        new SFastqWriter(pathPrefix + ".assemble.R1.fastq.gz", QualityFormat.Phred33, CompressionType.GZIP)
+                );
+        for (Consensus consensus : consensusList) {
+            writer.write(consensus.asRead());
+        }
+        writer.close();
     }
 }

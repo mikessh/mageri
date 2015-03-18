@@ -1,6 +1,7 @@
 package com.milaboratory.oncomigec.pipeline;
 
 import com.milaboratory.oncomigec.util.Basics;
+import com.milaboratory.oncomigec.util.testing.TestUtil;
 import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.junit.Assert;
@@ -13,15 +14,17 @@ import java.io.IOException;
 public class PresetsTest {
     @Test
     public void serializationTest() throws IOException {
-        Presets presets = new Presets();
+        Presets presets = Presets.DEFAULT;
         Element e = presets.toXml();
         Basics.printXml(e);
-        Assert.assertEquals("(De)serialization successful", presets, Presets.fromXml(e));
+        Assert.assertEquals("XML (de)serialization successful", presets, Presets.fromXml(e));
+
+        TestUtil.serializationCheck(presets);
     }
 
     @Test
     public void ioTest() throws IOException, JDOMException {
-        Presets presets = new Presets();
+        Presets presets = Presets.DEFAULT;
 
         ByteArrayOutputStream output = new ByteArrayOutputStream();
 

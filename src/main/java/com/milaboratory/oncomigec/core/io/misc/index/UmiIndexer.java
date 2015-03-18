@@ -17,6 +17,7 @@ public class UmiIndexer implements Processor<SequencingRead, ProcessorResultWrap
         this.umiQualityThreshold = umiQualityThreshold;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public ProcessorResultWrapper<IndexingInfo> process(SequencingRead sequencingRead) {
         CheckoutResult result = checkoutProcessor.checkout(sequencingRead);

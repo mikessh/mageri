@@ -1,9 +1,15 @@
 package com.milaboratory.oncomigec.core.assemble.processor;
 
+import com.milaboratory.core.sequence.quality.QualityFormat;
+import com.milaboratory.core.sequencing.io.fastq.PFastqWriter;
+import com.milaboratory.oncomigec.core.assemble.entity.Consensus;
 import com.milaboratory.oncomigec.core.assemble.entity.PConsensus;
 import com.milaboratory.oncomigec.core.assemble.entity.SConsensus;
 import com.milaboratory.oncomigec.core.assemble.misc.AssemblerParameters;
 import com.milaboratory.oncomigec.core.io.entity.PMig;
+import com.milaboratory.util.CompressionType;
+
+import java.io.IOException;
 
 public final class PAssembler extends Assembler<PConsensus, PMig> {
     private final SAssembler assembler1, assembler2;
@@ -64,11 +70,6 @@ public final class PAssembler extends Assembler<PConsensus, PMig> {
     @Override
     public long getReadsDroppedErrorR2() {
         return assembler2.getReadsDroppedErrorR1();
-    }
-
-    @Override
-    public String formattedSequenceHeader() {
-        return PConsensus.formattedSequenceHeader();
     }
 
     @Override

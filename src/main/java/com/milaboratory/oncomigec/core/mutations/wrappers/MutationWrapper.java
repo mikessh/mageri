@@ -3,7 +3,9 @@ package com.milaboratory.oncomigec.core.mutations.wrappers;
 import com.milaboratory.core.sequence.mutations.MutationType;
 import com.milaboratory.core.sequence.mutations.Mutations;
 
-public abstract class MutationWrapper {
+import java.io.Serializable;
+
+public abstract class MutationWrapper implements Serializable {
     protected final MutationType type;
 
     protected MutationWrapper(MutationType type, int mutationCode) {

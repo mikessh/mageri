@@ -20,7 +20,6 @@ import com.milaboratory.core.sequencing.io.fastq.PFastqReader;
 import com.milaboratory.core.sequencing.io.fastq.SFastqReader;
 import com.milaboratory.core.sequencing.read.PSequencingRead;
 import com.milaboratory.core.sequencing.read.SSequencingRead;
-import com.milaboratory.oncomigec.preproc.demultiplex.barcode.SlidingBarcodeSearcher;
 import com.milaboratory.oncomigec.preproc.demultiplex.config.BarcodeListParser;
 import com.milaboratory.oncomigec.preproc.demultiplex.entity.DemultiplexParameters;
 import com.milaboratory.oncomigec.preproc.demultiplex.entity.PCheckoutResult;
@@ -49,8 +48,7 @@ public class CheckoutProcessorTest {
     }
 
     private static CheckoutProcessor runOnSampleData1Positional(String mask) throws IOException {
-        SPositionalExtractor processor = new SPositionalExtractor(SAMPLE_NAME,
-                new SlidingBarcodeSearcher(mask));
+        SPositionalExtractor processor = new SPositionalExtractor(SAMPLE_NAME, mask);
 
         SFastqReader reader = new SFastqReader(getR1(),
                 CompressionType.None);
@@ -70,11 +68,8 @@ public class CheckoutProcessorTest {
     private static CheckoutProcessor runOnSampleData2Positional(String mask1,
                                                                 String mask2,
                                                                 String seed) throws IOException {
-        PPositionalExtractor processor = mask2 == null ? new PPositionalExtractor(SAMPLE_NAME,
-                new SlidingBarcodeSearcher(mask1)) :
-                new PPositionalExtractor(SAMPLE_NAME,
-                        new SlidingBarcodeSearcher(mask1),
-                        new SlidingBarcodeSearcher(mask2));
+        PPositionalExtractor processor = mask2 == null ? new PPositionalExtractor(SAMPLE_NAME, mask1) :
+                new PPositionalExtractor(SAMPLE_NAME, mask1, mask2);
 
         PFastqReader reader = new PFastqReader(getR1(), getR2(),
                 QualityFormat.Phred33, CompressionType.None,
@@ -213,18 +208,18 @@ public class CheckoutProcessorTest {
 
         CheckoutProcessor processor = runOnSampleData1Positional();
 
-        TestUtil.serializationCheckForOutputData(processor);
+        TestUtil.serializationCheck(processor);
 
         processor = runOnSampleData2Positional();
 
-        TestUtil.serializationCheckForOutputData(processor);
+        TestUtil.serializationCheck(processor);
 
         processor = runOnSampleData1Adapter();
 
-        TestUtil.serializationCheckForOutputData(processor);
+        TestUtil.serializationCheck(processor);
 
         processor = runOnSampleData2Adapter();
 
-        TestUtil.serializationCheckForOutputData(processor);
+        TestUtil.serializationCheck(processor);
     }
 }

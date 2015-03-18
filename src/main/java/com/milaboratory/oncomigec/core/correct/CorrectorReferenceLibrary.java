@@ -17,18 +17,20 @@ package com.milaboratory.oncomigec.core.correct;
 
 import com.milaboratory.core.sequence.mutations.Mutations;
 import com.milaboratory.core.sequence.nucleotide.NucleotideAlphabet;
-import com.milaboratory.oncomigec.core.genomic.Reference;
 import com.milaboratory.oncomigec.core.consalign.entity.AlignerReferenceLibrary;
 import com.milaboratory.oncomigec.core.consalign.mutations.MutationsAndCoverage;
+import com.milaboratory.oncomigec.core.genomic.Reference;
+import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
 import com.milaboratory.oncomigec.model.classifier.ClassifierResult;
 import com.milaboratory.oncomigec.model.classifier.VariantClassifier;
 import com.milaboratory.oncomigec.model.variant.Variant;
 import com.milaboratory.oncomigec.model.variant.VariantContainer;
 import com.milaboratory.oncomigec.model.variant.VariantLibrary;
 
+import java.io.Serializable;
 import java.util.*;
 
-public final class CorrectorReferenceLibrary {
+public final class CorrectorReferenceLibrary implements Serializable {
     private final HashMap<Reference, MutationFilter> mutationFilterByReference = new HashMap<>();
     private final HashMap<Reference, int[][]> majorSubstitutionCountMap = new HashMap<>();
     private final HashMap<Reference, int[]> majorInsertionCountMap = new HashMap<>(),
@@ -37,11 +39,11 @@ public final class CorrectorReferenceLibrary {
     private final HashMap<Reference, double[]> majorInsertionPvalueMap = new HashMap<>(),
             majorDeletionPvalueMap = new HashMap<>();
 
-    private final VariantLibrary variantLibrary;
     private final AlignerReferenceLibrary alignerReferenceLibrary;
     private final List<Reference> references;
 
-    private final VariantClassifier variantClassifier;
+    private transient final VariantLibrary variantLibrary;
+    private transient final VariantClassifier variantClassifier;
 
     // Filtering
     private final boolean filterSingleMigs;
@@ -240,6 +242,10 @@ public final class CorrectorReferenceLibrary {
 
     public MutationFilter getMutationFilter(Reference reference) {
         return mutationFilterByReference.get(reference);
+    }
+
+    public ReferenceLibrary getReferenceLibrary() {
+        return alignerReferenceLibrary.getReferenceLibrary();
     }
 
     private Reference currentReference = null;

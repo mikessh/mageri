@@ -130,10 +130,10 @@ public final class PAdapterExtractor extends CheckoutProcessor<PSequencingRead, 
         return null;
     }
 
-    public long getSlaveCounter(String sampleName) throws Exception {
+    public long getSlaveCounter(String sampleName) {
         List<Integer> sampleIds = sampleNameToId.get(sampleName);
         if (sampleIds == null)
-            throw new Exception("Sample " + sampleName + " doesn't exist");
+            throw new RuntimeException("Sample " + sampleName + " doesn't exist");
         long count = 0;
         for (int id : sampleIds)
             count += slaveCounters.get(id);

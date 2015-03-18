@@ -15,9 +15,10 @@
  */
 package com.milaboratory.oncomigec.core.correct;
 
+import java.io.Serializable;
 import java.util.Set;
 
-public final class MutationFilter {
+public final class MutationFilter implements Serializable {
     private final boolean[][] substitutionMask;
     private final boolean[] referenceMask, qualityMask, coverageMask;
     private final boolean good;
@@ -47,6 +48,14 @@ public final class MutationFilter {
 
     public boolean hasReference(int position) {
         return referenceMask[position];
+    }
+
+    public boolean goodCoverage(int position) {
+        return coverageMask[position];
+    }
+
+    public boolean goodQuality(int position) {
+        return qualityMask[position];
     }
 
     public boolean passedFilter(int position) {

@@ -19,11 +19,11 @@ import com.milaboratory.core.sequence.NucleotideSQPair;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.core.sequencing.read.SSequencingRead;
 import com.milaboratory.core.sequencing.read.SSequencingReadImpl;
-import com.milaboratory.oncomigec.util.QualityHistogram;
+import com.milaboratory.oncomigec.util.Util;
 
 import java.util.List;
 
-public final class SConsensus implements Consensus {
+public final class SConsensus implements Consensus<SSequencingRead> {
     private final List<NucleotideSQPair> assembledReads, droppedReads;
     private final NucleotideSQPair consensusSQPair;
     private final NucleotideSequence umi;
@@ -48,16 +48,39 @@ public final class SConsensus implements Consensus {
         return consensusSQPair;
     }
 
-    public static String formattedSequenceHeader() {
-        return "Consensus\tQuality";
-    }
-
     @Override
     public SSequencingRead asRead() {
         return new SSequencingReadImpl(
                 "C:" + umi + ":" + assembledReads.size() + ":" + droppedReads.size(),
                 consensusSQPair,
                 -1);
+    }
+
+    @Override
+    public byte getMinQual() {
+        int minQ = Util.PH33_MAX_QUAL;
+        for (int i = 0; i < consensusSQPair.size(); i++) {
+            minQ = (byte) Math.min(consensusSQPair.getQuality().value(i), minQ);
+        }
+        return (byte) minQ;
+    }
+
+    @Override
+    public byte getMaxQual() {
+        int maxQ = Util.PH33_MIN_QUAL;
+        for (int i = 0; i < consensusSQPair.size(); i++) {
+            maxQ = (byte) Math.min(consensusSQPair.getQuality().value(i), maxQ);
+        }
+        return (byte) maxQ;
+    }
+
+    @Override
+    public byte getAvgQual() {
+        double avgQ = 0;
+        for (int i = 0; i < consensusSQPair.size(); i++) {
+            avgQ += consensusSQPair.getQuality().value(i);
+        }
+        return (byte) (avgQ / (double) consensusSQPair.size());
     }
 
     @Override
@@ -76,34 +99,7 @@ public final class SConsensus implements Consensus {
     }
 
     @Override
-    public String formattedSequence() {
-        return new StringBuilder(consensusSQPair.getSequence().toString()).
-                append("\t").append(consensusSQPair.getQuality().toString()).
-                toString();
-    }
-
-    @Override
-    public QualityHistogram getQualityHistogram() {
-        QualityHistogram qualityHistogram = new QualityHistogram();
-        qualityHistogram.append(consensusSQPair.getQuality());
-        return qualityHistogram;
-    }
-
-    @Override
-    public String toString() {
-        String formattedString = "@" + umi.toString() + ":" + size() + "\n" +
-                NucleotideSQPair.toPrettyString(consensusSQPair) + "\n+";
-
-        for (NucleotideSQPair read : assembledReads) {
-            formattedString += "\n" + read.getSequence().toString();
-        }
-
-        /* todo
-        for (int i = 0; i < substitutionCodes.length; i++) {
-            formattedString += "\n" + Mutations.encode(substitutionCodes[i], NucleotideAlphabet.INSTANCE) + "\t" +
-                    substitutionCounts[i];
-        } */
-
-        return formattedString;
+    public boolean isPairedEnd() {
+        return false;
     }
 }

@@ -62,6 +62,6 @@ public class UmiHistogramTest {
     public void serializationTest() throws IOException {
         System.out.println("Testing serialization test for UmiHistogram");
         UmiHistogram histogram = prepareHistogram();
-        TestUtil.serializationCheckForOutputData(histogram);
+        TestUtil.serializationCheck(histogram);
     }
 }

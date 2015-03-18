@@ -18,9 +18,8 @@ package com.milaboratory.oncomigec.core.assemble.entity;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.core.sequencing.read.PSequencingRead;
 import com.milaboratory.core.sequencing.read.PSequencingReadImpl;
-import com.milaboratory.oncomigec.util.QualityHistogram;
 
-public final class PConsensus implements Consensus {
+public final class PConsensus implements Consensus<PSequencingRead> {
     private final SConsensus consensus1, consensus2;
 
     public PConsensus(SConsensus consensus1, SConsensus consensus2) {
@@ -57,32 +56,24 @@ public final class PConsensus implements Consensus {
                 consensus2.asRead());
     }
 
-    public static String formattedSequenceHeader() {
-        return "Consensus1\tConsensus2\tQuality1\tQuality2";
+    @Override
+    public byte getMinQual() {
+        return (byte) Math.min(consensus1.getMinQual(), consensus2.getMinQual());
     }
 
     @Override
-    public String formattedSequence() {
-        return new StringBuilder(consensus1.getConsensusSQPair().getSequence().toString()).
-                append('\t').append(consensus2.getConsensusSQPair().getSequence().toString()).
-                append('\t').append(consensus1.getConsensusSQPair().getQuality().toString()).
-                append('\t').append(consensus2.getConsensusSQPair().getQuality().toString()).
-                toString();
+    public byte getMaxQual() {
+        return (byte) Math.max(consensus1.getMaxQual(), consensus2.getMaxQual());
     }
 
     @Override
-    public QualityHistogram getQualityHistogram() {
-        QualityHistogram qualityHistogram = new QualityHistogram();
-        qualityHistogram.append(consensus1.getConsensusSQPair().getQuality());
-        qualityHistogram.append(consensus2.getConsensusSQPair().getQuality());
-        return qualityHistogram;
+    public byte getAvgQual() {
+        return (byte) ((consensus1.getAvgQual() * consensus1.size() + consensus2.getAvgQual() * consensus2.size()) /
+                (double) (consensus1.size() + consensus2.size()));
     }
 
     @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder("#Consensus1\n").append(consensus1.toString()).
-                append("\n#Consensus2\n").append(consensus2.toString());
-
-        return sb.toString();
+    public boolean isPairedEnd() {
+        return true;
     }
 }

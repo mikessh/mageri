@@ -19,10 +19,11 @@ import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.core.sequencing.io.fastq.SFastqReader;
 import com.milaboratory.core.sequencing.read.SSequencingRead;
 import com.milaboratory.oncomigec.core.io.entity.PMig;
-import com.milaboratory.oncomigec.core.io.misc.MigReaderParameters;
+import com.milaboratory.oncomigec.core.io.misc.PreprocessorParameters;
 import com.milaboratory.oncomigec.core.io.misc.UmiHistogram;
 import com.milaboratory.oncomigec.preproc.demultiplex.config.BarcodeListParser;
 import com.milaboratory.oncomigec.preproc.demultiplex.entity.DemultiplexParameters;
+import com.milaboratory.oncomigec.preproc.demultiplex.processor.HeaderExtractor;
 import com.milaboratory.oncomigec.preproc.demultiplex.processor.PAdapterExtractor;
 import com.milaboratory.oncomigec.util.Util;
 import com.milaboratory.oncomigec.util.testing.PercentRange;
@@ -39,7 +40,7 @@ public class PMigReaderTest {
     @Test
     public void preprocessedTest() throws Exception {
         PMigReader reader = new PMigReader(getR1(), getR2(),
-                SAMPLE_NAME, MigReaderParameters.IGNORE_QUAL);
+                new HeaderExtractor(SAMPLE_NAME), PreprocessorParameters.IGNORE_QUAL);
 
         PMig pMig;
         while ((pMig = reader.take(SAMPLE_NAME, 5)) != null) {
@@ -63,7 +64,7 @@ public class PMigReaderTest {
                 DemultiplexParameters.DEFAULT);
 
         PMigReader reader = new PMigReader(getR1(), getR2(), processor);
-        PMigReader exactReader = new PMigReader(getR1(), getR2(), SAMPLE_NAME);
+        PMigReader exactReader = new PMigReader(getR1(), getR2(), new HeaderExtractor(SAMPLE_NAME));
 
         UmiHistogram histogram = exactReader.getUmiHistogram(SAMPLE_NAME);
 

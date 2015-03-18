@@ -18,9 +18,9 @@
 
 package com.milaboratory.oncomigec.model.variant;
 
-import com.milaboratory.core.sequence.nucleotide.NucleotideAlphabet;
 import com.milaboratory.oncomigec.core.consalign.mutations.MutationsAndCoverage;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -31,7 +31,7 @@ import java.util.List;
  * corresponding background error frequencies, an information that could be further used
  * in error filtering process.
  */
-public class VariantContainer {
+public class VariantContainer implements Serializable {
     private final MutationsAndCoverage mutationsAndCoverage;
     private final List<Variant> variantList = new LinkedList<>();
     private final Variant[][] variants;
@@ -217,32 +217,5 @@ public class VariantContainer {
      */
     public Variant getAt(int pos, byte nt) {
         return variants[pos][nt];
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder stringBuilder = new StringBuilder("#" + super.toString());
-        StringBuilder matrixHeader = new StringBuilder();
-
-        for (byte i = 0; i < 4; i++)
-            matrixHeader.append("\t").append(NucleotideAlphabet.INSTANCE.symbolFromCode(i));
-
-        stringBuilder.append("\n").append("MigBased").append(matrixHeader);
-        for (byte i = 0; i < 4; i++) {
-            stringBuilder.append("\n").append(NucleotideAlphabet.INSTANCE.symbolFromCode(i));
-            for (byte j = 0; j < 4; j++) {
-                stringBuilder.append("\t").append(getBgFreqMig(i, j));
-            }
-        }
-
-        stringBuilder.append("\n").append("ReadBased").append(matrixHeader);
-        for (byte i = 0; i < 4; i++) {
-            stringBuilder.append("\n").append(NucleotideAlphabet.INSTANCE.symbolFromCode(i));
-            for (byte j = 0; j < 4; j++) {
-                stringBuilder.append("\t").append(getBgFreqRead(i, j));
-            }
-        }
-
-        return stringBuilder.toString();
     }
 }

@@ -19,9 +19,11 @@ import com.milaboratory.core.sequence.Range;
 import com.milaboratory.oncomigec.core.genomic.Reference;
 import com.milaboratory.oncomigec.core.mutations.MigecMutationsCollection;
 
+import java.io.Serializable;
+import java.util.Collections;
 import java.util.List;
 
-public final class AlignedConsensus {
+public final class AlignedConsensus implements Serializable {
     private final int migSize;
     private final List<MigecMutationsCollection> majorMutationsList;
     private final List<Reference> references;

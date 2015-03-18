@@ -1,6 +1,6 @@
 package com.milaboratory.oncomigec.core.consalign.misc;
 
-import com.milaboratory.oncomigec.core.ReadSpecific;
+import com.milaboratory.oncomigec.ReadSpecific;
 import com.milaboratory.oncomigec.core.align.processor.AlignerFactory;
 import com.milaboratory.oncomigec.core.assemble.entity.Consensus;
 import com.milaboratory.oncomigec.core.consalign.processor.ConsensusAligner;

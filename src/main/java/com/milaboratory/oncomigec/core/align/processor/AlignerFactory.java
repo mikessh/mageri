@@ -12,7 +12,7 @@ public abstract class AlignerFactory<AlignerType extends Aligner> {
     }
 
     protected AlignerFactory(ReferenceLibrary referenceLibrary,
-                          LocalAlignmentEvaluator localAlignmentEvaluator) {
+                             LocalAlignmentEvaluator localAlignmentEvaluator) {
         this.referenceLibrary = referenceLibrary;
         this.localAlignmentEvaluator = localAlignmentEvaluator;
     }
