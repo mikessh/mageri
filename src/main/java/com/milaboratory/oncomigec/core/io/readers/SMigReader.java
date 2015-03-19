@@ -79,7 +79,7 @@ public final class SMigReader extends MigReader<SMig> {
         Iterator<Map.Entry<NucleotideSequence, List<ReadInfo>>> iterator = iteratorMap.get(sampleName);
         while (iterator.hasNext()) {
             Map.Entry<NucleotideSequence, List<ReadInfo>> entry = iterator.next();
-            if (entry.getValue().size() >= sizeThreshold && checkUmiMismatch(sampleName, entry.getKey())) {
+            if (entry.getValue().size() >= sizeThreshold && !checkUmiMismatch(sampleName, entry.getKey())) {
                 List<NucleotideSQPair> readList = new ArrayList<>();
 
                 for (ReadInfo readInfo : entry.getValue()) {
