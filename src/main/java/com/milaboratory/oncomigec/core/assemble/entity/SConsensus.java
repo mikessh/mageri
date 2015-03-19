@@ -24,9 +24,10 @@ import com.milaboratory.oncomigec.util.Util;
 import java.util.List;
 
 public final class SConsensus implements Consensus<SSequencingRead> {
-    private final List<NucleotideSQPair> assembledReads, droppedReads;
+    private transient final List<NucleotideSQPair> assembledReads, droppedReads;
     private final NucleotideSQPair consensusSQPair;
     private final NucleotideSequence umi;
+    private final int assembledReadsCount, droppedReadsCount;
 
     public SConsensus(NucleotideSequence umi, NucleotideSQPair consensusSQPair,
                       List<NucleotideSQPair> assembledReads, List<NucleotideSQPair> droppedReads) {
@@ -34,6 +35,8 @@ public final class SConsensus implements Consensus<SSequencingRead> {
         this.assembledReads = assembledReads;
         this.droppedReads = droppedReads;
         this.consensusSQPair = consensusSQPair;
+        this.assembledReadsCount = assembledReads.size();
+        this.droppedReadsCount = droppedReads.size();
     }
 
     public List<NucleotideSQPair> getAssembledReads() {
@@ -51,7 +54,7 @@ public final class SConsensus implements Consensus<SSequencingRead> {
     @Override
     public SSequencingRead asRead() {
         return new SSequencingReadImpl(
-                "C:" + umi + ":" + assembledReads.size() + ":" + droppedReads.size(),
+                "C:" + umi + ":" + assembledReadsCount + ":" + droppedReadsCount,
                 consensusSQPair,
                 -1);
     }
@@ -85,12 +88,12 @@ public final class SConsensus implements Consensus<SSequencingRead> {
 
     @Override
     public int fullSize() {
-        return assembledReads.size() + droppedReads.size();
+        return assembledReadsCount + droppedReadsCount;
     }
 
     @Override
     public int size() {
-        return assembledReads.size();
+        return assembledReadsCount;
     }
 
     @Override

@@ -20,9 +20,11 @@ package com.milaboratory.oncomigec.pipeline;
 
 import com.milaboratory.oncomigec.core.haplotype.Haplotype;
 import com.milaboratory.oncomigec.core.haplotype.HaplotypeAssembler;
+import com.milaboratory.oncomigec.core.io.misc.UmiHistogram;
 import com.milaboratory.oncomigec.model.classifier.BaseVariantClassifier;
 import com.milaboratory.oncomigec.pipeline.analysis.ProjectAnalysis;
 import com.milaboratory.oncomigec.pipeline.analysis.Sample;
+import com.milaboratory.oncomigec.pipeline.analysis.SampleAnalysis;
 import com.milaboratory.oncomigec.pipeline.input.Input;
 import com.milaboratory.oncomigec.pipeline.input.InputParser;
 import com.milaboratory.oncomigec.util.testing.TestUtil;
@@ -37,8 +39,7 @@ public class PipelineTest {
         Input input = INPUT_PARSER.parseJson("pipeline/tabular.pri.json");
 
         //System.out.println(input);
-        ProjectAnalysis projectAnalysis = new ProjectAnalysis(input,
-                Presets.DEFAULT, RuntimeParameters.DEBUG, BaseVariantClassifier.BUILT_IN);
+        ProjectAnalysis projectAnalysis = new ProjectAnalysis(input);
         projectAnalysis.run();
 
         for (Sample sample : projectAnalysis.getProject().getSamples()) {
@@ -50,6 +51,11 @@ public class PipelineTest {
                         projectAnalysis.getReferenceLibrary().getByName("SPIKE1"),
                         haplotype.getReference());
             }
+
+            SampleAnalysis analysis = projectAnalysis.getAnalysis(sample);
+            UmiHistogram umiHistogram = analysis.getUmiHistogram();
+            Assert.assertEquals(umiHistogram.calculateMigsRetained(umiHistogram.getMigSizeThreshold()),
+                    analysis.getAssembler().getMigsTotal());
         }
 
         projectAnalysis.serialize("./test_output/", false);

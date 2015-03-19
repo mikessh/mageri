@@ -57,7 +57,7 @@ public class SampleAnalysis implements ReadSpecific, Serializable {
 
     protected transient final MigOutputPort reader;
     protected transient VariantLibrary variantLibrary;
-    
+
     protected final UmiHistogram umiHistogram;
     protected final Assembler assembler;
     protected final ConsensusAligner aligner;

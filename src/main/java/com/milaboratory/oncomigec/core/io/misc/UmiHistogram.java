@@ -103,7 +103,6 @@ public class UmiHistogram extends PipelineBlock {
         migsTotal = umiCounterMap.size();
     }
 
-
     public int getMigSizeThreshold() {
         // empirical for now
         int overSeqPeak = -1;
