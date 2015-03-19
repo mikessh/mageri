@@ -1,5 +1,6 @@
 package com.milaboratory.oncomigec.core.consalign.processor;
 
+import com.milaboratory.core.sequence.NucleotideSQPair;
 import com.milaboratory.core.sequence.alignment.LocalAlignment;
 import com.milaboratory.oncomigec.core.align.entity.PAlignmentResult;
 import com.milaboratory.oncomigec.core.align.entity.SAlignmentResult;
@@ -18,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 public final class PConsensusAligner extends ConsensusAligner<PConsensus> {
+    private final ConsensusOverlapper consensusOverlapper = new ConsensusOverlapper();
 
     public PConsensusAligner(Aligner aligner, ConsensusAlignerParameters parameters) {
         super(aligner, parameters);
@@ -35,8 +37,14 @@ public final class PConsensusAligner extends ConsensusAligner<PConsensus> {
         SConsensus consensus1 = pConsensus.getConsensus1(),
                 consensus2 = pConsensus.getConsensus2();
 
-        PAlignmentResult pAlignmentResult = aligner.align(consensus1.getConsensusSQPair().getSequence(),
-                consensus2.getConsensusSQPair().getSequence());
+        ConsensusOverlapper.OverlapResult overlapResult = consensusOverlapper.overlap(consensus1.getConsensusSQPair(),
+                consensus2.getConsensusSQPair());
+
+        NucleotideSQPair trimmedConsensus1 = overlapResult.getConsensus1(),
+                trimmedConsensus2 = overlapResult.getConsensus2();
+
+        PAlignmentResult pAlignmentResult = aligner.align(trimmedConsensus1.getSequence(),
+                trimmedConsensus2.getSequence());
 
         // Drop if failed to align
         if (pAlignmentResult == null)
@@ -53,11 +61,10 @@ public final class PConsensusAligner extends ConsensusAligner<PConsensus> {
 
             LocalAlignment localAlignment1 = alignmentResult1.getAlignments().get(i);
             MutationsExtractor mutationsExtractor = new MutationsExtractor(localAlignment1,
-                    reference1, consensus1, parameters);
+                    reference1, consensus1, trimmedConsensus1, parameters);
 
             majorMutations = mutationsExtractor.calculateMajorMutations();
             minorMutations = mutationsExtractor.calculateMinorMutations();
-
 
             majorMutationsByReference.put(reference1, majorMutations);
             minorMutationsByReference.put(reference1, minorMutations);
@@ -76,8 +83,8 @@ public final class PConsensusAligner extends ConsensusAligner<PConsensus> {
 
             LocalAlignment localAlignment2 = alignmentResult2.getAlignments().get(i);
             MutationsExtractor mutationsExtractor = new MutationsExtractor(localAlignment2,
-                    reference2, consensus2, parameters);
-            // TODO: test mutations don't overlap
+                    reference2, consensus2, trimmedConsensus2, parameters);
+
             majorMutations.append(mutationsExtractor.calculateMajorMutations());
             Map<Integer, Integer> additionalMinorMutations = mutationsExtractor.calculateMinorMutations();
 
@@ -94,11 +101,11 @@ public final class PConsensusAligner extends ConsensusAligner<PConsensus> {
         }
 
         // Append coverage
-        alignerReferenceLibrary.appendCoverage(alignmentResult1, consensus1,
+        alignerReferenceLibrary.appendCoverage(alignmentResult1, trimmedConsensus1.getQuality(),
                 parameters.backAlignDroppedReads() ? pConsensus.getConsensus1().fullSize() :
                         pConsensus.getConsensus1().size()
         );
-        alignerReferenceLibrary.appendCoverage(alignmentResult2, consensus2,
+        alignerReferenceLibrary.appendCoverage(alignmentResult2, trimmedConsensus2.getQuality(),
                 parameters.backAlignDroppedReads() ? pConsensus.getConsensus2().fullSize() :
                         pConsensus.getConsensus2().size()
         );
@@ -107,7 +114,7 @@ public final class PConsensusAligner extends ConsensusAligner<PConsensus> {
         List<MigecMutationsCollection> majorMutationsList = new ArrayList<>();
         for (Reference reference : majorMutationsByReference.keySet()) {
             MigecMutationsCollection majorMutations = majorMutationsByReference.get(reference);
-            // TODO: re-implement, mutations shouldn't overlap
+
             alignerReferenceLibrary.appendMutations(reference,
                     majorMutations, minorMutationsByReference.get(reference),
                     parameters.backAlignDroppedReads() ? pConsensus.fullSize() : pConsensus.size());

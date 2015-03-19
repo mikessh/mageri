@@ -8,23 +8,23 @@ public final class AssemblerParameters implements ParameterSet {
     private final int offsetRange, anchorRegion, maxMMs, maxConsequentMMs;
     private final int minReadSize;
     private final double maxDroppedReadsRatio;
-    private final boolean cqsRescue;
+    private final boolean cqsRescue, qualityTrimming, greedyExtend;
 
     public static AssemblerParameters DEFAULT = new AssemblerParameters(
             4, 8, 4, 3,
             true,
             0.3,
-            false);
+            false, true, true);
 
     public static AssemblerParameters TORRENT454 = new AssemblerParameters(
             4, 8, 4, 3,
             true,
             0.6,
-            true);
+            true, false, false);
 
     public AssemblerParameters(int offsetRange, int anchorRegion, int maxMMs, int maxConsequentMMs,
                                boolean qualityWeightedMode, double maxDroppedReadsRatio,
-                               boolean cqsRescue) {
+                               boolean cqsRescue, boolean qualityTrimming, boolean greedyExtend) {
         this.offsetRange = offsetRange;
         this.anchorRegion = anchorRegion;
         this.maxMMs = maxMMs;
@@ -33,6 +33,8 @@ public final class AssemblerParameters implements ParameterSet {
         this.minReadSize = 2 * offsetRange + 2 * anchorRegion;
         this.maxDroppedReadsRatio = maxDroppedReadsRatio;
         this.cqsRescue = cqsRescue;
+        this.qualityTrimming = qualityTrimming;
+        this.greedyExtend = greedyExtend;
     }
 
     public boolean qualityWeightedMode() {
@@ -67,6 +69,14 @@ public final class AssemblerParameters implements ParameterSet {
         return cqsRescue;
     }
 
+    public boolean performQualityTrimming() {
+        return qualityTrimming;
+    }
+
+    public boolean greedyExtend() {
+        return greedyExtend;
+    }
+
     @Override
     public Element toXml() {
         Element e = new Element("AssemblerParameters");
@@ -77,6 +87,8 @@ public final class AssemblerParameters implements ParameterSet {
         e.addContent(new Element("qualityWeightedMode").setText(Boolean.toString(qualityWeightedMode)));
         e.addContent(new Element("maxDroppedReadsRatio").setText(Double.toString(maxDroppedReadsRatio)));
         e.addContent(new Element("cqsRescue").setText(Boolean.toString(cqsRescue)));
+        e.addContent(new Element("qualityTrimming").setText(Boolean.toString(qualityTrimming)));
+        e.addContent(new Element("greedyExtend").setText(Boolean.toString(greedyExtend)));
         return e;
     }
 
@@ -89,7 +101,9 @@ public final class AssemblerParameters implements ParameterSet {
                 Integer.parseInt(e.getChildTextTrim("maxConsequentMMs")),
                 Boolean.parseBoolean(e.getChildTextTrim("qualityWeightedMode")),
                 Double.parseDouble(e.getChildTextTrim("maxDroppedReadsRatio")),
-                Boolean.parseBoolean(e.getChildTextTrim("cqsRescue"))
+                Boolean.parseBoolean(e.getChildTextTrim("cqsRescue")),
+                Boolean.parseBoolean(e.getChildTextTrim("qualityTrimming")),
+                Boolean.parseBoolean(e.getChildTextTrim("greedyExtend"))
         );
     }
 
@@ -102,11 +116,13 @@ public final class AssemblerParameters implements ParameterSet {
 
         if (anchorRegion != that.anchorRegion) return false;
         if (cqsRescue != that.cqsRescue) return false;
+        if (greedyExtend != that.greedyExtend) return false;
         if (maxConsequentMMs != that.maxConsequentMMs) return false;
         if (Double.compare(that.maxDroppedReadsRatio, maxDroppedReadsRatio) != 0) return false;
         if (maxMMs != that.maxMMs) return false;
         if (minReadSize != that.minReadSize) return false;
         if (offsetRange != that.offsetRange) return false;
+        if (qualityTrimming != that.qualityTrimming) return false;
         if (qualityWeightedMode != that.qualityWeightedMode) return false;
 
         return true;
@@ -125,6 +141,8 @@ public final class AssemblerParameters implements ParameterSet {
         temp = Double.doubleToLongBits(maxDroppedReadsRatio);
         result = 31 * result + (int) (temp ^ (temp >>> 32));
         result = 31 * result + (cqsRescue ? 1 : 0);
+        result = 31 * result + (qualityTrimming ? 1 : 0);
+        result = 31 * result + (greedyExtend ? 1 : 0);
         return result;
     }
 }

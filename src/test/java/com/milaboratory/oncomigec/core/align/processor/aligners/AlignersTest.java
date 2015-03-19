@@ -29,8 +29,6 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URISyntaxException;
 
-import static com.milaboratory.oncomigec.core.align.processor.aligners.LocalAlignmentEvaluator.FLEXIBLE;
-
 public class AlignersTest {
     int nReferences = 100, nRepetitions1 = 100, nRepetitions2 = 100;
 
@@ -51,13 +49,13 @@ public class AlignersTest {
         System.out.println("Testing aligners for deletions..");
 
         System.out.println("Simple");
-        randomizedIndelTest(new SimpleExomeAlignerFactory(dummy, FLEXIBLE),
+        randomizedIndelTest(new SimpleExomeAlignerFactory(dummy),
                 RandomIndelGenerator.DEFAULT_DELETION,
                 PercentRange.createUpperBound("SubstitutionRate", "SimpleExomeAligner-Deletions", 20),
                 PercentRange.createLowerBound("AlignmentRate", "SimpleExomeAligner-Deletions", 50));
 
         System.out.println("Extended");
-        randomizedIndelTest(new ExtendedExomeAlignerFactory(dummy, FLEXIBLE),
+        randomizedIndelTest(new ExtendedExomeAlignerFactory(dummy),
                 RandomIndelGenerator.DEFAULT_DELETION,
                 PercentRange.createUpperBound("SubstitutionRate", "ImprovedExomeAligner-Deletions", 5),
                 PercentRange.createLowerBound("AlignmentRate", "ImprovedExomeAligner-Deletions", 90));
@@ -65,13 +63,13 @@ public class AlignersTest {
         System.out.println("Testing aligners for insertions..");
 
         System.out.println("Simple");
-        randomizedIndelTest(new SimpleExomeAlignerFactory(dummy, FLEXIBLE),
+        randomizedIndelTest(new SimpleExomeAlignerFactory(dummy),
                 RandomIndelGenerator.DEFAULT_INSERTION,
                 PercentRange.createUpperBound("SubstitutionRate", "SimpleExomeAligner-Insertions", 20),
                 PercentRange.createLowerBound("AlignmentRate", "SimpleExomeAligner-Insertions", 50));
 
         System.out.println("Extended");
-        randomizedIndelTest(new ExtendedExomeAlignerFactory(dummy, FLEXIBLE),
+        randomizedIndelTest(new ExtendedExomeAlignerFactory(dummy),
                 RandomIndelGenerator.DEFAULT_INSERTION,
                 PercentRange.createUpperBound("SubstitutionRate", "ImprovedExomeAligner-Insertions", 5),
                 PercentRange.createLowerBound("AlignmentRate", "ImprovedExomeAligner-Insertions", 90));

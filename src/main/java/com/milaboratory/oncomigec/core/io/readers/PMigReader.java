@@ -20,7 +20,6 @@ import com.milaboratory.core.sequence.NucleotideSQPair;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.core.sequence.quality.QualityFormat;
 import com.milaboratory.core.sequencing.io.fastq.PFastqReader;
-import com.milaboratory.core.sequencing.read.PSequencingReadImpl;
 import com.milaboratory.core.sequencing.read.SequencingRead;
 import com.milaboratory.oncomigec.core.io.entity.PMig;
 import com.milaboratory.oncomigec.core.io.entity.SMig;
@@ -30,7 +29,6 @@ import com.milaboratory.oncomigec.pipeline.RuntimeParameters;
 import com.milaboratory.oncomigec.preproc.demultiplex.barcode.BarcodeSearcherResult;
 import com.milaboratory.oncomigec.preproc.demultiplex.entity.PCheckoutResult;
 import com.milaboratory.oncomigec.preproc.demultiplex.processor.CheckoutProcessor;
-import com.milaboratory.oncomigec.preproc.misc.ReadOverlapper;
 import com.milaboratory.util.CompressionType;
 
 import java.io.IOException;
@@ -41,8 +39,6 @@ import java.util.List;
 import java.util.Map;
 
 public final class PMigReader extends MigReader<PMig> {
-    private final ReadOverlapper readOverlapper = new ReadOverlapper();
-
     public PMigReader(PFastqReader reader,
                       CheckoutProcessor checkoutProcessor,
                       PreprocessorParameters preprocessorParameters,
@@ -110,11 +106,7 @@ public final class PMigReader extends MigReader<PMig> {
 
                         // Trim reads if corresponding option is set
                         // and UMIs were de-novo extracted using adapter search
-                        int barcodeOffset = 0;
-
-                        if (preprocessorParameters.trimAdapters() &&
-                                readInfo.getCheckoutResult() instanceof PCheckoutResult) {
-
+                        if (preprocessorParameters.trimAdapters()) {
                             // Trim adapters if required
                             // -M-|            |-S-
                             // -R1|---> -R2----|-->
@@ -122,30 +114,20 @@ public final class PMigReader extends MigReader<PMig> {
                             read1 = read1.getRange(result.getMasterResult().getTo(), read1.size()); // getTo() is exclusive to
                             if (result.getSlaveResult() != BarcodeSearcherResult.BLANK_RESULT)
                                 read2 = read2.getRange(0, result.getSlaveResult().getFrom());
-                            barcodeOffset = result.getMasterResult().getTo();
                         }
 
-                        // Try to overlap reads
-                        // NOTE: the overlapper just creates a pair of reads
-                        // those are non-overlapping and have overlap region equally distributed upon mates
-                        // this is done for code conciseness sake
-                        ReadOverlapper.OverlapResult overlapResult =
-                                readOverlapper.overlap(new PSequencingReadImpl(0, null, null, read1, read2),
-                                        barcodeOffset);
-
                         // Account for 'master first' attribute
-                        if (result.getMasterFirst()) {
-                            read1 = overlapResult.getReadPair().getData(0);
-                            read2 = overlapResult.getReadPair().getData(1);
-                        } else {
-                            read1 = overlapResult.getReadPair().getData(1).getRC();
-                            read2 = overlapResult.getReadPair().getData(0).getRC();
+                        if (!result.getMasterFirst()) {
+                            NucleotideSQPair tmp = read1;
+                            read1 = read2.getRC();
+                            read2 = tmp.getRC();
                         }
                     }
                     // NOTE: Otherwise the checkout processor is a HeaderExtractor
                     // For preprocessed data, we have a convention that
-                    // a) header of both reads contains UMI sequence (UMI:seq:qual)
-                    // b) reads are oriented in correct direction, they are overlapped if possible and on the same strand
+                    // a) both read headers contain UMI sequence (UMI:seq:qual)
+                    // b) reads are oriented in correct direction
+                    // c) adapter/primer sequences are trimmed
 
                     readList1.add(read1);
                     readList2.add(read2);
@@ -157,10 +139,6 @@ public final class PMigReader extends MigReader<PMig> {
 
         }
         return null;
-    }
-
-    public ReadOverlapper getReadOverlapper() {
-        return readOverlapper;
     }
 
     @Override

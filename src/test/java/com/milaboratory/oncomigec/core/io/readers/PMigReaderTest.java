@@ -152,11 +152,6 @@ public class PMigReaderTest {
             slaveFirstReadsCount += slaveFirstMig.size();
         }
 
-        PercentRange.createLowerBound("ReadOverlapEfficiency", "Master first", 99).
-                assertInRange(reader.getReadOverlapper().getOverlapEfficiency());
-        PercentRange.createLowerBound("ReadOverlapEfficiency", "Slave first", 99).
-                assertInRange(slaveFirstReader.getReadOverlapper().getOverlapEfficiency());
-
         PercentRange.createLowerBound("MasterFirstSlaveFirstIntersection", "Read1", 95).
                 assertInRange(intersect(counters1, slaveFirstCoutners1, readsCount, slaveFirstReadsCount));
         PercentRange.createLowerBound("MasterFirstSlaveFirstIntersection", "Read2", 95).

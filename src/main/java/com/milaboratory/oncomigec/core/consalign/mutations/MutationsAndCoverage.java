@@ -19,6 +19,7 @@ import com.milaboratory.core.sequence.Range;
 import com.milaboratory.core.sequence.alignment.LocalAlignment;
 import com.milaboratory.core.sequence.mutations.Mutations;
 import com.milaboratory.core.sequence.nucleotide.NucleotideAlphabet;
+import com.milaboratory.core.sequence.quality.SequenceQualityPhred;
 import com.milaboratory.oncomigec.core.assemble.entity.SConsensus;
 import com.milaboratory.oncomigec.core.genomic.Reference;
 import com.milaboratory.oncomigec.core.mutations.MigecMutation;
@@ -64,7 +65,7 @@ public final class MutationsAndCoverage implements Serializable {
         this.minorIndelReadCountMap = new ConcurrentHashMap<>();
     }
 
-    public void appendCoverage(LocalAlignment alignment, SConsensus consensus, int migSize) {
+    public void appendCoverage(LocalAlignment alignment, SequenceQualityPhred qual, int migSize) {
         // Thread-safe
         updated.compareAndSet(false, true);
         Range coveredRange = alignment.getSequence1Range();
@@ -73,7 +74,7 @@ public final class MutationsAndCoverage implements Serializable {
             if (posInCons >= 0) {
                 referenceUmiCoverage.incrementAndGet(i);
                 referenceReadCoverage.addAndGet(i, migSize);
-                referenceQualitySumCoverage.addAndGet(i, consensus.getConsensusSQPair().getQuality().value(posInCons));
+                referenceQualitySumCoverage.addAndGet(i, qual.value(posInCons));
             }
         }
     }

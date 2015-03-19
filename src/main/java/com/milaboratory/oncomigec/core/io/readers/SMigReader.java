@@ -25,7 +25,7 @@ import com.milaboratory.oncomigec.core.io.entity.SMig;
 import com.milaboratory.oncomigec.core.io.misc.PreprocessorParameters;
 import com.milaboratory.oncomigec.core.io.misc.ReadInfo;
 import com.milaboratory.oncomigec.pipeline.RuntimeParameters;
-import com.milaboratory.oncomigec.preproc.demultiplex.entity.CheckoutResult;
+import com.milaboratory.oncomigec.preproc.demultiplex.entity.SCheckoutResult;
 import com.milaboratory.oncomigec.preproc.demultiplex.processor.CheckoutProcessor;
 import com.milaboratory.util.CompressionType;
 
@@ -84,10 +84,17 @@ public final class SMigReader extends MigReader<SMig> {
 
                 for (ReadInfo readInfo : entry.getValue()) {
                     NucleotideSQPair read = readInfo.getRead().getData(0);
-                    if (preprocessorParameters.trimAdapters()) {
-                        CheckoutResult result = readInfo.getCheckoutResult();
-                        read = read.getRange(result.getMasterResult().getTo(), read.size());
+                    if (readInfo.getCheckoutResult() instanceof SCheckoutResult) {
+                        if (preprocessorParameters.trimAdapters()) {
+                            SCheckoutResult result = (SCheckoutResult) readInfo.getCheckoutResult();
+                            read = read.getRange(result.getMasterResult().getTo(), read.size());
+                        }
                     }
+                    // NOTE: Otherwise the checkout processor is a HeaderExtractor
+                    // For single-end preprocessed data, we have a convention that
+                    // a) read header contains UMI sequence (UMI:seq:qual)
+                    // b) reads are oriented in correct direction
+                    // c) adapter/primer sequences are trimmed
                     readList.add(read);
                 }
 

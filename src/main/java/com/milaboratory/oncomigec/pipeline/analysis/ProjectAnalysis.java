@@ -154,6 +154,7 @@ public class ProjectAnalysis implements Serializable {
     }
 
     public void serialize(String path, boolean noBinary) throws IOException {
+        sout("Writing output.", 1);
         String prefix = path + "/" + project.getName();
 
         preprocessorFactory.writePlainText(prefix);
@@ -169,5 +170,6 @@ public class ProjectAnalysis implements Serializable {
         if (!noBinary) {
             SerializationUtils.writeObjectToFile(new File(prefix + ".mi"), this);
         }
+        sout("Done.", 1);
     }
 }

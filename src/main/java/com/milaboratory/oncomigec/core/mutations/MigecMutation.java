@@ -65,4 +65,21 @@ public final class MigecMutation implements Serializable {
     public String toString() {
         return (filtered ? "!" : "") + Mutations.toString(NucleotideAlphabet.INSTANCE, code);
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        MigecMutation that = (MigecMutation) o;
+
+        if (code != that.code) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return code;
+    }
 }

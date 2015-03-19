@@ -36,4 +36,8 @@ public interface Aligner {
      * @return returns a map of references built in the aligner with corresponding IDs
      */
     public ReferenceLibrary getReferenceLibrary();
+
+    //public int getNoHitCount();
+    
+    //public int getBadAlignmentHitCount();
 }

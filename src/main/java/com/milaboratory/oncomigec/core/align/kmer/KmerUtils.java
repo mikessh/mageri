@@ -57,4 +57,8 @@ public class KmerUtils {
             kmer = kmer << 2 | sequence.codeAt(i);
         return kmer;
     }
+
+    public int getK() {
+        return k;
+    }
 }

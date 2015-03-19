@@ -22,7 +22,7 @@ import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 
 public class DummyAlignmentEvaluator implements AlignmentEvaluator {
     @Override
-    public boolean isGood(Object alignment, NucleotideSequence query) {
+    public boolean isGood(Object alignment, NucleotideSequence reference, NucleotideSequence query) {
         return true;
     }
 }

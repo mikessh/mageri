@@ -31,7 +31,9 @@ public class RuntimeParameters implements Serializable {
     private final long readLimit;
     private final byte verbosityLevel;
 
-    public static RuntimeParameters DEFAULT = new RuntimeParameters();
+    public static RuntimeParameters DEFAULT = new RuntimeParameters(),
+            DEBUG = new RuntimeParameters(1, -1, (byte) 3);
+
 
     private RuntimeParameters() {
         this(Runtime.getRuntime().availableProcessors(), -1, (byte) 3);

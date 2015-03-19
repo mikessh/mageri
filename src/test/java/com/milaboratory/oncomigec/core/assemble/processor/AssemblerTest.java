@@ -34,7 +34,7 @@ import static com.milaboratory.oncomigec.util.Util.cloneRead;
 import static com.milaboratory.oncomigec.util.Util.randomSequence;
 
 public class AssemblerTest {
-    private static final int nRepetitions = 1000, randomTestAssertThreshold = 70, randomTestAssertIDHThreshold = 60;
+    private static final int nRepetitions = 1000, randomTestAssertThreshold = 70, randomTestAssertIDHThreshold = 50;
 
     @Test
     public void randomMutationsTest() {

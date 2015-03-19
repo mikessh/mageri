@@ -1,5 +1,6 @@
 package com.milaboratory.oncomigec.core.consalign.processor;
 
+import com.milaboratory.core.sequence.NucleotideSQPair;
 import com.milaboratory.core.sequence.alignment.LocalAlignment;
 import com.milaboratory.oncomigec.core.align.entity.SAlignmentResult;
 import com.milaboratory.oncomigec.core.align.processor.Aligner;
@@ -29,7 +30,9 @@ public final class SConsensusAligner extends ConsensusAligner<SConsensus> {
     public AlignedConsensus align(SConsensus consensus) {
         Map<Reference, MigecMutationsCollection> majorMutationsByReference = new HashMap<>();
 
-        SAlignmentResult alignmentResult = aligner.align(consensus.getConsensusSQPair().getSequence());
+        NucleotideSQPair consensusSQPair = consensus.getConsensusSQPair();
+
+        SAlignmentResult alignmentResult = aligner.align(consensusSQPair.getSequence());
 
         // Drop if failed to align
         if (alignmentResult == null)
@@ -59,7 +62,7 @@ public final class SConsensusAligner extends ConsensusAligner<SConsensus> {
         }
 
         // Append coverage
-        alignerReferenceLibrary.appendCoverage(alignmentResult, consensus, migSize);
+        alignerReferenceLibrary.appendCoverage(alignmentResult, consensusSQPair.getQuality(), migSize);
 
         return new AlignedConsensus(majorMutationsList,
                 alignmentResult.getReferences(), alignmentResult.getRanges(), migSize);

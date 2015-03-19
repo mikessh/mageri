@@ -140,7 +140,7 @@ public class BarcodeSearcherTest {
             byte[] quality = new byte[sequence.size()];
             for (int i = 0; i < sequence.size(); i++)
                 quality[i] = mutationPositions.contains(i) ?
-                        (byte) rnd.nextInt(Util.PH33_LOW_QUAL + 1) :
+                        (byte) rnd.nextInt(Util.PH33_BAD_QUAL + 1) :
                         (byte) rnd.nextInt(40);
 
             BarcodeSearcherResult result = bs.search(new NucleotideSQPair(sequence,

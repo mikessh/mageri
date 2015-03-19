@@ -24,8 +24,12 @@ public class LocalAlignmentEvaluator implements AlignmentEvaluator<LocalAlignmen
     private final int maxConsequentMismatches;
     private final double minIdentity, minAlignedQueryRelativeSpan;
 
-    public static LocalAlignmentEvaluator STRICT = new LocalAlignmentEvaluator(2, 0.9, 0.8),
+    public static LocalAlignmentEvaluator STRICT = new LocalAlignmentEvaluator(5, 0.7, 0.3),
             FLEXIBLE = new LocalAlignmentEvaluator(5, 0.7, 0.5);
+
+    public LocalAlignmentEvaluator() {
+        this(5, 0.7, 0.3);
+    }
 
     public LocalAlignmentEvaluator(int maxConsequentMismatches,
                                    double minIdentity,
@@ -36,7 +40,7 @@ public class LocalAlignmentEvaluator implements AlignmentEvaluator<LocalAlignmen
     }
 
     @Override
-    public boolean isGood(LocalAlignment alignment, NucleotideSequence query) {
+    public boolean isGood(LocalAlignment alignment, NucleotideSequence reference, NucleotideSequence query) {
         int[] mutations = alignment.getMutations();
 
         int alignedRefLength = alignment.getSequence1Range().length(),

@@ -19,5 +19,5 @@ package com.milaboratory.oncomigec.core.align.processor.aligners;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 
 public interface AlignmentEvaluator <T> {
-    public boolean isGood(T alignment, NucleotideSequence query);
+    public boolean isGood(T alignment, NucleotideSequence reference, NucleotideSequence query);
 }

@@ -19,9 +19,10 @@ import java.util.List;
 public class ExtendedExomeAligner implements Aligner {
     private final KMerFinder kMerFinder;
     private final LocalAlignmentEvaluator localAlignmentEvaluator;
+    //private final AtomicInteger noHitCounter, badAlignmentCounter;
 
     public ExtendedExomeAligner(ReferenceLibrary referenceLibrary) {
-        this(referenceLibrary, 11, LocalAlignmentEvaluator.STRICT);
+        this(referenceLibrary, 11, new LocalAlignmentEvaluator());
     }
 
     public ExtendedExomeAligner(ReferenceLibrary referenceLibrary, int k,
@@ -47,7 +48,7 @@ public class ExtendedExomeAligner implements Aligner {
         LocalAlignment alignment = LocalAligner.align(AffineGapAlignmentScoring.getNucleotideBLASTScoring(),
                 reference.getSequence(), sequence);
 
-        if (!localAlignmentEvaluator.isGood(alignment, sequence))
+        if (!localAlignmentEvaluator.isGood(alignment, reference.getSequence(), sequence))
             return null;
 
         List<LocalAlignment> alignmentBlocks = new ArrayList<>();
@@ -69,11 +70,6 @@ public class ExtendedExomeAligner implements Aligner {
         if (result1 == null || result2 == null ||
                 !result1.getReferences().get(0).equals(result2.getReferences().get(0))) // chimeras not allowed here
             return null;
-
-        if (result1.getAlignments().get(0).getSequence1Range().intersectsWith(
-                result2.getAlignments().get(0).getSequence1Range()
-        ))
-            return null; // by convention reads cannot overlap, this also fixes issues from indels at read junction
 
         return new PAlignmentResult(result1, result2);
     }

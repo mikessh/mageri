@@ -20,6 +20,7 @@ package com.milaboratory.oncomigec.pipeline;
 
 import com.milaboratory.oncomigec.core.haplotype.Haplotype;
 import com.milaboratory.oncomigec.core.haplotype.HaplotypeAssembler;
+import com.milaboratory.oncomigec.model.classifier.BaseVariantClassifier;
 import com.milaboratory.oncomigec.pipeline.analysis.ProjectAnalysis;
 import com.milaboratory.oncomigec.pipeline.analysis.Sample;
 import com.milaboratory.oncomigec.pipeline.input.Input;
@@ -34,21 +35,23 @@ public class PipelineTest {
     @Test
     public void fullTest() throws Exception {
         Input input = INPUT_PARSER.parseJson("pipeline/tabular.pri.json");
-        
+
         //System.out.println(input);
-        ProjectAnalysis projectAnalysis = new ProjectAnalysis(input);
+        ProjectAnalysis projectAnalysis = new ProjectAnalysis(input,
+                Presets.DEFAULT, RuntimeParameters.DEBUG, BaseVariantClassifier.BUILT_IN);
         projectAnalysis.run();
 
         for (Sample sample : projectAnalysis.getProject().getSamples()) {
             HaplotypeAssembler haplotypeAssembler = projectAnalysis.getAnalysis(sample).getHaplotypeAssembler();
             Assert.assertTrue(haplotypeAssembler.getFilteredHaplotypes().size() > 0);
+            Assert.assertTrue(haplotypeAssembler.getFilteredHaplotypes().size() <= 3);
             for (Haplotype haplotype : haplotypeAssembler.getFilteredHaplotypes()) {
                 Assert.assertEquals(
                         projectAnalysis.getReferenceLibrary().getByName("SPIKE1"),
                         haplotype.getReference());
             }
         }
-        
+
         projectAnalysis.serialize("./test_output/", false);
 
         TestUtil.serializationCheck(projectAnalysis);

@@ -6,7 +6,7 @@ import com.milaboratory.util.IntArrayList;
 
 public class KMerFinder {
     public static final int DEFAULT_K = 11;
-    
+
     private final KmerUtils kmerUtils;
     private final KmerMap kmerMap;
     private final ReferenceLibrary referenceLibrary;
@@ -25,6 +25,9 @@ public class KMerFinder {
 
     // Thread-safe
     public KMerFinderResult find(NucleotideSequence sequence) {
+        if (sequence.size() < kmerUtils.getK())
+            return null;
+
         final double[] informationVector = new double[referenceCount];
         final double N = (double) referenceCount;
         double maxInformationValue = Double.MIN_VALUE;

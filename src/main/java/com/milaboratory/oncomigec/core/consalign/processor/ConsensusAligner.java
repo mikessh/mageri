@@ -31,8 +31,8 @@ import com.milaboratory.oncomigec.util.ProcessorResultWrapper;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-public abstract class ConsensusAligner<T extends Consensus> extends PipelineBlock
-        implements Processor<ProcessorResultWrapper<T>, ProcessorResultWrapper<AlignedConsensus>>,
+public abstract class ConsensusAligner<ConsensusType extends Consensus> extends PipelineBlock
+        implements Processor<ProcessorResultWrapper<ConsensusType>, ProcessorResultWrapper<AlignedConsensus>>,
         ReadSpecific {
     protected final AtomicInteger alignedMigs = new AtomicInteger(), badMigs = new AtomicInteger(),
             chimericMigs = new AtomicInteger(), skippedMigs = new AtomicInteger();
@@ -48,7 +48,7 @@ public abstract class ConsensusAligner<T extends Consensus> extends PipelineBloc
     }
 
     @SuppressWarnings("unchecked")
-    public ProcessorResultWrapper<AlignedConsensus> process(ProcessorResultWrapper<T> consensus) {
+    public ProcessorResultWrapper<AlignedConsensus> process(ProcessorResultWrapper<ConsensusType> consensus) {
         if (consensus.hasResult()) {
             AlignedConsensus alignmentData = align(consensus.getResult());
 
@@ -71,7 +71,7 @@ public abstract class ConsensusAligner<T extends Consensus> extends PipelineBloc
         return ProcessorResultWrapper.BLANK;
     }
 
-    public abstract AlignedConsensus align(T consensus);
+    public abstract AlignedConsensus align(ConsensusType consensus);
 
     public AlignerReferenceLibrary getAlignerReferenceLibrary() {
         return alignerReferenceLibrary;

@@ -9,6 +9,17 @@
           "file": "pipeline/primers.txt"
         }
       }
+    },
+    {
+      "byindex": [
+        {
+          "index": "other",
+          "r1": "pipeline/R1.fastq.gz",
+          "r2": "pipeline/R2.fastq.gz",
+          "preprocessed": {}
+        }
+      ]
     }
   ]
 }
+        

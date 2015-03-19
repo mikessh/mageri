@@ -16,14 +16,14 @@
 package com.milaboratory.oncomigec.core.consalign.processor;
 
 import com.milaboratory.oncomigec.core.align.processor.aligners.ExtendedExomeAligner;
-import com.milaboratory.oncomigec.core.genomic.Reference;
-import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
 import com.milaboratory.oncomigec.core.assemble.entity.Consensus;
 import com.milaboratory.oncomigec.core.assemble.misc.AssemblerParameters;
 import com.milaboratory.oncomigec.core.assemble.processor.Assembler;
 import com.milaboratory.oncomigec.core.assemble.processor.SAssembler;
 import com.milaboratory.oncomigec.core.consalign.entity.AlignedConsensus;
 import com.milaboratory.oncomigec.core.consalign.mutations.MutationsAndCoverage;
+import com.milaboratory.oncomigec.core.genomic.Reference;
+import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
 import com.milaboratory.oncomigec.core.io.entity.SMig;
 import com.milaboratory.oncomigec.util.Basics;
 import com.milaboratory.oncomigec.util.testing.DoubleRange;
@@ -55,7 +55,6 @@ public class ConsensusAlignerTest {
                 DoubleRange.createLowerBound("MeanCQS", condition, 25.0),
                 DoubleRange.createLowerBound("MeanUMICoverage", condition, 0.95),
                 PercentRange.createLowerBound("MeanAlignmentRate", condition, 95));
-
 
         condition = "Reads with indels, TORRENT454 assembler";
         assemblerDiagnosticsTest(new RandomMigGenerator(),

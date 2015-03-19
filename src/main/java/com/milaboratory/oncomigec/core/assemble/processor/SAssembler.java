@@ -72,7 +72,7 @@ public final class SAssembler extends Assembler<SConsensus, SMig> {
         NucleotideSequence bestCoreSeq = coreSeq;
 
         // Step 2: For all reads find optimal position against the core & append to pwm; discard if too much mms
-        int avgX = 0, avgY = 0;
+        int X = 0, Y = 0;
 
         List<Integer> xArr = new ArrayList<>(sMig.getReads().size());
         for (NucleotideSQPair read : sMig.getReads()) {
@@ -102,8 +102,14 @@ public final class SAssembler extends Assembler<SConsensus, SMig> {
                 if (bestOffsetMMs <= parameters.getMaxMMs()) {
                     int l = read.size(), mid = l / 2;
                     int x = mid - bestOffset, y = l - x;
-                    avgX += x;
-                    avgY += y;
+                    
+                    if (parameters.greedyExtend()) {
+                        X = Math.max(x, X);
+                        Y = Math.max(y, X);
+                    } else {
+                        X += x;
+                        Y += y;
+                    }
 
                     xArr.add(x);
 
@@ -121,14 +127,15 @@ public final class SAssembler extends Assembler<SConsensus, SMig> {
         if (droppedReads.size() / (double) sMig.size() >= parameters.getMaxDroppedReadsRatio())
             return null;
 
-        avgX /= assembledReads.size();
-        avgY /= assembledReads.size();
-
+        if (!parameters.greedyExtend()) {
+            X /= assembledReads.size();
+            Y /= assembledReads.size();
+        }
 
         // Step 3: process consensus
         // Step 3.1: Select region to construct PWM, append reads to PWM
         // Longest possible pwm is built
-        int pwmLen = avgX + avgY;
+        int pwmLen = X + Y;
         double[][] pwm = new double[pwmLen][4];
 
         List<NucleotideSQPair> postAssembledReads = null;
@@ -141,7 +148,7 @@ public final class SAssembler extends Assembler<SConsensus, SMig> {
 
             // Calculate offsets to PWM
             int l = sqPair.getSequence().size(), x = xArr.get(i), y = l - x,
-                    xDelta = avgX - x, yDelta = avgY - y;
+                    xDelta = X - x, yDelta = Y - y;
             int from = xDelta < 0 ? -xDelta : 0, to = l + (yDelta < 0 ? yDelta : 0);
 
             // Append N's to bounds of sequence or trim it to fit PWM
@@ -170,7 +177,7 @@ public final class SAssembler extends Assembler<SConsensus, SMig> {
                 byte qual = sqPair.getQuality().value(k);
                 double increment = parameters.qualityWeightedMode() ? qual : 1.0;
 
-                if (qual >= Util.PH33_LOW_QUAL)
+                if (qual >= Util.PH33_BAD_QUAL)
                     pwm[k][sqPair.getSequence().codeAt(k)] += increment;
                 else
                     for (int m = 0; m < 4; m++)
@@ -227,7 +234,7 @@ public final class SAssembler extends Assembler<SConsensus, SMig> {
                         byte qual = readSQPair.getQuality().value(k);
                         double increment = parameters.qualityWeightedMode() ? qual : 1.0;
 
-                        if (qual >= Util.PH33_LOW_QUAL)
+                        if (qual >= Util.PH33_BAD_QUAL)
                             pwm[k][readSQPair.getSequence().codeAt(k)] -= increment;
                         else
                             for (int m = 0; m < 4; m++)
@@ -246,6 +253,7 @@ public final class SAssembler extends Assembler<SConsensus, SMig> {
         // Step 3.2: Calculate new quality
         NucleotideSequenceBuilder consensusSequence = new NucleotideSequenceBuilder(pwmLen);
         byte[] consensusQuality = new byte[pwmLen];
+        int goodSeqStart = 0;
         for (int k = 0; k < pwmLen; k++) {
             byte mostFreqLetter = 0;
             double maxLetterFreq = 0, letterFreqSum = 0;
@@ -257,16 +265,34 @@ public final class SAssembler extends Assembler<SConsensus, SMig> {
                 letterFreqSum += pwm[k][l];
             }
             consensusSequence.setCode(k, mostFreqLetter);
-            consensusQuality[k] = Util.percentageToCqs(maxLetterFreq / letterFreqSum);
+            byte cqs = Util.percentageToCqs(maxLetterFreq / letterFreqSum);
+            consensusQuality[k] = cqs;
+
+            if (cqs <= Util.PH33_BAD_QUAL && parameters.performQualityTrimming()) {
+                if (goodSeqStart == k) {
+                    goodSeqStart++;
+                }
+            }
+        }
+
+        NucleotideSQPair consensusSQPair = new NucleotideSQPair(consensusSequence.create(),
+                new SequenceQualityPhred(consensusQuality));
+
+        // quality trimming
+        if (parameters.performQualityTrimming()) {
+            int goodSeqEnd = pwmLen;
+            for (; goodSeqEnd >= goodSeqStart; goodSeqEnd--) {
+                if (consensusQuality[goodSeqEnd - 1] > Util.PH33_BAD_QUAL)
+                    break;
+            }
+
+            consensusSQPair = consensusSQPair.getRange(goodSeqStart, goodSeqEnd);
         }
 
         // That's it!
 
         migsAssembled.incrementAndGet();
         readsAssembled.addAndGet(assembledReads.size());
-
-        NucleotideSQPair consensusSQPair = new NucleotideSQPair(consensusSequence.create(),
-                new SequenceQualityPhred(consensusQuality));
 
         SConsensus consensus = new SConsensus(sMig.getUmi(), consensusSQPair,
                 finalAssembledReads, droppedReads);

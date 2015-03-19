@@ -35,7 +35,7 @@ public class SimpleExomeAligner implements Aligner {
     private final LocalAlignmentEvaluator localAlignmentEvaluator;
 
     public SimpleExomeAligner(ReferenceLibrary referenceLibrary) {
-        this(referenceLibrary, DEFAULT_PARAMS, LocalAlignmentEvaluator.STRICT);
+        this(referenceLibrary, DEFAULT_PARAMS, new LocalAlignmentEvaluator());
     }
 
     public SimpleExomeAligner(ReferenceLibrary referenceLibrary,
@@ -57,7 +57,7 @@ public class SimpleExomeAligner implements Aligner {
 
         KAlignmentHit hit = result.getBestHit();
 
-        if (hit == null || !localAlignmentEvaluator.isGood(hit.getAlignment(), sequence))
+        if (hit == null || !localAlignmentEvaluator.isGood(hit.getAlignment(), hit.getHitSequence(), sequence))
             return null;
 
         List<LocalAlignment> alignmentBlocks = new ArrayList<>();
@@ -80,11 +80,6 @@ public class SimpleExomeAligner implements Aligner {
         if (result1 == null || result2 == null ||
                 !result1.getReferences().get(0).equals(result2.getReferences().get(0))) // chimeras not allowed here
             return null;
-
-        if (result1.getAlignments().get(0).getSequence1Range().intersectsWith(
-                result2.getAlignments().get(0).getSequence1Range()
-        ))
-            return null; // by convention reads cannot overlap, this also fixes issues from indels at read junction
 
         return new PAlignmentResult(result1, result2);
     }

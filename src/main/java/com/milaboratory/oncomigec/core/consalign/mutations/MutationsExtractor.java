@@ -8,9 +8,9 @@ import com.milaboratory.core.sequence.alignment.LocalAlignment;
 import com.milaboratory.core.sequence.mutations.Mutations;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.core.sequence.quality.SequenceQualityPhred;
-import com.milaboratory.oncomigec.core.genomic.Reference;
 import com.milaboratory.oncomigec.core.assemble.entity.SConsensus;
 import com.milaboratory.oncomigec.core.consalign.misc.ConsensusAlignerParameters;
+import com.milaboratory.oncomigec.core.genomic.Reference;
 import com.milaboratory.oncomigec.core.mutations.MigecMutationsCollection;
 
 import java.util.*;
@@ -19,6 +19,7 @@ public final class MutationsExtractor {
     private final LocalAlignment consensusAlignment;
     private final Reference reference;
     private final SConsensus consensus;
+    private final NucleotideSQPair trimmedConsensus;
     private final byte readQualThreshold, consQualThreshold;
     private final boolean backAlignDroppedReads;
     private final int[] consensusMutations, invertedConsensusMutations;
@@ -31,9 +32,19 @@ public final class MutationsExtractor {
                               Reference reference,
                               SConsensus consensus,
                               ConsensusAlignerParameters parameters) {
+        this(consensusAlignment, reference, consensus, consensus.getConsensusSQPair(), parameters);
+    }
+
+    public MutationsExtractor(LocalAlignment consensusAlignment,
+                              Reference reference,
+                              SConsensus consensus,
+                              NucleotideSQPair trimmedConsensus,
+                              ConsensusAlignerParameters parameters) {
         this.consensusAlignment = consensusAlignment;
         this.reference = reference;
-        this.consensus = consensus;
+        this.consensus = consensus;               // used to access count metrics
+        this.trimmedConsensus = trimmedConsensus; // to handle the case with consensus overlapping in P aligner
+        // in this case this is different from consensus.getConsensusSQPair()
         this.readQualThreshold = parameters.getReadQualityThreshold();
         this.consQualThreshold = parameters.getConsensusQualityThreshold();
         this.backAlignDroppedReads = parameters.backAlignDroppedReads();
@@ -45,7 +56,7 @@ public final class MutationsExtractor {
         // ======================================================================
         int[] mutations = computeFilteredRelativeMutations(
                 reference.getSequence(),
-                consensus.getConsensusSQPair().getQuality(),
+                trimmedConsensus.getQuality(),
                 consensusAlignment, true);
 
         // ====================================================================
@@ -55,7 +66,7 @@ public final class MutationsExtractor {
 
         // For read back-alignment
         this.aligner = new KAligner(KAlignerParameters.getByName("strict"));
-        aligner.addReference(consensus.getConsensusSQPair().getSequence());
+        aligner.addReference(trimmedConsensus.getSequence());
 
         // For converting read mutations to reference coordinates
         this.invertedConsensusMutations = Mutations.invertMutations(consensusMutations);
@@ -88,7 +99,7 @@ public final class MutationsExtractor {
                     // Then filter by Phred quality threshold
                     // ======================================================================
                     int[] readMutations = computeFilteredRelativeMutations(
-                            consensus.getConsensusSQPair().getSequence(),
+                            trimmedConsensus.getSequence(),
                             read.getQuality(), readAlignment,
                             false);
 

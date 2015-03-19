@@ -12,10 +12,10 @@ public class DemultiplexParameters implements ParameterSet {
 
     public static DemultiplexParameters DEFAULT = new DemultiplexParameters(false,
             2, 0.05, 0.1,
-            Util.PH33_LOW_QUAL),
+            Util.PH33_BAD_QUAL),
             ORIENTED = new DemultiplexParameters(true,
                     2, 0.05, 0.1,
-                    Util.PH33_LOW_QUAL);
+                    Util.PH33_BAD_QUAL);
 
     public DemultiplexParameters(boolean orientedReads,
                                  int maxTruncations, double maxGoodQualMMRatio, double maxLowQualityMMRatio,

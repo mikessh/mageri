@@ -10,7 +10,7 @@ public class PreprocessorParameters implements ParameterSet {
     private final int defaultOverseq;
     private final double minUmiMismatchRatio;
 
-    public static PreprocessorParameters DEFAULT = new PreprocessorParameters(Util.PH33_LOW_QUAL, true, 20.0, false, 5);
+    public static PreprocessorParameters DEFAULT = new PreprocessorParameters(Util.PH33_BAD_QUAL, true, 20.0, false, 5);
 
     public static PreprocessorParameters IGNORE_QUAL = new PreprocessorParameters((byte) 0, true, 20.0, false, 5);
 

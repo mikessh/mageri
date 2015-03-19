@@ -8,7 +8,7 @@ public abstract class AlignerFactory<AlignerType extends Aligner> {
     protected LocalAlignmentEvaluator localAlignmentEvaluator;
 
     protected AlignerFactory(ReferenceLibrary referenceLibrary) {
-        this(referenceLibrary, LocalAlignmentEvaluator.STRICT);
+        this(referenceLibrary, new LocalAlignmentEvaluator());
     }
 
     protected AlignerFactory(ReferenceLibrary referenceLibrary,

@@ -15,6 +15,7 @@
  */
 package com.milaboratory.oncomigec.core.consalign.entity;
 
+import com.milaboratory.core.sequence.quality.SequenceQualityPhred;
 import com.milaboratory.oncomigec.core.align.entity.SAlignmentResult;
 import com.milaboratory.oncomigec.core.genomic.Reference;
 import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
@@ -38,12 +39,12 @@ public final class AlignerReferenceLibrary implements Serializable {
             mutationsAndCoverageByReference.put(reference, new MutationsAndCoverage(reference));
     }
 
-    public void appendCoverage(SAlignmentResult alignmentResult, SConsensus consensus, int migSize) {
+    public void appendCoverage(SAlignmentResult alignmentResult, SequenceQualityPhred qual, int migSize) {
         int n = alignmentResult.getReferences().size();
         for (int i = 0; i < n; i++) {
             Reference reference = alignmentResult.getReferences().get(i);
             mutationsAndCoverageByReference.get(reference).appendCoverage(alignmentResult.getAlignments().get(i),
-                    consensus, migSize);
+                    qual, migSize);
         }
     }
 
