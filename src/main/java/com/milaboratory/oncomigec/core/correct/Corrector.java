@@ -88,12 +88,13 @@ public final class Corrector extends PipelineBlock {
                     if (mutationFilter.hasSubstitution(mutation.pos(), mutation.to())) {
                         if (!mutationFilter.hasReference(mutation.pos()))
                             mustHaveMutationsCount++; // covered a hole in reference with substitution
+
+                        maxPValue = Math.max(maxPValue, correctorReferenceLibrary.getPValue(reference,
+                                mutation.pos(),
+                                mutation.to()));
                     } else {
                         mutation.filter();
                     }
-                    maxPValue = Math.max(maxPValue, correctorReferenceLibrary.getPValue(reference,
-                            mutation.pos(),
-                            mutation.to()));
                 } else if (!mutationFilter.hasIndel(mutation.code())) {
                     mutation.filter();
                 } else if (mutation.isDeletion()) {
