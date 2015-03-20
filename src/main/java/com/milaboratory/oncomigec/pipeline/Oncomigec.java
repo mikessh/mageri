@@ -19,6 +19,10 @@ public final class Oncomigec {
     public static final String MY_PATH = ME.getProtectionDomain().getCodeSource().getLocation().getFile(),
             MY_VERSION = ME.getPackage().getImplementationVersion();
 
+    public ProjectAnalysis loadAnalysis(File file) throws IOException, ClassNotFoundException {
+        return (ProjectAnalysis) SerializationUtils.readObjectFromFile(file);
+    }
+
     public static void main(String[] args) throws Exception {
         CommandLineParser parser = new BasicParser();
 

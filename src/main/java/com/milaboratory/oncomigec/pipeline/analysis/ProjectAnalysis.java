@@ -111,6 +111,7 @@ public class ProjectAnalysis implements Serializable {
                 if (!runtimeParameters.variantDumpModeOn())
                     sampleAnalysis.runSecondStage();
 
+                // only for binary output mode
                 analysisBySample.put(sample, sampleAnalysis);
             }
         }
