@@ -18,9 +18,7 @@ package com.milaboratory.oncomigec.core.consalign.processor;
 import cc.redberry.pipe.Processor;
 import com.milaboratory.core.sequence.NucleotideSQPair;
 import com.milaboratory.core.sequence.alignment.LocalAlignment;
-import com.milaboratory.core.sequence.mutations.Mutations;
 import com.milaboratory.core.sequence.nucleotide.NucleotideAlphabet;
-import com.milaboratory.core.sequence.quality.SequenceQualityPhred;
 import com.milaboratory.oncomigec.ReadSpecific;
 import com.milaboratory.oncomigec.core.PipelineBlock;
 import com.milaboratory.oncomigec.core.align.entity.SAlignmentResult;
@@ -30,13 +28,13 @@ import com.milaboratory.oncomigec.core.assemble.entity.SConsensus;
 import com.milaboratory.oncomigec.core.consalign.entity.AlignedConsensus;
 import com.milaboratory.oncomigec.core.consalign.entity.AlignerReferenceLibrary;
 import com.milaboratory.oncomigec.core.consalign.misc.ConsensusAlignerParameters;
+import com.milaboratory.oncomigec.core.consalign.mutations.MinorMutationData;
 import com.milaboratory.oncomigec.core.consalign.mutations.MutationsAndCoverage;
 import com.milaboratory.oncomigec.core.consalign.mutations.MutationsExtractor;
 import com.milaboratory.oncomigec.core.genomic.Reference;
 import com.milaboratory.oncomigec.core.mutations.MigecMutationsCollection;
 import com.milaboratory.oncomigec.util.ProcessorResultWrapper;
 
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class ConsensusAligner<ConsensusType extends Consensus> extends PipelineBlock
@@ -75,7 +73,7 @@ public abstract class ConsensusAligner<ConsensusType extends Consensus> extends 
 
     protected MigecMutationsCollection update(SAlignmentResult result,
                                               SConsensus consensus) {
-        return update(result, consensus, consensus.getConsensusSQPair(), false);
+        return update(result, consensus, consensus.getConsensusSQPair(), true);
     }
 
     protected MigecMutationsCollection update(SAlignmentResult result,
@@ -89,13 +87,11 @@ public abstract class ConsensusAligner<ConsensusType extends Consensus> extends 
                 reference, consensus, trimmedConsensus, parameters);
 
         MigecMutationsCollection majorMutations = mutationsExtractor.calculateMajorMutations();
-        Map<Integer, Integer> minorMutations = mutationsExtractor.calculateMinorMutations();
+        MinorMutationData minorMutations = mutationsExtractor.calculateMinorMutations();
 
-        int migSize = parameters.backAlignDroppedReads() ? consensus.fullSize() : consensus.size();
-
-        alignerReferenceLibrary.append(reference, alignment, trimmedConsensus, 
-                majorMutations, minorMutations, 
-                migSize, appendReference);
+        alignerReferenceLibrary.append(reference, alignment, trimmedConsensus,
+                majorMutations, minorMutations,
+                appendReference);
 
         return majorMutations;
     }
@@ -125,16 +121,18 @@ public abstract class ConsensusAligner<ConsensusType extends Consensus> extends 
     @Override
     public String getHeader() {
         String header = "reference\tpos",
-                subst = "", ins = "", del = "";
+                mig = "", corrected = "", lost = "", gained = "", raw = "";
 
         for (byte i = 0; i < 4; i++) {
             char symbol = NucleotideAlphabet.INSTANCE.symbolFromCode(i);
-            subst += "\t" + symbol;
-            ins += "\tI:" + symbol;
-            del += "\tD:" + symbol;
+            mig += "\t" + symbol + ".mig";
+            corrected += "\t" + symbol + ".read.corrected";
+            lost += "\t" + symbol + ".read.lost";
+            gained += "\t" + symbol + ".read.gained";
+            raw += "\t" + symbol + ".read.raw";
         }
 
-        return header + subst + ins + del;
+        return header + mig + corrected + lost + gained + raw;
     }
 
     @Override
@@ -147,17 +145,32 @@ public abstract class ConsensusAligner<ConsensusType extends Consensus> extends 
                 for (int i = 0; i < reference.getSequence().size(); i++) {
                     stringBuilder.append(reference.getFullName()).append("\t").
                             append(i + 1);
-                    StringBuilder subst = new StringBuilder(), ins = new StringBuilder(), del = new StringBuilder(),
-                            substMinor = new StringBuilder(), insMinor = new StringBuilder(), delMinor = new StringBuilder();
-                    for (byte j = 0; j < 4; j++) {
-                        int insCode = Mutations.createInsertion(i, j), delCode = Mutations.createDeletion(i, j);
+                    
+                    StringBuilder mig = new StringBuilder(),
+                            corrected = new StringBuilder(),
+                            lost = new StringBuilder(),
+                            gained = new StringBuilder(),
+                            raw = new StringBuilder();
 
-                        subst.append("\t").append(mutationsAndCoverage.getMajorNucleotideMigCount(i, j));
-                        ins.append("\t").append(mutationsAndCoverage.getMajorIndelMigCount(insCode));
-                        del.append("\t").append(mutationsAndCoverage.getMajorIndelMigCount(delCode));
+                    for (byte j = 0; j < 4; j++) {
+                        int migCount = mutationsAndCoverage.getMajorNucleotideMigCount(i, j),
+                                correctedCount = mutationsAndCoverage.getMajorNucleotideReadCount(i, j),
+                                lostCount = mutationsAndCoverage.getMinorNucleotideReadCount(i, j),
+                                gainedCount = mutationsAndCoverage.getGainedNucleotideReadCount(i, j),
+                                rawCount = correctedCount - gainedCount + lostCount;
+
+
+                        mig.append("\t").append(migCount);
+                        corrected.append("\t").append(correctedCount);
+                        lost.append("\t").append(lostCount);
+                        gained.append("\t").append(gainedCount);
+                        raw.append("\t").append(rawCount);
                     }
-                    stringBuilder.append(subst).append(ins).append(del).
-                            append(substMinor).append(insMinor).append(delMinor).
+                    stringBuilder.append(mig).
+                            append(corrected).
+                            append(lost).
+                            append(gained).
+                            append(raw).
                             append("\n");
                 }
             }

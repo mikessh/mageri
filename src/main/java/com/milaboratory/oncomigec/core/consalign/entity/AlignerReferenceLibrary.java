@@ -17,6 +17,7 @@ package com.milaboratory.oncomigec.core.consalign.entity;
 
 import com.milaboratory.core.sequence.NucleotideSQPair;
 import com.milaboratory.core.sequence.alignment.LocalAlignment;
+import com.milaboratory.oncomigec.core.consalign.mutations.MinorMutationData;
 import com.milaboratory.oncomigec.core.consalign.mutations.MutationsAndCoverage;
 import com.milaboratory.oncomigec.core.genomic.Reference;
 import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
@@ -39,13 +40,13 @@ public final class AlignerReferenceLibrary implements Serializable {
     }
 
     public void append(Reference reference, LocalAlignment alignment, NucleotideSQPair consensusSQPair,
-                       MigecMutationsCollection majorMutations, Map<Integer, Integer> minorMutations,
-                       int migSize, boolean appendReference) {
+                       MigecMutationsCollection majorMutations, MinorMutationData minorMutations,
+                       boolean appendReference) {
         MutationsAndCoverage mutationsAndCoverage = mutationsAndCoverageByReference.get(reference);
 
         mutationsAndCoverage.append(alignment, consensusSQPair.getQuality(),
                 majorMutations, minorMutations,
-                migSize, appendReference);
+                appendReference);
     }
 
     public ReferenceLibrary getReferenceLibrary() {

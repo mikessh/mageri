@@ -10,10 +10,10 @@ import com.milaboratory.core.sequence.mutations.Mutations;
 import com.milaboratory.core.sequence.nucleotide.NucleotideAlphabet;
 import com.milaboratory.oncomigec.core.align.entity.SAlignmentResult;
 import com.milaboratory.oncomigec.core.align.processor.aligners.ExtendedExomeAligner;
-import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
 import com.milaboratory.oncomigec.core.assemble.entity.SConsensus;
 import com.milaboratory.oncomigec.core.assemble.processor.SAssembler;
 import com.milaboratory.oncomigec.core.consalign.misc.ConsensusAlignerParameters;
+import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
 import com.milaboratory.oncomigec.core.io.entity.SMig;
 import com.milaboratory.oncomigec.util.Basics;
 import com.milaboratory.oncomigec.util.testing.generators.GeneratorMutationModel;
@@ -75,7 +75,7 @@ public class MutationsExtractorTest {
 
                         Assert.assertTrue("No bad major mutation codes generated", goodMajors);
 
-                        Set<Integer> observedMinors = mutationsExtractor.calculateMinorMutations().keySet(),
+                        Set<Integer> observedMinors = mutationsExtractor.calculateMinorMutations().getCodes(),
                                 expectedMinors = rndMig.getMinorMutationCounts().keySet();
 
                         boolean goodMinors = checkMutations(observedMinors);
@@ -156,7 +156,7 @@ public class MutationsExtractorTest {
                                 expectedMajors.length);
                         meanMajorDelta += delta(observedMajors.length, expectedMajors.length);
 
-                        Set<Integer> observedMinors = mutationsExtractor.calculateMinorMutations().keySet(),
+                        Set<Integer> observedMinors = mutationsExtractor.calculateMinorMutations().getCodes(),
                                 expectedMinors = rndMig.getMinorMutationCounts().keySet();
 
                         boolean goodMinors = checkMutations(observedMinors);

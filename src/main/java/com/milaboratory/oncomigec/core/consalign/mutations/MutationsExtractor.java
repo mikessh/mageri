@@ -25,7 +25,6 @@ public final class MutationsExtractor {
     private final int[] consensusMutations, invertedConsensusMutations;
     private final KAligner aligner;
 
-    private Map<Integer, Integer> minorMutations = null, minorMutationsUnmodifyable = null;
     private final Collection<MutationQualityPair> passedMajorMQPairs = new LinkedList<>(); // updated on creation
 
     public MutationsExtractor(LocalAlignment consensusAlignment,
@@ -77,70 +76,62 @@ public final class MutationsExtractor {
         return new MigecMutationsCollection(reference, consensusMutations);
     }
 
-    private Map<Integer, Integer> prebuildMinorMutations() {
-        if (minorMutations == null) {
-            // Also include dropped reads if required
-            List<NucleotideSQPair> reads = consensus.getAssembledReads();
-            if (backAlignDroppedReads) {
-                reads = new LinkedList<>(reads); // copy
-                reads.addAll(consensus.getDroppedReads());
-            }
+    public MinorMutationData calculateMinorMutations() {
+        // Also include dropped reads if required
+        List<NucleotideSQPair> reads = consensus.getAssembledReads();
+        if (backAlignDroppedReads) {
+            reads = new LinkedList<>(reads); // copy
+            reads.addAll(consensus.getDroppedReads());
+        }
 
-            // Align back the reads in Mig
-            minorMutations = new HashMap<>();
-            for (NucleotideSQPair read : reads) {
-                KAlignmentHit hit = aligner.align(read.getSequence()).getBestHit();
-                if (hit != null) {
-                    LocalAlignment readAlignment = hit.getAlignment();
+        // Align back the reads in Mig
+        MinorMutationData minorMutations = new MinorMutationData();
+        for (NucleotideSQPair read : reads) {
+            KAlignmentHit hit = aligner.align(read.getSequence()).getBestHit();
+            if (hit != null) {
+                LocalAlignment readAlignment = hit.getAlignment();
 
-                    // ======================================================================
-                    // Extract cons->read mutations (MINORS)
-                    // Filter possible spurious mutations that arose due to inexact alignment
-                    // Then filter by Phred quality threshold
-                    // ======================================================================
-                    int[] readMutations = computeFilteredRelativeMutations(
-                            trimmedConsensus.getSequence(),
-                            read.getQuality(), readAlignment,
-                            false);
+                // ======================================================================
+                // Extract cons->read mutations (MINORS)
+                // Filter possible spurious mutations that arose due to inexact alignment
+                // Then filter by Phred quality threshold
+                // ======================================================================
+                int[] readMutations = computeFilteredRelativeMutations(
+                        trimmedConsensus.getSequence(),
+                        read.getQuality(), readAlignment,
+                        false);
 
-                    // ====================================================================
-                    // Move cons->read mutations (MINORS) to absolute reference coordinates
-                    // ====================================================================
-                    for (int code : readMutations) {
-                        int pos = Mutations.getPosition(code), // pos in cons in cons <-> read frame
-                                absPos = pos + readAlignment.getSequence1Range().getFrom(); // abs pos in cons
+                // ====================================================================
+                // Move cons->read mutations (MINORS) to absolute reference coordinates
+                // ====================================================================
+                for (int code : readMutations) {
+                    int pos = Mutations.getPosition(code), // pos in cons in cons <-> read frame
+                            absPos = pos + readAlignment.getSequence1Range().getFrom(); // abs pos in cons
 
-                        // if overlaps with ref<->cons frame, filter otherwise
-                        if (consensusAlignment.getSequence2Range().contains(absPos)) {
-                            // pos in cons in ref<->cons frame
-                            int posInRefConsFrame = absPos - consensusAlignment.getSequence2Range().getFrom(),
-                                    // pos in ref in ref<->cons frame
-                                    relPosInRef = Mutations.convertPosition(invertedConsensusMutations, posInRefConsFrame);
+                    // if overlaps with ref<->cons frame, filter otherwise
+                    if (consensusAlignment.getSequence2Range().contains(absPos)) {
+                        // pos in cons in ref<->cons frame
+                        int posInRefConsFrame = absPos - consensusAlignment.getSequence2Range().getFrom(),
+                                // pos in ref in ref<->cons frame
+                                relPosInRef = Mutations.convertPosition(invertedConsensusMutations, posInRefConsFrame);
 
-                            // abs pos in ref
-                            int newPos = relPosInRef +
-                                    consensusAlignment.getSequence1Range().getFrom();
+                        // abs pos in ref
+                        int newPos = relPosInRef +
+                                consensusAlignment.getSequence1Range().getFrom();
 
-                            // not falls out of ref<->const frame
-                            if (consensusAlignment.getSequence1Range().contains(newPos)) {
-                                int newCode = Mutations.move(code, newPos - pos); // MOVE TO REF COORDS HERE
-                                Integer count = minorMutations.get(newCode);
-                                if (count == null)
-                                    count = 0;
-                                minorMutations.put(newCode, count + 1);
-                            }
+                        // not falls out of ref<->const frame
+                        if (consensusAlignment.getSequence1Range().contains(newPos)) {
+                            int newCode = Mutations.move(code, newPos - pos); // MOVE TO REF COORDS HERE
+                            minorMutations.update(newCode);
                         }
                     }
                 }
+                minorMutations.nextRead();
             }
-            minorMutationsUnmodifyable = Collections.unmodifiableMap(minorMutations);
         }
-        return minorMutationsUnmodifyable;
-    }
+        minorMutations.computeCoverage();
 
-    public Map<Integer, Integer> calculateMinorMutations() {
-        prebuildMinorMutations();
-        return new HashMap<>(minorMutations);
+        return minorMutations;
     }
 
     private int[] computeFilteredRelativeMutations(NucleotideSequence referenceSequence, SequenceQualityPhred queryQuality,

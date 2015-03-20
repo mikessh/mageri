@@ -21,6 +21,7 @@ import com.milaboratory.core.sequencing.read.SSequencingRead;
 import com.milaboratory.core.sequencing.read.SSequencingReadImpl;
 import com.milaboratory.oncomigec.util.Util;
 
+import java.util.Collections;
 import java.util.List;
 
 public final class SConsensus implements Consensus<SSequencingRead> {
@@ -40,11 +41,11 @@ public final class SConsensus implements Consensus<SSequencingRead> {
     }
 
     public List<NucleotideSQPair> getAssembledReads() {
-        return assembledReads;
+        return Collections.unmodifiableList(assembledReads);
     }
 
     public List<NucleotideSQPair> getDroppedReads() {
-        return droppedReads;
+        return Collections.unmodifiableList(droppedReads);
     }
 
     public NucleotideSQPair getConsensusSQPair() {

@@ -18,17 +18,14 @@ package com.milaboratory.oncomigec.core.consalign.mutations;
 import com.milaboratory.core.sequence.Range;
 import com.milaboratory.core.sequence.alignment.LocalAlignment;
 import com.milaboratory.core.sequence.mutations.Mutations;
-import com.milaboratory.core.sequence.nucleotide.NucleotideAlphabet;
 import com.milaboratory.core.sequence.quality.SequenceQualityPhred;
 import com.milaboratory.oncomigec.core.genomic.Reference;
 import com.milaboratory.oncomigec.core.mutations.MigecMutation;
 import com.milaboratory.oncomigec.core.mutations.MigecMutationsCollection;
 import com.milaboratory.oncomigec.util.Basics;
-import com.milaboratory.oncomigec.util.Util;
 
 import java.io.Serializable;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -67,10 +64,11 @@ public final class MutationsAndCoverage implements Serializable {
     }
 
     public void append(LocalAlignment alignment, SequenceQualityPhred qual,
-                       MigecMutationsCollection majorMutations, Map<Integer, Integer> minorMutations,
-                       int migSize, boolean appendReference) {
+                       MigecMutationsCollection majorMutations, MinorMutationData minorMutations,
+                       boolean appendReference) {
         // Thread-safe
         updated.compareAndSet(false, true);
+        int migSize = minorMutations.getMigSize();
         Range coveredRange = alignment.getSequence1Range();
         for (int i = coveredRange.getFrom(); i < coveredRange.getTo(); i++) {
             int posInCons = alignment.convertPosition(i);
@@ -102,23 +100,21 @@ public final class MutationsAndCoverage implements Serializable {
                 majorLetterMigCounts.decrementCoverage(pos, from);
 
                 // Read accumulation
-                accumLetterReadCounts.incrementCoverage(pos, to, 
-                        (int) (migSize * (1.0 - Util.cqsToFreq(qual.value(alignment.convertPosition(pos))))));
+                accumLetterReadCounts.incrementCoverage(pos, to, minorMutations.getGainedReadCount(pos));
             } else {
                 Basics.incrementAICounter(majorIndelReadCountMap, mutation.code(), migSize);
                 Basics.incrementAICounter(majorIndelMigCountMap, mutation.code());
             }
         }
-        for (Map.Entry<Integer, Integer> mutationEntry : minorMutations.entrySet()) {
-            int mutationCode = mutationEntry.getKey();
-            if (Mutations.isSubstitution(mutationCode)) {
-                minorLetterReadCounts.incrementCoverage(Mutations.getPosition(mutationCode),
-                        Mutations.getTo(mutationCode), mutationEntry.getValue());
-                minorLetterMigCounts.incrementCoverage(Mutations.getPosition(mutationCode),
-                        Mutations.getTo(mutationCode));
+        for (int code : minorMutations.getCodes()) {
+            if (Mutations.isSubstitution(code)) {
+                minorLetterReadCounts.incrementCoverage(Mutations.getPosition(code),
+                        Mutations.getTo(code), minorMutations.getLostReadCount(code));
+                minorLetterMigCounts.incrementCoverage(Mutations.getPosition(code),
+                        Mutations.getTo(code));
             } else {
-                Basics.incrementAICounter(minorIndelReadCountMap, mutationCode, mutationEntry.getValue());
-                Basics.incrementAICounter(minorIndelMigCountMap, mutationCode);
+                Basics.incrementAICounter(minorIndelReadCountMap, code, minorMutations.getLostReadCount(code));
+                Basics.incrementAICounter(minorIndelMigCountMap, code);
             }
         }
     }
@@ -189,6 +185,10 @@ public final class MutationsAndCoverage implements Serializable {
         return minorLetterReadCounts.getCoverage(position, letterCode);
     }
 
+    public int getGainedNucleotideReadCount(int position, int letterCode) {
+        return accumLetterReadCounts.getCoverage(position, letterCode);
+    }
+
     public int getMajorIndelMigCount(int indelCode) {
         return Basics.nullToZero(majorIndelMigCountMap.get(indelCode));
     }
@@ -207,149 +207,5 @@ public final class MutationsAndCoverage implements Serializable {
 
     public boolean wasUpdated() {
         return updated.get();
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder formattedString = new StringBuilder("NumberOfMIGs=").append(getMigCount()).append("\n");
-        formattedString.append("CoverageType\tCountType\tNucleotide");
-
-        for (int i = 0; i < referenceLength; i++)
-            formattedString.append("\t").append(i + 1);
-
-        formattedString.append("\nBaseCoverage\tRead\t-");
-        for (int i = 0; i < referenceLength; i++)
-            formattedString.append("\t").append(referenceReadCoverage.get(i));
-
-        formattedString.append("\nBaseCoverage\tUMI\t-");
-        for (int i = 0; i < referenceLength; i++)
-            formattedString.append("\t").append(referenceUmiCoverage.get(i));
-
-        formattedString.append("\nCQS\t-\t-");
-        for (int i = 0; i < referenceLength; i++)
-            formattedString.append("\t").append(referenceQualitySumCoverage.get(i));
-
-        // MAJOR - MIGS
-
-        // substitutions - migs
-        for (int j = 0; j < 4; j++) {
-            formattedString.append("\nMAJOR\tMIG\t");
-            formattedString.append(NucleotideAlphabet.INSTANCE.symbolFromCode((byte) j));
-            for (int i = 0; i < referenceLength; i++)
-                formattedString.append("\t").append(getMajorNucleotideMigCount(i, j));
-        }
-
-        // insertions - migs
-        for (int j = 0; j < 4; j++) {
-            formattedString.append("\nMAJOR\tMIG\tI:");
-            formattedString.append(NucleotideAlphabet.INSTANCE.symbolFromCode((byte) j));
-            for (int i = 0; i < referenceLength; i++) {
-                int code = Mutations.createInsertion(i, j);
-                formattedString.append("\t").append(getMajorIndelMigCount(code));
-            }
-        }
-
-        // deletions - migs
-        for (int j = 0; j < 4; j++) {
-            formattedString.append("\nMAJOR\tMIG\tD:");
-            formattedString.append(NucleotideAlphabet.INSTANCE.symbolFromCode((byte) j));
-            for (int i = 0; i < referenceLength; i++) {
-                int code = Mutations.createDeletion(i, j);
-                formattedString.append("\t").append(getMajorIndelMigCount(code));
-            }
-        }
-
-        // MINOR - MIGS
-
-        // substitutions - migs
-        for (int j = 0; j < 4; j++) {
-            formattedString.append("\nMINOR\tMIG\t");
-            formattedString.append(NucleotideAlphabet.INSTANCE.symbolFromCode((byte) j));
-            for (int i = 0; i < referenceLength; i++)
-                formattedString.append("\t").append(getMinorNucleotideMigCount(i, j));
-        }
-
-        // insertions - migs
-        for (int j = 0; j < 4; j++) {
-            formattedString.append("\nMINOR\tMIG\tI:");
-            formattedString.append(NucleotideAlphabet.INSTANCE.symbolFromCode((byte) j));
-            for (int i = 0; i < referenceLength; i++) {
-                int code = Mutations.createInsertion(i, j);
-                formattedString.append("\t").append(getMinorIndelMigCount(code));
-            }
-        }
-
-        // deletions - migs
-        for (int j = 0; j < 4; j++) {
-            formattedString.append("\nMINOR\tMIG\tD:");
-            formattedString.append(NucleotideAlphabet.INSTANCE.symbolFromCode((byte) j));
-            for (int i = 0; i < referenceLength; i++) {
-                int code = Mutations.createDeletion(i, j);
-                formattedString.append("\t").append(getMinorIndelMigCount(code));
-            }
-        }
-
-        // MAJOR - READS
-
-        // substitutions - reads
-        for (int j = 0; j < 4; j++) {
-            formattedString.append("\nMAJOR\tREAD\t");
-            formattedString.append(NucleotideAlphabet.INSTANCE.symbolFromCode((byte) j));
-            for (int i = 0; i < referenceLength; i++)
-                formattedString.append("\t").append(getMajorNucleotideReadCount(i, j));
-        }
-
-        // insertions - reads
-        for (int j = 0; j < 4; j++) {
-            formattedString.append("\nMAJOR\tREAD\tI:");
-            formattedString.append(NucleotideAlphabet.INSTANCE.symbolFromCode((byte) j));
-            for (int i = 0; i < referenceLength; i++) {
-                int code = Mutations.createInsertion(i, j);
-                formattedString.append("\t").append(getMajorIndelReadCount(code));
-            }
-        }
-
-        // deletions - reads
-        for (int j = 0; j < 4; j++) {
-            formattedString.append("\nMAJOR\tREAD\tD:");
-            formattedString.append(NucleotideAlphabet.INSTANCE.symbolFromCode((byte) j));
-            for (int i = 0; i < referenceLength; i++) {
-                int code = Mutations.createDeletion(i, j);
-                formattedString.append("\t").append(getMajorIndelReadCount(code));
-            }
-        }
-
-        // MINOR - READS
-
-        // substitutions - reads
-        for (int j = 0; j < 4; j++) {
-            formattedString.append("\nMINOR\tREAD\t");
-            formattedString.append(NucleotideAlphabet.INSTANCE.symbolFromCode((byte) j));
-            for (int i = 0; i < referenceLength; i++)
-                formattedString.append("\t").append(getMinorNucleotideReadCount(i, j));
-        }
-
-        // insertions - reads
-        for (int j = 0; j < 4; j++) {
-            formattedString.append("\nMINOR\tREAD\tI:");
-            formattedString.append(NucleotideAlphabet.INSTANCE.symbolFromCode((byte) j));
-            for (int i = 0; i < referenceLength; i++) {
-                int code = Mutations.createInsertion(i, j);
-                formattedString.append("\t").append(getMinorIndelReadCount(code));
-            }
-        }
-
-        // deletions - reads
-        for (int j = 0; j < 4; j++) {
-            formattedString.append("\nMINOR\tREAD\tD:");
-            formattedString.append(NucleotideAlphabet.INSTANCE.symbolFromCode((byte) j));
-            for (int i = 0; i < referenceLength; i++) {
-                int code = Mutations.createDeletion(i, j);
-                formattedString.append("\t").append(getMinorIndelReadCount(code));
-            }
-        }
-
-
-        return formattedString.toString();
     }
 }
