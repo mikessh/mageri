@@ -14,8 +14,8 @@ import java.io.IOException;
 import java.nio.file.Paths;
 
 @SuppressWarnings("static-access")
-public final class MigecCli {
-    private static final Class ME = MigecCli.class;
+public final class Oncomigec {
+    private static final Class ME = Oncomigec.class;
     public static final String MY_PATH = ME.getProtectionDomain().getCodeSource().getLocation().getFile(),
             MY_VERSION = ME.getPackage().getImplementationVersion();
 
