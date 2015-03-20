@@ -33,7 +33,7 @@ public final class Util {
     public static final int THREADS = Runtime.getRuntime().availableProcessors();
 
     public static final byte PH33_BAD_QUAL = (byte) 10, PH33_GOOD_QUAL = (byte) 30,
-            PH33_MIN_QUAL = (byte) 2, PH33_MAX_QUAL = (byte) 40;
+            PH33_MIN_QUAL = (byte) 0, PH33_MAX_QUAL = (byte) 93;
 
     public static final String UMI_FIELD_ID = "UMI";
 
@@ -118,7 +118,7 @@ public final class Util {
         return (byte) Math.max(PH33_MIN_QUAL, (percentage - 0.25) * CQS_FACTOR);
     }
 
-    public static double cqsToPercentage(byte cqs) {
+    public static double cqsToFreq(byte cqs) {
         return cqs / CQS_FACTOR + 0.25;
     }
 }

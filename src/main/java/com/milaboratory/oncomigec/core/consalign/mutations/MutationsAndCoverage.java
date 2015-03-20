@@ -20,11 +20,11 @@ import com.milaboratory.core.sequence.alignment.LocalAlignment;
 import com.milaboratory.core.sequence.mutations.Mutations;
 import com.milaboratory.core.sequence.nucleotide.NucleotideAlphabet;
 import com.milaboratory.core.sequence.quality.SequenceQualityPhred;
-import com.milaboratory.oncomigec.core.assemble.entity.SConsensus;
 import com.milaboratory.oncomigec.core.genomic.Reference;
 import com.milaboratory.oncomigec.core.mutations.MigecMutation;
 import com.milaboratory.oncomigec.core.mutations.MigecMutationsCollection;
 import com.milaboratory.oncomigec.util.Basics;
+import com.milaboratory.oncomigec.util.Util;
 
 import java.io.Serializable;
 import java.util.HashSet;
@@ -44,7 +44,7 @@ public final class MutationsAndCoverage implements Serializable {
     private final AtomicIntegerArray referenceUmiCoverage;
     private final AtomicLongArray referenceReadCoverage, referenceQualitySumCoverage;
     private final NucleotideCoverage majorLetterMigCounts, minorLetterMigCounts,
-            majorLetterReadCounts, minorLetterReadCounts;
+            majorLetterReadCounts, minorLetterReadCounts, accumLetterReadCounts;
     private AtomicBoolean updated = new AtomicBoolean(false);
     private int migCount = -1;
     private long readCount = -1;
@@ -59,13 +59,16 @@ public final class MutationsAndCoverage implements Serializable {
         this.minorLetterMigCounts = new NucleotideCoverage(referenceLength);
         this.majorLetterReadCounts = new NucleotideCoverage(referenceLength);
         this.minorLetterReadCounts = new NucleotideCoverage(referenceLength);
+        this.accumLetterReadCounts = new NucleotideCoverage(referenceLength);
         this.majorIndelMigCountMap = new ConcurrentHashMap<>();
         this.minorIndelMigCountMap = new ConcurrentHashMap<>();
         this.majorIndelReadCountMap = new ConcurrentHashMap<>();
         this.minorIndelReadCountMap = new ConcurrentHashMap<>();
     }
 
-    public void appendCoverage(LocalAlignment alignment, SequenceQualityPhred qual, int migSize) {
+    public void append(LocalAlignment alignment, SequenceQualityPhred qual,
+                       MigecMutationsCollection majorMutations, Map<Integer, Integer> minorMutations,
+                       int migSize, boolean appendReference) {
         // Thread-safe
         updated.compareAndSet(false, true);
         Range coveredRange = alignment.getSequence1Range();
@@ -77,27 +80,30 @@ public final class MutationsAndCoverage implements Serializable {
                 referenceQualitySumCoverage.addAndGet(i, qual.value(posInCons));
             }
         }
-    }
 
-    public void appendMutations(MigecMutationsCollection majorMutations,
-                                Map<Integer, Integer> minorMutations, int migSize) {
-        updated.compareAndSet(false, true);
-
-        // append reference to major by default
-        for (int i = 0; i < referenceLength; i++) {
-            majorLetterReadCounts.incrementCoverage(i, reference.getSequence().codeAt(i), migSize);
-            majorLetterMigCounts.incrementCoverage(i, reference.getSequence().codeAt(i));
+        if (appendReference) {
+            // append reference to major by default, this is purely technical
+            for (int i = 0; i < referenceLength; i++) {
+                majorLetterReadCounts.incrementCoverage(i, reference.getSequence().codeAt(i), migSize);
+                majorLetterMigCounts.incrementCoverage(i, reference.getSequence().codeAt(i));
+            }
         }
 
         for (MigecMutation mutation : majorMutations) {
             if (mutation.isSubstitution()) {
                 final int pos = mutation.pos(), to = mutation.to(),
                         from = mutation.from();
+                // Increment major counters
                 majorLetterReadCounts.incrementCoverage(pos, to, migSize);
-                majorLetterReadCounts.decrementCoverage(pos, from, migSize);
-                // Also balance reference
                 majorLetterMigCounts.incrementCoverage(pos, to);
+
+                // Also balance reference
+                majorLetterReadCounts.decrementCoverage(pos, from, migSize);
                 majorLetterMigCounts.decrementCoverage(pos, from);
+
+                // Read accumulation
+                accumLetterReadCounts.incrementCoverage(pos, to, 
+                        (int) (migSize * (1.0 - Util.cqsToFreq(qual.value(alignment.convertPosition(pos))))));
             } else {
                 Basics.incrementAICounter(majorIndelReadCountMap, mutation.code(), migSize);
                 Basics.incrementAICounter(majorIndelMigCountMap, mutation.code());

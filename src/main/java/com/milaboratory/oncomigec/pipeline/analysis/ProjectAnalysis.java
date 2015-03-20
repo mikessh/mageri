@@ -21,10 +21,13 @@ package com.milaboratory.oncomigec.pipeline.analysis;
 import com.milaboratory.oncomigec.core.PipelineBlock;
 import com.milaboratory.oncomigec.core.align.processor.aligners.ExtendedExomeAlignerFactory;
 import com.milaboratory.oncomigec.core.genomic.BasicGenomicInfoProvider;
+import com.milaboratory.oncomigec.core.genomic.Reference;
 import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
 import com.milaboratory.oncomigec.core.io.readers.MigOutputPort;
 import com.milaboratory.oncomigec.model.classifier.BaseVariantClassifier;
 import com.milaboratory.oncomigec.model.classifier.VariantClassifier;
+import com.milaboratory.oncomigec.model.variant.Variant;
+import com.milaboratory.oncomigec.model.variant.VariantContainer;
 import com.milaboratory.oncomigec.pipeline.Presets;
 import com.milaboratory.oncomigec.pipeline.RuntimeParameters;
 import com.milaboratory.oncomigec.pipeline.SerializationUtils;
@@ -33,6 +36,7 @@ import com.milaboratory.oncomigec.pipeline.input.Input;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -104,7 +108,8 @@ public class ProjectAnalysis implements Serializable {
 
                 sampleAnalysis.runFirstStage();
 
-                sampleAnalysis.runSecondStage();
+                if (!runtimeParameters.variantDumpModeOn())
+                    sampleAnalysis.runSecondStage();
 
                 analysisBySample.put(sample, sampleAnalysis);
             }
@@ -156,6 +161,25 @@ public class ProjectAnalysis implements Serializable {
     public void serialize(String path, boolean noBinary) throws IOException {
         sout("Writing output.", 1);
         String prefix = path + "/" + project.getName();
+
+        if (runtimeParameters.variantDumpModeOn()) {
+            File variantFile = new File(prefix + ".variants.txt");
+            PrintWriter writer = new PrintWriter(variantFile);
+
+            writer.println(Variant.HEADER);
+            for (Reference reference : referenceLibrary.getReferences()) {
+                for (SampleAnalysis sampleAnalysis : analysisBySample.values()) {
+                    VariantContainer variantContainer = sampleAnalysis.dumpMinorVariants(reference);
+                    if (variantContainer != null) {
+                        for (Variant variant : variantContainer.getMinorVariants()) {
+                            writer.println(variant.toString());
+                        }
+                    }
+                }
+            }
+            writer.close();
+            return;
+        }
 
         preprocessorFactory.writePlainText(prefix);
         pipelineAssemblerFactory.writePlainText(prefix);

@@ -15,7 +15,6 @@
  */
 package com.milaboratory.oncomigec.core.correct;
 
-import com.milaboratory.core.sequence.Range;
 import com.milaboratory.core.sequence.nucleotide.NucleotideAlphabet;
 import com.milaboratory.oncomigec.core.PipelineBlock;
 import com.milaboratory.oncomigec.core.consalign.entity.AlignedConsensus;
@@ -26,9 +25,7 @@ import com.milaboratory.oncomigec.core.mutations.MigecMutationsCollection;
 import com.milaboratory.oncomigec.model.classifier.BaseVariantClassifier;
 import com.milaboratory.oncomigec.model.classifier.VariantClassifier;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -54,72 +51,52 @@ public final class Corrector extends PipelineBlock {
         Set<Integer> coverageMask = new HashSet<>();
 
         double maxPValue = 0;
-        int offset = 0;
-        Reference mainReference = alignedConsensus.getReference(0);
-        MigecMutationsCollection totalMutations = new MigecMutationsCollection(mainReference);
-        List<Range> ranges = new ArrayList<>();
+        Reference reference = alignedConsensus.getReference();
 
-        for (int i = 0; i < alignedConsensus.getNumberOfReferences(); i++) {
-            Reference reference = alignedConsensus.getReference(i);
+        MigecMutationsCollection mutations = alignedConsensus.getMajorMutations();
+        MutationFilter mutationFilter = correctorReferenceLibrary.getMutationFilter(reference);
 
-            if (!mainReference.equals(reference)) {
-                throw new RuntimeException("Chimeric alignments not allowed in here.");
-            }
+        if (!mutationFilter.good())
+            return null; // badly covered consensus
 
-            MigecMutationsCollection mutations = alignedConsensus.getMajorMutations(i);
-            MutationFilter mutationFilter = correctorReferenceLibrary.getMutationFilter(reference);
-            Range range = alignedConsensus.getRange(i);
+        // Update coverage mask
+        for (int k = 0; k < reference.getSequence().size(); k++)
+            if (!mutationFilter.passedFilter(k))
+                coverageMask.add(k);
 
-            ranges.add(range);
-
-            if (!mutationFilter.good())
-                return null; // badly covered consensus
-
-            // Update coverage mask
-            for (int k = 0; k < reference.getSequence().size(); k++)
-                if (!mutationFilter.passedFilter(k))
-                    coverageMask.add(k + offset);
-
-            // Filter substitutions and indels
-            int mustHaveMutationsCount = 0;
-            for (MigecMutation mutation : mutations) {
-                // Check if that substitution passes coverage-quality filter 2nd step MIGEC
-                if (mutation.isSubstitution()) {
-                    if (mutationFilter.hasSubstitution(mutation.pos(), mutation.to())) {
-                        if (!mutationFilter.hasReference(mutation.pos()))
-                            mustHaveMutationsCount++; // covered a hole in reference with substitution
-
-                        maxPValue = Math.max(maxPValue, correctorReferenceLibrary.getPValue(reference,
-                                mutation.pos(),
-                                mutation.to()));
-                    } else {
-                        mutation.filter();
-                    }
-                } else if (!mutationFilter.hasIndel(mutation.code())) {
-                    mutation.filter();
-                } else if (mutation.isDeletion()) {
+        // Filter substitutions and indels
+        int mustHaveMutationsCount = 0;
+        for (MigecMutation mutation : mutations) {
+            // Check if that substitution passes coverage-quality filter 2nd step MIGEC
+            if (mutation.isSubstitution()) {
+                if (mutationFilter.hasSubstitution(mutation.pos(), mutation.to())) {
                     if (!mutationFilter.hasReference(mutation.pos()))
-                        mustHaveMutationsCount++; // covered a hole in reference with deletion
+                        mustHaveMutationsCount++; // covered a hole in reference with substitution
 
-                    coverageMask.remove(offset + mutation.pos()); // no need to mask here
+                    maxPValue = Math.max(maxPValue, correctorReferenceLibrary.getPValue(reference,
+                            mutation.pos(),
+                            mutation.to()));
+                } else {
+                    mutation.filter();
                 }
+            } else if (!mutationFilter.hasIndel(mutation.code())) {
+                mutation.filter();
+            } else if (mutation.isDeletion()) {
+                if (!mutationFilter.hasReference(mutation.pos()))
+                    mustHaveMutationsCount++; // covered a hole in reference with deletion
+
+                coverageMask.remove( mutation.pos()); // no need to mask here
             }
-
-            // Check if we've covered all holes in the reference, discard otherwise
-            if (mustHaveMutationsCount < mutationFilter.getMustHaveMutationsCount())
-                return null;
-
-            // Collect corrected mutations
-            totalMutations.append(mutations);
-
-            // Shift coverage mask
-            offset += range.length();
         }
+
+        // Check if we've covered all holes in the reference, discard otherwise
+        if (mustHaveMutationsCount < mutationFilter.getMustHaveMutationsCount())
+            return null;
 
         goodConsensuses.incrementAndGet();
 
-        return new CorrectedConsensus(mainReference, totalMutations.getMutationCodes(),
-                coverageMask, maxPValue, alignedConsensus.getMigSize(), ranges);
+        return new CorrectedConsensus(reference, mutations.getMutationCodes(), // extract mutations that were not filtered
+                coverageMask, maxPValue, alignedConsensus.getMigSize(), alignedConsensus.getRanges());
     }
 
     public CorrectorReferenceLibrary getCorrectorReferenceLibrary() {

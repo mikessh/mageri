@@ -192,16 +192,21 @@ public class SampleAnalysis implements ReadSpecific, Serializable {
         sout("Finished second stage, " + haplotypeAssembler.getFilteredHaplotypes().size() + " haplotypes assembled.", 1);
     }
 
-    // todo: necessary for classifier
+    public VariantContainer dumpMinorVariants(Reference reference) {
+        return dumpMinorVariants(reference, VariantContainer.DEFAULT_THRESHOLD);
+    }
+
     public VariantContainer dumpMinorVariants(Reference reference, double threshold) {
         if (!firstStageRan)
             throw new RuntimeException("Should run first stage first.");
 
         AlignerReferenceLibrary alignerReferenceLibrary = aligner.getAlignerReferenceLibrary();
         MutationsAndCoverage mutationsAndCoverage = alignerReferenceLibrary.getMutationsAndCoverage(reference);
-        VariantContainer variantContainer = new VariantContainer(mutationsAndCoverage, threshold);
 
-        return variantContainer;
+        if (mutationsAndCoverage.wasUpdated())
+            return new VariantContainer(mutationsAndCoverage, threshold);
+        else
+            return null;
     }
 
     public MigOutputPort getReader() {

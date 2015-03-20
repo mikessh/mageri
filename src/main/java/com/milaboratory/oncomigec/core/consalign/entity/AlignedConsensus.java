@@ -25,29 +25,23 @@ import java.util.List;
 
 public final class AlignedConsensus implements Serializable {
     private final int migSize;
-    private final List<MigecMutationsCollection> majorMutationsList;
-    private final List<Reference> references;
+    private final MigecMutationsCollection majorMutations;
+    private final Reference reference;
     private final List<Range> ranges;
-    private final int numberOfReferences;
 
-    public AlignedConsensus(List<MigecMutationsCollection> majorMutationsList,
-                            List<Reference> references, List<Range> ranges, int migSize) {
-        this.references = references;
+    public AlignedConsensus(MigecMutationsCollection majorMutations,
+                            Reference reference, List<Range> ranges, int migSize) {
+        this.reference = reference;
         this.ranges = ranges;
-        this.majorMutationsList = majorMutationsList;
-        this.numberOfReferences = references.size();
+        this.majorMutations = majorMutations;
         this.migSize = migSize;
-    }
-
-    public int getNumberOfReferences() {
-        return numberOfReferences;
     }
 
     /**
      * @return
      */
-    public MigecMutationsCollection getMajorMutations(int referenceIndex) {
-        return majorMutationsList.get(referenceIndex);
+    public MigecMutationsCollection getMajorMutations() {
+        return majorMutations;
     }
 
     /**
@@ -56,8 +50,8 @@ public final class AlignedConsensus implements Serializable {
      *
      * @return List of references
      */
-    public Reference getReference(int referenceIndex) {
-        return references.get(referenceIndex);
+    public Reference getReference() {
+        return reference;
     }
 
     /**
@@ -69,8 +63,8 @@ public final class AlignedConsensus implements Serializable {
      *
      * @return List of ranges
      */
-    public Range getRange(int referenceIndex) {
-        return ranges.get(referenceIndex);
+    public List<Range> getRanges() {
+        return Collections.unmodifiableList(ranges);
     }
 
     public int getMigSize() {

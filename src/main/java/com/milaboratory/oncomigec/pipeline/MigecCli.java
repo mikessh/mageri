@@ -67,8 +67,9 @@ public final class MigecCli {
             if (commandLine.hasOption(OPT_VERBOSITY)) {
                 verbosity = Byte.parseByte(commandLine.getOptionValue(OPT_VERBOSITY));
             }
+            boolean dumpVariants = commandLine.hasOption(OPT_VARIANT_DUMP);
 
-            runtimeParameters = new RuntimeParameters(numberOfThreads, readLimit, verbosity);
+            runtimeParameters = new RuntimeParameters(numberOfThreads, readLimit, verbosity, dumpVariants);
 
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // Presets
@@ -131,8 +132,6 @@ public final class MigecCli {
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Run
         projectAnalysis.run();
-
-        // todo: dump variants
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Save output
@@ -259,9 +258,10 @@ public final class MigecCli {
             )
             .addOption(
                     OptionBuilder
-                            .withArgName("double")
-                            .hasArg(true)
-                            .withDescription("Dump variants having less than the threshold frequency.")
+                            //.withArgName("double")
+                            //.hasOptionalArg()
+                            //.withDescription("Dump variants having less than the threshold frequency. [default = 0.1]")
+                            .withDescription("Dump minor variants for classifier training.")
                             .withLongOpt(OPT_VARIANT_DUMP)
                             .create()
             );

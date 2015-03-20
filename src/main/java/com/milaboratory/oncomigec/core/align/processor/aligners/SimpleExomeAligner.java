@@ -15,19 +15,17 @@
  */
 package com.milaboratory.oncomigec.core.align.processor.aligners;
 
-import com.milaboratory.core.sequence.Range;
-import com.milaboratory.core.sequence.alignment.*;
+import com.milaboratory.core.sequence.alignment.KAligner;
+import com.milaboratory.core.sequence.alignment.KAlignerParameters;
+import com.milaboratory.core.sequence.alignment.KAlignmentHit;
+import com.milaboratory.core.sequence.alignment.KAlignmentResult;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
-import com.milaboratory.oncomigec.core.align.entity.PAlignmentResult;
 import com.milaboratory.oncomigec.core.align.entity.SAlignmentResult;
 import com.milaboratory.oncomigec.core.align.processor.Aligner;
 import com.milaboratory.oncomigec.core.genomic.Reference;
 import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
 
-import java.util.ArrayList;
-import java.util.List;
-
-public class SimpleExomeAligner implements Aligner {
+public class SimpleExomeAligner extends Aligner {
     public final static KAlignerParameters DEFAULT_PARAMS = KAlignerParameters.getByName("strict");
 
     private final KAligner aligner;
@@ -41,6 +39,8 @@ public class SimpleExomeAligner implements Aligner {
     public SimpleExomeAligner(ReferenceLibrary referenceLibrary,
                               KAlignerParameters parameters,
                               LocalAlignmentEvaluator localAlignmentEvaluator) {
+        super(referenceLibrary);
+        
         this.aligner = new KAligner(parameters);
 
         this.referenceLibrary = referenceLibrary;
@@ -60,32 +60,8 @@ public class SimpleExomeAligner implements Aligner {
         if (hit == null || !localAlignmentEvaluator.isGood(hit.getAlignment(), hit.getHitSequence(), sequence))
             return null;
 
-        List<LocalAlignment> alignmentBlocks = new ArrayList<>();
-        alignmentBlocks.add(hit.getAlignment());
-
-        List<Reference> referenceIds = new ArrayList<>();
         Reference reference = referenceLibrary.getReferences().get(hit.getId());
-        referenceIds.add(reference);
 
-        List<Range> rangeList = new ArrayList<>();
-        rangeList.add(new Range(0, reference.getSequence().size())); // unused here
-
-        return new SAlignmentResult(alignmentBlocks, referenceIds, rangeList);
-    }
-
-    @Override
-    public PAlignmentResult align(NucleotideSequence sequence1, NucleotideSequence sequence2) {
-        SAlignmentResult result1 = align(sequence1), result2 = align(sequence2);
-
-        if (result1 == null || result2 == null ||
-                !result1.getReferences().get(0).equals(result2.getReferences().get(0))) // chimeras not allowed here
-            return null;
-
-        return new PAlignmentResult(result1, result2);
-    }
-
-    @Override
-    public ReferenceLibrary getReferenceLibrary() {
-        return referenceLibrary;
+        return new SAlignmentResult(hit.getAlignment(), reference);
     }
 }

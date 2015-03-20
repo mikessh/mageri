@@ -51,8 +51,8 @@ public class MutationsExtractorTest {
                     SAlignmentResult result = aligner.align(consensus.getConsensusSQPair().getSequence());
 
                     if (result != null) {
-                        MutationsExtractor mutationsExtractor = new MutationsExtractor(result.getAlignments().get(0),
-                                result.getReferences().get(0), consensus,
+                        MutationsExtractor mutationsExtractor = new MutationsExtractor(result.getAlignment(),
+                                result.getReference(), consensus,
                                 // Do not filter minors and majors, we're going to check them all later
                                 ConsensusAlignerParameters.DEFAULT);
 
@@ -126,8 +126,8 @@ public class MutationsExtractorTest {
                     SAlignmentResult result = aligner.align(consensus.getConsensusSQPair().getSequence());
 
                     if (result != null) {
-                        MutationsExtractor mutationsExtractor = new MutationsExtractor(result.getAlignments().get(0),
-                                result.getReferences().get(0), consensus,
+                        MutationsExtractor mutationsExtractor = new MutationsExtractor(result.getAlignment(),
+                                result.getReference(), consensus,
                                 // NO_FILTER is critical as MIG generator marks errors with low quality
                                 // otherwise test will fail because no minors will be extracted
                                 ConsensusAlignerParameters.NO_FILTER);

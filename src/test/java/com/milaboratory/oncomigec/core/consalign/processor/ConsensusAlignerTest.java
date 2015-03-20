@@ -161,7 +161,7 @@ public class ConsensusAlignerTest {
 
                     if (alignmentData == null)
                         alignmentFails++;
-                    else if (!alignmentData.getReference(0).equals(reference))
+                    else if (!alignmentData.getReference().equals(reference))
                         incorrectAlignments++;
 
                     totalConsensuses++;

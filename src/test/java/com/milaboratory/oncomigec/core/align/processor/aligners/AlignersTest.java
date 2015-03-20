@@ -90,7 +90,7 @@ public class AlignersTest {
                 SAlignmentResult result = aligner.align(seq);
 
                 if (result != null)
-                    similarity += result.calculateSimilarities().get(0);
+                    similarity += result.calculateSimilarity();
             }
         }
         similarity /= nRepetitions2 * nReferences;
@@ -117,7 +117,7 @@ public class AlignersTest {
                 SAlignmentResult result = aligner.align(mutatedSeq);
 
                 if (result != null) {
-                    substitutionRate += result.calculateSubstitutionRatios().get(0);
+                    substitutionRate += result.calculateSubstitutionRatio();
                     nAligned++;
                 }
             }

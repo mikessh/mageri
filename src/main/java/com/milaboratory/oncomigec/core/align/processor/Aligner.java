@@ -20,24 +20,33 @@ import com.milaboratory.oncomigec.core.align.entity.PAlignmentResult;
 import com.milaboratory.oncomigec.core.align.entity.SAlignmentResult;
 import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
 
-public interface Aligner {
+public abstract class Aligner {
+    protected final ReferenceLibrary referenceLibrary;
+
+    protected Aligner(ReferenceLibrary referenceLibrary) {
+        this.referenceLibrary = referenceLibrary;
+    }
+
     /**
      * This thread-safe method should perform an alignment and return a set of LocalAlignment blocks.
+     *
      * @param sequence nucleotide sequence to align
      * @return alignment result (blocks of local alignments)
      */
-    public SAlignmentResult align(NucleotideSequence sequence);
+    public abstract SAlignmentResult align(NucleotideSequence sequence);
 
-    public PAlignmentResult align(NucleotideSequence sequence1, NucleotideSequence sequence2);
+    public PAlignmentResult align(NucleotideSequence sequence1, NucleotideSequence sequence2) {
+        SAlignmentResult result1 = align(sequence1), result2 = align(sequence2);
+
+        return new PAlignmentResult(result1, result2);
+    }
 
     /**
      * Gets reference library
      *
      * @return returns a map of references built in the aligner with corresponding IDs
      */
-    public ReferenceLibrary getReferenceLibrary();
-
-    //public int getNoHitCount();
-    
-    //public int getBadAlignmentHitCount();
+    public ReferenceLibrary getReferenceLibrary() {
+        return referenceLibrary;
+    }
 }

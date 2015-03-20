@@ -15,12 +15,11 @@
  */
 package com.milaboratory.oncomigec.core.consalign.entity;
 
-import com.milaboratory.core.sequence.quality.SequenceQualityPhred;
-import com.milaboratory.oncomigec.core.align.entity.SAlignmentResult;
+import com.milaboratory.core.sequence.NucleotideSQPair;
+import com.milaboratory.core.sequence.alignment.LocalAlignment;
+import com.milaboratory.oncomigec.core.consalign.mutations.MutationsAndCoverage;
 import com.milaboratory.oncomigec.core.genomic.Reference;
 import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
-import com.milaboratory.oncomigec.core.assemble.entity.SConsensus;
-import com.milaboratory.oncomigec.core.consalign.mutations.MutationsAndCoverage;
 import com.milaboratory.oncomigec.core.mutations.MigecMutationsCollection;
 
 import java.io.Serializable;
@@ -39,18 +38,14 @@ public final class AlignerReferenceLibrary implements Serializable {
             mutationsAndCoverageByReference.put(reference, new MutationsAndCoverage(reference));
     }
 
-    public void appendCoverage(SAlignmentResult alignmentResult, SequenceQualityPhred qual, int migSize) {
-        int n = alignmentResult.getReferences().size();
-        for (int i = 0; i < n; i++) {
-            Reference reference = alignmentResult.getReferences().get(i);
-            mutationsAndCoverageByReference.get(reference).appendCoverage(alignmentResult.getAlignments().get(i),
-                    qual, migSize);
-        }
-    }
+    public void append(Reference reference, LocalAlignment alignment, NucleotideSQPair consensusSQPair,
+                       MigecMutationsCollection majorMutations, Map<Integer, Integer> minorMutations,
+                       int migSize, boolean appendReference) {
+        MutationsAndCoverage mutationsAndCoverage = mutationsAndCoverageByReference.get(reference);
 
-    public void appendMutations(Reference reference, MigecMutationsCollection majorMutations,
-                                Map<Integer, Integer> minorMutation, int migSize) {
-        mutationsAndCoverageByReference.get(reference).appendMutations(majorMutations, minorMutation, migSize);
+        mutationsAndCoverage.append(alignment, consensusSQPair.getQuality(),
+                majorMutations, minorMutations,
+                migSize, appendReference);
     }
 
     public ReferenceLibrary getReferenceLibrary() {

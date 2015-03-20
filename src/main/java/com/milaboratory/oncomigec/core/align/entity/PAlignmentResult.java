@@ -15,54 +15,16 @@
  */
 package com.milaboratory.oncomigec.core.align.entity;
 
-import com.milaboratory.core.sequence.Range;
-import com.milaboratory.oncomigec.core.genomic.Reference;
-
-import java.util.List;
-
 public class PAlignmentResult {
-    private final List<Reference> references;
-    private final List<Range> ranges;
     private final SAlignmentResult result1, result2;
 
     public PAlignmentResult(SAlignmentResult result1, SAlignmentResult result2) {
         this.result1 = result1;
         this.result2 = result2;
-
-        // Here we combine reference ranges from paired-end sequencing
-        // We overlap all ranges for references present both in read1 and read2
-        // Note that ranges are only meaningful for chimeric alignments
-        references = result1.getReferences();
-        ranges = result1.getRanges();
-
-        for (int i = 0; i < result2.getReferences().size(); i++) {
-            Reference reference2 = result2.getReferences().get(i);
-            Range range2 = result2.getRanges().get(i);
-
-            boolean exists = false;
-            for (int j = 0; j < references.size(); j++) {
-                if (references.get(j) == reference2) {
-                    Range range1 = ranges.get(j);
-                    ranges.set(j, new Range(Math.min(range1.getFrom(), range2.getFrom()),
-                            Math.max(range1.getTo(), range2.getTo())));
-                    exists = true;
-                    break;
-                }
-            }
-
-            if (!exists) {
-                references.add(reference2);
-                ranges.add(range2);
-            }
-        }
     }
 
-    public List<Reference> getReferences() {
-        return references;
-    }
-
-    public List<Range> getRanges() {
-        return ranges;
+    public boolean isChimeric() {
+        return !result1.getReference().equals(result2.getReference());
     }
 
     public SAlignmentResult getResult1() {

@@ -16,19 +16,27 @@
 package com.milaboratory.oncomigec.core.consalign.processor;
 
 import cc.redberry.pipe.Processor;
+import com.milaboratory.core.sequence.NucleotideSQPair;
+import com.milaboratory.core.sequence.alignment.LocalAlignment;
 import com.milaboratory.core.sequence.mutations.Mutations;
 import com.milaboratory.core.sequence.nucleotide.NucleotideAlphabet;
+import com.milaboratory.core.sequence.quality.SequenceQualityPhred;
 import com.milaboratory.oncomigec.ReadSpecific;
 import com.milaboratory.oncomigec.core.PipelineBlock;
+import com.milaboratory.oncomigec.core.align.entity.SAlignmentResult;
 import com.milaboratory.oncomigec.core.align.processor.Aligner;
 import com.milaboratory.oncomigec.core.assemble.entity.Consensus;
+import com.milaboratory.oncomigec.core.assemble.entity.SConsensus;
 import com.milaboratory.oncomigec.core.consalign.entity.AlignedConsensus;
 import com.milaboratory.oncomigec.core.consalign.entity.AlignerReferenceLibrary;
 import com.milaboratory.oncomigec.core.consalign.misc.ConsensusAlignerParameters;
 import com.milaboratory.oncomigec.core.consalign.mutations.MutationsAndCoverage;
+import com.milaboratory.oncomigec.core.consalign.mutations.MutationsExtractor;
 import com.milaboratory.oncomigec.core.genomic.Reference;
+import com.milaboratory.oncomigec.core.mutations.MigecMutationsCollection;
 import com.milaboratory.oncomigec.util.ProcessorResultWrapper;
 
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class ConsensusAligner<ConsensusType extends Consensus> extends PipelineBlock
@@ -56,12 +64,6 @@ public abstract class ConsensusAligner<ConsensusType extends Consensus> extends 
                 badMigs.incrementAndGet();
                 return ProcessorResultWrapper.BLANK;
             } else {
-                for (int i = 1; i < alignmentData.getNumberOfReferences(); i++) {
-                    if (alignmentData.getReference(i - 1) != alignmentData.getReference(i)) {
-                        chimericMigs.incrementAndGet();
-                        return ProcessorResultWrapper.BLANK;
-                    }
-                }
                 alignedMigs.incrementAndGet();
                 return new ProcessorResultWrapper<>(alignmentData);
             }
@@ -69,6 +71,33 @@ public abstract class ConsensusAligner<ConsensusType extends Consensus> extends 
 
         skippedMigs.incrementAndGet();
         return ProcessorResultWrapper.BLANK;
+    }
+
+    protected MigecMutationsCollection update(SAlignmentResult result,
+                                              SConsensus consensus) {
+        return update(result, consensus, consensus.getConsensusSQPair(), false);
+    }
+
+    protected MigecMutationsCollection update(SAlignmentResult result,
+                                              SConsensus consensus,
+                                              NucleotideSQPair trimmedConsensus,
+                                              boolean appendReference) {
+        Reference reference = result.getReference();
+        LocalAlignment alignment = result.getAlignment();
+
+        MutationsExtractor mutationsExtractor = new MutationsExtractor(alignment,
+                reference, consensus, trimmedConsensus, parameters);
+
+        MigecMutationsCollection majorMutations = mutationsExtractor.calculateMajorMutations();
+        Map<Integer, Integer> minorMutations = mutationsExtractor.calculateMinorMutations();
+
+        int migSize = parameters.backAlignDroppedReads() ? consensus.fullSize() : consensus.size();
+
+        alignerReferenceLibrary.append(reference, alignment, trimmedConsensus, 
+                majorMutations, minorMutations, 
+                migSize, appendReference);
+
+        return majorMutations;
     }
 
     public abstract AlignedConsensus align(ConsensusType consensus);
@@ -95,7 +124,8 @@ public abstract class ConsensusAligner<ConsensusType extends Consensus> extends 
 
     @Override
     public String getHeader() {
-        String header = "reference\tpos", subst = "", ins = "", del = "";
+        String header = "reference\tpos",
+                subst = "", ins = "", del = "";
 
         for (byte i = 0; i < 4; i++) {
             char symbol = NucleotideAlphabet.INSTANCE.symbolFromCode(i);
@@ -117,7 +147,8 @@ public abstract class ConsensusAligner<ConsensusType extends Consensus> extends 
                 for (int i = 0; i < reference.getSequence().size(); i++) {
                     stringBuilder.append(reference.getFullName()).append("\t").
                             append(i + 1);
-                    StringBuilder subst = new StringBuilder(), ins = new StringBuilder(), del = new StringBuilder();
+                    StringBuilder subst = new StringBuilder(), ins = new StringBuilder(), del = new StringBuilder(),
+                            substMinor = new StringBuilder(), insMinor = new StringBuilder(), delMinor = new StringBuilder();
                     for (byte j = 0; j < 4; j++) {
                         int insCode = Mutations.createInsertion(i, j), delCode = Mutations.createDeletion(i, j);
 
@@ -125,7 +156,9 @@ public abstract class ConsensusAligner<ConsensusType extends Consensus> extends 
                         ins.append("\t").append(mutationsAndCoverage.getMajorIndelMigCount(insCode));
                         del.append("\t").append(mutationsAndCoverage.getMajorIndelMigCount(delCode));
                     }
-                    stringBuilder.append(subst).append(ins).append(del).append("\n");
+                    stringBuilder.append(subst).append(ins).append(del).
+                            append(substMinor).append(insMinor).append(delMinor).
+                            append("\n");
                 }
             }
         }

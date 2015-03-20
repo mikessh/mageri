@@ -95,6 +95,8 @@ public class VariantLibrary {// extends PipelineBlock {
     public double getBgFreqRead(Reference reference, byte from, byte to) {
         return variantContainerMap.get(reference).getBgFreqRead(from, to, false);
     }
+
+
 /*
     @Override
     public String getHeader() {

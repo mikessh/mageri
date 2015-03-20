@@ -8,7 +8,7 @@ public final class ConsensusAlignerParameters implements ParameterSet {
     private final byte readQualityThreshold;
     private final boolean backAlignDroppedReads;
 
-    public static ConsensusAlignerParameters DEFAULT = new ConsensusAlignerParameters((byte) 25, (byte) 20, true),
+    public static ConsensusAlignerParameters DEFAULT = new ConsensusAlignerParameters((byte) 0, (byte) 0, true),
             NO_FILTER = new ConsensusAlignerParameters((byte) 0, (byte) 0, true);
 
     public ConsensusAlignerParameters(byte consensusQualityThreshold, byte readQualityThreshold,
@@ -29,7 +29,6 @@ public final class ConsensusAlignerParameters implements ParameterSet {
     public boolean backAlignDroppedReads() {
         return backAlignDroppedReads;
     }
-
 
     @Override
     public Element toXml() {

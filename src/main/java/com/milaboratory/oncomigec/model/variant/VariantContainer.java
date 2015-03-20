@@ -32,6 +32,8 @@ import java.util.List;
  * in error filtering process.
  */
 public class VariantContainer implements Serializable {
+    public static final double DEFAULT_THRESHOLD = 0.1;
+    
     private final MutationsAndCoverage mutationsAndCoverage;
     private final List<Variant> variantList = new LinkedList<>();
     private final Variant[][] variants;
@@ -44,7 +46,7 @@ public class VariantContainer implements Serializable {
      * @param mutationsAndCoverage mutations and coverage matrix to process
      */
     public VariantContainer(MutationsAndCoverage mutationsAndCoverage) {
-        this(mutationsAndCoverage, 0.1);
+        this(mutationsAndCoverage, DEFAULT_THRESHOLD);
     }
 
     /**
