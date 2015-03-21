@@ -18,7 +18,7 @@
 
 package com.milaboratory.oncomigec.pipeline.input;
 
-import com.milaboratory.oncomigec.preproc.demultiplex.config.BarcodeListParser;
+import com.milaboratory.oncomigec.preprocessing.config.BarcodeListParser;
 import org.json.JSONArray;
 import org.json.JSONObject;
 

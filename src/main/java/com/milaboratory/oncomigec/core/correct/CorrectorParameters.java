@@ -5,7 +5,7 @@ import com.milaboratory.oncomigec.util.Util;
 import org.jdom.Element;
 
 public final class CorrectorParameters implements ParameterSet {
-    private final double classifierProbabilityThreshold;
+    private final double readGainThreshold, pValueThreshold;
 
     private final boolean filterSingletons;
     private final double singletonFilterRatio;
@@ -16,14 +16,15 @@ public final class CorrectorParameters implements ParameterSet {
 
     private final double maxBasePairsMaskedRatio;
 
-    public static CorrectorParameters DEFAULT = new CorrectorParameters(0.5, false, 10000.0,
-            1, 1, Util.PH33_BAD_QUAL, 0.5);
+    public static CorrectorParameters DEFAULT = new CorrectorParameters(0.7, 0.05, false, 10000.0,
+            1, 1, Util.PH33_BAD_QUAL, 0.7);
 
-    public CorrectorParameters(double classifierProbabilityThreshold,
+    public CorrectorParameters(double readGainThreshold, double pValueThreshold,
                                boolean filterSingletons, double singletonFilterRatio,
                                int minMigCoverage, int minMigCount,
                                byte minAvgQuality, double maxBasePairsMaskedRatio) {
-        this.classifierProbabilityThreshold = classifierProbabilityThreshold;
+        this.readGainThreshold = readGainThreshold;
+        this.pValueThreshold = pValueThreshold;
         this.filterSingletons = filterSingletons;
         this.singletonFilterRatio = singletonFilterRatio;
         this.minMigCoverage = minMigCoverage;
@@ -31,8 +32,8 @@ public final class CorrectorParameters implements ParameterSet {
         this.minAvgQuality = minAvgQuality;
         this.maxBasePairsMaskedRatio = maxBasePairsMaskedRatio;
 
-        if (classifierProbabilityThreshold < 0 ||
-                classifierProbabilityThreshold > 1)
+        if (readGainThreshold < 0 ||
+                readGainThreshold > 1)
             throw new IllegalArgumentException("Classifier probability threshold should be set in [0, 1] range");
         if (singletonFilterRatio < 1)
             throw new IllegalArgumentException("Singleton filter ratio should be greater than 1");
@@ -41,8 +42,12 @@ public final class CorrectorParameters implements ParameterSet {
             throw new IllegalArgumentException("Max base pair masked ratio should be set in [0, 1] range");
     }
 
-    public double getClassifierProbabilityThreshold() {
-        return classifierProbabilityThreshold;
+    public double getReadGainThreshold() {
+        return readGainThreshold;
+    }
+
+    public double getpValueThreshold() {
+        return pValueThreshold;
     }
 
     public boolean filterSingletons() {
@@ -72,7 +77,8 @@ public final class CorrectorParameters implements ParameterSet {
     @Override
     public Element toXml() {
         Element e = new Element("CorrectorParameters");
-        e.addContent(new Element("classifierProbabilityThreshold").setText(Double.toString(classifierProbabilityThreshold)));
+        e.addContent(new Element("readGainThreshold").setText(Double.toString(readGainThreshold)));
+        e.addContent(new Element("pValueThreshold").setText(Double.toString(pValueThreshold)));
         e.addContent(new Element("filterSingletons").setText(Boolean.toString(filterSingletons)));
         e.addContent(new Element("singletonFilterRatio").setText(Double.toString(singletonFilterRatio)));
         e.addContent(new Element("minMigCoverage").setText(Integer.toString(minMigCoverage)));
@@ -85,7 +91,8 @@ public final class CorrectorParameters implements ParameterSet {
     public static CorrectorParameters fromXml(Element parent) {
         Element e = parent.getChild("CorrectorParameters");
         return new CorrectorParameters(
-                Double.parseDouble(e.getChildTextTrim("classifierProbabilityThreshold")),
+                Double.parseDouble(e.getChildTextTrim("readGainThreshold")),
+                Double.parseDouble(e.getChildTextTrim("pValueThreshold")),
                 Boolean.parseBoolean(e.getChildTextTrim("filterSingletons")),
                 Double.parseDouble(e.getChildTextTrim("singletonFilterRatio")),
                 Integer.parseInt(e.getChildTextTrim("minMigCoverage")),
@@ -102,12 +109,13 @@ public final class CorrectorParameters implements ParameterSet {
 
         CorrectorParameters that = (CorrectorParameters) o;
 
-        if (Double.compare(that.classifierProbabilityThreshold, classifierProbabilityThreshold) != 0) return false;
         if (filterSingletons != that.filterSingletons) return false;
         if (Double.compare(that.maxBasePairsMaskedRatio, maxBasePairsMaskedRatio) != 0) return false;
         if (minAvgQuality != that.minAvgQuality) return false;
         if (minMigCount != that.minMigCount) return false;
         if (minMigCoverage != that.minMigCoverage) return false;
+        if (Double.compare(that.pValueThreshold, pValueThreshold) != 0) return false;
+        if (Double.compare(that.readGainThreshold, readGainThreshold) != 0) return false;
         if (Double.compare(that.singletonFilterRatio, singletonFilterRatio) != 0) return false;
 
         return true;
@@ -117,8 +125,10 @@ public final class CorrectorParameters implements ParameterSet {
     public int hashCode() {
         int result;
         long temp;
-        temp = Double.doubleToLongBits(classifierProbabilityThreshold);
+        temp = Double.doubleToLongBits(readGainThreshold);
         result = (int) (temp ^ (temp >>> 32));
+        temp = Double.doubleToLongBits(pValueThreshold);
+        result = 31 * result + (int) (temp ^ (temp >>> 32));
         result = 31 * result + (filterSingletons ? 1 : 0);
         temp = Double.doubleToLongBits(singletonFilterRatio);
         result = 31 * result + (int) (temp ^ (temp >>> 32));

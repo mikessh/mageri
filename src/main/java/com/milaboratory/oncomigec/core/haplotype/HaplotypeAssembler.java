@@ -22,7 +22,7 @@ import com.milaboratory.oncomigec.core.correct.CorrectedConsensus;
 import com.milaboratory.oncomigec.core.correct.CorrectorReferenceLibrary;
 import com.milaboratory.oncomigec.core.genomic.Reference;
 import com.milaboratory.oncomigec.core.mutations.MutationDifference;
-import com.milaboratory.oncomigec.model.variant.VariantLibrary;
+import com.milaboratory.oncomigec.core.variant.VariantLibrary;
 import org.apache.commons.math.MathException;
 import org.apache.commons.math.distribution.BinomialDistribution;
 import org.apache.commons.math.distribution.BinomialDistributionImpl;

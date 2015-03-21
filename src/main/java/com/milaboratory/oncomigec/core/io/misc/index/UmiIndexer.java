@@ -4,8 +4,8 @@ import cc.redberry.pipe.Processor;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.core.sequencing.read.SequencingRead;
 import com.milaboratory.oncomigec.core.io.misc.ReadInfo;
-import com.milaboratory.oncomigec.preproc.demultiplex.entity.CheckoutResult;
-import com.milaboratory.oncomigec.preproc.demultiplex.processor.CheckoutProcessor;
+import com.milaboratory.oncomigec.preprocessing.entity.CheckoutResult;
+import com.milaboratory.oncomigec.preprocessing.processor.CheckoutProcessor;
 import com.milaboratory.oncomigec.util.ProcessorResultWrapper;
 
 public class UmiIndexer implements Processor<SequencingRead, ProcessorResultWrapper<IndexingInfo>> {

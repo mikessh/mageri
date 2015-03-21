@@ -88,7 +88,6 @@ public abstract class Assembler<ConsensusType extends Consensus, MigType extends
         return Collections.synchronizedList(consensusList);
     }
 
-
     @Override
     public String getHeader() {
         return "umi\treads.assembled\treads.total\tmin.qual\tavg.qual\tmax.qual";

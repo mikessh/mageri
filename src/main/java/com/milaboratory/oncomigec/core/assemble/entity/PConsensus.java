@@ -73,6 +73,12 @@ public final class PConsensus implements Consensus<PSequencingRead> {
     }
 
     @Override
+    public void empty() {
+        consensus1.empty();
+        consensus2.empty();
+    }
+
+    @Override
     public boolean isPairedEnd() {
         return true;
     }

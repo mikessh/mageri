@@ -1,7 +1,5 @@
 package com.milaboratory.oncomigec.pipeline;
 
-import com.milaboratory.oncomigec.model.classifier.BaseVariantClassifier;
-import com.milaboratory.oncomigec.model.classifier.VariantClassifier;
 import com.milaboratory.oncomigec.pipeline.analysis.ProjectAnalysis;
 import com.milaboratory.oncomigec.pipeline.input.Input;
 import com.milaboratory.oncomigec.pipeline.input.InputParser;
@@ -19,7 +17,7 @@ public final class Oncomigec {
     public static final String MY_PATH = ME.getProtectionDomain().getCodeSource().getLocation().getFile(),
             MY_VERSION = ME.getPackage().getImplementationVersion();
 
-    public ProjectAnalysis loadAnalysis(File file) throws IOException, ClassNotFoundException {
+    public static ProjectAnalysis loadAnalysis(File file) throws IOException, ClassNotFoundException {
         return (ProjectAnalysis) SerializationUtils.readObjectFromFile(file);
     }
 
@@ -29,7 +27,6 @@ public final class Oncomigec {
         RuntimeParameters runtimeParameters = null;
         Presets presets = null;
         Input input = null;
-        VariantClassifier variantClassifier = null;
         String outputFolder = null;
         boolean noBinary = false;
 
@@ -103,11 +100,6 @@ public final class Oncomigec {
                 throw new ParseException("Path to project json file should be provided.");
             }
 
-            variantClassifier = BaseVariantClassifier.BUILT_IN;
-            if (commandLine.hasOption(OPT_CLASSIFIER_FILE)) {
-                variantClassifier = BaseVariantClassifier.pretrained(new File(commandLine.getOptionValue(OPT_CLASSIFIER_FILE)));
-            }
-
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // Output
             outputFolder = ".";
@@ -130,8 +122,8 @@ public final class Oncomigec {
         }
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        // Analyze
-        ProjectAnalysis projectAnalysis = new ProjectAnalysis(input, presets, runtimeParameters, variantClassifier);
+        // Prepare
+        ProjectAnalysis projectAnalysis = new ProjectAnalysis(input, presets, runtimeParameters);
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Run
@@ -145,7 +137,7 @@ public final class Oncomigec {
     private static final String OPT_HELP_SHORT = "h", OPT_HELP_LONG = "help", OPT_VERSION_SHORT = "v", OPT_VERSION_LONG = "version",
             OPT_VERBOSITY = "verbosity", OPT_THREADS = "threads", OPT_LIMIT = "limit",
             OPT_INSTRUMENT = "instrument", OPT_IMPORT_PRESET = "import-preset", OPT_EXPORT_PRESET = "export-preset",
-            OPT_CLASSIFIER_FILE = "classifier", OPT_INPUT_LONG = "input", OPT_INPUT_SHORT = "I",
+            OPT_INPUT_LONG = "input", OPT_INPUT_SHORT = "I",
             OPT_OUTPUT_LONG = "output-path", OPT_OUTPUT_SHORT = "O", OPT_NO_BINARY = "no-binary", OPT_VARIANT_DUMP = "variant-dump";
 
     private static final Options CLI = new Options()
@@ -234,15 +226,6 @@ public final class Oncomigec {
                             .withDescription("Path to a file that specifies the input project structure and data. [required]")
                             .withLongOpt(OPT_INPUT_LONG)
                             .create(OPT_INPUT_SHORT)
-            )
-            .addOption(
-                    OptionBuilder
-                            .withArgName("weka mdl file")
-                            .hasArg(true)
-                            .withDescription("Specifies a pre-trained classifier binary file. " +
-                                    "[default = pre-built]")
-                            .withLongOpt(OPT_CLASSIFIER_FILE)
-                            .create()
             )
                     //
                     // output

@@ -17,13 +17,13 @@ package com.milaboratory.oncomigec.core.correct;
 
 import com.milaboratory.core.sequence.mutations.Mutations;
 import com.milaboratory.oncomigec.core.align.processor.aligners.ExtendedExomeAligner;
-import com.milaboratory.oncomigec.core.genomic.Reference;
-import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
 import com.milaboratory.oncomigec.core.assemble.entity.SConsensus;
 import com.milaboratory.oncomigec.core.assemble.processor.SAssembler;
 import com.milaboratory.oncomigec.core.consalign.entity.AlignedConsensus;
 import com.milaboratory.oncomigec.core.consalign.processor.ConsensusAligner;
 import com.milaboratory.oncomigec.core.consalign.processor.SConsensusAligner;
+import com.milaboratory.oncomigec.core.genomic.Reference;
+import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
 import com.milaboratory.oncomigec.core.io.entity.SMig;
 import com.milaboratory.oncomigec.util.testing.generators.GeneratorMutationModel;
 import com.milaboratory.oncomigec.util.testing.generators.RandomMigGenerator;
@@ -35,14 +35,13 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class CorrectorTest {
-    private final int nReferences = 100, nMigs = 100;
+    private final int nReferences = 10, nMigs = 1000;
     private final double positionIndependentNoIndelMigecFoldThreshold = 5.0;
 
     @Test
     public void randomizedPositionIndependentNoIndelTest() {
-        RandomMigGenerator migGenerator = new RandomMigGenerator(GeneratorMutationModel.NO_INDEL);
-        migGenerator.setMigSizeMin(10);
-        migGenerator.setMigSizeMax(10);
+        RandomMigGenerator migGenerator = new RandomMigGenerator();
+        migGenerator.setGeneratorMutationModel(GeneratorMutationModel.NO_INDEL.multiply(10));
         RandomReferenceGenerator referenceGenerator = new RandomReferenceGenerator();
 
         double averageStage0ErrorFrequency = 0, averageStage1ErrorFrequency = 0, averageStage2ErrorFrequency = 0;
@@ -99,9 +98,9 @@ public class CorrectorTest {
 
         double fold = averageStage1ErrorFrequency / averageStage2ErrorFrequency;
 
-//        Assert.assertTrue("Position-independent MIGEC gives >= " +
-//                        positionIndependentNoIndelMigecFoldThreshold + "-fold less errors than consensus assembly",
-//                fold >= positionIndependentNoIndelMigecFoldThreshold
-//        );
+        Assert.assertTrue("Position-independent MIGEC gives >= " +
+                        positionIndependentNoIndelMigecFoldThreshold + "-fold less errors than consensus assembly",
+                fold >= positionIndependentNoIndelMigecFoldThreshold
+        );
     }
 }

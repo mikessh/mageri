@@ -16,7 +16,7 @@
     <backAlignDroppedReads>true</backAlignDroppedReads>
   </ConsensusAlignerParameters>
   <CorrectorParameters>
-    <classifierProbabilityThreshold>0.5</classifierProbabilityThreshold>
+    <readGainThreshold>0.5</readGainThreshold>
     <filterSingletons>false</filterSingletons>
     <singletonFilterRatio>10000.0</singletonFilterRatio>
     <minMigCoverage>5</minMigCoverage>

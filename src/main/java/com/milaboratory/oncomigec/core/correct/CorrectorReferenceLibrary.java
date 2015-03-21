@@ -21,11 +21,9 @@ import com.milaboratory.oncomigec.core.consalign.entity.AlignerReferenceLibrary;
 import com.milaboratory.oncomigec.core.consalign.mutations.MutationsAndCoverage;
 import com.milaboratory.oncomigec.core.genomic.Reference;
 import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
-import com.milaboratory.oncomigec.model.classifier.ClassifierResult;
-import com.milaboratory.oncomigec.model.classifier.VariantClassifier;
-import com.milaboratory.oncomigec.model.variant.Variant;
-import com.milaboratory.oncomigec.model.variant.VariantContainer;
-import com.milaboratory.oncomigec.model.variant.VariantLibrary;
+import com.milaboratory.oncomigec.core.variant.Variant;
+import com.milaboratory.oncomigec.core.variant.VariantContainer;
+import com.milaboratory.oncomigec.core.variant.VariantLibrary;
 
 import java.io.Serializable;
 import java.util.*;
@@ -43,22 +41,19 @@ public final class CorrectorReferenceLibrary implements Serializable {
     private final List<Reference> references;
 
     private transient final VariantLibrary variantLibrary;
-    private transient final VariantClassifier variantClassifier;
 
     // Filtering
     private final boolean filterSingleMigs;
     private final double singleMigFilterRatio;
     private final int minMigCoverage;
     private final byte minAvgQuality;
-    private final double maxBasePairsMaskedRatio, pValueThreshold;
+    private final double maxBasePairsMaskedRatio, readGainThreshold;
     private final int minMigCount;
 
     public CorrectorReferenceLibrary(AlignerReferenceLibrary alignerReferenceLibrary,
-                                     CorrectorParameters parameters,
-                                     VariantClassifier variantClassifier) {
+                                     CorrectorParameters parameters) {
         // Hot-spot p-value
-        this.variantClassifier = variantClassifier;
-        this.pValueThreshold = parameters.getClassifierProbabilityThreshold();
+        this.readGainThreshold = parameters.getReadGainThreshold();
 
         // Filtering
         this.filterSingleMigs = parameters.filterSingletons();
@@ -122,19 +117,18 @@ public final class CorrectorReferenceLibrary implements Serializable {
                     // as it has complete stats that could be required by classifier
                     for (byte j = 0; j < 4; j++) {
                         int majorMigCount = mutationsAndCoverage.getMajorNucleotideMigCount(i, j);
-                        Variant minorVariant = variantContainer.getAt(i, j);
+                        Variant variant = variantContainer.getAt(i, j);
                         boolean variantExists = false;
 
-                        if (minorVariant != null) {
+                        if (variant != null) {
                             // Classify minor variants
-                            ClassifierResult result = variantClassifier.classify(minorVariant);
-                            variantExists = result.getPValue() <= pValueThreshold &&
+                            variantExists = computeReadGain(variant) >= readGainThreshold &&
                                     // if single mig filtering is on (for RT errors, etc)
                                     // perform ratio-based check
                                     (!filterSingleMigs ||
-                                            minorVariant.getMajorMigCount() > 1 ||
-                                            majorMigCount / (double) minorVariant.getMajorMigCount() <= singleMigFilterRatio);
-                            majorSubstitutionPvalues[i][j] = result.getPValue();
+                                            variant.getMajorMigCount() > 1 ||
+                                            majorMigCount / (double) variant.getMajorMigCount() <= singleMigFilterRatio);
+                            majorSubstitutionPvalues[i][j] = 0;//result.getPValue();
                         } else if (majorMigCount > 0) {
                             // Retain all major variants
                             variantExists = true;
@@ -201,6 +195,11 @@ public final class CorrectorReferenceLibrary implements Serializable {
             majorInsertionPvalueMap.put(reference, majorInsertionPvalues);
             majorDeletionPvalueMap.put(reference, majorDeletionPvalues);
         }
+    }
+
+    public static double computeReadGain(Variant variant) {
+        return 1.0 / (1.0 - (variant.getAccumulatedReadCount() - variant.getMinorReadCount()) / variant.getMajorReadCount());
+
     }
 
     /*

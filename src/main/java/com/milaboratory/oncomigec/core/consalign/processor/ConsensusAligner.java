@@ -54,9 +54,13 @@ public abstract class ConsensusAligner<ConsensusType extends Consensus> extends 
     }
 
     @SuppressWarnings("unchecked")
-    public ProcessorResultWrapper<AlignedConsensus> process(ProcessorResultWrapper<ConsensusType> consensus) {
-        if (consensus.hasResult()) {
-            AlignedConsensus alignmentData = align(consensus.getResult());
+    public ProcessorResultWrapper<AlignedConsensus> process(ProcessorResultWrapper<ConsensusType> assemblerResult) {
+        if (assemblerResult.hasResult()) {
+            ConsensusType consensus = assemblerResult.getResult();
+            
+            AlignedConsensus alignmentData = align(consensus);
+
+            consensus.empty();
 
             if (alignmentData == null) {
                 badMigs.incrementAndGet();
@@ -145,7 +149,7 @@ public abstract class ConsensusAligner<ConsensusType extends Consensus> extends 
                 for (int i = 0; i < reference.getSequence().size(); i++) {
                     stringBuilder.append(reference.getFullName()).append("\t").
                             append(i + 1);
-                    
+
                     StringBuilder mig = new StringBuilder(),
                             corrected = new StringBuilder(),
                             lost = new StringBuilder(),

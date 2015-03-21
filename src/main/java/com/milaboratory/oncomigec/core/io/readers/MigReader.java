@@ -17,7 +17,7 @@ import com.milaboratory.oncomigec.core.io.misc.index.IndexingInfo;
 import com.milaboratory.oncomigec.core.io.misc.index.UmiIndexer;
 import com.milaboratory.oncomigec.pipeline.RuntimeParameters;
 import com.milaboratory.oncomigec.pipeline.Speaker;
-import com.milaboratory.oncomigec.preproc.demultiplex.processor.CheckoutProcessor;
+import com.milaboratory.oncomigec.preprocessing.processor.CheckoutProcessor;
 import com.milaboratory.oncomigec.util.ProcessorResultWrapper;
 
 import java.io.Serializable;
@@ -146,5 +146,9 @@ public abstract class MigReader<MigType extends Mig> implements Serializable, Re
 
     public CheckoutProcessor getCheckoutProcessor() {
         return checkoutProcessor;
+    }
+
+    public synchronized void empty() {
+        iteratorMap.clear();
     }
 }

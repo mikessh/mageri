@@ -70,20 +70,18 @@ public final class MutationsAndCoverage implements Serializable {
         updated.compareAndSet(false, true);
         int migSize = minorMutations.getMigSize();
         Range coveredRange = alignment.getSequence1Range();
+        
         for (int i = coveredRange.getFrom(); i < coveredRange.getTo(); i++) {
             int posInCons = alignment.convertPosition(i);
             if (posInCons >= 0) {
                 referenceUmiCoverage.incrementAndGet(i);
                 referenceReadCoverage.addAndGet(i, migSize);
                 referenceQualitySumCoverage.addAndGet(i, qual.value(posInCons));
-            }
-        }
 
-        if (appendReference) {
-            // append reference to major by default, this is purely technical
-            for (int i = 0; i < referenceLength; i++) {
-                majorLetterReadCounts.incrementCoverage(i, reference.getSequence().codeAt(i), migSize);
-                majorLetterMigCounts.incrementCoverage(i, reference.getSequence().codeAt(i));
+                byte nt = reference.getSequence().codeAt(i);
+                majorLetterMigCounts.incrementCoverage(i, nt);
+                majorLetterReadCounts.incrementCoverage(i, nt, migSize);
+                accumLetterReadCounts.incrementCoverage(i, nt, minorMutations.getGainedReadCount(i));
             }
         }
 
@@ -91,16 +89,16 @@ public final class MutationsAndCoverage implements Serializable {
             if (mutation.isSubstitution()) {
                 final int pos = mutation.pos(), to = mutation.to(),
                         from = mutation.from();
-                // Increment major counters
-                majorLetterReadCounts.incrementCoverage(pos, to, migSize);
+                // Increment major counters and read accumulation
                 majorLetterMigCounts.incrementCoverage(pos, to);
+                majorLetterReadCounts.incrementCoverage(pos, to, migSize);
+                int gain = minorMutations.getGainedReadCount(pos);
+                accumLetterReadCounts.incrementCoverage(pos, to, gain);
 
-                // Also balance reference
-                majorLetterReadCounts.decrementCoverage(pos, from, migSize);
+                // Balance the reference
                 majorLetterMigCounts.decrementCoverage(pos, from);
-
-                // Read accumulation
-                accumLetterReadCounts.incrementCoverage(pos, to, minorMutations.getGainedReadCount(pos));
+                majorLetterReadCounts.decrementCoverage(pos, from, migSize);
+                accumLetterReadCounts.decrementCoverage(pos, from, gain);
             } else {
                 Basics.incrementAICounter(majorIndelReadCountMap, mutation.code(), migSize);
                 Basics.incrementAICounter(majorIndelMigCountMap, mutation.code());
@@ -108,10 +106,9 @@ public final class MutationsAndCoverage implements Serializable {
         }
         for (int code : minorMutations.getCodes()) {
             if (Mutations.isSubstitution(code)) {
-                minorLetterReadCounts.incrementCoverage(Mutations.getPosition(code),
-                        Mutations.getTo(code), minorMutations.getLostReadCount(code));
-                minorLetterMigCounts.incrementCoverage(Mutations.getPosition(code),
-                        Mutations.getTo(code));
+                int pos = Mutations.getPosition(code), to = Mutations.getTo(code);
+                minorLetterReadCounts.incrementCoverage(pos, to, minorMutations.getLostReadCount(code));
+                minorLetterMigCounts.incrementCoverage(pos, to);
             } else {
                 Basics.incrementAICounter(minorIndelReadCountMap, code, minorMutations.getLostReadCount(code));
                 Basics.incrementAICounter(minorIndelMigCountMap, code);

@@ -18,8 +18,8 @@
 
 package com.milaboratory.oncomigec.pipeline.input;
 
-import com.milaboratory.oncomigec.preproc.demultiplex.processor.CheckoutProcessor;
-import com.milaboratory.oncomigec.preproc.demultiplex.processor.HeaderExtractor;
+import com.milaboratory.oncomigec.preprocessing.processor.CheckoutProcessor;
+import com.milaboratory.oncomigec.preprocessing.processor.HeaderExtractor;
 
 import java.util.ArrayList;
 import java.util.List;

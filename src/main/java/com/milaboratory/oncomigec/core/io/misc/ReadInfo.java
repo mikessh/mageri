@@ -16,7 +16,7 @@
 package com.milaboratory.oncomigec.core.io.misc;
 
 import com.milaboratory.core.sequencing.read.SequencingRead;
-import com.milaboratory.oncomigec.preproc.demultiplex.entity.CheckoutResult;
+import com.milaboratory.oncomigec.preprocessing.entity.CheckoutResult;
 
 public class ReadInfo {
     private final SequencingRead read;

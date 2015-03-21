@@ -73,7 +73,7 @@ public final class SConsensus implements Consensus<SSequencingRead> {
     public byte getMaxQual() {
         int maxQ = Util.PH33_MIN_QUAL;
         for (int i = 0; i < consensusSQPair.size(); i++) {
-            maxQ = (byte) Math.min(consensusSQPair.getQuality().value(i), maxQ);
+            maxQ = (byte) Math.max(consensusSQPair.getQuality().value(i), maxQ);
         }
         return (byte) maxQ;
     }
@@ -105,5 +105,11 @@ public final class SConsensus implements Consensus<SSequencingRead> {
     @Override
     public boolean isPairedEnd() {
         return false;
+    }
+
+    @Override
+    public void empty() {
+        assembledReads.clear();
+        droppedReads.clear();
     }
 }

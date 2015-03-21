@@ -20,4 +20,6 @@ public interface Consensus<ReadType extends SequencingRead> extends Serializable
     public byte getMaxQual();
 
     public byte getAvgQual();
+
+    public void empty();
 }

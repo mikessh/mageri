@@ -102,21 +102,7 @@
     </properties>
 
     <build>
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <includes>
-                    <include>classifier/*</include>
-                </includes>
-            </resource>
-        </resources>
         <testResources>
-            <testResource>
-                <directory>src/main/resources</directory>
-                <includes>
-                    <include>classifier/*</include>
-                </includes>
-            </testResource>
             <testResource>
                 <directory>src/test/resources</directory>
                 <includes>
@@ -126,20 +112,13 @@
         </testResources>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.1</version>
+                <version>3.2</version>
                 <configuration>
-                    <compilerId>groovy-eclipse-compiler</compilerId>
                     <source>1.7</source>
                     <target>1.7</target>
                 </configuration>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.codehaus.groovy</groupId>
-                        <artifactId>groovy-eclipse-compiler</artifactId>
-                        <version>2.7.0-01</version>
-                    </dependency>
-                </dependencies>
             </plugin>
 
             <plugin>

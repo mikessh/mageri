@@ -18,10 +18,9 @@
 
 package com.milaboratory.oncomigec.pipeline.input;
 
-import com.milaboratory.oncomigec.preproc.demultiplex.config.BarcodeListParser;
-import com.milaboratory.oncomigec.preproc.demultiplex.entity.DemultiplexParameters;
-import com.milaboratory.oncomigec.preproc.demultiplex.processor.CheckoutProcessor;
-import com.sun.istack.internal.NotNull;
+import com.milaboratory.oncomigec.preprocessing.config.BarcodeListParser;
+import com.milaboratory.oncomigec.preprocessing.entity.DemultiplexParameters;
+import com.milaboratory.oncomigec.preprocessing.processor.CheckoutProcessor;
 
 import java.io.IOException;
 import java.util.List;
@@ -32,8 +31,8 @@ public abstract class AdapterRule extends CheckoutRule {
     protected final boolean paired;
     private DemultiplexParameters demultiplexParameters = DemultiplexParameters.DEFAULT;
 
-    public AdapterRule(@NotNull String index,
-                       @NotNull List<String> barcodes, boolean paired) throws IOException {
+    public AdapterRule(String index,
+                       List<String> barcodes, boolean paired) throws IOException {
         this.index = index;
         this.paired = paired;
         this.barcodes = prepareBarcodes(barcodes);

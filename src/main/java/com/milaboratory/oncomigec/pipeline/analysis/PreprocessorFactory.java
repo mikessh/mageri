@@ -21,9 +21,9 @@ package com.milaboratory.oncomigec.pipeline.analysis;
 import com.milaboratory.oncomigec.core.PipelineBlock;
 import com.milaboratory.oncomigec.core.io.misc.PreprocessorParameters;
 import com.milaboratory.oncomigec.pipeline.RuntimeParameters;
-import com.milaboratory.oncomigec.preproc.demultiplex.entity.DemultiplexParameters;
-import com.milaboratory.oncomigec.preproc.demultiplex.processor.CheckoutProcessor;
-import com.milaboratory.oncomigec.preproc.demultiplex.processor.PAdapterExtractor;
+import com.milaboratory.oncomigec.preprocessing.entity.DemultiplexParameters;
+import com.milaboratory.oncomigec.preprocessing.processor.CheckoutProcessor;
+import com.milaboratory.oncomigec.preprocessing.processor.PAdapterExtractor;
 
 import java.io.IOException;
 import java.util.HashMap;

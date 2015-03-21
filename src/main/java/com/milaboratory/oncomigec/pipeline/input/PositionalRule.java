@@ -18,11 +18,9 @@
 
 package com.milaboratory.oncomigec.pipeline.input;
 
-import com.milaboratory.oncomigec.preproc.demultiplex.processor.CheckoutProcessor;
-import com.milaboratory.oncomigec.preproc.demultiplex.processor.PPositionalExtractor;
-import com.milaboratory.oncomigec.preproc.demultiplex.processor.SPositionalExtractor;
-import com.sun.istack.internal.NotNull;
-import com.sun.istack.internal.Nullable;
+import com.milaboratory.oncomigec.preprocessing.processor.CheckoutProcessor;
+import com.milaboratory.oncomigec.preprocessing.processor.PPositionalExtractor;
+import com.milaboratory.oncomigec.preprocessing.processor.SPositionalExtractor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,8 +29,8 @@ public class PositionalRule extends CheckoutRule {
     private final String sampleName, mask1, mask2;
     private final boolean paired;
 
-    public PositionalRule(@NotNull String sampleName,
-                          @NotNull String mask1, @Nullable String mask2,
+    public PositionalRule(String sampleName,
+                          String mask1, String mask2,
                           boolean paired) {
         this.sampleName = sampleName;
         this.mask1 = mask1;

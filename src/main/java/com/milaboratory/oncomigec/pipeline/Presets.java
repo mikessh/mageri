@@ -5,7 +5,7 @@ import com.milaboratory.oncomigec.core.consalign.misc.ConsensusAlignerParameters
 import com.milaboratory.oncomigec.core.correct.CorrectorParameters;
 import com.milaboratory.oncomigec.core.haplotype.HaplotypeAssemblerParameters;
 import com.milaboratory.oncomigec.core.io.misc.PreprocessorParameters;
-import com.milaboratory.oncomigec.preproc.demultiplex.entity.DemultiplexParameters;
+import com.milaboratory.oncomigec.preprocessing.entity.DemultiplexParameters;
 import com.milaboratory.oncomigec.util.ParameterSet;
 import org.jdom.Document;
 import org.jdom.Element;

@@ -42,26 +42,29 @@ public class ConsensusAlignerTest {
     public void assemblerDiagnosticsTest() throws Exception {
         String condition;
 
-        condition = "Reads without indels, default assembler";
-        assemblerDiagnosticsTest(new RandomMigGenerator(GeneratorMutationModel.NO_INDEL),
-                AssemblerParameters.DEFAULT,
-                DoubleRange.createLowerBound("MeanCQS", condition, 40.0),
-                DoubleRange.createLowerBound("MeanUMICoverage", condition, 1.00),
-                PercentRange.createLowerBound("MeanAlignmentRate", condition, 100));
+        RandomMigGenerator randomMigGenerator = new RandomMigGenerator();
 
         condition = "Reads with indels, default assembler";
-        assemblerDiagnosticsTest(new RandomMigGenerator(),
+        assemblerDiagnosticsTest(randomMigGenerator,
                 AssemblerParameters.DEFAULT,
                 DoubleRange.createLowerBound("MeanCQS", condition, 25.0),
                 DoubleRange.createLowerBound("MeanUMICoverage", condition, 0.95),
                 PercentRange.createLowerBound("MeanAlignmentRate", condition, 95));
 
         condition = "Reads with indels, TORRENT454 assembler";
-        assemblerDiagnosticsTest(new RandomMigGenerator(),
+        assemblerDiagnosticsTest(randomMigGenerator,
                 AssemblerParameters.TORRENT454,
                 DoubleRange.createLowerBound("MeanCQS", condition, 37.0),
                 DoubleRange.createLowerBound("MeanUMICoverage", condition, 0.90),
                 PercentRange.createLowerBound("MeanAlignmentRate", condition, 90));
+
+        condition = "Reads without indels, default assembler";
+        randomMigGenerator.setGeneratorMutationModel(GeneratorMutationModel.NO_INDEL);
+        assemblerDiagnosticsTest(randomMigGenerator,
+                AssemblerParameters.DEFAULT,
+                DoubleRange.createLowerBound("MeanCQS", condition, 40.0),
+                DoubleRange.createLowerBound("MeanUMICoverage", condition, 1.00),
+                PercentRange.createLowerBound("MeanAlignmentRate", condition, 100));
     }
 
     private void assemblerDiagnosticsTest(RandomMigGenerator migGenerator,

@@ -25,8 +25,8 @@ import com.milaboratory.oncomigec.core.io.entity.SMig;
 import com.milaboratory.oncomigec.core.io.misc.PreprocessorParameters;
 import com.milaboratory.oncomigec.core.io.misc.ReadInfo;
 import com.milaboratory.oncomigec.pipeline.RuntimeParameters;
-import com.milaboratory.oncomigec.preproc.demultiplex.entity.SCheckoutResult;
-import com.milaboratory.oncomigec.preproc.demultiplex.processor.CheckoutProcessor;
+import com.milaboratory.oncomigec.preprocessing.entity.SCheckoutResult;
+import com.milaboratory.oncomigec.preprocessing.processor.CheckoutProcessor;
 import com.milaboratory.util.CompressionType;
 
 import java.io.IOException;

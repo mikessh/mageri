@@ -13,7 +13,9 @@ import com.milaboratory.oncomigec.core.consalign.misc.ConsensusAlignerParameters
 import com.milaboratory.oncomigec.core.genomic.Reference;
 import com.milaboratory.oncomigec.core.mutations.MigecMutationsCollection;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 
 public final class MutationsExtractor {
     private final LocalAlignment consensusAlignment;
@@ -168,7 +170,7 @@ public final class MutationsExtractor {
                 int position = alignment.getSequence2Range().getFrom() + Mutations.convertPosition(mutationCodes,
                         Mutations.getPosition(code));
                 byte qual = queryQuality.value(position);
-                if (qual < qualityThreshold) {
+                if (qual <= qualityThreshold) {
                     filter[i] = true;
                     nFiltered++;
                 } else if (passedQualityValues != null) {

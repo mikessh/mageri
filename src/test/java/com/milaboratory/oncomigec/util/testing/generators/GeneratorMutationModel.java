@@ -15,10 +15,7 @@ public class GeneratorMutationModel {
     private static final double DEL_PROB = 0.005, INS_PROB = 0.002;
 
     public static final GeneratorMutationModel DEFAULT = new GeneratorMutationModel(51102L, 1.0, 1.0),
-            LOW_INDEL = new GeneratorMutationModel(51102L, 1.0, 0.1),
-            NO_INDEL = new GeneratorMutationModel(51102L, 1.0, 0),
-            NO_INDEL_HIGH_SUBST = new GeneratorMutationModel(51102L, 10.0, 0),
-            NO_INDEL_LOW_SUBST = new GeneratorMutationModel(51102L, 0.1, 0);
+            NO_INDEL = new GeneratorMutationModel(51102L, 1.0, 0.0);
 
     public GeneratorMutationModel(long seed, double multiplier, double indelFactor) {
         this.random = new Random(seed);
@@ -28,9 +25,13 @@ public class GeneratorMutationModel {
                 seed).multiply(multiplier);
     }
 
-    public GeneratorMutationModel(GeneratorMutationModel generatorMutationModel, double multiplier) {
-        this.random = generatorMutationModel.random;
-        this.mutationModel = generatorMutationModel.mutationModel.multiply(multiplier);
+    private GeneratorMutationModel(Random random, NucleotideMutationModel mutationModel) {
+        this.random = random;
+        this.mutationModel = mutationModel;
+    }
+
+    public GeneratorMutationModel multiply(double multiplier) {
+        return new GeneratorMutationModel(random, mutationModel.multiply(multiplier));
     }
 
     public int[] nextMutations(NucleotideSequence reference) {

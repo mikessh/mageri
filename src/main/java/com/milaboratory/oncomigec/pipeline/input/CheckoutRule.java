@@ -18,8 +18,8 @@
 
 package com.milaboratory.oncomigec.pipeline.input;
 
-import com.milaboratory.oncomigec.preproc.demultiplex.entity.DemultiplexParameters;
-import com.milaboratory.oncomigec.preproc.demultiplex.processor.CheckoutProcessor;
+import com.milaboratory.oncomigec.preprocessing.entity.DemultiplexParameters;
+import com.milaboratory.oncomigec.preprocessing.processor.CheckoutProcessor;
 
 import java.io.Serializable;
 import java.util.List;

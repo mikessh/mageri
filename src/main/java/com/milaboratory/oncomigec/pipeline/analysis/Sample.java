@@ -19,8 +19,6 @@
 package com.milaboratory.oncomigec.pipeline.analysis;
 
 import com.milaboratory.oncomigec.ReadSpecific;
-import com.sun.istack.internal.NotNull;
-import com.sun.istack.internal.Nullable;
 
 import java.io.Serializable;
 
@@ -28,7 +26,7 @@ public class Sample implements Comparable<Sample>, Serializable, ReadSpecific {
     private final SampleGroup parent;
     private final String name;
 
-    Sample(@Nullable String name, @NotNull SampleGroup parent) {
+    Sample(String name, SampleGroup parent) {
         this.name = name;
         this.parent = parent;
     }

@@ -21,7 +21,6 @@ package com.milaboratory.oncomigec.pipeline;
 import com.milaboratory.oncomigec.core.haplotype.Haplotype;
 import com.milaboratory.oncomigec.core.haplotype.HaplotypeAssembler;
 import com.milaboratory.oncomigec.core.io.misc.UmiHistogram;
-import com.milaboratory.oncomigec.model.classifier.BaseVariantClassifier;
 import com.milaboratory.oncomigec.pipeline.analysis.ProjectAnalysis;
 import com.milaboratory.oncomigec.pipeline.analysis.Sample;
 import com.milaboratory.oncomigec.pipeline.analysis.SampleAnalysis;

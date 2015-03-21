@@ -16,6 +16,7 @@ import com.milaboratory.oncomigec.core.consalign.misc.ConsensusAlignerParameters
 import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
 import com.milaboratory.oncomigec.core.io.entity.SMig;
 import com.milaboratory.oncomigec.util.Basics;
+import com.milaboratory.oncomigec.util.Util;
 import com.milaboratory.oncomigec.util.testing.generators.GeneratorMutationModel;
 import com.milaboratory.oncomigec.util.testing.generators.RandomMigGenerator;
 import com.milaboratory.oncomigec.util.testing.generators.RandomReferenceGenerator;
@@ -104,7 +105,8 @@ public class MutationsExtractorTest {
         SAssembler assembler = new SAssembler();
 
         RandomReferenceGenerator referenceGenerator = new RandomReferenceGenerator();
-        RandomMigGenerator migGenerator = new RandomMigGenerator(GeneratorMutationModel.NO_INDEL);
+        RandomMigGenerator migGenerator = new RandomMigGenerator();
+        migGenerator.setGeneratorMutationModel(GeneratorMutationModel.NO_INDEL);
 
         double meanMajorOverlap = 0, meanMinorOverlap = 0,
                 meanMajorDelta = 0, meanMinorDelta = 0;
@@ -128,8 +130,6 @@ public class MutationsExtractorTest {
                     if (result != null) {
                         MutationsExtractor mutationsExtractor = new MutationsExtractor(result.getAlignment(),
                                 result.getReference(), consensus,
-                                // NO_FILTER is critical as MIG generator marks errors with low quality
-                                // otherwise test will fail because no minors will be extracted
                                 ConsensusAlignerParameters.NO_FILTER);
 
                         int[] observedMajors = mutationsExtractor.calculateMajorMutations().getMutationCodes(),
@@ -272,7 +272,11 @@ public class MutationsExtractorTest {
     @Test
     public void filterSubstitutionByQualTestNoIndels() {
         SAssembler assembler = new SAssembler();
-        RandomMigGenerator randomMigGenerator = new RandomMigGenerator(GeneratorMutationModel.NO_INDEL);
+
+        RandomMigGenerator randomMigGenerator = new RandomMigGenerator();
+        randomMigGenerator.setGeneratorMutationModel(GeneratorMutationModel.NO_INDEL);
+        randomMigGenerator.setMarkMinorMutations(true);
+
         RandomReferenceGenerator randomReferenceGenerator = new RandomReferenceGenerator();
 
 
@@ -321,6 +325,7 @@ public class MutationsExtractorTest {
         // Todo: rewrite to single method
         SAssembler assembler = new SAssembler();
         RandomMigGenerator randomMigGenerator = new RandomMigGenerator();
+        randomMigGenerator.setMarkMinorMutations(true);
         RandomReferenceGenerator randomReferenceGenerator = new RandomReferenceGenerator();
 
         int nCleanConsensuses = 0, nGoodConsensuses = 0;
@@ -341,7 +346,7 @@ public class MutationsExtractorTest {
                         // Filter by ReadQualityPhred threshold
                         int[] rawMutations = MutationsExtractor.filterSubstitutionsByQual(
                                 read.getQuality(),
-                                alignment, (byte) 20);
+                                alignment, Util.PH33_BAD_QUAL);
 
                         int nSubstitutions = 0;
                         for (int j = 0; j < rawMutations.length; j++)

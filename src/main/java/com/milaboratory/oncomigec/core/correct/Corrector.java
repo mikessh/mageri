@@ -22,8 +22,6 @@ import com.milaboratory.oncomigec.core.consalign.entity.AlignerReferenceLibrary;
 import com.milaboratory.oncomigec.core.genomic.Reference;
 import com.milaboratory.oncomigec.core.mutations.MigecMutation;
 import com.milaboratory.oncomigec.core.mutations.MigecMutationsCollection;
-import com.milaboratory.oncomigec.model.classifier.BaseVariantClassifier;
-import com.milaboratory.oncomigec.model.classifier.VariantClassifier;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -35,14 +33,14 @@ public final class Corrector extends PipelineBlock {
     private final CorrectorReferenceLibrary correctorReferenceLibrary;
 
     public Corrector(AlignerReferenceLibrary referenceLibraryWithStatistics) {
-        this(referenceLibraryWithStatistics, CorrectorParameters.DEFAULT, BaseVariantClassifier.BUILT_IN);
+        this(referenceLibraryWithStatistics, CorrectorParameters.DEFAULT);
     }
 
     public Corrector(AlignerReferenceLibrary referenceLibraryWithStatistics,
-                     CorrectorParameters parameters, VariantClassifier variantClassifier) {
+                     CorrectorParameters parameters) {
         super("corrector");
         this.correctorReferenceLibrary = new CorrectorReferenceLibrary(referenceLibraryWithStatistics,
-                parameters, variantClassifier);
+                parameters);
     }
 
     public CorrectedConsensus correct(AlignedConsensus alignedConsensus) {
@@ -65,14 +63,10 @@ public final class Corrector extends PipelineBlock {
                 coverageMask.add(k);
 
         // Filter substitutions and indels
-        int mustHaveMutationsCount = 0;
         for (MigecMutation mutation : mutations) {
             // Check if that substitution passes coverage-quality filter 2nd step MIGEC
             if (mutation.isSubstitution()) {
                 if (mutationFilter.hasSubstitution(mutation.pos(), mutation.to())) {
-                    if (!mutationFilter.hasReference(mutation.pos()))
-                        mustHaveMutationsCount++; // covered a hole in reference with substitution
-
                     maxPValue = Math.max(maxPValue, correctorReferenceLibrary.getPValue(reference,
                             mutation.pos(),
                             mutation.to()));
@@ -82,16 +76,9 @@ public final class Corrector extends PipelineBlock {
             } else if (!mutationFilter.hasIndel(mutation.code())) {
                 mutation.filter();
             } else if (mutation.isDeletion()) {
-                if (!mutationFilter.hasReference(mutation.pos()))
-                    mustHaveMutationsCount++; // covered a hole in reference with deletion
-
-                coverageMask.remove( mutation.pos()); // no need to mask here
+                coverageMask.remove(mutation.pos()); // no need to mask here
             }
         }
-
-        // Check if we've covered all holes in the reference, discard otherwise
-        if (mustHaveMutationsCount < mutationFilter.getMustHaveMutationsCount())
-            return null;
 
         goodConsensuses.incrementAndGet();
 

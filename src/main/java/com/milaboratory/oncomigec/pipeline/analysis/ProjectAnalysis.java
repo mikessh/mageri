@@ -24,10 +24,8 @@ import com.milaboratory.oncomigec.core.genomic.BasicGenomicInfoProvider;
 import com.milaboratory.oncomigec.core.genomic.Reference;
 import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
 import com.milaboratory.oncomigec.core.io.readers.MigOutputPort;
-import com.milaboratory.oncomigec.model.classifier.BaseVariantClassifier;
-import com.milaboratory.oncomigec.model.classifier.VariantClassifier;
-import com.milaboratory.oncomigec.model.variant.Variant;
-import com.milaboratory.oncomigec.model.variant.VariantContainer;
+import com.milaboratory.oncomigec.core.variant.Variant;
+import com.milaboratory.oncomigec.core.variant.VariantContainer;
 import com.milaboratory.oncomigec.pipeline.Presets;
 import com.milaboratory.oncomigec.pipeline.RuntimeParameters;
 import com.milaboratory.oncomigec.pipeline.SerializationUtils;
@@ -52,18 +50,16 @@ public class ProjectAnalysis implements Serializable {
     private final PreprocessorFactory preprocessorFactory;
     private transient final PipelineAssemblerFactory pipelineAssemblerFactory;
     private transient final PipelineConsensusAlignerFactory pipelineConsensusAlignerFactory;
-    protected transient final VariantClassifier classifier;
 
     private final Map<Sample, SampleAnalysis> analysisBySample = new TreeMap<>();
 
     public ProjectAnalysis(Input input) throws IOException {
-        this(input, Presets.DEFAULT, RuntimeParameters.DEFAULT, BaseVariantClassifier.BUILT_IN);
+        this(input, Presets.DEFAULT, RuntimeParameters.DEFAULT);
     }
 
     public ProjectAnalysis(Input input,
                            Presets presets,
-                           RuntimeParameters runtimeParameters,
-                           VariantClassifier classifier) throws IOException {
+                           RuntimeParameters runtimeParameters) throws IOException {
         this.presets = presets;
         this.runtimeParameters = runtimeParameters;
         this.project = Project.fromInput(input);
@@ -80,8 +76,6 @@ public class ProjectAnalysis implements Serializable {
 
         this.pipelineConsensusAlignerFactory = new PipelineConsensusAlignerFactory(alignerFactory,
                 presets.getConsensusAlignerParameters());
-
-        this.classifier = classifier;
     }
 
     private void sout(String message, int verbosityLevel) {
@@ -113,6 +107,9 @@ public class ProjectAnalysis implements Serializable {
 
                 // only for binary output mode
                 analysisBySample.put(sample, sampleAnalysis);
+
+                // don't need those reads anymore in memory
+                reader.empty();
             }
         }
 
@@ -133,10 +130,6 @@ public class ProjectAnalysis implements Serializable {
 
     public RuntimeParameters getRuntimeParameters() {
         return runtimeParameters;
-    }
-
-    public VariantClassifier getClassifier() {
-        return classifier;
     }
 
     public SampleAnalysis getAnalysis(Sample sample) {

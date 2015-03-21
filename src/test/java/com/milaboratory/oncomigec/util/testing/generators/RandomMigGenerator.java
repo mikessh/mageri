@@ -6,30 +6,21 @@ import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.core.sequence.quality.SequenceQualityPhred;
 import com.milaboratory.oncomigec.core.genomic.Reference;
 import com.milaboratory.oncomigec.core.io.entity.SMig;
+import com.milaboratory.oncomigec.util.Util;
 
 import java.util.*;
 
 import static com.milaboratory.oncomigec.util.Util.randomSequence;
 
 public class RandomMigGenerator {
-    private int migSizeMin, migSizeMax;
-    private static final double INDEL_HEAVY_THERSHOLD = 0.7, PCR_FACTOR = 0.01;
-    private static final int UMI_SIZE = 12;
-    private final GeneratorMutationModel generatorMutationModel, pcrGeneratorMutationModel;
+    private boolean markMinorMutations = false;
+    private int migSizeMin = 100, migSizeMax = 300;
+    private double indelHeavyThreshold = 0.7, pcrErrorMultiplier = 0.01;
+    private int umiSize = 12;
+    private GeneratorMutationModel generatorMutationModel, pcrGeneratorMutationModel;
 
     public RandomMigGenerator() {
-        this(GeneratorMutationModel.DEFAULT, 30, 300);
-    }
-
-    public RandomMigGenerator(GeneratorMutationModel generatorMutationModel) {
-        this(generatorMutationModel, 30, 300);
-    }
-
-    public RandomMigGenerator(GeneratorMutationModel generatorMutationModel, int migSizeMin, int migSizeMax) {
-        this.generatorMutationModel = generatorMutationModel;
-        this.pcrGeneratorMutationModel = new GeneratorMutationModel(generatorMutationModel, PCR_FACTOR);
-        this.migSizeMin = migSizeMin;
-        this.migSizeMax = migSizeMax;
+        setGeneratorMutationModel(GeneratorMutationModel.DEFAULT);
     }
 
     public RandomMigGeneratorResult nextMig(RandomReferenceGenerator referenceGenerator) {
@@ -41,7 +32,7 @@ public class RandomMigGenerator {
     }
 
     public RandomMigGeneratorResult nextMigPCR(NucleotideSequence reference) {
-        int[] pcrMutations = generatorMutationModel.nextMutations(reference);
+        int[] pcrMutations = pcrGeneratorMutationModel.nextMutations(reference);
         return nextMig(reference, pcrMutations);
     }
 
@@ -79,18 +70,21 @@ public class RandomMigGenerator {
                     mutations);
 
             byte[] qual = new byte[seq.size()];
-            Arrays.fill(qual, (byte) 40);
-            for (int k = 0; k < mutations.length; k++) {
-                int code = mutations[k];
-                if (Mutations.isSubstitution(code))
-                    qual[Mutations.convertPosition(mutations, Mutations.getPosition(code))] = (byte) 0;
+            Arrays.fill(qual, Util.PH33_MAX_QUAL);
+
+            if (markMinorMutations) {
+                for (int k = 0; k < mutations.length; k++) {
+                    int code = mutations[k];
+                    if (Mutations.isSubstitution(code))
+                        qual[Mutations.convertPosition(mutations, Mutations.getPosition(code))] = Util.PH33_BAD_QUAL;
+                }
             }
 
             reads.add(new NucleotideSQPair(seq, new SequenceQualityPhred(qual)));
         }
 
-        boolean indelHeavy = (readsWithIndels / (double) migSize) > INDEL_HEAVY_THERSHOLD;
-        SMig sMig = new SMig(reads, randomSequence(UMI_SIZE));
+        boolean indelHeavy = (readsWithIndels / (double) migSize) > indelHeavyThreshold;
+        SMig sMig = new SMig(reads, randomSequence(umiSize));
 
         return new RandomMigGeneratorResult(sMig, indelHeavy, minorMutationCounts, pcrMutations);
     }
@@ -109,6 +103,56 @@ public class RandomMigGenerator {
 
     public void setMigSizeMax(int migSizeMax) {
         this.migSizeMax = migSizeMax;
+    }
+
+    public boolean getMarkMinorMutations() {
+        return markMinorMutations;
+    }
+
+    public void setMarkMinorMutations(boolean markMinorMutations) {
+        this.markMinorMutations = markMinorMutations;
+    }
+
+    public double getIndelHeavyThreshold() {
+        return indelHeavyThreshold;
+    }
+
+    public void setIndelHeavyThreshold(double indelHeavyThreshold) {
+        this.indelHeavyThreshold = indelHeavyThreshold;
+    }
+
+    public double getPcrErrorMultiplier() {
+        return pcrErrorMultiplier;
+    }
+
+    public void setPcrErrorMultiplier(double pcrErrorMultiplier) {
+        this.pcrErrorMultiplier = pcrErrorMultiplier;
+        this.pcrGeneratorMutationModel = generatorMutationModel.multiply(pcrErrorMultiplier);
+    }
+
+    public GeneratorMutationModel getGeneratorMutationModel() {
+        return generatorMutationModel;
+    }
+
+    public void setGeneratorMutationModel(GeneratorMutationModel generatorMutationModel) {
+        this.generatorMutationModel = generatorMutationModel;
+        this.pcrGeneratorMutationModel = generatorMutationModel.multiply(pcrErrorMultiplier);
+    }
+
+    public GeneratorMutationModel getPcrGeneratorMutationModel() {
+        return pcrGeneratorMutationModel;
+    }
+
+    public void setPcrGeneratorMutationModel(GeneratorMutationModel pcrGeneratorMutationModel) {
+        this.pcrGeneratorMutationModel = pcrGeneratorMutationModel;
+    }
+
+    public int getUmiSize() {
+        return umiSize;
+    }
+
+    public void setUmiSize(int umiSize) {
+        this.umiSize = umiSize;
     }
 
     public class RandomMigGeneratorResult {

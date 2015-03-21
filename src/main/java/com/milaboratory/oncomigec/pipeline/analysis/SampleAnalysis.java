@@ -37,8 +37,8 @@ import com.milaboratory.oncomigec.core.haplotype.HaplotypeAssembler;
 import com.milaboratory.oncomigec.core.io.entity.Mig;
 import com.milaboratory.oncomigec.core.io.misc.UmiHistogram;
 import com.milaboratory.oncomigec.core.io.readers.MigOutputPort;
-import com.milaboratory.oncomigec.model.variant.VariantContainer;
-import com.milaboratory.oncomigec.model.variant.VariantLibrary;
+import com.milaboratory.oncomigec.core.variant.VariantContainer;
+import com.milaboratory.oncomigec.core.variant.VariantLibrary;
 import com.milaboratory.oncomigec.pipeline.Speaker;
 import com.milaboratory.oncomigec.util.ProcessorResultWrapper;
 import org.apache.commons.math.MathException;
@@ -144,7 +144,6 @@ public class SampleAnalysis implements ReadSpecific, Serializable {
             if (alignmentDataWrapped.hasResult())
                 alignmentDataList.add(alignmentDataWrapped.getResult());
 
-
         sout("Finished first stage, " + countingInput.getCount() + " MIGs processed in total.", 1);
 
         firstStageRan = true;
@@ -163,8 +162,7 @@ public class SampleAnalysis implements ReadSpecific, Serializable {
 
         // Find major and minor mutations
         this.corrector = new Corrector(aligner.getAlignerReferenceLibrary(),
-                parent.getPresets().getCorrectorParameters(),
-                parent.getClassifier());
+                parent.getPresets().getCorrectorParameters());
 
         // Error statistics for haplotype filtering using binomial test
         // Store here for output summary purposes
@@ -193,10 +191,6 @@ public class SampleAnalysis implements ReadSpecific, Serializable {
     }
 
     public VariantContainer dumpMinorVariants(Reference reference) {
-        return dumpMinorVariants(reference, VariantContainer.DEFAULT_THRESHOLD);
-    }
-
-    public VariantContainer dumpMinorVariants(Reference reference, double threshold) {
         if (!firstStageRan)
             throw new RuntimeException("Should run first stage first.");
 
@@ -204,7 +198,7 @@ public class SampleAnalysis implements ReadSpecific, Serializable {
         MutationsAndCoverage mutationsAndCoverage = alignerReferenceLibrary.getMutationsAndCoverage(reference);
 
         if (mutationsAndCoverage.wasUpdated())
-            return new VariantContainer(mutationsAndCoverage, threshold);
+            return new VariantContainer(mutationsAndCoverage);
         else
             return null;
     }

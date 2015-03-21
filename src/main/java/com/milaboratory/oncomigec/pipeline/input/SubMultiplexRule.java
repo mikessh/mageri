@@ -18,8 +18,7 @@
 
 package com.milaboratory.oncomigec.pipeline.input;
 
-import com.milaboratory.oncomigec.preproc.demultiplex.config.BarcodeListParser;
-import com.sun.istack.internal.NotNull;
+import com.milaboratory.oncomigec.preprocessing.config.BarcodeListParser;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -28,8 +27,8 @@ import java.util.List;
 
 public class SubMultiplexRule extends AdapterRule {
 
-    public SubMultiplexRule(@NotNull String sampleName,
-                            @NotNull List<String> barcodes, boolean paired) throws IOException {
+    public SubMultiplexRule(String sampleName,
+                            List<String> barcodes, boolean paired) throws IOException {
         super(sampleName, barcodes, paired);
     }
 

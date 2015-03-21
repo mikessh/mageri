@@ -19,7 +19,6 @@
 package com.milaboratory.oncomigec.pipeline.analysis;
 
 import com.milaboratory.oncomigec.ReadSpecific;
-import com.milaboratory.oncomigec.core.PipelineBlock;
 import com.milaboratory.oncomigec.core.io.entity.Mig;
 import com.milaboratory.oncomigec.core.io.misc.PreprocessorParameters;
 import com.milaboratory.oncomigec.core.io.misc.UmiHistogram;
@@ -30,8 +29,8 @@ import com.milaboratory.oncomigec.core.io.readers.SMigReader;
 import com.milaboratory.oncomigec.pipeline.RuntimeParameters;
 import com.milaboratory.oncomigec.pipeline.input.CheckoutRule;
 import com.milaboratory.oncomigec.pipeline.input.InputChunk;
-import com.milaboratory.oncomigec.preproc.demultiplex.entity.DemultiplexParameters;
-import com.milaboratory.oncomigec.preproc.demultiplex.processor.CheckoutProcessor;
+import com.milaboratory.oncomigec.preprocessing.entity.DemultiplexParameters;
+import com.milaboratory.oncomigec.preprocessing.processor.CheckoutProcessor;
 
 import java.io.IOException;
 import java.io.Serializable;

@@ -19,7 +19,7 @@ import com.milaboratory.core.sequencing.io.fastq.SFastqReader;
 import com.milaboratory.core.sequencing.read.SSequencingRead;
 import com.milaboratory.oncomigec.core.io.entity.SMig;
 import com.milaboratory.oncomigec.core.io.misc.PreprocessorParameters;
-import com.milaboratory.oncomigec.preproc.demultiplex.processor.HeaderExtractor;
+import com.milaboratory.oncomigec.preprocessing.processor.HeaderExtractor;
 import com.milaboratory.oncomigec.util.Util;
 import com.milaboratory.util.CompressionType;
 import org.junit.Assert;

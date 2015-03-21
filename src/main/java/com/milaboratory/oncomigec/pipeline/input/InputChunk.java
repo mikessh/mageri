@@ -19,8 +19,6 @@
 package com.milaboratory.oncomigec.pipeline.input;
 
 import com.milaboratory.oncomigec.ReadSpecific;
-import com.sun.istack.internal.NotNull;
-import com.sun.istack.internal.Nullable;
 
 import java.io.InputStream;
 import java.io.Serializable;
@@ -30,8 +28,8 @@ public class InputChunk implements ReadSpecific, Serializable {
     protected final String index;
     protected final CheckoutRule checkoutRule;
 
-    public InputChunk(@NotNull InputStream inputStream1, @Nullable InputStream inputStream2,
-                      @NotNull String index, @NotNull CheckoutRule checkoutRule) {
+    public InputChunk(InputStream inputStream1, InputStream inputStream2,
+                      String index, CheckoutRule checkoutRule) {
         this.inputStream1 = inputStream1;
         this.inputStream2 = inputStream2;
         this.index = index;

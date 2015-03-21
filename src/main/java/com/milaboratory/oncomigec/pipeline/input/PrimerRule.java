@@ -18,8 +18,7 @@
 
 package com.milaboratory.oncomigec.pipeline.input;
 
-import com.milaboratory.oncomigec.preproc.demultiplex.config.BarcodeListParser;
-import com.sun.istack.internal.NotNull;
+import com.milaboratory.oncomigec.preprocessing.config.BarcodeListParser;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
@@ -27,8 +26,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PrimerRule extends AdapterRule {
-    public PrimerRule(@NotNull String sampleName,
-                      @NotNull List<String> barcodes, boolean paired) throws IOException {
+    public PrimerRule(String sampleName,
+                      List<String> barcodes, boolean paired) throws IOException {
         super(sampleName, barcodes, paired);
     }
 

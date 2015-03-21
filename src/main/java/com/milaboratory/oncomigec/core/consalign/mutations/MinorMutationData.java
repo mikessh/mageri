@@ -64,14 +64,18 @@ public class MinorMutationData {
 
     public void computeCoverage() {
         for (Map.Entry<Integer, MinorMutationCounter> entry : counterByMutation.entrySet()) {
-            int pos = Mutations.getPosition(entry.getKey());
-            MinorMutationCounter counter = entry.getValue();
+            if (Mutations.isSubstitution(entry.getKey())) {
+                int pos = Mutations.getPosition(entry.getKey());
+                MinorMutationCounter counter = entry.getValue();
 
-            MinorMutationCounter coverage = counterByPosition.get(pos);
-            if (coverage == null)
-                counterByPosition.put(pos, coverage = new MinorMutationCounter());
+                assert !Mutations.isSubstitution(entry.getKey()) || (counter.cumulative == counter.unique);
 
-            coverage.append(counter);
+                MinorMutationCounter coverage = counterByPosition.get(pos);
+                if (coverage == null)
+                    counterByPosition.put(pos, coverage = new MinorMutationCounter());
+
+                coverage.append(counter);
+            }
         }
     }
 
