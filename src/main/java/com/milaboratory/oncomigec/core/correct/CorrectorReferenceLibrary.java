@@ -24,6 +24,8 @@ import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
 import com.milaboratory.oncomigec.core.variant.Variant;
 import com.milaboratory.oncomigec.core.variant.VariantContainer;
 import com.milaboratory.oncomigec.core.variant.VariantLibrary;
+import org.apache.commons.math.distribution.BinomialDistribution;
+import org.apache.commons.math.distribution.BinomialDistributionImpl;
 
 import java.io.Serializable;
 import java.util.*;
@@ -43,6 +45,8 @@ public final class CorrectorReferenceLibrary implements Serializable {
     private transient final VariantLibrary variantLibrary;
 
     // Filtering
+    private final boolean pValueFiltering;
+    private final double pValueThreshold;
     private final boolean filterSingleMigs;
     private final double singleMigFilterRatio;
     private final int minMigCoverage;
@@ -52,10 +56,10 @@ public final class CorrectorReferenceLibrary implements Serializable {
 
     public CorrectorReferenceLibrary(AlignerReferenceLibrary alignerReferenceLibrary,
                                      CorrectorParameters parameters) {
-        // Hot-spot p-value
-        this.readGainThreshold = parameters.getReadGainThreshold();
-
         // Filtering
+        this.readGainThreshold = parameters.getReadGainThreshold();
+        this.pValueFiltering = parameters.pValueFiltering();
+        this.pValueThreshold = parameters.getpValueThreshold();
         this.filterSingleMigs = parameters.filterSingletons();
         this.singleMigFilterRatio = parameters.getSingletonFilterRatio();
         this.minMigCoverage = parameters.getMinMigCoverage();
@@ -123,6 +127,8 @@ public final class CorrectorReferenceLibrary implements Serializable {
                         if (variant != null) {
                             // Classify minor variants
                             variantExists = computeReadGain(variant) >= readGainThreshold &&
+                                    (!pValueFiltering ||
+                                            computePValue(variant) <= pValueThreshold) &&
                                     // if single mig filtering is on (for RT errors, etc)
                                     // perform ratio-based check
                                     (!filterSingleMigs ||
@@ -197,48 +203,34 @@ public final class CorrectorReferenceLibrary implements Serializable {
         }
     }
 
-    public static double computeReadGain(Variant variant) {
-        return 1.0 / (1.0 - (variant.getAccumulatedReadCount() - variant.getMinorReadCount()) / variant.getMajorReadCount());
+    private static double computePValue(Variant variant) {
+        final double pcrEfficiency = 0.85;
+        double cycles = Math.log(variant.getMajorReadCount() / variant.getMajorMigCount()) /
+                Math.log(1 + pcrEfficiency);
+        double errorProb = 1.0 - Math.pow(1.0 - (variant.getMinorMigCount() + 1) /
+                (double) variant.getSumAtPosMig(), 1.0 / cycles);
+        errorProb *= (1 - pcrEfficiency) * (1 - pcrEfficiency) * Math.pow(pcrEfficiency, 3);
 
-    }
-
-    /*
-    @Deprecated
-    public double computeMajorPvalue(int majorMigCount, int minorMigCount, int numberOfMigs) {
-        if (filterSingleMigs && majorMigCount == 1)
-            return 1.0;
-
-        // probability that an error is generated on first cycle
-        double errorProb = 1.0 - Math.pow(1.0 - minorMigCount / (double) numberOfMigs, 1.0 / (double) pcrCycles);
-
-        // second template is lost
-        errorProb *= (1.0 - pcrEfficiency);
-
-        // todo:
-        //double alpha = 1.0 + errorProb * numberOfMigs, beta = 1.0 + (1.0 - errorProb) * numberOfMigs;
-        //
-
-        BinomialDistribution binomialDistribution = new BinomialDistributionImpl(numberOfMigs,
+        BinomialDistribution binomialDistribution = new BinomialDistributionImpl(variant.getSumAtPosMig(),
                 errorProb);
 
-        double pValue = 1.0 + 0.5 * binomialDistribution.probability(majorMigCount);
+        double pValue = 1.0 + 0.5 * binomialDistribution.probability(variant.getMajorMigCount());
 
         try {
-            pValue -= binomialDistribution.cumulativeProbability(majorMigCount);
+            pValue -= binomialDistribution.cumulativeProbability(variant.getMajorMigCount());
         } catch (Exception e) {
             System.out.println("ERROR cannot compute cumulative probability for Binomial distribution " +
-                    "with p=" + errorProb + ", n=" + majorMigCount +
-                    ", N=" + numberOfMigs);
+                    "with p=" + errorProb + ", n=" + variant.getMajorMigCount() +
+                    ", N=" + variant.getSumAtPosMig());
             pValue = 0.0;
         }
 
         return pValue;
     }
 
-    public boolean isMajor(int majorCount, int minorCount) {
-        return majorCount / (double) minorCount >= majorPvalueThreshold;
+    private static double computeReadGain(Variant variant) {
+        return 1.0 / (1.0 - (variant.getAccumulatedReadCount() - variant.getMinorReadCount()) / variant.getMajorReadCount());
     }
-    */
 
     public MutationFilter getMutationFilter(Reference reference) {
         return mutationFilterByReference.get(reference);

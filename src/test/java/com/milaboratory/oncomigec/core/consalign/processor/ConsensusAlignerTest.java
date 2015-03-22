@@ -62,7 +62,7 @@ public class ConsensusAlignerTest {
         randomMigGenerator.setGeneratorMutationModel(GeneratorMutationModel.NO_INDEL);
         assemblerDiagnosticsTest(randomMigGenerator,
                 AssemblerParameters.DEFAULT,
-                DoubleRange.createLowerBound("MeanCQS", condition, 40.0),
+                DoubleRange.createLowerBound("MeanCQS", condition, 39.0),
                 DoubleRange.createLowerBound("MeanUMICoverage", condition, 1.00),
                 PercentRange.createLowerBound("MeanAlignmentRate", condition, 100));
     }

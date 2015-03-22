@@ -76,7 +76,8 @@ public class CorrectorTest {
             stage1ErrorFrequency /= reference.getSequence().size();
             averageStage1ErrorFrequency += stage1ErrorFrequency;
 
-            Corrector corrector = new Corrector(consensusAligner.getAlignerReferenceLibrary());
+            Corrector corrector = new Corrector(consensusAligner.getAlignerReferenceLibrary(),
+                    CorrectorParameters.NO_P_FILTER);
             for (AlignedConsensus alignedConsensus : alignedConsensuses) {
                 CorrectedConsensus correctedConsensus = corrector.correct(alignedConsensus);
                 if (correctedConsensus != null)
@@ -85,7 +86,6 @@ public class CorrectorTest {
             stage2ErrorFrequency /= alignedConsensuses.size();
             stage2ErrorFrequency /= reference.getSequence().size();
             averageStage2ErrorFrequency += stage2ErrorFrequency;
-
         }
         averageStage0ErrorFrequency /= nReferences;
         averageStage1ErrorFrequency /= nReferences;
