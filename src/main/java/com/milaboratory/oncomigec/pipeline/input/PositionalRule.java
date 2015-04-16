@@ -18,9 +18,9 @@
 
 package com.milaboratory.oncomigec.pipeline.input;
 
-import com.milaboratory.oncomigec.preprocessing.processor.CheckoutProcessor;
-import com.milaboratory.oncomigec.preprocessing.processor.PPositionalExtractor;
-import com.milaboratory.oncomigec.preprocessing.processor.SPositionalExtractor;
+import com.milaboratory.oncomigec.preprocessing.CheckoutProcessor;
+import com.milaboratory.oncomigec.preprocessing.PPositionalExtractor;
+import com.milaboratory.oncomigec.preprocessing.SPositionalExtractor;
 
 import java.util.ArrayList;
 import java.util.List;

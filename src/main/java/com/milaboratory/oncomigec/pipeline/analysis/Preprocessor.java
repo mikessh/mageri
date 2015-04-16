@@ -18,19 +18,19 @@
 
 package com.milaboratory.oncomigec.pipeline.analysis;
 
-import com.milaboratory.oncomigec.ReadSpecific;
-import com.milaboratory.oncomigec.core.io.entity.Mig;
-import com.milaboratory.oncomigec.core.io.misc.PreprocessorParameters;
-import com.milaboratory.oncomigec.core.io.misc.UmiHistogram;
-import com.milaboratory.oncomigec.core.io.readers.MigOutputPort;
-import com.milaboratory.oncomigec.core.io.readers.MigReader;
-import com.milaboratory.oncomigec.core.io.readers.PMigReader;
-import com.milaboratory.oncomigec.core.io.readers.SMigReader;
+import com.milaboratory.oncomigec.misc.ReadSpecific;
+import com.milaboratory.oncomigec.core.input.Mig;
+import com.milaboratory.oncomigec.core.input.PreprocessorParameters;
+import com.milaboratory.oncomigec.core.input.MigSizeDistribution;
+import com.milaboratory.oncomigec.core.input.MigOutputPort;
+import com.milaboratory.oncomigec.core.input.MigReader;
+import com.milaboratory.oncomigec.core.input.PMigReader;
+import com.milaboratory.oncomigec.core.input.SMigReader;
 import com.milaboratory.oncomigec.pipeline.RuntimeParameters;
 import com.milaboratory.oncomigec.pipeline.input.CheckoutRule;
 import com.milaboratory.oncomigec.pipeline.input.InputChunk;
-import com.milaboratory.oncomigec.preprocessing.entity.DemultiplexParameters;
-import com.milaboratory.oncomigec.preprocessing.processor.CheckoutProcessor;
+import com.milaboratory.oncomigec.preprocessing.DemultiplexParameters;
+import com.milaboratory.oncomigec.preprocessing.CheckoutProcessor;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -70,7 +70,7 @@ public class Preprocessor<MigType extends Mig> implements ReadSpecific, Serializ
                         checkoutRule.getProcessor(), preprocessorParameters, runtimeParameters);
     }
 
-    public UmiHistogram getUmiHistogram(Sample sample) {
+    public MigSizeDistribution getUmiHistogram(Sample sample) {
         if (!sampleGroup.getSamples().contains(sample))
             throw new RuntimeException("Sample " + sample + " not found in sample group " + sampleGroup);
 

@@ -16,32 +16,34 @@
 package com.milaboratory.oncomigec.core.correct;
 
 import com.milaboratory.core.sequence.mutations.Mutations;
-import com.milaboratory.oncomigec.core.align.processor.aligners.ExtendedExomeAligner;
-import com.milaboratory.oncomigec.core.assemble.entity.SConsensus;
-import com.milaboratory.oncomigec.core.assemble.processor.SAssembler;
-import com.milaboratory.oncomigec.core.consalign.entity.AlignedConsensus;
-import com.milaboratory.oncomigec.core.consalign.processor.ConsensusAligner;
-import com.milaboratory.oncomigec.core.consalign.processor.SConsensusAligner;
+import com.milaboratory.oncomigec.core.align.sequence.ExtendedKmerAligner;
+import com.milaboratory.oncomigec.core.assemble.SConsensus;
+import com.milaboratory.oncomigec.core.assemble.SAssembler;
+import com.milaboratory.oncomigec.core.align.AlignedConsensus;
+import com.milaboratory.oncomigec.core.align.ConsensusAligner;
+import com.milaboratory.oncomigec.core.align.SConsensusAligner;
 import com.milaboratory.oncomigec.core.genomic.Reference;
 import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
-import com.milaboratory.oncomigec.core.io.entity.SMig;
-import com.milaboratory.oncomigec.util.testing.generators.GeneratorMutationModel;
-import com.milaboratory.oncomigec.util.testing.generators.RandomMigGenerator;
-import com.milaboratory.oncomigec.util.testing.generators.RandomReferenceGenerator;
+import com.milaboratory.oncomigec.core.input.SMig;
+import com.milaboratory.oncomigec.core.variant.VariantCallerParameters;
+import com.milaboratory.oncomigec.misc.testing.generators.GeneratorMutationModel;
+import com.milaboratory.oncomigec.misc.testing.generators.RandomMigGenerator;
+import com.milaboratory.oncomigec.misc.testing.generators.RandomReferenceGenerator;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
 public class CorrectorTest {
-    private final int nReferences = 10, nMigs = 1000;
-    private final double positionIndependentNoIndelMigecFoldThreshold = 5.0;
+    private final int nReferences = 10, nMigs = 100;
+    private final double positionIndependentNoIndelMigecFoldThreshold = 20.0;
 
     @Test
-    public void randomizedPositionIndependentNoIndelTest() {
+    public void randomizedPositionIndependentNoIndelTest() throws IOException {
         RandomMigGenerator migGenerator = new RandomMigGenerator();
-        migGenerator.setGeneratorMutationModel(GeneratorMutationModel.NO_INDEL.multiply(10));
+        migGenerator.setGeneratorMutationModel(GeneratorMutationModel.NO_INDEL);
         RandomReferenceGenerator referenceGenerator = new RandomReferenceGenerator();
 
         double averageStage0ErrorFrequency = 0, averageStage1ErrorFrequency = 0, averageStage2ErrorFrequency = 0;
@@ -49,7 +51,7 @@ public class CorrectorTest {
             SAssembler assembler = new SAssembler();
             ReferenceLibrary referenceLibrary = referenceGenerator.nextReferenceLibrary(1);
             Reference reference = referenceLibrary.getReferences().get(0);
-            ConsensusAligner consensusAligner = new SConsensusAligner(new ExtendedExomeAligner(referenceLibrary));
+            ConsensusAligner consensusAligner = new SConsensusAligner(new ExtendedKmerAligner(referenceLibrary));
             List<AlignedConsensus> alignedConsensuses = new LinkedList<>();
 
             double stage0ErrorFrequency = 0, stage1ErrorFrequency = 0, stage2ErrorFrequency = 0;
@@ -76,8 +78,9 @@ public class CorrectorTest {
             stage1ErrorFrequency /= reference.getSequence().size();
             averageStage1ErrorFrequency += stage1ErrorFrequency;
 
-            Corrector corrector = new Corrector(consensusAligner.getAlignerReferenceLibrary(),
-                    CorrectorParameters.NO_P_FILTER);
+            Corrector corrector = new Corrector(consensusAligner.getAlignerTable(),
+                    VariantCallerParameters.FILTERING, new ErrorLibrary(true));
+
             for (AlignedConsensus alignedConsensus : alignedConsensuses) {
                 CorrectedConsensus correctedConsensus = corrector.correct(alignedConsensus);
                 if (correctedConsensus != null)

@@ -18,27 +18,16 @@
 
 package com.milaboratory.oncomigec.core.genomic;
 
-import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
-
 import java.io.Serializable;
 
 public class GenomicInfo implements Serializable {
     private final Contig contig;
     private final int from, to;
-    private final boolean strand;
 
-    public static GenomicInfo generate(NucleotideSequence sequence,
-                                       boolean reverseComplement,
-                                       Contig contig) {
-        return new GenomicInfo(contig, 1, sequence.size(), !reverseComplement);
-
-    }
-
-    public GenomicInfo(Contig contig, int from, int to, boolean strand) {
+    public GenomicInfo(Contig contig, int from, int to) {
         this.contig = contig;
         this.from = from;
         this.to = to;
-        this.strand = strand;
     }
 
     public String getChrom() {
@@ -55,9 +44,5 @@ public class GenomicInfo implements Serializable {
 
     public int getTo() {
         return to;
-    }
-
-    public boolean isStrand() {
-        return strand;
     }
 }

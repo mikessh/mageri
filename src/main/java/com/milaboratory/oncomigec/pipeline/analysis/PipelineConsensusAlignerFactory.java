@@ -19,12 +19,12 @@
 package com.milaboratory.oncomigec.pipeline.analysis;
 
 import com.milaboratory.oncomigec.core.PipelineBlock;
-import com.milaboratory.oncomigec.core.align.processor.AlignerFactory;
-import com.milaboratory.oncomigec.core.consalign.misc.ConsensusAlignerParameters;
-import com.milaboratory.oncomigec.core.consalign.misc.PConsensusAlignerFactory;
-import com.milaboratory.oncomigec.core.consalign.misc.SConsensusAlignerFactory;
-import com.milaboratory.oncomigec.core.consalign.mutations.MutationsAndCoverage;
-import com.milaboratory.oncomigec.core.consalign.processor.ConsensusAligner;
+import com.milaboratory.oncomigec.core.align.AlignerFactory;
+import com.milaboratory.oncomigec.core.align.ConsensusAlignerParameters;
+import com.milaboratory.oncomigec.core.align.PConsensusAlignerFactory;
+import com.milaboratory.oncomigec.core.align.SConsensusAlignerFactory;
+import com.milaboratory.oncomigec.core.align.AlignerTable;
+import com.milaboratory.oncomigec.core.align.ConsensusAligner;
 import com.milaboratory.oncomigec.core.genomic.Reference;
 import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
 import org.apache.commons.lang3.StringUtils;
@@ -66,7 +66,7 @@ public class PipelineConsensusAlignerFactory extends PipelineBlock {
         List<String> referenceNames = new ArrayList<>();
 
         for (Reference reference : references)
-            referenceNames.add(reference.getFullName());
+            referenceNames.add(reference.getName());
 
         return "sample.group\tsample\t" +
                 "migs.aligned\tmigs.bad\tmigs.chimeric\tmigs.skipped\t" +
@@ -81,14 +81,14 @@ public class PipelineConsensusAlignerFactory extends PipelineBlock {
             stringBuilder.append(sample.getParent().getName()).append("\t").
                     append(sample.getName()).append("\t").
                     append(aligner.getAlignedMigs()).append("\t").
-                    append(aligner.getBadMigs()).append("\t").
+                    append(aligner.getFailedMigs()).append("\t").
                     append(aligner.getChimericMigs()).append("\t").
                     append(aligner.getSkippedMigs());
 
             for (Reference reference : references) {
-                MutationsAndCoverage mutationsAndCoverage =
-                        aligner.getAlignerReferenceLibrary().getMutationsAndCoverage(reference);
-                stringBuilder.append("\t").append(mutationsAndCoverage.getMigCount());
+                AlignerTable alignerTable =
+                        aligner.getAlignerTable().getSubstitutionsAndCoverage(reference);
+                stringBuilder.append("\t").append(alignerTable.getMigCount());
             }
 
             stringBuilder.append("\n");

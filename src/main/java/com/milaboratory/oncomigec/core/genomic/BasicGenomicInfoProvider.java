@@ -34,8 +34,7 @@ public class BasicGenomicInfoProvider implements GenomicInfoProvider {
         }
 
         reference.setGenomicInfo(new GenomicInfo(existing, 1,
-                reference.getSequence().size(),
-                !reference.isReverseComplement()));
+                reference.getSequence().size()));
     }
 
     @Override

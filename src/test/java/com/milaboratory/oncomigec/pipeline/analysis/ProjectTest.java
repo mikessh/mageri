@@ -18,9 +18,9 @@
 
 package com.milaboratory.oncomigec.pipeline.analysis;
 
-import com.milaboratory.oncomigec.pipeline.TestIOProvider;
+import com.milaboratory.oncomigec.pipeline.input.ResourceIOProvider;
 import com.milaboratory.oncomigec.pipeline.input.InputParser;
-import com.milaboratory.oncomigec.util.testing.TestUtil;
+import com.milaboratory.oncomigec.misc.testing.TestUtil;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -35,7 +35,7 @@ public class ProjectTest {
     }
 
     private void test(String json) throws IOException {
-        InputParser inputParser = new InputParser(new TestIOProvider());
+        InputParser inputParser = new InputParser(new ResourceIOProvider());
 
         Project project = Project.fromInput(inputParser.parseJson(json));
 

@@ -22,27 +22,27 @@ import cc.redberry.pipe.OutputPort;
 import cc.redberry.pipe.blocks.Merger;
 import cc.redberry.pipe.blocks.ParallelProcessor;
 import cc.redberry.pipe.util.CountingOutputPort;
-import com.milaboratory.oncomigec.ReadSpecific;
+import com.milaboratory.oncomigec.misc.ReadSpecific;
 import com.milaboratory.oncomigec.core.PipelineBlock;
-import com.milaboratory.oncomigec.core.assemble.entity.Consensus;
-import com.milaboratory.oncomigec.core.assemble.processor.Assembler;
-import com.milaboratory.oncomigec.core.consalign.entity.AlignedConsensus;
-import com.milaboratory.oncomigec.core.consalign.entity.AlignerReferenceLibrary;
-import com.milaboratory.oncomigec.core.consalign.mutations.MutationsAndCoverage;
-import com.milaboratory.oncomigec.core.consalign.processor.ConsensusAligner;
+import com.milaboratory.oncomigec.core.assemble.Consensus;
+import com.milaboratory.oncomigec.core.assemble.Assembler;
+import com.milaboratory.oncomigec.core.align.AlignedConsensus;
+import com.milaboratory.oncomigec.core.align.AlignerTable;
+import com.milaboratory.oncomigec.core.align.ConsensusAligner;
 import com.milaboratory.oncomigec.core.correct.CorrectedConsensus;
 import com.milaboratory.oncomigec.core.correct.Corrector;
 import com.milaboratory.oncomigec.core.genomic.Reference;
 import com.milaboratory.oncomigec.core.haplotype.HaplotypeAssembler;
-import com.milaboratory.oncomigec.core.io.entity.Mig;
-import com.milaboratory.oncomigec.core.io.misc.UmiHistogram;
-import com.milaboratory.oncomigec.core.io.readers.MigOutputPort;
+import com.milaboratory.oncomigec.core.input.Mig;
+import com.milaboratory.oncomigec.core.input.MigSizeDistribution;
+import com.milaboratory.oncomigec.core.input.MigOutputPort;
 import com.milaboratory.oncomigec.core.variant.VariantContainer;
 import com.milaboratory.oncomigec.core.variant.VariantLibrary;
 import com.milaboratory.oncomigec.pipeline.Speaker;
-import com.milaboratory.oncomigec.util.ProcessorResultWrapper;
+import com.milaboratory.oncomigec.misc.ProcessorResultWrapper;
 import org.apache.commons.math.MathException;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -58,7 +58,7 @@ public class SampleAnalysis implements ReadSpecific, Serializable {
     protected transient final MigOutputPort reader;
     protected transient VariantLibrary variantLibrary;
 
-    protected final UmiHistogram umiHistogram;
+    protected final MigSizeDistribution migSizeDistribution;
     protected final Assembler assembler;
     protected final ConsensusAligner aligner;
     protected Corrector corrector;
@@ -71,12 +71,12 @@ public class SampleAnalysis implements ReadSpecific, Serializable {
     @SuppressWarnings("unchecked")
     protected SampleAnalysis(ProjectAnalysis parent,
                              Sample sample,
-                             UmiHistogram umiHistogram,
+                             MigSizeDistribution migSizeDistribution,
                              MigOutputPort reader,
                              Assembler assembler,
                              ConsensusAligner consensusAligner) {
         this.parent = parent;
-        this.umiHistogram = umiHistogram;
+        this.migSizeDistribution = migSizeDistribution;
         this.sample = sample;
         this.reader = reader;
         this.paired = reader.isPairedEnd();
@@ -149,7 +149,7 @@ public class SampleAnalysis implements ReadSpecific, Serializable {
         firstStageRan = true;
     }
 
-    public void runSecondStage() throws MathException {
+    public void runSecondStage() throws MathException, IOException {
         if (!firstStageRan)
             throw new RuntimeException("Should run first stage first.");
 
@@ -161,8 +161,8 @@ public class SampleAnalysis implements ReadSpecific, Serializable {
         sout("Correcting variants.", 1);
 
         // Find major and minor mutations
-        this.corrector = new Corrector(aligner.getAlignerReferenceLibrary(),
-                parent.getPresets().getCorrectorParameters());
+        this.corrector = new Corrector(aligner.getAlignerTable(),
+                parent.getPresets().getVariantCallerParameters());
 
         // Error statistics for haplotype filtering using binomial test
         // Store here for output summary purposes
@@ -194,11 +194,11 @@ public class SampleAnalysis implements ReadSpecific, Serializable {
         if (!firstStageRan)
             throw new RuntimeException("Should run first stage first.");
 
-        AlignerReferenceLibrary alignerReferenceLibrary = aligner.getAlignerReferenceLibrary();
-        MutationsAndCoverage mutationsAndCoverage = alignerReferenceLibrary.getMutationsAndCoverage(reference);
+        AlignerTable alignerTable = aligner.getAlignerTable();
+        AlignerTable substitutionsAndCoverage = alignerTable.getSubstitutionsAndCoverage(reference);
 
-        if (mutationsAndCoverage.wasUpdated())
-            return new VariantContainer(mutationsAndCoverage);
+        if (substitutionsAndCoverage.wasUpdated())
+            return new VariantContainer(substitutionsAndCoverage);
         else
             return null;
     }
@@ -207,8 +207,8 @@ public class SampleAnalysis implements ReadSpecific, Serializable {
         return reader;
     }
 
-    public UmiHistogram getUmiHistogram() {
-        return umiHistogram;
+    public MigSizeDistribution getMigSizeDistribution() {
+        return migSizeDistribution;
     }
 
     public Assembler getAssembler() {
@@ -249,7 +249,7 @@ public class SampleAnalysis implements ReadSpecific, Serializable {
 
     public List<PipelineBlock> getBlocks() {
         return Arrays.asList(
-                umiHistogram,
+                migSizeDistribution,
                 assembler,
                 aligner,
                 corrector,

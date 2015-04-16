@@ -17,21 +17,23 @@ package com.milaboratory.oncomigec.core.assemble.processor;
 
 import com.milaboratory.core.sequence.NucleotideSQPair;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
-import com.milaboratory.oncomigec.core.assemble.entity.Consensus;
-import com.milaboratory.oncomigec.core.assemble.entity.SConsensus;
-import com.milaboratory.oncomigec.core.io.entity.Mig;
-import com.milaboratory.oncomigec.core.io.entity.SMig;
-import com.milaboratory.oncomigec.util.Basics;
-import com.milaboratory.oncomigec.util.testing.generators.RandomMigGenerator;
-import com.milaboratory.oncomigec.util.testing.generators.RandomReferenceGenerator;
+import com.milaboratory.oncomigec.core.assemble.Assembler;
+import com.milaboratory.oncomigec.core.assemble.Consensus;
+import com.milaboratory.oncomigec.core.assemble.SAssembler;
+import com.milaboratory.oncomigec.core.assemble.SConsensus;
+import com.milaboratory.oncomigec.core.input.Mig;
+import com.milaboratory.oncomigec.core.input.SMig;
+import com.milaboratory.oncomigec.misc.Basics;
+import com.milaboratory.oncomigec.misc.testing.generators.RandomMigGenerator;
+import com.milaboratory.oncomigec.misc.testing.generators.RandomReferenceGenerator;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.milaboratory.oncomigec.util.Util.cloneRead;
-import static com.milaboratory.oncomigec.util.Util.randomSequence;
+import static com.milaboratory.oncomigec.misc.Util.cloneRead;
+import static com.milaboratory.oncomigec.misc.Util.randomSequence;
 
 public class AssemblerTest {
     private static final int nRepetitions = 1000, randomTestAssertThreshold = 70, randomTestAssertIDHThreshold = 50;

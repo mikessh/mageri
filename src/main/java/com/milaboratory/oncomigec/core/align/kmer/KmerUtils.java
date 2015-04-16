@@ -32,22 +32,28 @@ public class KmerUtils {
         return kmers;
     }
 
-    public void countKmers(Reference reference, KmerMap kmerMap) {
-        final NucleotideSequence sequence = reference.getSequence();
-        final int globalId = reference.getGlobalId();
+    public void countKmers(Reference reference, KmerMap kmerMap, boolean rc) {
+        final NucleotideSequence sequence = rc ?
+                reference.getSequence().getReverseComplement() :
+                reference.getSequence();
+        final int index = rc ?
+                -(reference.getIndex() + 1) :
+                (reference.getIndex() + 1);
         final int n = nKmers(sequence);
         for (int i = 0; i < n; ++i) {
             long kmer = 0;
             for (int j = i; j < i + k; ++j)
                 kmer = kmer << 2 | sequence.codeAt(j);
-            kmerMap.increment(kmer, globalId);
+            kmerMap.increment(kmer, index);
         }
     }
 
     public KmerMap buildKmerMap(ReferenceLibrary referenceLibrary) {
         final KmerMap kmerMap = new KmerMap();
-        for (Reference reference : referenceLibrary.getReferences())
-            countKmers(reference, kmerMap);
+        for (Reference reference : referenceLibrary.getReferences()) {
+            countKmers(reference, kmerMap, true);
+            countKmers(reference, kmerMap, false);
+        }
         return kmerMap;
     }
 

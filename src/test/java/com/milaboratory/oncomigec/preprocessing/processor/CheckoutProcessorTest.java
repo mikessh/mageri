@@ -20,11 +20,10 @@ import com.milaboratory.core.sequencing.io.fastq.PFastqReader;
 import com.milaboratory.core.sequencing.io.fastq.SFastqReader;
 import com.milaboratory.core.sequencing.read.PSequencingRead;
 import com.milaboratory.core.sequencing.read.SSequencingRead;
-import com.milaboratory.oncomigec.preprocessing.config.BarcodeListParser;
-import com.milaboratory.oncomigec.preprocessing.entity.DemultiplexParameters;
-import com.milaboratory.oncomigec.preprocessing.entity.PCheckoutResult;
-import com.milaboratory.oncomigec.util.testing.PercentRange;
-import com.milaboratory.oncomigec.util.testing.TestUtil;
+import com.milaboratory.oncomigec.preprocessing.*;
+import com.milaboratory.oncomigec.preprocessing.barcode.BarcodeListParser;
+import com.milaboratory.oncomigec.misc.testing.PercentRange;
+import com.milaboratory.oncomigec.misc.testing.TestUtil;
 import com.milaboratory.util.CompressionType;
 import org.junit.Assert;
 import org.junit.Test;
@@ -32,7 +31,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.List;
 
-import static com.milaboratory.oncomigec.util.testing.DefaultTestSet.*;
+import static com.milaboratory.oncomigec.misc.testing.DefaultTestSet.*;
 
 public class CheckoutProcessorTest {
     private static void assertProcessor(CheckoutProcessor processor) {

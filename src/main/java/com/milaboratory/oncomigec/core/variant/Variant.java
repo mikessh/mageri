@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2014 Mikhail Shugay (mikhail.shugay@gmail.com)
+ * Copyright 2013-2015 Mikhail Shugay (mikhail.shugay@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,133 +13,75 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Last modified on 20.11.2014 by mikesh
+ * Last modified on 12.4.2015 by mikesh
  */
 
 package com.milaboratory.oncomigec.core.variant;
 
-import com.milaboratory.core.sequence.nucleotide.NucleotideAlphabet;
+import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.oncomigec.core.genomic.Reference;
+import com.milaboratory.oncomigec.core.mutations.Mutation;
+import com.milaboratory.oncomigec.core.variant.filter.FilterSummary;
 
-import java.io.Serializable;
-
-public class Variant implements Serializable {
-    private final int pos;
-    private final byte to;
-    private final double[] fromWeights;
-
+public class Variant {
     private final Reference reference;
+    private final Mutation mutation;
+    private final int count, depth;
+    private final double alleleFrequency, qual;
+    private final NucleotideSequence ancestralAllele;
+    private final boolean hasReference;
+    private FilterSummary filterSummary = FilterSummary.DUMMY;
 
-    private double bgMinorReadFreq, bgMinorMigFreq;
-
-    private final int minorMigCount, majorMigCount, sumAtPosMig;
-    private final long sumAtPosRead, minorReadCount, majorReadCount, accumulatedReadCount;
-
-    public Variant(Reference reference, int pos, byte to,
-                   double[] fromWeights,
-                   double bgMinorMigFreq, double bgMinorReadFreq,
-                   int sumAtPosMig, long sumAtPosRead,
-                   int minorMigCount, int majorMigCount,
-                   long minorReadCount, long majorReadCount, long accumulatedReadCount) {
+    public Variant(Reference reference, Mutation mutation,
+                   int count, int depth, double alleleFrequency, double qual,
+                   NucleotideSequence ancestralAllele, boolean hasReference) {
         this.reference = reference;
-        this.pos = pos;
-        this.to = to;
-        this.fromWeights = fromWeights;
-        this.bgMinorMigFreq = bgMinorMigFreq;
-        this.bgMinorReadFreq = bgMinorReadFreq;
-        this.sumAtPosMig = sumAtPosMig;
-        this.sumAtPosRead = sumAtPosRead;
-        this.minorMigCount = minorMigCount;
-        this.majorMigCount = majorMigCount;
-        this.minorReadCount = minorReadCount;
-        this.majorReadCount = majorReadCount;
-        this.accumulatedReadCount = accumulatedReadCount;
+        this.mutation = mutation;
+        this.count = count;
+        this.depth = depth;
+        this.alleleFrequency = alleleFrequency;
+        this.qual = qual;
+        this.ancestralAllele = ancestralAllele;
+        this.hasReference = hasReference;
     }
-
-    public static final String HEADER = "referenceName\treferenceType\treferenceRC\treferenceLen\t" +
-            "pos\tto\t" +
-            "from" + NucleotideAlphabet.INSTANCE.symbolFromCode((byte) 0) + "\t" +
-            "from" + NucleotideAlphabet.INSTANCE.symbolFromCode((byte) 1) + "\t" +
-            "from" + NucleotideAlphabet.INSTANCE.symbolFromCode((byte) 2) + "\t" +
-            "from" + NucleotideAlphabet.INSTANCE.symbolFromCode((byte) 3) + "\t" +
-            "bgMinorMigFreq\tbgMinorReadFreq\t" +
-            "sumAtPosMig\tsumAtPosRead\t" +
-            "minorMigCount\tmajorMigCount\t" +
-            "minorReadCount\tmajorReadCount\taccumulatedReadCount";
 
     public Reference getReference() {
         return reference;
     }
 
-    public double getFromWeight(byte from) {
-        return fromWeights[from];
+    public Mutation getMutation() {
+        return mutation;
     }
 
-    public int getPos() {
-        return pos;
+    public int getDepth() {
+        return depth;
     }
 
-    public byte getTo() {
-        return to;
+    public int getCount() {
+        return count;
     }
 
-    public double getFreq() {
-        return majorMigCount / (double) sumAtPosMig;
+    public double getAlleleFrequency() {
+        return alleleFrequency;
     }
 
-    public void setBgMinorReadFreq(double bgMinorReadFreq) {
-        this.bgMinorReadFreq = bgMinorReadFreq;
+    public double getQual() {
+        return qual;
     }
 
-    public void setBgMinorMigFreq(double bgMinorMigFreq) {
-        this.bgMinorMigFreq = bgMinorMigFreq;
+    public NucleotideSequence getAncestralAllele() {
+        return ancestralAllele;
     }
 
-    public double getBgMinorReadFreq() {
-        return bgMinorReadFreq;
+    public boolean hasReference() {
+        return hasReference;
     }
 
-    public double getBgMinorMigFreq() {
-        return bgMinorMigFreq;
+    public FilterSummary getFilterSummary() {
+        return filterSummary;
     }
 
-    public int getMinorMigCount() {
-        return minorMigCount;
-    }
-
-    public int getMajorMigCount() {
-        return majorMigCount;
-    }
-
-    public long getMinorReadCount() {
-        return minorReadCount;
-    }
-
-    public long getMajorReadCount() {
-        return majorReadCount;
-    }
-
-    public long getAccumulatedReadCount() {
-        return accumulatedReadCount;
-    }
-
-    public int getSumAtPosMig() {
-        return sumAtPosMig;
-    }
-
-    public long getSumAtPosRead() {
-        return sumAtPosRead;
-    }
-
-    @Override
-    public String toString() {
-        return reference.getName() + "\t" + reference.getType() + "\t" +
-                reference.isReverseComplement() + "\t" + reference.getSequence().size() + "\t" +
-                (pos + 1) + "\t" + NucleotideAlphabet.INSTANCE.symbolFromCode(to) + "\t" +
-                fromWeights[0] + "\t" + fromWeights[1] + "\t" + fromWeights[2] + "\t" + fromWeights[3] + "\t" +
-                bgMinorMigFreq + "\t" + bgMinorReadFreq + "\t" +
-                sumAtPosMig + "\t" + sumAtPosRead + "\t" +
-                minorMigCount + "\t" + majorMigCount + "\t" +
-                minorReadCount + "\t" + majorReadCount + "\t" + accumulatedReadCount;
+    public void filter(VariantCaller variantCaller) {
+        this.filterSummary = new FilterSummary(variantCaller, this);
     }
 }

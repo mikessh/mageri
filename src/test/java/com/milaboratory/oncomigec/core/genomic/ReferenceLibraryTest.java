@@ -18,8 +18,8 @@
 
 package com.milaboratory.oncomigec.core.genomic;
 
-import com.milaboratory.oncomigec.pipeline.TestIOProvider;
-import com.milaboratory.oncomigec.util.testing.TestUtil;
+import com.milaboratory.oncomigec.pipeline.input.ResourceIOProvider;
+import com.milaboratory.oncomigec.misc.testing.TestUtil;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -30,7 +30,7 @@ public class ReferenceLibraryTest {
     public void test() throws IOException {
 
         ReferenceLibrary referenceLibrary = ReferenceLibrary.fromInput(
-                new TestIOProvider().getWrappedStream("pipeline/refs.fa"),
+                new ResourceIOProvider().getWrappedStream("pipeline/refs.fa"),
                 new BasicGenomicInfoProvider());
 
         Assert.assertTrue(!referenceLibrary.getReferences().isEmpty());

@@ -3,7 +3,7 @@ package com.milaboratory.oncomigec.pipeline;
 import com.milaboratory.oncomigec.pipeline.analysis.ProjectAnalysis;
 import com.milaboratory.oncomigec.pipeline.input.Input;
 import com.milaboratory.oncomigec.pipeline.input.InputParser;
-import com.milaboratory.oncomigec.util.Util;
+import com.milaboratory.oncomigec.misc.Util;
 import org.apache.commons.cli.*;
 import org.apache.commons.io.FileUtils;
 
@@ -68,7 +68,7 @@ public final class Oncomigec {
             if (commandLine.hasOption(OPT_VERBOSITY)) {
                 verbosity = Byte.parseByte(commandLine.getOptionValue(OPT_VERBOSITY));
             }
-            boolean dumpVariants = commandLine.hasOption(OPT_VARIANT_DUMP);
+            boolean dumpVariants = commandLine.hasOption(OPT_DEBUG);
 
             runtimeParameters = new RuntimeParameters(numberOfThreads, readLimit, verbosity, dumpVariants);
 
@@ -138,7 +138,7 @@ public final class Oncomigec {
             OPT_VERBOSITY = "verbosity", OPT_THREADS = "threads", OPT_LIMIT = "limit",
             OPT_INSTRUMENT = "instrument", OPT_IMPORT_PRESET = "import-preset", OPT_EXPORT_PRESET = "export-preset",
             OPT_INPUT_LONG = "input", OPT_INPUT_SHORT = "I",
-            OPT_OUTPUT_LONG = "output-path", OPT_OUTPUT_SHORT = "O", OPT_NO_BINARY = "no-binary", OPT_VARIANT_DUMP = "variant-dump";
+            OPT_OUTPUT_LONG = "output-path", OPT_OUTPUT_SHORT = "O", OPT_NO_BINARY = "no-binary", OPT_DEBUG = "debug";
 
     private static final Options CLI = new Options()
             //
@@ -245,11 +245,8 @@ public final class Oncomigec {
             )
             .addOption(
                     OptionBuilder
-                            //.withArgName("double")
-                            //.hasOptionalArg()
-                            //.withDescription("Dump variants having less than the threshold frequency. [default = 0.1]")
-                            .withDescription("Dump minor variants for classifier training.")
-                            .withLongOpt(OPT_VARIANT_DUMP)
+                            .withDescription("Dump minor variants for debugging.")
+                            .withLongOpt(OPT_DEBUG)
                             .create()
             );
 }

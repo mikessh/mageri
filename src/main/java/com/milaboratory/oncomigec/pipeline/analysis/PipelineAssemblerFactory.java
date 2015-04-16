@@ -19,10 +19,10 @@
 package com.milaboratory.oncomigec.pipeline.analysis;
 
 import com.milaboratory.oncomigec.core.PipelineBlock;
-import com.milaboratory.oncomigec.core.assemble.misc.AssemblerParameters;
-import com.milaboratory.oncomigec.core.assemble.misc.PAssemblerFactory;
-import com.milaboratory.oncomigec.core.assemble.misc.SAssemblerFactory;
-import com.milaboratory.oncomigec.core.assemble.processor.Assembler;
+import com.milaboratory.oncomigec.core.assemble.AssemblerParameters;
+import com.milaboratory.oncomigec.core.assemble.PAssemblerFactory;
+import com.milaboratory.oncomigec.core.assemble.SAssemblerFactory;
+import com.milaboratory.oncomigec.core.assemble.Assembler;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -20,18 +20,19 @@ package com.milaboratory.oncomigec.pipeline;
 
 import com.milaboratory.oncomigec.core.haplotype.Haplotype;
 import com.milaboratory.oncomigec.core.haplotype.HaplotypeAssembler;
-import com.milaboratory.oncomigec.core.io.misc.UmiHistogram;
+import com.milaboratory.oncomigec.core.input.MigSizeDistribution;
 import com.milaboratory.oncomigec.pipeline.analysis.ProjectAnalysis;
 import com.milaboratory.oncomigec.pipeline.analysis.Sample;
 import com.milaboratory.oncomigec.pipeline.analysis.SampleAnalysis;
 import com.milaboratory.oncomigec.pipeline.input.Input;
 import com.milaboratory.oncomigec.pipeline.input.InputParser;
-import com.milaboratory.oncomigec.util.testing.TestUtil;
+import com.milaboratory.oncomigec.pipeline.input.ResourceIOProvider;
+import com.milaboratory.oncomigec.misc.testing.TestUtil;
 import org.junit.Assert;
 import org.junit.Test;
 
 public class PipelineTest {
-    public static final InputParser INPUT_PARSER = new InputParser(new TestIOProvider());
+    public static final InputParser INPUT_PARSER = new InputParser(new ResourceIOProvider());
 
     @Test
     public void fullTest() throws Exception {
@@ -52,8 +53,8 @@ public class PipelineTest {
             }
 
             SampleAnalysis analysis = projectAnalysis.getAnalysis(sample);
-            UmiHistogram umiHistogram = analysis.getUmiHistogram();
-            Assert.assertEquals(umiHistogram.calculateMigsRetained(umiHistogram.getMigSizeThreshold()),
+            MigSizeDistribution migSizeDistribution = analysis.getMigSizeDistribution();
+            Assert.assertEquals(migSizeDistribution.calculateMigsRetained(migSizeDistribution.getMigSizeThreshold()),
                     analysis.getAssembler().getMigsTotal());
         }
 

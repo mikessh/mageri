@@ -17,7 +17,7 @@ package com.milaboratory.oncomigec.preprocessing.barcode;
 
 import com.milaboratory.core.sequence.NucleotideSQPair;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
-import com.milaboratory.oncomigec.util.Util;
+import com.milaboratory.oncomigec.misc.Util;
 
 import java.util.HashSet;
 import java.util.Set;

@@ -18,8 +18,8 @@
 
 package com.milaboratory.oncomigec.pipeline.input;
 
-import com.milaboratory.oncomigec.preprocessing.processor.CheckoutProcessor;
-import com.milaboratory.oncomigec.preprocessing.processor.HeaderExtractor;
+import com.milaboratory.oncomigec.preprocessing.CheckoutProcessor;
+import com.milaboratory.oncomigec.preprocessing.HeaderExtractor;
 
 import java.util.ArrayList;
 import java.util.List;

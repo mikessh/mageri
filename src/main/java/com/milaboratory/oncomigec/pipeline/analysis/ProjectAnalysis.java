@@ -19,11 +19,11 @@
 package com.milaboratory.oncomigec.pipeline.analysis;
 
 import com.milaboratory.oncomigec.core.PipelineBlock;
-import com.milaboratory.oncomigec.core.align.processor.aligners.ExtendedExomeAlignerFactory;
+import com.milaboratory.oncomigec.core.align.sequence.ExtendedKmerAlignerFactory;
 import com.milaboratory.oncomigec.core.genomic.BasicGenomicInfoProvider;
 import com.milaboratory.oncomigec.core.genomic.Reference;
 import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
-import com.milaboratory.oncomigec.core.io.readers.MigOutputPort;
+import com.milaboratory.oncomigec.core.input.MigOutputPort;
 import com.milaboratory.oncomigec.core.variant.Variant;
 import com.milaboratory.oncomigec.core.variant.VariantContainer;
 import com.milaboratory.oncomigec.pipeline.Presets;
@@ -72,7 +72,7 @@ public class ProjectAnalysis implements Serializable {
 
         this.pipelineAssemblerFactory = new PipelineAssemblerFactory(presets.getAssemblerParameters());
 
-        ExtendedExomeAlignerFactory alignerFactory = new ExtendedExomeAlignerFactory(referenceLibrary);
+        ExtendedKmerAlignerFactory alignerFactory = new ExtendedKmerAlignerFactory(referenceLibrary);
 
         this.pipelineConsensusAlignerFactory = new PipelineConsensusAlignerFactory(alignerFactory,
                 presets.getConsensusAlignerParameters());
@@ -85,6 +85,7 @@ public class ProjectAnalysis implements Serializable {
 
     public void run() throws Exception {
         sout("Started analysis.", 1);
+
         for (SampleGroup sampleGroup : project.getSampleGroups()) {
             sout("Pre-processing sample group " + sampleGroup.getName() + ".", 1);
             final Preprocessor preprocessor = preprocessorFactory.create(sampleGroup, runtimeParameters);
@@ -104,6 +105,8 @@ public class ProjectAnalysis implements Serializable {
 
                 if (!runtimeParameters.variantDumpModeOn())
                     sampleAnalysis.runSecondStage();
+                else
+                    sout("Prepared variants for dumping.", 1);
 
                 // only for binary output mode
                 analysisBySample.put(sample, sampleAnalysis);
@@ -160,13 +163,13 @@ public class ProjectAnalysis implements Serializable {
             File variantFile = new File(prefix + ".variants.txt");
             PrintWriter writer = new PrintWriter(variantFile);
 
-            writer.println(Variant.HEADER);
+            writer.println("sample\t" + Variant.HEADER);
             for (Reference reference : referenceLibrary.getReferences()) {
                 for (SampleAnalysis sampleAnalysis : analysisBySample.values()) {
                     VariantContainer variantContainer = sampleAnalysis.dumpMinorVariants(reference);
                     if (variantContainer != null) {
                         for (Variant variant : variantContainer.getMinorVariants()) {
-                            writer.println(variant.toString());
+                            writer.println(sampleAnalysis.getSample().getFullName() + "\t" + variant.toString());
                         }
                     }
                 }

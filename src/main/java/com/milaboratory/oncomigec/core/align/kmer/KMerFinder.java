@@ -25,20 +25,23 @@ public class KMerFinder {
 
     // Thread-safe
     public KMerFinderResult find(NucleotideSequence sequence) {
-        if (sequence.size() < kmerUtils.getK())
+        if (sequence.size() < kmerUtils.getK()) {
+            // sequence too short
             return null;
+        }
 
         final double[] informationVector = new double[referenceCount];
         final double N = (double) referenceCount;
-        double maxInformationValue = Double.MIN_VALUE;
-        int maxInformationId = -1;
+        double maxInformationValue = Double.MIN_VALUE,
+                nextMaxInformationValue = Double.MIN_VALUE;
+        int maxInformationId = 0;
 
         final long[] kmers = kmerUtils.extractKmers(sequence);
 
-        for (int i = 0; i < kmers.length; i++) {
-            KmerMap.KmerData kmerData = kmerMap.getData(kmers[i]);
+        for (long kmer : kmers) {
+            KmerMap.KmerData kmerData = kmerMap.getData(kmer);
             if (kmerData != null) {
-                // Assume that we auto-correct repetitive k-mers by incrementing their count for the same reference
+                // Note that we auto-correct repetitive k-mers by incrementing their count for the same reference
                 double information = kmerData.getCounter() < referenceCount ?
                         -Math.log(kmerData.getCounter() / N) : 0.0;
 
@@ -50,6 +53,7 @@ public class KMerFinder {
                     informationVector[parentId] = parentInformation;
 
                     if (parentInformation > maxInformationValue) {
+                        nextMaxInformationValue = maxInformationValue;
                         maxInformationValue = parentInformation;
                         maxInformationId = parentId;
                     }
@@ -57,14 +61,17 @@ public class KMerFinder {
             }
         }
 
-        // todo: filter by value
-
-        if (maxInformationId < 0)
+        if (maxInformationId == 0) {
+            // no hit
             return null;
+        }
 
-        maxInformationValue /= Math.log(N) * kmers.length;
+        boolean rc = maxInformationId < 0; // RC reference sequences are stored as -(index+1)
 
-        return new KMerFinderResult(maxInformationValue, referenceLibrary.getByGlobalId(maxInformationId));
+        return new KMerFinderResult(maxInformationValue,
+                maxInformationValue - Math.max(0, nextMaxInformationValue),
+                referenceLibrary.getAt((rc ? -maxInformationId : maxInformationId) - 1), // hash index is 1-based
+                rc);
     }
 
     public ReferenceLibrary getReferenceLibrary() {

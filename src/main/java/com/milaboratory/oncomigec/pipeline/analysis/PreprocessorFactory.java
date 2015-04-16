@@ -19,11 +19,11 @@
 package com.milaboratory.oncomigec.pipeline.analysis;
 
 import com.milaboratory.oncomigec.core.PipelineBlock;
-import com.milaboratory.oncomigec.core.io.misc.PreprocessorParameters;
+import com.milaboratory.oncomigec.core.input.PreprocessorParameters;
 import com.milaboratory.oncomigec.pipeline.RuntimeParameters;
-import com.milaboratory.oncomigec.preprocessing.entity.DemultiplexParameters;
-import com.milaboratory.oncomigec.preprocessing.processor.CheckoutProcessor;
-import com.milaboratory.oncomigec.preprocessing.processor.PAdapterExtractor;
+import com.milaboratory.oncomigec.preprocessing.DemultiplexParameters;
+import com.milaboratory.oncomigec.preprocessing.CheckoutProcessor;
+import com.milaboratory.oncomigec.preprocessing.PAdapterExtractor;
 
 import java.io.IOException;
 import java.util.HashMap;

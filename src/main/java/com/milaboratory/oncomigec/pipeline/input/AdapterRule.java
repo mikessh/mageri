@@ -18,9 +18,9 @@
 
 package com.milaboratory.oncomigec.pipeline.input;
 
-import com.milaboratory.oncomigec.preprocessing.config.BarcodeListParser;
-import com.milaboratory.oncomigec.preprocessing.entity.DemultiplexParameters;
-import com.milaboratory.oncomigec.preprocessing.processor.CheckoutProcessor;
+import com.milaboratory.oncomigec.preprocessing.barcode.BarcodeListParser;
+import com.milaboratory.oncomigec.preprocessing.DemultiplexParameters;
+import com.milaboratory.oncomigec.preprocessing.CheckoutProcessor;
 
 import java.io.IOException;
 import java.util.List;

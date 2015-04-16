@@ -18,7 +18,7 @@
 
 package com.milaboratory.oncomigec.pipeline.analysis;
 
-import com.milaboratory.oncomigec.ReadSpecific;
+import com.milaboratory.oncomigec.misc.ReadSpecific;
 
 import java.io.Serializable;
 
@@ -40,7 +40,7 @@ public class Sample implements Comparable<Sample>, Serializable, ReadSpecific {
     }
 
     public String getFullName() {
-        return parent.getFullName() + (name != null ? ("." + name) : "");
+        return parent.getName() + (name != null ? ("." + name) : "");
     }
 
     @Override

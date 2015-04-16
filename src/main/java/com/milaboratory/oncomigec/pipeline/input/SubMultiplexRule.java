@@ -18,7 +18,7 @@
 
 package com.milaboratory.oncomigec.pipeline.input;
 
-import com.milaboratory.oncomigec.preprocessing.config.BarcodeListParser;
+import com.milaboratory.oncomigec.preprocessing.barcode.BarcodeListParser;
 
 import java.io.IOException;
 import java.util.ArrayList;

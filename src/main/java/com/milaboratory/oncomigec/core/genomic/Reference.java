@@ -20,44 +20,27 @@ import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import java.io.Serializable;
 
 public class Reference implements Serializable {
-    private final int globalId;
-    private final String name, fullName;
+    private final int index;
+    private final String name;
     private final NucleotideSequence sequence;
-    private final boolean reverseComplement;
     private final ReferenceLibrary parent;
     private GenomicInfo genomicInfo;
 
     public Reference(ReferenceLibrary parent,
-                     int globalId, String name,
-                     NucleotideSequence sequence,
-                     boolean reverseComplement) {
+                     int index, String name,
+                     NucleotideSequence sequence) {
         this.parent = parent;
-        this.globalId = globalId;
+        this.index = index;
         this.name = name;
         this.sequence = sequence;
-        this.reverseComplement = reverseComplement;
-        this.fullName = name + (reverseComplement ? "_RC" : "");
     }
 
-    public int getGlobalId() {
-        return globalId;
-    }
-
-    @Deprecated
-    public String getType() {
-        return ".";
+    public int getIndex() {
+        return index;
     }
 
     public String getName() {
         return name;
-    }
-
-    public String getFullName() {
-        return fullName;
-    }
-
-    public boolean isReverseComplement() {
-        return reverseComplement;
     }
 
     public NucleotideSequence getSequence() {
@@ -83,16 +66,16 @@ public class Reference implements Serializable {
 
         Reference reference = (Reference) o;
 
-        return globalId == reference.globalId;
+        return index == reference.index;
     }
 
     @Override
     public int hashCode() {
-        return globalId;
+        return index;
     }
 
     @Override
     public String toString() {
-        return ">" + fullName + "\n" + sequence.toString();
+        return ">" + name + "\n" + sequence.toString();
     }
 }

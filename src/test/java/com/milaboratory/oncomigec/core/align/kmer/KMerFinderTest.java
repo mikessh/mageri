@@ -1,10 +1,10 @@
 package com.milaboratory.oncomigec.core.align.kmer;
 
 import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
-import com.milaboratory.oncomigec.util.testing.IntRange;
-import com.milaboratory.oncomigec.util.testing.PercentRange;
-import com.milaboratory.oncomigec.util.testing.generators.GeneratorMutationModel;
-import com.milaboratory.oncomigec.util.testing.generators.RandomReferenceGenerator;
+import com.milaboratory.oncomigec.misc.testing.IntRange;
+import com.milaboratory.oncomigec.misc.testing.PercentRange;
+import com.milaboratory.oncomigec.misc.testing.generators.GeneratorMutationModel;
+import com.milaboratory.oncomigec.misc.testing.generators.RandomReferenceGenerator;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -55,7 +55,7 @@ public class KMerFinderTest {
 
                 KMerFinderResult result = kMerFinder.find(parentChildPair.getChildSequence());
 
-                if (result.getBestHit().equals(parentChildPair.getParentReference())) {
+                if (result.getHit().equals(parentChildPair.getParentReference())) {
                     nCorrect++;
                     correctInformationHistogram[getBin(result.getInformation())]++;
                 } else {

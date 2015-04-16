@@ -18,7 +18,7 @@
 
 package com.milaboratory.oncomigec.pipeline;
 
-import com.milaboratory.oncomigec.util.testing.TestUtil;
+import com.milaboratory.oncomigec.misc.testing.TestUtil;
 import org.junit.Test;
 
 public class RuntimeParametersTest {

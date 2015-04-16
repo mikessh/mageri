@@ -28,10 +28,8 @@ public class ReferenceLibrary implements Serializable {
     private final Map<Contig, Contig> contigs = new HashMap<>();
     private final List<Reference> references = new ArrayList<>();
     private final Map<String, Integer> nameToId = new HashMap<>();
-    private final Set<NucleotideSequence> referenceSequences = new HashSet<>();
     private final GenomicInfoProvider genomicInfoProvider;
     private final String path;
-    private int globalId = 0, uniqueCount = 0;
 
     public static ReferenceLibrary fromInput(InputStreamWrapper input,
                                              GenomicInfoProvider genomicInfoProvider) throws IOException {
@@ -66,56 +64,32 @@ public class ReferenceLibrary implements Serializable {
         for (SSequencingRead record : fastaRecords) {
             NucleotideSequence sequence = record.getData().getSequence();
             String[] descriptionFields = record.getDescription().split("[ \t]");
-            addReferenceAndRC(descriptionFields[0],
+            addReference(descriptionFields[0],
                     sequence);
         }
     }
 
-    synchronized void addReference(String name, NucleotideSequence sequence, boolean rc) {
-        sequence = rc ? sequence.getReverseComplement() : sequence;
+    public synchronized void addReference(String name, NucleotideSequence sequence) {
+        int index = references.size();
 
-        Reference reference = new Reference(this, globalId, name, sequence, rc);
-        
-        String fullName = reference.getFullName();
+        Reference reference = new Reference(this, index, name, sequence);
 
-        if (referenceSequences.contains(sequence))
-            throw new RuntimeException("Duplicate sequences not allowed in reference library. " +
-                    sequence);
-        if (nameToId.containsKey(reference.getFullName()))
-            throw new RuntimeException("Duplicate sequence names (with respect to reverse complement flag, _RC) " +
-                    "are not allowed. " + reference.getFullName());
+        if (nameToId.containsKey(reference.getName()))
+            throw new RuntimeException("Duplicate sequence names are not allowed. " + reference.getName());
 
         genomicInfoProvider.annotate(reference);
-        referenceSequences.add(sequence);
-        nameToId.put(fullName, globalId);
+        nameToId.put(name, index);
         references.add(reference);
-
-        globalId++;
-        uniqueCount++;
     }
 
-    public void addReference(String name, NucleotideSequence sequence) {
-        addReference(name, sequence, false);
-    }
-
-    public void addReferenceAndRC(String name, NucleotideSequence sequence) {
-        addReference(name, sequence, false);
-        addReference(name, sequence, true);
-        uniqueCount--;
-    }
-
-    public Reference getByGlobalId(int globalId) {
-        if (globalId < 0 || globalId >= references.size())
+    public Reference getAt(int index) {
+        if (index < 0 || index >= references.size())
             throw new IndexOutOfBoundsException();
-        return references.get(globalId);
-    }
-
-    public Reference getByName(String name, boolean rc) {
-        return getByGlobalId(nameToId.get(name + (rc ? "_RC" : "")));
+        return references.get(index);
     }
 
     public Reference getByName(String name) {
-        return getByName(name, false);
+        return getAt(nameToId.get(name));
     }
 
     public List<Reference> getReferences() {
@@ -127,11 +101,7 @@ public class ReferenceLibrary implements Serializable {
     }
 
     public int size() {
-        return globalId;
-    }
-
-    public int uniqueCount() {
-        return uniqueCount;
+        return references.size();
     }
 
     public String getPath() {
