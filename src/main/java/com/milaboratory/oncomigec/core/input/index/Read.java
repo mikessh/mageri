@@ -20,9 +20,10 @@ package com.milaboratory.oncomigec.core.input.index;
 
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 
+import java.io.Serializable;
 import java.util.BitSet;
 
-public class Read {
+public class Read implements Serializable {
     private final NucleotideSequence sequence;
     private final BitSet qualityMask;
 

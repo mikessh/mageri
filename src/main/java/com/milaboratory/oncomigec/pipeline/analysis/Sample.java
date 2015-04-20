@@ -18,17 +18,23 @@
 
 package com.milaboratory.oncomigec.pipeline.analysis;
 
-import com.milaboratory.oncomigec.misc.ReadSpecific;
+import com.milaboratory.oncomigec.core.ReadSpecific;
 
 import java.io.Serializable;
 
 public class Sample implements Comparable<Sample>, Serializable, ReadSpecific {
     private final SampleGroup parent;
     private final String name;
+    private final int id;
 
-    Sample(String name, SampleGroup parent) {
+    Sample(int id, String name, SampleGroup parent) {
+        this.id = id;
         this.name = name;
         this.parent = parent;
+    }
+
+    public int getId() {
+        return id;
     }
 
     public SampleGroup getParent() {
@@ -55,14 +61,14 @@ public class Sample implements Comparable<Sample>, Serializable, ReadSpecific {
 
         Sample sample = (Sample) o;
 
-        if (!getFullName().equals(sample.getFullName())) return false;
+        if (id != sample.id) return false;
 
         return true;
     }
 
     @Override
     public int hashCode() {
-        return getFullName().hashCode();
+        return id;
     }
 
     @Override

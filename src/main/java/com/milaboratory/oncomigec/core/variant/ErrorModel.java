@@ -23,13 +23,17 @@ import org.apache.commons.math.distribution.BinomialDistribution;
 import org.apache.commons.math.distribution.BinomialDistributionImpl;
 
 public class ErrorModel {
-    private final double cycles, lambda;
-    private final double propagateProb;
+    private double cycles, lambda;
+    private double propagateProb;
+
+    public ErrorModel() {
+        this(20, 0.95);
+    }
 
     public ErrorModel(double cycles, double lambda) {
         this.cycles = cycles;
         this.lambda = lambda;
-        this.propagateProb = lambda * (1 - lambda);
+        calcPropagateProb();
     }
 
     public double getLog10PValue(int majorCount, int minorCount, int total) {
@@ -54,5 +58,18 @@ public class ErrorModel {
 
     public double getLambda() {
         return lambda;
+    }
+
+    public void setCycles(double cycles) {
+        this.cycles = cycles;
+    }
+
+    public void setLambda(double lambda) {
+        this.lambda = lambda;
+        calcPropagateProb();
+    }
+
+    private void calcPropagateProb() {
+        this.propagateProb = lambda * (1 - lambda);
     }
 }

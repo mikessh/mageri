@@ -18,8 +18,8 @@
 
 package com.milaboratory.oncomigec.pipeline.analysis;
 
-import com.milaboratory.oncomigec.misc.ReadSpecific;
-import com.milaboratory.oncomigec.core.input.Mig;
+import com.milaboratory.oncomigec.core.ReadSpecific;
+import com.milaboratory.oncomigec.core.Mig;
 import com.milaboratory.oncomigec.core.input.PreprocessorParameters;
 import com.milaboratory.oncomigec.core.input.MigSizeDistribution;
 import com.milaboratory.oncomigec.core.input.MigOutputPort;

@@ -20,22 +20,27 @@ package com.milaboratory.oncomigec.core.variant.filter;
 
 import com.milaboratory.oncomigec.core.variant.Variant;
 
-public class SingletonFilter extends VariantFilter {
-    public final int ratioThreshold;
+public class SingletonFilter implements VariantFilter {
+    public final int frequencyThreshold;
 
-    public SingletonFilter(int ratioThreshold) {
-        this.ratioThreshold = ratioThreshold;
+    public SingletonFilter(int frequencyThreshold) {
+        this.frequencyThreshold = frequencyThreshold;
     }
 
     @Override
     public boolean pass(Variant variant) {
         int count = variant.getCount();
         return count != 1 ||
-                count * ratioThreshold >= variant.getDepth();
+                count * frequencyThreshold >= variant.getDepth();
     }
 
     @Override
-    public String toString() {
-        return "si" + ratioThreshold;
+    public String getDescription() {
+        return "Singleton, frequency below " + frequencyThreshold;
+    }
+
+    @Override
+    public String getId() {
+        return "si" + frequencyThreshold;
     }
 }

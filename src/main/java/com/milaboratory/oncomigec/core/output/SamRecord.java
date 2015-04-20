@@ -13,52 +13,90 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Last modified on 15.4.2015 by mikesh
+ * Last modified on 17.4.2015 by mikesh
  */
 
 package com.milaboratory.oncomigec.core.output;
 
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Objects;
+
+import static com.milaboratory.oncomigec.core.output.SamUtil.*;
+
 public class SamRecord {
-    private final String qname, rname,
-            cigar, rnext, seq, qual;
-    private final int flag, pos, mapq, pnext, tlen;
+    private final SamSegmentRecord[] samSegmentRecords;
 
-    public SamRecord(String qname,
-                     Integer flag,
-                     String rname, Integer pos,
-                     Integer mapq, String cigar,
-                     String rnext, Integer pnext,
-                     Integer tlen,
-                     String seq, String qual) {
-        this.qname = valueOrDummy(qname);
-        this.flag = valueOrDummy(flag);
-        this.rname = valueOrDummy(rname);
-        this.pos = valueOrDummy(pos);
-        this.mapq = valueOrDummy(mapq);
-        this.cigar = valueOrDummy(cigar);
-        this.rnext = valueOrDummy(rnext);
-        this.pnext = valueOrDummy(pnext);
-        this.tlen = valueOrDummy(tlen);
-        this.seq = valueOrDummy(seq);
-        this.qual = valueOrDummy(qual);
+    private final static Comparator<SamSegmentRecord> comparator = new Comparator<SamSegmentRecord>() {
+        @Override
+        public int compare(SamSegmentRecord o1, SamSegmentRecord o2) {
+            return o1.compareTo(o2);
+        }
+    };
+
+    public SamRecord(SamSegmentRecord... samSegmentRecords) {
+        this.samSegmentRecords = samSegmentRecords;
+
+        Arrays.sort(this.samSegmentRecords, comparator);
+
+        boolean multiSegment = samSegmentRecords.length > 1;
+
+        SamSegmentRecord firstSegment = samSegmentRecords[0],
+                lastSegment = samSegmentRecords[samSegmentRecords.length - 1];
+
+        boolean allAligned = true, chimeric = false;
+        for (SamSegmentRecord samSegmentRecord : samSegmentRecords) {
+            if (samSegmentRecord.hasFlag(UNMAPPED_FLAG)) {
+                allAligned = false;
+            }
+            if (samSegmentRecord.hasFlag(CHIMERIC_ALIGNMENT_FLAG)) {
+                chimeric = true;
+            }
+        }
+
+        int minPos = Integer.MAX_VALUE, maxPos = 0;
+
+        for (int i = 0; i < samSegmentRecords.length; i++) {
+            SamSegmentRecord currentRecord = samSegmentRecords[i];
+            currentRecord.setFlag(
+                    (multiSegment ? MULTIPLE_SEGMENTS_FLAG : BLANK_FLAG) |
+                            (allAligned ? ALL_ALIGNED_FLAG : BLANK_FLAG)
+            );
+
+            if (i < samSegmentRecords.length - 1) {
+                SamSegmentRecord nextRecord = samSegmentRecords[i + 1];
+
+                assert Objects.equals(lastSegment.getQueryName(), nextRecord.getQueryName());
+
+                // Transfer all 'next' flags to current record
+                currentRecord.setFlag(getFlagsFromNext(nextRecord.getFlag()));
+
+                currentRecord.setNextReferenceName(nextRecord.getReferenceName());
+                currentRecord.setNextPosition(nextRecord.getPosition());
+
+                if (!chimeric) {
+                    int pos = currentRecord.getPosition();
+                    minPos = Math.min(minPos, pos);
+                    maxPos = Math.max(maxPos, pos);
+                }
+            }
+        }
+
+        if (multiSegment && !chimeric) {
+            // mark first and last segments
+            firstSegment.setFlag(FIRST_SEGMENT_FLAG);
+            lastSegment.setFlag(LAST_SEGMENT_FLAG);
+            int tLen = maxPos - minPos;
+            firstSegment.setTemplateLength(tLen);
+            lastSegment.setTemplateLength(-tLen);
+        }
     }
 
-    private static int valueOrDummy(Integer field) {
-        return field == null ? 0 : field;
+    private static int getFlagsFromNext(int flag) {
+        return (flag & (UNMAPPED_FLAG | RC_FLAG)) << 1;
     }
 
-    private static String valueOrDummy(String field) {
-        return field == null ? "*" : field;
-    }
-
-    @Override
-    public String toString() {
-        return qname + "\t" +
-                flag + "\t" +
-                rname + "\t" + pos + "\t" +
-                mapq + "\t" + cigar + "\t" +
-                rnext + "\t" + pnext + "\t" +
-                tlen + "\t" +
-                seq + "\t" + qual;
+    public SamSegmentRecord[] getSamSegmentRecords() {
+        return samSegmentRecords;
     }
 }

@@ -5,30 +5,30 @@ import org.jdom.Element;
 
 public final class VariantCallerParameters implements ParameterSet {
     private final double modelCycles, modelEfficiency;
-    private final int qualThreshold, singletonFilterRatio, coverageThreshold;
+    private final int qualityThreshold, singletonFrequencyThreshold, coverageThreshold;
 
     public static VariantCallerParameters DEFAULT = new VariantCallerParameters(20.0, 1.95,
             20, 10000, 100);
 
     public VariantCallerParameters(double modelCycles, double modelEfficiency,
-                                   int qualThreshold, int singletonFilterRatio, int coverageThreshold) {
+                                   int qualityThreshold, int singletonFrequencyThreshold, int coverageThreshold) {
         if (modelCycles < 10 || modelCycles > 40)
             throw new IllegalArgumentException("(model parameters) Number of PCR cycles should be in [10,40]");
 
         if (modelEfficiency < 1.8d || modelEfficiency >= 2.0d)
             throw new IllegalArgumentException("(model parameters) PCR efficiency should be set in [1.8, 2.0)");
 
-        if (qualThreshold < 0)
+        if (qualityThreshold < 0)
             throw new IllegalArgumentException("(filter parameters) Quality threshold should be >= 0");
-        if (singletonFilterRatio <= 1)
+        if (singletonFrequencyThreshold <= 1)
             throw new IllegalArgumentException("(filter parameters) Singleton filter ratio should > 1");
         if (coverageThreshold < 0)
             throw new IllegalArgumentException("(filter parameters) Coverage threshold should be >= 0");
 
         this.modelCycles = modelCycles;
         this.modelEfficiency = modelEfficiency;
-        this.singletonFilterRatio = singletonFilterRatio;
-        this.qualThreshold = qualThreshold;
+        this.singletonFrequencyThreshold = singletonFrequencyThreshold;
+        this.qualityThreshold = qualityThreshold;
         this.coverageThreshold = coverageThreshold;
     }
 
@@ -41,12 +41,12 @@ public final class VariantCallerParameters implements ParameterSet {
         return modelEfficiency;
     }
 
-    public int getQualThreshold() {
-        return qualThreshold;
+    public int getQualityThreshold() {
+        return qualityThreshold;
     }
 
-    public int getSingletonFilterRatio() {
-        return singletonFilterRatio;
+    public int getSingletonFrequencyThreshold() {
+        return singletonFrequencyThreshold;
     }
 
     public int getCoverageThreshold() {
@@ -58,8 +58,8 @@ public final class VariantCallerParameters implements ParameterSet {
         Element e = new Element("VariantCallerParameters");
         e.addContent(new Element("modelCycles").setText(Double.toString(modelCycles)));
         e.addContent(new Element("modelEfficiency").setText(Double.toString(modelEfficiency)));
-        e.addContent(new Element("singletonFilterRatio").setText(Integer.toString(singletonFilterRatio)));
-        e.addContent(new Element("qualThreshold").setText(Integer.toString(qualThreshold)));
+        e.addContent(new Element("singletonFrequencyThreshold").setText(Integer.toString(singletonFrequencyThreshold)));
+        e.addContent(new Element("qualityThreshold").setText(Integer.toString(qualityThreshold)));
         e.addContent(new Element("coverageThreshold").setText(Integer.toString(coverageThreshold)));
         return e;
     }
@@ -69,8 +69,8 @@ public final class VariantCallerParameters implements ParameterSet {
         return new VariantCallerParameters(
                 Double.parseDouble(e.getChildTextTrim("modelCycles")),
                 Double.parseDouble(e.getChildTextTrim("modelEfficiency")),
-                Integer.parseInt(e.getChildTextTrim("singletonFilterRatio")),
-                Integer.parseInt(e.getChildTextTrim("qualThreshold")),
+                Integer.parseInt(e.getChildTextTrim("singletonFrequencyThreshold")),
+                Integer.parseInt(e.getChildTextTrim("qualityThreshold")),
                 Integer.parseInt(e.getChildTextTrim("coverageThreshold"))
         );
     }
@@ -85,8 +85,8 @@ public final class VariantCallerParameters implements ParameterSet {
         if (coverageThreshold != that.coverageThreshold) return false;
         if (Double.compare(that.modelCycles, modelCycles) != 0) return false;
         if (Double.compare(that.modelEfficiency, modelEfficiency) != 0) return false;
-        if (qualThreshold != that.qualThreshold) return false;
-        if (singletonFilterRatio != that.singletonFilterRatio) return false;
+        if (qualityThreshold != that.qualityThreshold) return false;
+        if (singletonFrequencyThreshold != that.singletonFrequencyThreshold) return false;
 
         return true;
     }
@@ -99,8 +99,8 @@ public final class VariantCallerParameters implements ParameterSet {
         result = (int) (temp ^ (temp >>> 32));
         temp = Double.doubleToLongBits(modelEfficiency);
         result = 31 * result + (int) (temp ^ (temp >>> 32));
-        result = 31 * result + qualThreshold;
-        result = 31 * result + singletonFilterRatio;
+        result = 31 * result + qualityThreshold;
+        result = 31 * result + singletonFrequencyThreshold;
         result = 31 * result + coverageThreshold;
         return result;
     }

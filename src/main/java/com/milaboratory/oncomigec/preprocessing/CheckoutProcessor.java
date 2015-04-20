@@ -16,9 +16,8 @@
 package com.milaboratory.oncomigec.preprocessing;
 
 import com.milaboratory.core.sequencing.read.SequencingRead;
-import com.milaboratory.oncomigec.misc.ReadSpecific;
+import com.milaboratory.oncomigec.core.ReadSpecific;
 import com.milaboratory.oncomigec.preprocessing.barcode.BarcodeSearcher;
-import com.milaboratory.oncomigec.preprocessing.CheckoutResult;
 
 import java.io.Serializable;
 import java.util.ArrayList;

@@ -24,9 +24,10 @@ import com.milaboratory.oncomigec.core.input.index.Read;
 import com.milaboratory.oncomigec.core.input.index.ReadContainer;
 import com.milaboratory.oncomigec.core.input.index.ReadInfo;
 import com.milaboratory.oncomigec.pipeline.RuntimeParameters;
-import com.milaboratory.oncomigec.preprocessing.barcode.BarcodeSearcherResult;
-import com.milaboratory.oncomigec.preprocessing.PCheckoutResult;
+import com.milaboratory.oncomigec.pipeline.analysis.Sample;
 import com.milaboratory.oncomigec.preprocessing.CheckoutProcessor;
+import com.milaboratory.oncomigec.preprocessing.PCheckoutResult;
+import com.milaboratory.oncomigec.preprocessing.barcode.BarcodeSearcherResult;
 import com.milaboratory.util.CompressionType;
 
 import java.io.IOException;
@@ -77,7 +78,8 @@ public final class PMigReader extends MigReader<PMig> {
     }
 
     @Override
-    protected synchronized PMig take(String sampleName, int sizeThreshold) {
+    protected synchronized PMig take(Sample sample, int sizeThreshold) {
+        String sampleName = sample.getName();
         Iterator<Map.Entry<NucleotideSequence, List<ReadInfo>>> iterator = iteratorMap.get(sampleName);
         while (iterator.hasNext()) {
             Map.Entry<NucleotideSequence, List<ReadInfo>> entry = iterator.next();
@@ -131,8 +133,8 @@ public final class PMigReader extends MigReader<PMig> {
                     readList2.add(read2);
                 }
 
-                return new PMig(new SMig(readList1, entry.getKey()),
-                        new SMig(readList2, entry.getKey()));
+                return new PMig(new SMig(sample, entry.getKey(), readList1),
+                        new SMig(sample, entry.getKey(), readList2));
             }
 
         }

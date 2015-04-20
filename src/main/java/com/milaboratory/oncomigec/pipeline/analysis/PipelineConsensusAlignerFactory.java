@@ -19,12 +19,12 @@
 package com.milaboratory.oncomigec.pipeline.analysis;
 
 import com.milaboratory.oncomigec.core.PipelineBlock;
-import com.milaboratory.oncomigec.core.align.AlignerFactory;
-import com.milaboratory.oncomigec.core.align.ConsensusAlignerParameters;
-import com.milaboratory.oncomigec.core.align.PConsensusAlignerFactory;
-import com.milaboratory.oncomigec.core.align.SConsensusAlignerFactory;
-import com.milaboratory.oncomigec.core.align.AlignerTable;
-import com.milaboratory.oncomigec.core.align.ConsensusAligner;
+import com.milaboratory.oncomigec.core.mapping.alignment.AlignerFactory;
+import com.milaboratory.oncomigec.core.mapping.ConsensusAlignerParameters;
+import com.milaboratory.oncomigec.core.mapping.PConsensusAlignerFactory;
+import com.milaboratory.oncomigec.core.mapping.SConsensusAlignerFactory;
+import com.milaboratory.oncomigec.core.mapping.ConsensusAlignerTable;
+import com.milaboratory.oncomigec.core.mapping.ConsensusAligner;
 import com.milaboratory.oncomigec.core.genomic.Reference;
 import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
 import org.apache.commons.lang3.StringUtils;
@@ -39,7 +39,7 @@ public class PipelineConsensusAlignerFactory extends PipelineBlock {
 
     public PipelineConsensusAlignerFactory(AlignerFactory alignerFactory,
                                            ConsensusAlignerParameters consensusAlignerParameters) {
-        super("align");
+        super("mapping");
         this.pairedFactory = new PConsensusAlignerFactory(alignerFactory, consensusAlignerParameters);
         this.singleFactory = new SConsensusAlignerFactory(alignerFactory, consensusAlignerParameters);
         ReferenceLibrary referenceLibrary = alignerFactory.getReferenceLibrary();
@@ -86,9 +86,9 @@ public class PipelineConsensusAlignerFactory extends PipelineBlock {
                     append(aligner.getSkippedMigs());
 
             for (Reference reference : references) {
-                AlignerTable alignerTable =
+                ConsensusAlignerTable consensusAlignerTable =
                         aligner.getAlignerTable().getSubstitutionsAndCoverage(reference);
-                stringBuilder.append("\t").append(alignerTable.getMigCount());
+                stringBuilder.append("\t").append(consensusAlignerTable.getMigCount());
             }
 
             stringBuilder.append("\n");

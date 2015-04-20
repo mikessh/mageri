@@ -20,7 +20,7 @@ package com.milaboratory.oncomigec.core.variant.filter;
 
 import com.milaboratory.oncomigec.core.variant.Variant;
 
-public class CoverageFilter extends VariantFilter {
+public class CoverageFilter implements VariantFilter {
     private final int coverageThreshold;
 
     public CoverageFilter(int coverageThreshold) {
@@ -33,7 +33,12 @@ public class CoverageFilter extends VariantFilter {
     }
 
     @Override
-    public String toString() {
+    public String getDescription() {
+        return "Coverage below " + coverageThreshold;
+    }
+
+    @Override
+    public String getId() {
         return "c" + coverageThreshold;
     }
 }

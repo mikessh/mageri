@@ -20,7 +20,7 @@ package com.milaboratory.oncomigec.core.variant;
 
 import com.milaboratory.core.sequence.mutations.Mutations;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequenceBuilder;
-import com.milaboratory.oncomigec.core.align.AlignerTable;
+import com.milaboratory.oncomigec.core.mapping.ConsensusAlignerTable;
 import com.milaboratory.oncomigec.core.genomic.Reference;
 import com.milaboratory.oncomigec.core.mutations.Mutation;
 import com.milaboratory.oncomigec.core.mutations.Substitution;
@@ -35,36 +35,36 @@ public class VariantCallerTable {
     private final Map<Mutation, Variant> variantMap;
 
     public VariantCallerTable(VariantCaller variantCaller,
-                              AlignerTable alignerTable,
+                              ConsensusAlignerTable consensusAlignerTable,
                               ErrorModel errorModel) {
-        this.reference = alignerTable.getReference();
+        this.reference = consensusAlignerTable.getReference();
         this.variantMap = new HashMap<>();
 
-        for (Mutation mutation : alignerTable.getMutations()) {
+        for (Mutation mutation : consensusAlignerTable.getMutations()) {
             if (mutation instanceof Substitution) {
                 int code = ((Substitution) mutation).getCode(),
                         pos = Mutations.getPosition(code),
                         base = Mutations.getTo(code);
 
-                int majorCount = alignerTable.getMajorMigCount(pos, base);
+                int majorCount = consensusAlignerTable.getMajorMigCount(pos, base);
 
                 assert majorCount > 0;
 
-                int coverage = alignerTable.getMigCoverage(pos);
+                int coverage = consensusAlignerTable.getMigCoverage(pos);
 
                 double score = errorModel.getLog10PValue(
                         majorCount,
-                        alignerTable.getMinorMigCount(pos, base),
+                        consensusAlignerTable.getMinorMigCount(pos, base),
                         coverage);
 
                 NucleotideSequenceBuilder nsb = new NucleotideSequenceBuilder(1);
-                nsb.setCode(0, alignerTable.getAncestralBase(pos));
+                nsb.setCode(0, consensusAlignerTable.getAncestralBase(pos));
 
                 Variant variant = new Variant(reference,
                         mutation, majorCount,
-                        alignerTable.getMigCoverage(pos),
+                        consensusAlignerTable.getMigCoverage(pos),
                         majorCount / (double) coverage, score,
-                        nsb.create(), alignerTable.hasReferenceBase(pos));
+                        nsb.create(), consensusAlignerTable.hasReferenceBase(pos));
 
                 variant.filter(variantCaller);
 

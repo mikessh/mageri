@@ -60,7 +60,7 @@ public class FilterSummary {
 
         for (int i = 0; i < filterMask.length; i++) {
             if (!filterMask[i])
-                result += ";" + parent.getFilter(i).toString();
+                result += ";" + parent.getFilter(i).getId();
         }
 
         return result.substring(1);

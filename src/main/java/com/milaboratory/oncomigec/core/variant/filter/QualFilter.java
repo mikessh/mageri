@@ -20,7 +20,7 @@ package com.milaboratory.oncomigec.core.variant.filter;
 
 import com.milaboratory.oncomigec.core.variant.Variant;
 
-public class QualFilter extends VariantFilter {
+public class QualFilter implements VariantFilter {
     private final int qualThreshold;
 
     public QualFilter(int qualThreshold) {
@@ -33,7 +33,12 @@ public class QualFilter extends VariantFilter {
     }
 
     @Override
-    public String toString() {
+    public String getDescription() {
+        return "Quality below " + qualThreshold;
+    }
+
+    @Override
+    public String getId() {
         return "q" + qualThreshold;
     }
 }

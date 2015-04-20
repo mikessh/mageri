@@ -18,28 +18,24 @@
 
 package com.milaboratory.oncomigec.core.input;
 
-import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
+import com.milaboratory.oncomigec.core.Mig;
 
 public class PMig extends Mig {
     private final SMig mig1, mig2;
 
     public PMig(SMig mig1, SMig mig2) {
+        super(mig1.getSample(), mig1.getUmi());
         this.mig1 = mig1;
         this.mig2 = mig2;
         if (!mig1.getUmi().equals(mig2.getUmi()))
-            throw new IllegalArgumentException("UMI tags of MIGs don't match");
-        if (mig1.size() != mig2.size())
-            throw new IllegalArgumentException("Size of MIGs with same UMI don't match");
-    }
-
-    @Override
-    public NucleotideSequence getUmi() {
-        return mig1.getUmi();
+            throw new IllegalArgumentException("MIGs have different UMIs");
+        if (!mig1.getSample().equals(mig2.getSample()))
+            throw new IllegalArgumentException("MIGs are from different samples");
     }
 
     @Override
     public int size() {
-        return mig1.getReads().size();
+        return mig1.size();
     }
 
     public SMig getMig1() {
@@ -48,5 +44,10 @@ public class PMig extends Mig {
 
     public SMig getMig2() {
         return mig2;
+    }
+
+    @Override
+    public boolean isPairedEnd() {
+        return true;
     }
 }

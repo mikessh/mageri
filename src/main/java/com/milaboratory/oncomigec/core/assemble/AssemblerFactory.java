@@ -1,7 +1,7 @@
 package com.milaboratory.oncomigec.core.assemble;
 
-import com.milaboratory.oncomigec.misc.ReadSpecific;
-import com.milaboratory.oncomigec.core.input.Mig;
+import com.milaboratory.oncomigec.core.Mig;
+import com.milaboratory.oncomigec.core.ReadSpecific;
 
 public abstract class AssemblerFactory<T extends Consensus, V extends Mig> implements ReadSpecific {
     protected final AssemblerParameters parameters;

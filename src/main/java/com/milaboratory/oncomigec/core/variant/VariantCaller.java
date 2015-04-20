@@ -18,12 +18,11 @@
 
 package com.milaboratory.oncomigec.core.variant;
 
-import com.milaboratory.oncomigec.core.align.AlignedConsensus;
-import com.milaboratory.oncomigec.core.align.AlignerTable;
-import com.milaboratory.oncomigec.core.align.ConsensusAligner;
+import com.milaboratory.oncomigec.core.PipelineBlock;
 import com.milaboratory.oncomigec.core.genomic.Reference;
 import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
-import com.milaboratory.oncomigec.core.mutations.Mutation;
+import com.milaboratory.oncomigec.core.mapping.ConsensusAligner;
+import com.milaboratory.oncomigec.core.mapping.ConsensusAlignerTable;
 import com.milaboratory.oncomigec.core.variant.filter.CoverageFilter;
 import com.milaboratory.oncomigec.core.variant.filter.QualFilter;
 import com.milaboratory.oncomigec.core.variant.filter.SingletonFilter;
@@ -32,7 +31,7 @@ import com.milaboratory.oncomigec.core.variant.filter.VariantFilter;
 import java.util.HashMap;
 import java.util.Map;
 
-public class VariantCaller {
+public class VariantCaller extends PipelineBlock {
     protected final ReferenceLibrary referenceLibrary;
     protected final Map<Reference, VariantCallerTable> variantCallerTableByReference = new HashMap<>();
     protected final VariantFilter[] filters;
@@ -43,32 +42,31 @@ public class VariantCaller {
 
     public VariantCaller(ConsensusAligner consensusAligner,
                          VariantCallerParameters variantCallerParameters) {
+        super("variant.caller");
         this.referenceLibrary = consensusAligner.getReferenceLibrary();
         filters = new VariantFilter[3];
-        filters[0] = new QualFilter(variantCallerParameters.getQualThreshold());
-        filters[1] = new SingletonFilter(variantCallerParameters.getSingletonFilterRatio());
+        filters[0] = new QualFilter(variantCallerParameters.getQualityThreshold());
+        filters[1] = new SingletonFilter(variantCallerParameters.getSingletonFrequencyThreshold());
         filters[2] = new CoverageFilter(variantCallerParameters.getCoverageThreshold());
 
         ErrorModel errorModel = new ErrorModel(variantCallerParameters.getModelCycles(),
-                2.0 - variantCallerParameters.getModelEfficiency());
+                variantCallerParameters.getModelEfficiency() - 1.0);
 
         for (Reference reference : referenceLibrary.getReferences()) {
-            AlignerTable alignerTable = consensusAligner.getAlignerTable(reference);
-            if (alignerTable.wasUpdated()) {
+            ConsensusAlignerTable consensusAlignerTable = consensusAligner.getAlignerTable(reference);
+            if (consensusAlignerTable.wasUpdated()) {
                 variantCallerTableByReference.put(reference,
-                        new VariantCallerTable(this, alignerTable, errorModel));
+                        new VariantCallerTable(this, consensusAlignerTable, errorModel));
             }
         }
-        consensusAligner.clear();
-    }
 
-    public void filterMutations(AlignedConsensus alignedConsensus) {
-        VariantCallerTable table = variantCallerTableByReference.get(alignedConsensus.getReference());
-        for (Mutation mutation : alignedConsensus.getMajorMutations().getMutations()) {
-            if (!table.getVariant(mutation).getFilterSummary().passed()) {
-                mutation.filter();
-            }
-        }
+        // This is quite important for memory usage
+        // Of all objects, mig reader, consensus aligner and variant caller
+        // consume most memory. Consensus aligner holds memory ~ number of references
+        // Mig reader holds the entire read index, yet it gets immediately disposed
+        // Variant caller data is needed to merge variant tables from different samples
+        // Consensus aligner is the only thing we can and should get rid from here
+        consensusAligner.clear();
     }
 
     public ReferenceLibrary getReferenceLibrary() {
@@ -85,5 +83,15 @@ public class VariantCaller {
 
     public VariantCallerTable getVariantCallerTable(Reference reference) {
         return variantCallerTableByReference.get(reference);
+    }
+
+    @Override
+    public String getHeader() {
+        return null;
+    }
+
+    @Override
+    public String getBody() {
+        return null;
     }
 }

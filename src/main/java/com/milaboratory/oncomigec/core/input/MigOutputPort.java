@@ -19,7 +19,8 @@
 package com.milaboratory.oncomigec.core.input;
 
 import cc.redberry.pipe.OutputPort;
-import com.milaboratory.oncomigec.misc.ReadSpecific;
+import com.milaboratory.oncomigec.core.ReadSpecific;
+import com.milaboratory.oncomigec.core.Mig;
 
 public class MigOutputPort<MigType extends Mig> implements OutputPort<MigType>, ReadSpecific {
     private transient final MigReader<MigType> migReader;

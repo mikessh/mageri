@@ -18,7 +18,7 @@
 
 package com.milaboratory.oncomigec.pipeline.input;
 
-import com.milaboratory.oncomigec.misc.ReadSpecific;
+import com.milaboratory.oncomigec.core.ReadSpecific;
 
 import java.io.InputStream;
 import java.io.Serializable;

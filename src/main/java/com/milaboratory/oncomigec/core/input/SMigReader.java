@@ -23,8 +23,9 @@ import com.milaboratory.core.sequencing.read.SequencingRead;
 import com.milaboratory.oncomigec.core.input.index.Read;
 import com.milaboratory.oncomigec.core.input.index.ReadInfo;
 import com.milaboratory.oncomigec.pipeline.RuntimeParameters;
-import com.milaboratory.oncomigec.preprocessing.SCheckoutResult;
+import com.milaboratory.oncomigec.pipeline.analysis.Sample;
 import com.milaboratory.oncomigec.preprocessing.CheckoutProcessor;
+import com.milaboratory.oncomigec.preprocessing.SCheckoutResult;
 import com.milaboratory.util.CompressionType;
 
 import java.io.IOException;
@@ -73,7 +74,8 @@ public final class SMigReader extends MigReader<SMig> {
     }
 
     @Override
-    protected synchronized SMig take(String sampleName, int sizeThreshold) {
+    protected synchronized SMig take(Sample sample, int sizeThreshold) {
+        String sampleName = sample.getName();
         Iterator<Map.Entry<NucleotideSequence, List<ReadInfo>>> iterator = iteratorMap.get(sampleName);
         while (iterator.hasNext()) {
             Map.Entry<NucleotideSequence, List<ReadInfo>> entry = iterator.next();
@@ -96,7 +98,7 @@ public final class SMigReader extends MigReader<SMig> {
                     readList.add(read);
                 }
 
-                return new SMig(readList, entry.getKey());
+                return new SMig(sample, entry.getKey(), readList);
             }
         }
         return null;

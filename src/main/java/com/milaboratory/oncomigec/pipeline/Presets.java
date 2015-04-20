@@ -1,7 +1,7 @@
 package com.milaboratory.oncomigec.pipeline;
 
 import com.milaboratory.oncomigec.core.assemble.AssemblerParameters;
-import com.milaboratory.oncomigec.core.align.ConsensusAlignerParameters;
+import com.milaboratory.oncomigec.core.mapping.ConsensusAlignerParameters;
 import com.milaboratory.oncomigec.core.variant.VariantCallerParameters;
 import com.milaboratory.oncomigec.core.haplotype.HaplotypeAssemblerParameters;
 import com.milaboratory.oncomigec.core.input.PreprocessorParameters;

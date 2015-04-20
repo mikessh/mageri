@@ -25,7 +25,8 @@ public class BasicGenomicInfoProvider implements GenomicInfoProvider {
 
     @Override
     public void annotate(Reference reference) {
-        Contig contig = new Contig(reference.getName(), "user");
+        Contig contig = new Contig(reference.getName(),
+                "user", reference.getSequence().size());
 
         Contig existing = contigs.get(contig);
         if (existing == null) {

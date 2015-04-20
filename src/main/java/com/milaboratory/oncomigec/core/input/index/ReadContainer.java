@@ -18,7 +18,7 @@
 
 package com.milaboratory.oncomigec.core.input.index;
 
-import com.milaboratory.oncomigec.misc.ReadSpecific;
+import com.milaboratory.oncomigec.core.ReadSpecific;
 
 public abstract class ReadContainer implements ReadSpecific {
     public abstract Read getFirst();

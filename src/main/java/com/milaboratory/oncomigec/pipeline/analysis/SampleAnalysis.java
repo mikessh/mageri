@@ -22,18 +22,18 @@ import cc.redberry.pipe.OutputPort;
 import cc.redberry.pipe.blocks.Merger;
 import cc.redberry.pipe.blocks.ParallelProcessor;
 import cc.redberry.pipe.util.CountingOutputPort;
-import com.milaboratory.oncomigec.misc.ReadSpecific;
+import com.milaboratory.oncomigec.core.ReadSpecific;
 import com.milaboratory.oncomigec.core.PipelineBlock;
 import com.milaboratory.oncomigec.core.assemble.Consensus;
 import com.milaboratory.oncomigec.core.assemble.Assembler;
-import com.milaboratory.oncomigec.core.align.AlignedConsensus;
-import com.milaboratory.oncomigec.core.align.AlignerTable;
-import com.milaboratory.oncomigec.core.align.ConsensusAligner;
+import com.milaboratory.oncomigec.core.mapping.PAlignedConsensus;
+import com.milaboratory.oncomigec.core.mapping.ConsensusAlignerTable;
+import com.milaboratory.oncomigec.core.mapping.ConsensusAligner;
 import com.milaboratory.oncomigec.core.correct.CorrectedConsensus;
 import com.milaboratory.oncomigec.core.correct.Corrector;
 import com.milaboratory.oncomigec.core.genomic.Reference;
 import com.milaboratory.oncomigec.core.haplotype.HaplotypeAssembler;
-import com.milaboratory.oncomigec.core.input.Mig;
+import com.milaboratory.oncomigec.core.Mig;
 import com.milaboratory.oncomigec.core.input.MigSizeDistribution;
 import com.milaboratory.oncomigec.core.input.MigOutputPort;
 import com.milaboratory.oncomigec.core.variant.VariantContainer;
@@ -66,7 +66,7 @@ public class SampleAnalysis implements ReadSpecific, Serializable {
 
     private boolean firstStageRan = false, secondStageRan = false;
 
-    private final List<AlignedConsensus> alignmentDataList = new LinkedList<>();
+    private final List<PAlignedConsensus> alignmentDataList = new LinkedList<>();
 
     @SuppressWarnings("unchecked")
     protected SampleAnalysis(ProjectAnalysis parent,
@@ -136,10 +136,10 @@ public class SampleAnalysis implements ReadSpecific, Serializable {
         final OutputPort<ProcessorResultWrapper<Consensus>> assemblyResults =
                 new ParallelProcessor<>(countingInput, assembler, parent.getRuntimeParameters().getNumberOfThreads());
 
-        final OutputPort<ProcessorResultWrapper<AlignedConsensus>> alignerResults =
+        final OutputPort<ProcessorResultWrapper<PAlignedConsensus>> alignerResults =
                 new ParallelProcessor<>(assemblyResults, aligner, parent.getRuntimeParameters().getNumberOfThreads());
 
-        ProcessorResultWrapper<AlignedConsensus> alignmentDataWrapped;
+        ProcessorResultWrapper<PAlignedConsensus> alignmentDataWrapped;
         while ((alignmentDataWrapped = alignerResults.take()) != null)
             if (alignmentDataWrapped.hasResult())
                 alignmentDataList.add(alignmentDataWrapped.getResult());
@@ -176,7 +176,7 @@ public class SampleAnalysis implements ReadSpecific, Serializable {
                 parent.getPresets().getHaplotypeAssemblerParameters());
 
         // Correction processing (MIGEC)
-        for (AlignedConsensus alignmentData : alignmentDataList) {
+        for (PAlignedConsensus alignmentData : alignmentDataList) {
             CorrectedConsensus correctedConsensus = corrector.correct(alignmentData);
             if (correctedConsensus != null)
                 haplotypeAssembler.add(correctedConsensus);
@@ -194,8 +194,8 @@ public class SampleAnalysis implements ReadSpecific, Serializable {
         if (!firstStageRan)
             throw new RuntimeException("Should run first stage first.");
 
-        AlignerTable alignerTable = aligner.getAlignerTable();
-        AlignerTable substitutionsAndCoverage = alignerTable.getSubstitutionsAndCoverage(reference);
+        ConsensusAlignerTable consensusAlignerTable = aligner.getAlignerTable();
+        ConsensusAlignerTable substitutionsAndCoverage = consensusAlignerTable.getSubstitutionsAndCoverage(reference);
 
         if (substitutionsAndCoverage.wasUpdated())
             return new VariantContainer(substitutionsAndCoverage);

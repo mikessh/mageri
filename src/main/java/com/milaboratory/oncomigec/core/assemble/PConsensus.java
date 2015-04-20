@@ -15,14 +15,14 @@
  */
 package com.milaboratory.oncomigec.core.assemble;
 
-import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.core.sequencing.read.PSequencingRead;
 import com.milaboratory.core.sequencing.read.PSequencingReadImpl;
 
-public final class PConsensus implements Consensus<PSequencingRead> {
+public final class PConsensus extends Consensus<PSequencingRead> {
     private final SConsensus consensus1, consensus2;
 
     public PConsensus(SConsensus consensus1, SConsensus consensus2) {
+        super(consensus1.getSample(), consensus1.getUmi());
         this.consensus1 = consensus1;
         this.consensus2 = consensus2;
     }
@@ -44,11 +44,6 @@ public final class PConsensus implements Consensus<PSequencingRead> {
     public int getAssembledSize() {
         return Math.min(consensus1.getAssembledSize(),
                 consensus2.getAssembledSize());
-    }
-
-    @Override
-    public NucleotideSequence getUmi() {
-        return this.consensus1.getUmi();
     }
 
     @Override

@@ -2,16 +2,22 @@ package com.milaboratory.oncomigec.core.assemble;
 
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.core.sequencing.read.SequencingRead;
-import com.milaboratory.oncomigec.misc.ReadSpecific;
+import com.milaboratory.oncomigec.core.Mig;
+import com.milaboratory.oncomigec.pipeline.analysis.Sample;
 
-import java.io.Serializable;
+public abstract class Consensus<ReadType extends SequencingRead> extends Mig {
+    public Consensus(Sample sample, NucleotideSequence umi) {
+        super(sample, umi);
+    }
 
-public interface Consensus<ReadType extends SequencingRead> extends Serializable, ReadSpecific {
-    public int getAssembledSize();
+    @Override
+    public int size() {
+        return 1;
+    }
+    
+    public abstract int getAssembledSize();
 
-    public int getTrueSize();
+    public abstract int getTrueSize();
 
-    public NucleotideSequence getUmi();
-
-    public ReadType asRead();
+    public abstract ReadType asRead();
 }

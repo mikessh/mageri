@@ -8,7 +8,8 @@ import cc.redberry.pipe.util.CountLimitingOutputPort;
 import cc.redberry.pipe.util.CountingOutputPort;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.core.sequencing.read.SequencingRead;
-import com.milaboratory.oncomigec.misc.ReadSpecific;
+import com.milaboratory.oncomigec.core.ReadSpecific;
+import com.milaboratory.oncomigec.core.Mig;
 import com.milaboratory.oncomigec.core.input.index.PairedEndReadWrappingFactory;
 import com.milaboratory.oncomigec.core.input.index.QualityProvider;
 import com.milaboratory.oncomigec.core.input.index.SingleEndReadWrappingFactory;
@@ -17,6 +18,7 @@ import com.milaboratory.oncomigec.core.input.index.IndexingInfo;
 import com.milaboratory.oncomigec.core.input.index.UmiIndexer;
 import com.milaboratory.oncomigec.pipeline.RuntimeParameters;
 import com.milaboratory.oncomigec.pipeline.Speaker;
+import com.milaboratory.oncomigec.pipeline.analysis.Sample;
 import com.milaboratory.oncomigec.preprocessing.CheckoutProcessor;
 import com.milaboratory.oncomigec.misc.ProcessorResultWrapper;
 
@@ -108,7 +110,7 @@ public abstract class MigReader<MigType extends Mig> implements Serializable, Re
             umiIndexBySample.put(sampleName, new HashMap<NucleotideSequence, List<ReadInfo>>());
         }
 
-        // Take results, update histogram and index (single thread)
+        // Take results, extractMutations histogram and index (single thread)
         ProcessorResultWrapper<IndexingInfo> result;
         while ((result = indexingResults.take()) != null) {
             if (result.hasResult()) {
@@ -139,7 +141,7 @@ public abstract class MigReader<MigType extends Mig> implements Serializable, Re
         return umiHistogramBySample.get(sampleName).isMismatch(umi);
     }
 
-    protected abstract MigType take(String sampleName, int sizeThreshold);
+    protected abstract MigType take(Sample sample, int sizeThreshold);
 
     @SuppressWarnings("unchecked")
     public List<String> getSampleNames() {

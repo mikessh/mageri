@@ -19,21 +19,22 @@ import com.milaboratory.core.sequence.NucleotideSQPair;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.core.sequencing.read.SSequencingRead;
 import com.milaboratory.core.sequencing.read.SSequencingReadImpl;
+import com.milaboratory.oncomigec.pipeline.analysis.Sample;
 
 import java.util.Collections;
 import java.util.Set;
 
-public final class SConsensus implements Consensus<SSequencingRead> {
+public final class SConsensus extends Consensus<SSequencingRead> {
     private final NucleotideSQPair consensusSQPair;
-    private final NucleotideSequence umi;
     private final int assembledSize, trueSize;
     private final Set<Integer> minors;
 
-    public SConsensus(NucleotideSequence umi,
+    public SConsensus(Sample sample,
+                      NucleotideSequence umi,
                       NucleotideSQPair consensusSQPair,
                       Set<Integer> minors,
                       int assembledSize, int trueSize) {
-        this.umi = umi;
+        super(sample, umi);
         this.consensusSQPair = consensusSQPair;
         this.minors = minors;
         this.assembledSize = assembledSize;
@@ -51,7 +52,7 @@ public final class SConsensus implements Consensus<SSequencingRead> {
     @Override
     public SSequencingRead asRead() {
         return new SSequencingReadImpl(
-                "C:" + umi + ":" + assembledSize + ":" + trueSize,
+                "C:" + sample.getFullName() + " " + umi + ":" + assembledSize + ":" + trueSize,
                 consensusSQPair,
                 -1);
     }
@@ -62,11 +63,6 @@ public final class SConsensus implements Consensus<SSequencingRead> {
 
     public int getTrueSize() {
         return trueSize;
-    }
-
-    @Override
-    public NucleotideSequence getUmi() {
-        return umi;
     }
 
     @Override

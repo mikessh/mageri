@@ -20,9 +20,10 @@ package com.milaboratory.oncomigec.core.variant.filter;
 
 import com.milaboratory.oncomigec.core.variant.Variant;
 
-public abstract class VariantFilter {
-    public abstract boolean pass(Variant variant);
-    
-    @Override
-    public abstract String toString();
+public interface VariantFilter {
+    public boolean pass(Variant variant);
+
+    public String getDescription();
+
+    public String getId();
 }

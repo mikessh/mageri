@@ -18,7 +18,7 @@
   <CorrectorParameters>
     <readGainThreshold>0.5</readGainThreshold>
     <filterSingletons>false</filterSingletons>
-    <singletonFilterRatio>10000.0</singletonFilterRatio>
+    <singletonFrequencyThreshold>10000.0</singletonFrequencyThreshold>
     <minMigCoverage>5</minMigCoverage>
     <minMigCount>10</minMigCount>
     <minAvgQuality>20</minAvgQuality>

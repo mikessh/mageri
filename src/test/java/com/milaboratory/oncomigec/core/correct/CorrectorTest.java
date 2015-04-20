@@ -16,12 +16,12 @@
 package com.milaboratory.oncomigec.core.correct;
 
 import com.milaboratory.core.sequence.mutations.Mutations;
-import com.milaboratory.oncomigec.core.align.sequence.ExtendedKmerAligner;
+import com.milaboratory.oncomigec.core.mapping.alignment.ExtendedKmerAligner;
 import com.milaboratory.oncomigec.core.assemble.SConsensus;
 import com.milaboratory.oncomigec.core.assemble.SAssembler;
-import com.milaboratory.oncomigec.core.align.AlignedConsensus;
-import com.milaboratory.oncomigec.core.align.ConsensusAligner;
-import com.milaboratory.oncomigec.core.align.SConsensusAligner;
+import com.milaboratory.oncomigec.core.mapping.PAlignedConsensus;
+import com.milaboratory.oncomigec.core.mapping.ConsensusAligner;
+import com.milaboratory.oncomigec.core.mapping.SConsensusAligner;
 import com.milaboratory.oncomigec.core.genomic.Reference;
 import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
 import com.milaboratory.oncomigec.core.input.SMig;
@@ -52,7 +52,7 @@ public class CorrectorTest {
             ReferenceLibrary referenceLibrary = referenceGenerator.nextReferenceLibrary(1);
             Reference reference = referenceLibrary.getReferences().get(0);
             ConsensusAligner consensusAligner = new SConsensusAligner(new ExtendedKmerAligner(referenceLibrary));
-            List<AlignedConsensus> alignedConsensuses = new LinkedList<>();
+            List<PAlignedConsensus> alignedConsensuses = new LinkedList<>();
 
             double stage0ErrorFrequency = 0, stage1ErrorFrequency = 0, stage2ErrorFrequency = 0;
             for (int j = 0; j < nMigs; j++) {
@@ -63,7 +63,7 @@ public class CorrectorTest {
                 SConsensus consensus = assembler.assemble(mig);
 
                 if (consensus != null) {
-                    AlignedConsensus alignedConsensus = consensusAligner.align(consensus);
+                    PAlignedConsensus alignedConsensus = consensusAligner.align(consensus);
                     if (alignedConsensus != null) {
                         stage1ErrorFrequency += alignedConsensus.getMajorMutations().substitutionCount();
                         alignedConsensuses.add(alignedConsensus);
@@ -81,7 +81,7 @@ public class CorrectorTest {
             Corrector corrector = new Corrector(consensusAligner.getAlignerTable(),
                     VariantCallerParameters.FILTERING, new ErrorLibrary(true));
 
-            for (AlignedConsensus alignedConsensus : alignedConsensuses) {
+            for (PAlignedConsensus alignedConsensus : alignedConsensuses) {
                 CorrectedConsensus correctedConsensus = corrector.correct(alignedConsensus);
                 if (correctedConsensus != null)
                     stage2ErrorFrequency += Mutations.substitutions(correctedConsensus.getMutations());

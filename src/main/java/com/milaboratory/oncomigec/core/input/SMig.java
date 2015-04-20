@@ -19,18 +19,19 @@
 package com.milaboratory.oncomigec.core.input;
 
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
+import com.milaboratory.oncomigec.core.Mig;
 import com.milaboratory.oncomigec.core.input.index.Read;
+import com.milaboratory.oncomigec.pipeline.analysis.Sample;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class SMig extends Mig {
+public final class SMig extends Mig {
     private final List<Read> reads;
-    private final NucleotideSequence umi;
 
-    public SMig(List<Read> reads, NucleotideSequence umi) {
+    public SMig(Sample sample, NucleotideSequence umi, List<Read> reads) {
+        super(sample, umi);
         this.reads = reads;
-        this.umi = umi;
     }
 
     public List<Read> getReads() {
@@ -46,12 +47,12 @@ public class SMig extends Mig {
     }
 
     @Override
-    public NucleotideSequence getUmi() {
-        return umi;
+    public int size() {
+        return reads.size();
     }
 
     @Override
-    public int size() {
-        return reads.size();
+    public boolean isPairedEnd() {
+        return false;
     }
 }

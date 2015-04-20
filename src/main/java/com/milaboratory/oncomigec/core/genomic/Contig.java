@@ -22,10 +22,12 @@ import java.io.Serializable;
 
 public class Contig implements Comparable<Contig>, Serializable {
     private final String ID, assembly;
+    private final int length;
 
-    public Contig(String ID, String assembly) {
+    public Contig(String ID, String assembly, int length) {
         this.ID = ID;
         this.assembly = assembly;
+        this.length = length;
     }
 
     public String getID() {
@@ -34,6 +36,10 @@ public class Contig implements Comparable<Contig>, Serializable {
 
     public String getAssembly() {
         return assembly;
+    }
+
+    public int getLength() {
+        return length;
     }
 
     @Override

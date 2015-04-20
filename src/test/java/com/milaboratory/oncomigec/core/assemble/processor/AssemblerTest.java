@@ -21,7 +21,7 @@ import com.milaboratory.oncomigec.core.assemble.Assembler;
 import com.milaboratory.oncomigec.core.assemble.Consensus;
 import com.milaboratory.oncomigec.core.assemble.SAssembler;
 import com.milaboratory.oncomigec.core.assemble.SConsensus;
-import com.milaboratory.oncomigec.core.input.Mig;
+import com.milaboratory.oncomigec.core.Mig;
 import com.milaboratory.oncomigec.core.input.SMig;
 import com.milaboratory.oncomigec.misc.Basics;
 import com.milaboratory.oncomigec.misc.testing.generators.RandomMigGenerator;

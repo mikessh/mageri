@@ -5,8 +5,8 @@ import com.milaboratory.core.sequence.mutations.Mutations;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequenceBuilder;
 import com.milaboratory.core.sequence.quality.SequenceQualityPhred;
-import com.milaboratory.oncomigec.core.input.index.Read;
 import com.milaboratory.oncomigec.core.input.SMig;
+import com.milaboratory.oncomigec.core.input.index.Read;
 import com.milaboratory.oncomigec.misc.Util;
 
 import java.util.*;
@@ -219,7 +219,7 @@ public final class SAssembler extends Assembler<SConsensus, SMig> {
         migsAssembled.incrementAndGet();
         readsAssembled.addAndGet(assembledReads.size());
 
-        SConsensus consensus = new SConsensus(mig.getUmi(), consensusSQPair,
+        SConsensus consensus = new SConsensus(mig.getSample(), mig.getUmi(), consensusSQPair,
                 minors, n, mig.size());
 
         if (storeConsensuses)

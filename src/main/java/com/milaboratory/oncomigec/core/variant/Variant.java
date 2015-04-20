@@ -21,6 +21,7 @@ package com.milaboratory.oncomigec.core.variant;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.oncomigec.core.genomic.Reference;
 import com.milaboratory.oncomigec.core.mutations.Mutation;
+import com.milaboratory.oncomigec.core.output.VcfRecord;
 import com.milaboratory.oncomigec.core.variant.filter.FilterSummary;
 
 public class Variant {
