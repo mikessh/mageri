@@ -34,7 +34,7 @@ public class Project implements Serializable {
     private final HashMap<Integer, Sample> sampleById = new HashMap<>();
     private final Input input;
 
-    static Project fromInput(Input input) {
+    public static Project fromInput(Input input) {
         Project project = new Project(input);
 
         int sampleId = 0;

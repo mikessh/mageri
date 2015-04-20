@@ -8,19 +8,14 @@ import cc.redberry.pipe.util.CountLimitingOutputPort;
 import cc.redberry.pipe.util.CountingOutputPort;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.core.sequencing.read.SequencingRead;
-import com.milaboratory.oncomigec.core.ReadSpecific;
 import com.milaboratory.oncomigec.core.Mig;
-import com.milaboratory.oncomigec.core.input.index.PairedEndReadWrappingFactory;
-import com.milaboratory.oncomigec.core.input.index.QualityProvider;
-import com.milaboratory.oncomigec.core.input.index.SingleEndReadWrappingFactory;
-import com.milaboratory.oncomigec.core.input.index.ReadInfo;
-import com.milaboratory.oncomigec.core.input.index.IndexingInfo;
-import com.milaboratory.oncomigec.core.input.index.UmiIndexer;
+import com.milaboratory.oncomigec.core.ReadSpecific;
+import com.milaboratory.oncomigec.core.input.index.*;
+import com.milaboratory.oncomigec.misc.ProcessorResultWrapper;
 import com.milaboratory.oncomigec.pipeline.RuntimeParameters;
 import com.milaboratory.oncomigec.pipeline.Speaker;
 import com.milaboratory.oncomigec.pipeline.analysis.Sample;
 import com.milaboratory.oncomigec.preprocessing.CheckoutProcessor;
-import com.milaboratory.oncomigec.misc.ProcessorResultWrapper;
 
 import java.io.Serializable;
 import java.util.*;
@@ -156,7 +151,7 @@ public abstract class MigReader<MigType extends Mig> implements Serializable, Re
         return checkoutProcessor;
     }
 
-    public synchronized void empty() {
-        iteratorMap.clear();
+    public synchronized void clear(Sample sample) {
+        iteratorMap.remove(sample.getName());
     }
 }

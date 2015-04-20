@@ -18,13 +18,15 @@
 
 package com.milaboratory.oncomigec.core.output;
 
+import com.milaboratory.oncomigec.misc.Record;
+
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Objects;
 
 import static com.milaboratory.oncomigec.core.output.SamUtil.*;
 
-public class SamRecord {
+public class SamRecord implements Record {
     private final SamSegmentRecord[] samSegmentRecords;
 
     private final static Comparator<SamSegmentRecord> comparator = new Comparator<SamSegmentRecord>() {

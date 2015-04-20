@@ -22,27 +22,19 @@ import cc.redberry.pipe.OutputPort;
 import cc.redberry.pipe.blocks.Merger;
 import cc.redberry.pipe.blocks.ParallelProcessor;
 import cc.redberry.pipe.util.CountingOutputPort;
-import com.milaboratory.oncomigec.core.ReadSpecific;
-import com.milaboratory.oncomigec.core.PipelineBlock;
-import com.milaboratory.oncomigec.core.assemble.Consensus;
-import com.milaboratory.oncomigec.core.assemble.Assembler;
-import com.milaboratory.oncomigec.core.mapping.PAlignedConsensus;
-import com.milaboratory.oncomigec.core.mapping.ConsensusAlignerTable;
-import com.milaboratory.oncomigec.core.mapping.ConsensusAligner;
-import com.milaboratory.oncomigec.core.correct.CorrectedConsensus;
-import com.milaboratory.oncomigec.core.correct.Corrector;
-import com.milaboratory.oncomigec.core.genomic.Reference;
-import com.milaboratory.oncomigec.core.haplotype.HaplotypeAssembler;
 import com.milaboratory.oncomigec.core.Mig;
-import com.milaboratory.oncomigec.core.input.MigSizeDistribution;
+import com.milaboratory.oncomigec.core.PipelineBlock;
+import com.milaboratory.oncomigec.core.ReadSpecific;
+import com.milaboratory.oncomigec.core.assemble.Assembler;
+import com.milaboratory.oncomigec.core.assemble.Consensus;
 import com.milaboratory.oncomigec.core.input.MigOutputPort;
-import com.milaboratory.oncomigec.core.variant.VariantContainer;
-import com.milaboratory.oncomigec.core.variant.VariantLibrary;
-import com.milaboratory.oncomigec.pipeline.Speaker;
+import com.milaboratory.oncomigec.core.input.MigSizeDistribution;
+import com.milaboratory.oncomigec.core.mapping.AlignedConsensus;
+import com.milaboratory.oncomigec.core.mapping.ConsensusAligner;
+import com.milaboratory.oncomigec.core.variant.VariantCaller;
 import com.milaboratory.oncomigec.misc.ProcessorResultWrapper;
-import org.apache.commons.math.MathException;
+import com.milaboratory.oncomigec.pipeline.Speaker;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -56,17 +48,15 @@ public class SampleAnalysis implements ReadSpecific, Serializable {
     protected final Sample sample;
 
     protected transient final MigOutputPort reader;
-    protected transient VariantLibrary variantLibrary;
 
     protected final MigSizeDistribution migSizeDistribution;
     protected final Assembler assembler;
-    protected final ConsensusAligner aligner;
-    protected Corrector corrector;
-    protected HaplotypeAssembler haplotypeAssembler;
+    protected final ConsensusAligner consensusAligner;
+    protected VariantCaller variantCaller;
 
-    private boolean firstStageRan = false, secondStageRan = false;
+    protected boolean ran = false;
 
-    private final List<PAlignedConsensus> alignmentDataList = new LinkedList<>();
+    private final List<AlignedConsensus> alignmentDataList = new LinkedList<>();
 
     @SuppressWarnings("unchecked")
     protected SampleAnalysis(ProjectAnalysis parent,
@@ -86,7 +76,7 @@ public class SampleAnalysis implements ReadSpecific, Serializable {
             throw new RuntimeException("All read-specific pipeline steps should have the same paired-end property.");
 
         this.assembler = assembler;
-        this.aligner = consensusAligner;
+        this.consensusAligner = consensusAligner;
     }
 
     private void sout(String message, int verbosityLevel) {
@@ -95,11 +85,10 @@ public class SampleAnalysis implements ReadSpecific, Serializable {
     }
 
     @SuppressWarnings("unchecked")
-    public void runFirstStage() throws Exception {
-        if (firstStageRan)
+    public void run() throws Exception {
+        if (ran) {
             return;
-
-        sout("Running first stage.", 1);
+        }
 
         OutputPort<Mig> input = reader;
 
@@ -121,7 +110,7 @@ public class SampleAnalysis implements ReadSpecific, Serializable {
                     while (!countingInput.isClosed()) {
                         long count = countingInput.getCount();
                         if (prevCount != count) {
-                            sout("Assemblying & aligning consensuses, " + count + " MIGs processed..", 2);
+                            sout("Assembling & aligning consensuses, " + count + " MIGs processed..", 2);
                             prevCount = count;
                         }
                         Thread.sleep(10000);
@@ -136,71 +125,24 @@ public class SampleAnalysis implements ReadSpecific, Serializable {
         final OutputPort<ProcessorResultWrapper<Consensus>> assemblyResults =
                 new ParallelProcessor<>(countingInput, assembler, parent.getRuntimeParameters().getNumberOfThreads());
 
-        final OutputPort<ProcessorResultWrapper<PAlignedConsensus>> alignerResults =
-                new ParallelProcessor<>(assemblyResults, aligner, parent.getRuntimeParameters().getNumberOfThreads());
+        final OutputPort<ProcessorResultWrapper<AlignedConsensus>> alignerResults =
+                new ParallelProcessor<>(assemblyResults, consensusAligner, parent.getRuntimeParameters().getNumberOfThreads());
 
-        ProcessorResultWrapper<PAlignedConsensus> alignmentDataWrapped;
+        ProcessorResultWrapper<AlignedConsensus> alignmentDataWrapped;
         while ((alignmentDataWrapped = alignerResults.take()) != null)
             if (alignmentDataWrapped.hasResult())
                 alignmentDataList.add(alignmentDataWrapped.getResult());
 
-        sout("Finished first stage, " + countingInput.getCount() + " MIGs processed in total.", 1);
+        sout("Finished, " + countingInput.getCount() + " MIGs processed in total.", 1);
 
-        firstStageRan = true;
-    }
+        sout("Calling variants.", 1);
 
-    public void runSecondStage() throws MathException, IOException {
-        if (!firstStageRan)
-            throw new RuntimeException("Should run first stage first.");
-
-        if (secondStageRan)
-            return;
-
-        sout("Running second stage.", 1);
-
-        sout("Correcting variants.", 1);
-
-        // Find major and minor mutations
-        this.corrector = new Corrector(aligner.getAlignerTable(),
+        this.variantCaller = new VariantCaller(consensusAligner,
                 parent.getPresets().getVariantCallerParameters());
 
-        // Error statistics for haplotype filtering using binomial test
-        // Store here for output summary purposes
-        variantLibrary = corrector.getCorrectorReferenceLibrary().getVariantLibrary();
+        sout("Finished", 1);
 
-        sout("Assemblying haplotypes.", 1);
-
-        // Haplotype 1-mm graph
-        this.haplotypeAssembler = new HaplotypeAssembler(
-                corrector.getCorrectorReferenceLibrary(),
-                parent.getPresets().getHaplotypeAssemblerParameters());
-
-        // Correction processing (MIGEC)
-        for (PAlignedConsensus alignmentData : alignmentDataList) {
-            CorrectedConsensus correctedConsensus = corrector.correct(alignmentData);
-            if (correctedConsensus != null)
-                haplotypeAssembler.add(correctedConsensus);
-        }
-
-        // Haplotype filtering
-        haplotypeAssembler.filterEscaped();
-
-        secondStageRan = true;
-
-        sout("Finished second stage, " + haplotypeAssembler.getFilteredHaplotypes().size() + " haplotypes assembled.", 1);
-    }
-
-    public VariantContainer dumpMinorVariants(Reference reference) {
-        if (!firstStageRan)
-            throw new RuntimeException("Should run first stage first.");
-
-        ConsensusAlignerTable consensusAlignerTable = aligner.getAlignerTable();
-        ConsensusAlignerTable substitutionsAndCoverage = consensusAlignerTable.getSubstitutionsAndCoverage(reference);
-
-        if (substitutionsAndCoverage.wasUpdated())
-            return new VariantContainer(substitutionsAndCoverage);
-        else
-            return null;
+        ran = true;
     }
 
     public MigOutputPort getReader() {
@@ -215,12 +157,16 @@ public class SampleAnalysis implements ReadSpecific, Serializable {
         return assembler;
     }
 
-    public ConsensusAligner getAligner() {
-        return aligner;
+    public ConsensusAligner getConsensusAligner() {
+        return consensusAligner;
     }
 
-    public Corrector getCorrector() {
-        return corrector;
+    public VariantCaller getVariantCaller() {
+        return variantCaller;
+    }
+
+    public List<AlignedConsensus> getAlignmentDataList() {
+        return alignmentDataList;
     }
 
     public Sample getSample() {
@@ -231,29 +177,16 @@ public class SampleAnalysis implements ReadSpecific, Serializable {
         return parent;
     }
 
-    public HaplotypeAssembler getHaplotypeAssembler() {
-        return haplotypeAssembler;
-    }
-
-    public VariantLibrary getVariantLibrary() {
-        return variantLibrary;
-    }
-
-    public boolean isFirstStageRan() {
-        return firstStageRan;
-    }
-
-    public boolean isSecondStageRan() {
-        return secondStageRan;
+    public boolean wasRan() {
+        return ran;
     }
 
     public List<PipelineBlock> getBlocks() {
         return Arrays.asList(
                 migSizeDistribution,
                 assembler,
-                aligner,
-                corrector,
-                haplotypeAssembler
+                consensusAligner,
+                variantCaller
         );
     }
 

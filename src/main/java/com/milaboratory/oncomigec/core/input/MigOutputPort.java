@@ -21,21 +21,22 @@ package com.milaboratory.oncomigec.core.input;
 import cc.redberry.pipe.OutputPort;
 import com.milaboratory.oncomigec.core.ReadSpecific;
 import com.milaboratory.oncomigec.core.Mig;
+import com.milaboratory.oncomigec.pipeline.analysis.Sample;
 
 public class MigOutputPort<MigType extends Mig> implements OutputPort<MigType>, ReadSpecific {
     private transient final MigReader<MigType> migReader;
-    private final String sampleName;
+    private final Sample sample;
     private final int sizeThreshold;
 
-    public MigOutputPort(MigReader<MigType> migReader, String sampleName, int sizeThreshold) {
+    public MigOutputPort(MigReader<MigType> migReader, Sample sample, int sizeThreshold) {
         this.migReader = migReader;
-        this.sampleName = sampleName;
+        this.sample = sample;
         this.sizeThreshold = sizeThreshold;
     }
 
     @Override
     public MigType take() {
-        return migReader.take(sampleName, sizeThreshold);
+        return migReader.take(sample, sizeThreshold);
     }
 
     @Override
@@ -43,7 +44,7 @@ public class MigOutputPort<MigType extends Mig> implements OutputPort<MigType>, 
         return migReader.isPairedEnd();
     }
 
-    public void empty() {
-        migReader.empty();
+    public void clear() {
+        migReader.clear(sample);
     }
 }

@@ -18,8 +18,44 @@
 
 package com.milaboratory.oncomigec.core.output;
 
-public class VcfRecord {
+import com.milaboratory.oncomigec.misc.Record;
+
+public class VcfRecord implements Record {
     private final String chromosome, id,
-            referenceBase, alternativeBase;
+            referenceBase, alternativeBase,
+            filterString, infoString,
+            formatKeyString, formatValueString;
     private final int position, quality;
+
+    public VcfRecord(String chromosome, int position, String id,
+                     String referenceBase, String alternativeBase,
+                     int quality, String filterString,
+                     String infoString) {
+        this(chromosome, position, id, referenceBase, alternativeBase, quality, filterString, infoString,
+                "GT", "0/0");
+    }
+
+    public VcfRecord(String chromosome, int position, String id,
+                     String referenceBase, String alternativeBase,
+                     int quality, String filterString,
+                     String infoString, String formatKeyString, String formatValueString) {
+        this.chromosome = chromosome;
+        this.id = id;
+        this.referenceBase = referenceBase;
+        this.alternativeBase = alternativeBase;
+        this.filterString = filterString;
+        this.infoString = infoString;
+        this.formatKeyString = formatKeyString;
+        this.formatValueString = formatValueString;
+        this.position = position;
+        this.quality = quality;
+    }
+
+    @Override
+    public String toString() {
+        return chromosome + "\t" + position + "\t" + id + "\t" +
+                referenceBase + "\t" + alternativeBase + "\t" +
+                quality + "\t" + filterString + "\t" +
+                infoString + "\t" + formatKeyString + "\t" + formatValueString;
+    }
 }

@@ -16,7 +16,7 @@
 package com.milaboratory.oncomigec.core.mapping.consensus;
 
 import com.milaboratory.oncomigec.core.mapping.PAlignedConsensus;
-import com.milaboratory.oncomigec.core.mapping.ConsensusAlignerTable;
+import com.milaboratory.oncomigec.core.mapping.MutationsTable;
 import com.milaboratory.oncomigec.core.mapping.ConsensusAligner;
 import com.milaboratory.oncomigec.core.mapping.SConsensusAligner;
 import com.milaboratory.oncomigec.core.mapping.alignment.ExtendedKmerAligner;
@@ -81,7 +81,7 @@ public class ConsensusAlignerTest {
         double avgAlignmentRate = 0;
 
         for (int n = 0; n < nRepetiotions; n++) {
-            // No ambiguity for aligner
+            // No ambiguity for consensusAligner
             ReferenceLibrary library = referenceGenerator.nextReferenceLibrary(1);
             Reference reference = referenceGenerator.nextReference(library);
             Assembler assembler = new SAssembler(parameters);
@@ -101,7 +101,7 @@ public class ConsensusAlignerTest {
                 }
             }
 
-            ConsensusAlignerTable mutCov = consensusAligner.getAlignerTable().
+            MutationsTable mutCov = consensusAligner.getAlignerTable().
                     getSubstitutionsAndCoverage(reference);
 
             int len = reference.getSequence().size();

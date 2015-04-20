@@ -36,7 +36,7 @@ public abstract class Aligner {
     /**
      * Gets reference library
      *
-     * @return returns a map of references built in the aligner with corresponding IDs
+     * @return returns a map of references built in the consensusAligner with corresponding IDs
      */
     public ReferenceLibrary getReferenceLibrary() {
         return referenceLibrary;

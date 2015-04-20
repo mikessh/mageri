@@ -18,23 +18,27 @@
 
 package com.milaboratory.oncomigec.core.variant;
 
+import com.milaboratory.core.sequence.mutations.Mutations;
+import com.milaboratory.core.sequence.nucleotide.NucleotideSequenceBuilder;
 import com.milaboratory.oncomigec.core.PipelineBlock;
 import com.milaboratory.oncomigec.core.genomic.Reference;
 import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
 import com.milaboratory.oncomigec.core.mapping.ConsensusAligner;
-import com.milaboratory.oncomigec.core.mapping.ConsensusAlignerTable;
+import com.milaboratory.oncomigec.core.mapping.MutationsTable;
+import com.milaboratory.oncomigec.core.mutations.Mutation;
+import com.milaboratory.oncomigec.core.mutations.Substitution;
 import com.milaboratory.oncomigec.core.variant.filter.CoverageFilter;
 import com.milaboratory.oncomigec.core.variant.filter.QualFilter;
 import com.milaboratory.oncomigec.core.variant.filter.SingletonFilter;
 import com.milaboratory.oncomigec.core.variant.filter.VariantFilter;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class VariantCaller extends PipelineBlock {
     protected final ReferenceLibrary referenceLibrary;
     protected final Map<Reference, VariantCallerTable> variantCallerTableByReference = new HashMap<>();
     protected final VariantFilter[] filters;
+    protected final List<Variant> variants = new LinkedList<>();
 
     public VariantCaller(ConsensusAligner consensusAligner) {
         this(consensusAligner, VariantCallerParameters.DEFAULT);
@@ -53,19 +57,50 @@ public class VariantCaller extends PipelineBlock {
                 variantCallerParameters.getModelEfficiency() - 1.0);
 
         for (Reference reference : referenceLibrary.getReferences()) {
-            ConsensusAlignerTable consensusAlignerTable = consensusAligner.getAlignerTable(reference);
-            if (consensusAlignerTable.wasUpdated()) {
-                variantCallerTableByReference.put(reference,
-                        new VariantCallerTable(this, consensusAlignerTable, errorModel));
+            MutationsTable mutationsTable = consensusAligner.getAlignerTable(reference);
+            if (mutationsTable.wasUpdated()) {
+                for (Mutation mutation : mutationsTable.getMutations()) {
+                    if (mutation instanceof Substitution) {
+                        int code = ((Substitution) mutation).getCode(),
+                                pos = Mutations.getPosition(code),
+                                base = Mutations.getTo(code);
+
+                        int majorCount = mutationsTable.getMajorMigCount(pos, base);
+
+                        assert majorCount > 0;
+
+                        int coverage = mutationsTable.getMigCoverage(pos);
+
+                        double score = errorModel.getLog10PValue(
+                                majorCount,
+                                mutationsTable.getMinorMigCount(pos, base),
+                                coverage);
+
+                        NucleotideSequenceBuilder nsb = new NucleotideSequenceBuilder(1);
+                        nsb.setCode(0, mutationsTable.getAncestralBase(pos));
+
+                        Variant variant = new Variant(reference,
+                                mutation, majorCount,
+                                mutationsTable.getMigCoverage(pos),
+                                majorCount / (double) coverage, score,
+                                nsb.create(), mutationsTable.hasReferenceBase(pos));
+
+                        variant.filter(this);
+
+                        variants.add(variant);
+                    } else {
+                        // TODO: IMPORTANT: INDELS
+                    }
+                }
             }
         }
 
         // This is quite important for memory usage
-        // Of all objects, mig reader, consensus aligner and variant caller
-        // consume most memory. Consensus aligner holds memory ~ number of references
+        // Of all objects, mig reader, consensus consensusAligner and variant caller
+        // consume most memory. Consensus consensusAligner holds memory ~ number of references
         // Mig reader holds the entire read index, yet it gets immediately disposed
         // Variant caller data is needed to merge variant tables from different samples
-        // Consensus aligner is the only thing we can and should get rid from here
+        // Consensus consensusAligner is the only thing we can and should get rid from here
         consensusAligner.clear();
     }
 
@@ -81,8 +116,8 @@ public class VariantCaller extends PipelineBlock {
         return filters[index];
     }
 
-    public VariantCallerTable getVariantCallerTable(Reference reference) {
-        return variantCallerTableByReference.get(reference);
+    public List<Variant> getVariants() {
+        return Collections.unmodifiableList(variants);
     }
 
     @Override

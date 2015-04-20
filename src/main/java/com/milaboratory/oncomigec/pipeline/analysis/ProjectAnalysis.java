@@ -22,7 +22,12 @@ import com.milaboratory.oncomigec.core.PipelineBlock;
 import com.milaboratory.oncomigec.core.genomic.BasicGenomicInfoProvider;
 import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
 import com.milaboratory.oncomigec.core.input.MigOutputPort;
+import com.milaboratory.oncomigec.core.mapping.AlignedConsensus;
 import com.milaboratory.oncomigec.core.mapping.alignment.ExtendedKmerAlignerFactory;
+import com.milaboratory.oncomigec.core.output.SamWriter;
+import com.milaboratory.oncomigec.core.output.VcfWriter;
+import com.milaboratory.oncomigec.core.variant.Variant;
+import com.milaboratory.oncomigec.core.variant.VariantCaller;
 import com.milaboratory.oncomigec.pipeline.Presets;
 import com.milaboratory.oncomigec.pipeline.RuntimeParameters;
 import com.milaboratory.oncomigec.pipeline.SerializationUtils;
@@ -79,8 +84,10 @@ public class ProjectAnalysis implements Serializable {
                 message, verbosityLevel);
     }
 
-    public void run() throws Exception {
+    public void run(String outputPath) throws Exception {
         sout("Started analysis.", 1);
+
+        String prefix = outputPath + "/" + project.getName();
 
         for (SampleGroup sampleGroup : project.getSampleGroups()) {
             sout("Pre-processing sample group " + sampleGroup.getName() + ".", 1);
@@ -88,31 +95,59 @@ public class ProjectAnalysis implements Serializable {
 
             sout("Running analysis for sample group " + sampleGroup.getName() + ".", 1);
             for (Sample sample : sampleGroup.getSamples()) {
-                final MigOutputPort reader = preprocessor.create(sample);
+                final MigOutputPort inputPort = preprocessor.create(sample);
 
                 SampleAnalysis sampleAnalysis = new SampleAnalysis(
                         this, sample, preprocessor.getUmiHistogram(sample),
-                        reader,
+                        inputPort,
                         pipelineAssemblerFactory.create(sample),
                         pipelineConsensusAlignerFactory.create(sample)
                 );
 
-                sampleAnalysis.runFirstStage();
+                sampleAnalysis.run();
 
-                if (!runtimeParameters.variantDumpModeOn())
-                    sampleAnalysis.runSecondStage();
-                else
-                    sout("Prepared variants for dumping.", 1);
-
-                // only for binary output mode
                 analysisBySample.put(sample, sampleAnalysis);
 
-                // don't need those reads anymore in memory
-                reader.empty();
+                // don't need reads associated with current sample anymore in memory
+                inputPort.clear();
+
+                String prefix2 = prefix + "." + sampleAnalysis.getSample().getFullName();
+
+                // Write plain-text and consensus FASTQ files
+                for (PipelineBlock pipelineBlock : sampleAnalysis.getBlocks()) {
+                    pipelineBlock.writePlainText(prefix2);
+                }
+
+                // Write SAM file
+                SamWriter samWriter = new SamWriter(sample,
+                        new File(prefix2 + ".sam"), sampleAnalysis.getConsensusAligner());
+
+                for (AlignedConsensus alignedConsensus : sampleAnalysis.getAlignmentDataList()) {
+                    samWriter.write(alignedConsensus);
+                }
+
+                samWriter.close();
+
+                // Write VCF file
+                VariantCaller variantCaller = sampleAnalysis.getVariantCaller();
+                VcfWriter vcfWriter = new VcfWriter(sample,
+                        new File(prefix2 + ".vcf"), variantCaller);
+
+                for (Variant variant : variantCaller.getVariants()) {
+                    vcfWriter.write(variant);
+                }
+
+                vcfWriter.close();
             }
         }
 
-        sout("Finished analysis.", 1);
+        preprocessorFactory.writePlainText(prefix);
+        pipelineAssemblerFactory.writePlainText(prefix);
+        pipelineConsensusAlignerFactory.writePlainText(prefix);
+
+        SerializationUtils.writeObjectToFile(new File(prefix + ".mi"), this);
+
+        sout("Done.", 1);
     }
 
     public ReferenceLibrary getReferenceLibrary() {
@@ -145,29 +180,5 @@ public class ProjectAnalysis implements Serializable {
             analysises.add(getAnalysis(sample));
         }
         return analysises;
-    }
-
-    public void serialize(String path) throws IOException {
-        serialize(path, false);
-    }
-
-    public void serialize(String path, boolean noBinary) throws IOException {
-        sout("Writing output.", 1);
-        String prefix = path + "/" + project.getName();
-
-        preprocessorFactory.writePlainText(prefix);
-        pipelineAssemblerFactory.writePlainText(prefix);
-        pipelineConsensusAlignerFactory.writePlainText(prefix);
-
-        for (SampleAnalysis sampleAnalysis : analysisBySample.values()) {
-            for (PipelineBlock pipelineBlock : sampleAnalysis.getBlocks()) {
-                pipelineBlock.writePlainText(prefix + "." + sampleAnalysis.getSample().getFullName());
-            }
-        }
-
-        if (!noBinary) {
-            SerializationUtils.writeObjectToFile(new File(prefix + ".mi"), this);
-        }
-        sout("Done.", 1);
     }
 }

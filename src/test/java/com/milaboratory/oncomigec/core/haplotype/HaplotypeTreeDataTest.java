@@ -33,7 +33,7 @@ public class HaplotypeTreeDataTest {
                 new ReferenceLibrary(TestResources.getResource("refs.fa"));
 
         // Aligner
-        ConsensusAligner aligner = new PConsensusAligner(new ExtendedExomeAligner(referenceLibrary));
+        ConsensusAligner consensusAligner = new PConsensusAligner(new ExtendedExomeAligner(referenceLibrary));
         PMig mig;
 
         // Main processing
@@ -45,7 +45,7 @@ public class HaplotypeTreeDataTest {
             Consensus consensus = assembler.assemble(mig);
             if (consensus != null) {
                 nAssembledMigs++;
-                AlignedConsensus alignmentData = aligner.align(consensus);
+                AlignedConsensus alignmentData = consensusAligner.align(consensus);
                 if (alignmentData != null) {
                     nAlignedMigs++;
                     alignmentDataList.add(alignmentData);
@@ -62,10 +62,10 @@ public class HaplotypeTreeDataTest {
         //System.out.println(assembler);
 
         System.out.println();
-        System.out.println(aligner.getAlignerReferenceLibrary());
+        System.out.println(consensusAligner.getAlignerReferenceLibrary());
 
         // Find major and minor mutations
-        Corrector corrector = new Corrector(aligner.getAlignerReferenceLibrary());
+        Corrector corrector = new Corrector(consensusAligner.getAlignerReferenceLibrary());
 
         // Error statistics for haplotype filtering using binomial test
         //HaplotypeErrorStatistics errorStatistics =

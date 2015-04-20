@@ -20,16 +20,16 @@ import com.milaboratory.core.sequence.NucleotideSQPair;
 import com.milaboratory.core.sequence.alignment.LocalAlignment;
 import com.milaboratory.core.sequence.nucleotide.NucleotideAlphabet;
 import com.milaboratory.oncomigec.core.PipelineBlock;
-import com.milaboratory.oncomigec.core.mapping.alignment.Aligner;
-import com.milaboratory.oncomigec.core.mapping.alignment.AlignmentResult;
+import com.milaboratory.oncomigec.core.ReadSpecific;
 import com.milaboratory.oncomigec.core.assemble.Consensus;
 import com.milaboratory.oncomigec.core.assemble.SConsensus;
 import com.milaboratory.oncomigec.core.genomic.Reference;
 import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
+import com.milaboratory.oncomigec.core.mapping.alignment.Aligner;
+import com.milaboratory.oncomigec.core.mapping.alignment.AlignmentResult;
 import com.milaboratory.oncomigec.core.mutations.MutationArray;
 import com.milaboratory.oncomigec.core.mutations.MutationsExtractor;
 import com.milaboratory.oncomigec.misc.ProcessorResultWrapper;
-import com.milaboratory.oncomigec.core.ReadSpecific;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -39,7 +39,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public abstract class ConsensusAligner<ConsensusType extends Consensus> extends PipelineBlock
         implements Processor<ProcessorResultWrapper<ConsensusType>, ProcessorResultWrapper<AlignedConsensus>>,
         ReadSpecific {
-    protected final Map<Reference, ConsensusAlignerTable> alignerTableByReference = new HashMap<>();
+    protected final Map<Reference, MutationsTable> alignerTableByReference = new HashMap<>();
     protected transient final Aligner aligner;
     protected final ReferenceLibrary referenceLibrary;
     protected final ConsensusAlignerParameters parameters;
@@ -50,12 +50,12 @@ public abstract class ConsensusAligner<ConsensusType extends Consensus> extends 
             totalMigs = new AtomicInteger();
 
     protected ConsensusAligner(Aligner aligner, ConsensusAlignerParameters parameters) {
-        super("aligner");
+        super("consensusAligner");
         this.aligner = aligner;
         this.referenceLibrary = aligner.getReferenceLibrary();
         this.parameters = parameters;
         for (Reference reference : referenceLibrary.getReferences()) {
-            alignerTableByReference.put(reference, new ConsensusAlignerTable(reference));
+            alignerTableByReference.put(reference, new MutationsTable(reference));
         }
     }
 
@@ -126,12 +126,12 @@ public abstract class ConsensusAligner<ConsensusType extends Consensus> extends 
         return skippedMigs.get();
     }
 
-    public AtomicInteger getGoodAlignmentMigs() {
-        return goodAlignmentMigs;
+    public int getGoodAlignmentMigs() {
+        return goodAlignmentMigs.get();
     }
 
-    public AtomicInteger getTotalMigs() {
-        return totalMigs;
+    public int getTotalMigs() {
+        return totalMigs.get();
     }
 
     public int getChimericMigs() {
@@ -142,7 +142,7 @@ public abstract class ConsensusAligner<ConsensusType extends Consensus> extends 
         return referenceLibrary;
     }
 
-    public ConsensusAlignerTable getAlignerTable(Reference reference) {
+    public MutationsTable getAlignerTable(Reference reference) {
         return alignerTableByReference.get(reference);
     }
 
@@ -172,20 +172,20 @@ public abstract class ConsensusAligner<ConsensusType extends Consensus> extends 
     public String getBody() {
         StringBuilder stringBuilder = new StringBuilder();
         for (Reference reference : referenceLibrary.getReferences()) {
-            ConsensusAlignerTable consensusAlignerTable = alignerTableByReference.get(reference);
+            MutationsTable mutationsTable = alignerTableByReference.get(reference);
 
-            if (consensusAlignerTable.wasUpdated()) {
+            if (mutationsTable.wasUpdated()) {
                 for (int i = 0; i < reference.getSequence().size(); i++) {
                     stringBuilder.append(reference.getName()).append("\t").
                             append(i + 1).append("\t").
-                            append(consensusAlignerTable.getMigCoverage(i)).append("\t").
-                            append(consensusAlignerTable.getCqsSumCoverage(i));
+                            append(mutationsTable.getMigCoverage(i)).append("\t").
+                            append(mutationsTable.getCqsSumCoverage(i));
 
                     StringBuilder major = new StringBuilder(), minor = new StringBuilder();
 
                     for (byte j = 0; j < 4; j++) {
-                        major.append("\t").append(consensusAlignerTable.getMajorMigCount(i, j));
-                        minor.append("\t").append(consensusAlignerTable.getMinorMigCount(i, j));
+                        major.append("\t").append(mutationsTable.getMajorMigCount(i, j));
+                        minor.append("\t").append(mutationsTable.getMinorMigCount(i, j));
                     }
 
                     stringBuilder.append(major).append(minor).append("\n");

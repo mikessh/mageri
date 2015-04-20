@@ -19,34 +19,25 @@
 package com.milaboratory.oncomigec.core.output;
 
 import com.milaboratory.oncomigec.core.genomic.Contig;
-import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
 import com.milaboratory.oncomigec.core.mapping.AlignedConsensus;
+import com.milaboratory.oncomigec.core.mapping.ConsensusAligner;
 import com.milaboratory.oncomigec.core.mapping.PAlignedConsensus;
 import com.milaboratory.oncomigec.core.mapping.SAlignedConsensus;
+import com.milaboratory.oncomigec.misc.RecordWriter;
 import com.milaboratory.oncomigec.pipeline.Oncomigec;
 import com.milaboratory.oncomigec.pipeline.analysis.Sample;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.List;
 
-public class SamWriter implements AutoCloseable {
-    private final ReferenceLibrary referenceLibrary;
-    private final List<Sample> samples;
-    private final PrintWriter writer;
+public class SamWriter extends RecordWriter<SamRecord> {
 
-    public SamWriter(ReferenceLibrary referenceLibrary,
-                     List<Sample> samples,
-                     File outputFile) throws IOException {
-        this.referenceLibrary = referenceLibrary;
-        this.samples = samples;
-        this.writer = new PrintWriter(outputFile);
-
-        writer.println(getHeader());
+    public SamWriter(Sample sample, File outputFile, ConsensusAligner consensusAligner) throws IOException {
+        super(sample, outputFile, consensusAligner.getReferenceLibrary());
     }
 
-    private String getHeader() {
+    @Override
+    protected String getHeader() {
         StringBuilder stringBuilder = new StringBuilder("@HD\tVN:1.0\tSO:unsorted\tGO:query");
 
         for (Contig contig : referenceLibrary.getGenomicInfoProvider().getContigs()) {
@@ -57,14 +48,12 @@ public class SamWriter implements AutoCloseable {
         }
 
         // TODO: instrument (platform)
-        for (Sample sample : samples) {
-            stringBuilder.append("\n@RG").
-                    append("\tID:").append(sample.getId()).
-                    append("\tSM:").append(sample.getName().replaceAll("[ \t]", "_")).
-                    append("\tPU:").append(sample.getParent().getName().replaceAll("[ \t]", "_")).
-                    append("\tLB:").append(sample.getParent().getParent().getName().replaceAll("[ \t]", "_")).
-                    append("\tPL:").append("ILLUMINA");
-        }
+        stringBuilder.append("\n@RG").
+                append("\tID:").append(sample.getId()).
+                append("\tSM:").append(sample.getName().replaceAll("[ \t]", "_")).
+                append("\tPU:").append(sample.getParent().getName().replaceAll("[ \t]", "_")).
+                append("\tLB:").append(sample.getParent().getParent().getName().replaceAll("[ \t]", "_")).
+                append("\tPL:").append("ILLUMINA");
 
         stringBuilder.append("\n@PG").
                 append("\tID:").append("oncomigec").
@@ -73,9 +62,10 @@ public class SamWriter implements AutoCloseable {
         return stringBuilder.toString();
     }
 
-    public synchronized void write(SamRecord samRecord, int readGroupId) throws IOException {
+    @Override
+    public synchronized void write(SamRecord samRecord) throws IOException {
         for (SamSegmentRecord segmentRecord : samRecord.getSamSegmentRecords()) {
-            writer.println(segmentRecord.toString() + "\tRG:Z:" + readGroupId);
+            writer.println(segmentRecord.toString() + "\tRG:Z:" + sample.getId());
         }
     }
 
@@ -83,10 +73,6 @@ public class SamWriter implements AutoCloseable {
         SamRecord samRecord = alignedConsensus.isPairedEnd() ?
                 SamUtil.create((PAlignedConsensus) alignedConsensus) :
                 SamUtil.create((SAlignedConsensus) alignedConsensus);
-        write(samRecord, alignedConsensus.getSample().getId());
-    }
-
-    public void close() {
-        writer.close();
+        write(samRecord);
     }
 }

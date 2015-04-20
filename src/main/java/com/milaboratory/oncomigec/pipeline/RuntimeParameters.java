@@ -30,20 +30,18 @@ public class RuntimeParameters implements Serializable {
     private final int numberOfThreads;
     private final long readLimit;
     private final byte verbosityLevel;
-    private final boolean variantDumpMode;
 
     public static RuntimeParameters DEFAULT = new RuntimeParameters();
 
 
     private RuntimeParameters() {
-        this(Runtime.getRuntime().availableProcessors(), -1, (byte) 3, false);
+        this(Runtime.getRuntime().availableProcessors(), -1, (byte) 3);
     }
 
-    public RuntimeParameters(int numberOfThreads, long readLimit, byte verbosityLevel, boolean variantDumpMode) {
+    public RuntimeParameters(int numberOfThreads, long readLimit, byte verbosityLevel) {
         this.numberOfThreads = numberOfThreads;
         this.readLimit = readLimit;
         this.verbosityLevel = verbosityLevel;
-        this.variantDumpMode = variantDumpMode;
     }
 
     public int getNumberOfThreads() {
@@ -58,10 +56,6 @@ public class RuntimeParameters implements Serializable {
         return verbosityLevel;
     }
 
-    public boolean variantDumpModeOn() {
-        return variantDumpMode;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -71,7 +65,6 @@ public class RuntimeParameters implements Serializable {
 
         if (numberOfThreads != that.numberOfThreads) return false;
         if (readLimit != that.readLimit) return false;
-        if (variantDumpMode != that.variantDumpMode) return false;
         if (verbosityLevel != that.verbosityLevel) return false;
 
         return true;
@@ -82,7 +75,6 @@ public class RuntimeParameters implements Serializable {
         int result = numberOfThreads;
         result = 31 * result + (int) (readLimit ^ (readLimit >>> 32));
         result = 31 * result + (int) verbosityLevel;
-        result = 31 * result + (variantDumpMode ? 1 : 0);
         return result;
     }
 }

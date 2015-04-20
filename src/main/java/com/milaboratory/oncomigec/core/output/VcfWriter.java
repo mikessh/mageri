@@ -19,19 +19,23 @@
 package com.milaboratory.oncomigec.core.output;
 
 import com.milaboratory.oncomigec.core.genomic.Contig;
-import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
+import com.milaboratory.oncomigec.core.variant.Variant;
 import com.milaboratory.oncomigec.core.variant.VariantCaller;
 import com.milaboratory.oncomigec.core.variant.filter.VariantFilter;
+import com.milaboratory.oncomigec.misc.RecordWriter;
 import com.milaboratory.oncomigec.pipeline.Oncomigec;
+import com.milaboratory.oncomigec.pipeline.analysis.Sample;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Date;
 
-public class VcfWriter {
-    private final ReferenceLibrary referenceLibrary;
+public class VcfWriter extends RecordWriter<VcfRecord> {
     private final VariantCaller variantCaller;
 
-    public VcfWriter(VariantCaller variantCaller) {
-        this.referenceLibrary = variantCaller.getReferenceLibrary();
+    public VcfWriter(Sample sample, File outputFile,
+                     VariantCaller variantCaller) throws IOException {
+        super(sample, outputFile, variantCaller.getReferenceLibrary());
         this.variantCaller = variantCaller;
     }
 
@@ -49,26 +53,32 @@ public class VcfWriter {
         stringBuilder.append("##phasing=none\n");
 
         // INFO fields
-        stringBuilder.
-                append("##INFO=<ID=DP,Number=1,Type=Integer,Description=\"Total Depth\">\n").
-                append("##INFO=<ID=AF,Number=.,Type=Float,Description=\"Allele Frequency\">\n").
-                append("##INFO=<ID=AA,Number=1,Type=String,Description=\"Ancestral Allele\">\n");
+        stringBuilder.append(VcfUtil.INFO_HEADER).append("\n");
 
         // FILTER fields
         for (int i = 0; i < variantCaller.getFilterCount(); i++) {
-            VariantFilter variantFilter = variantCaller.getFilter(i);
-            stringBuilder.
-                    append("##FILTER=<ID=").append(variantFilter.getId()).
-                    append(",Description=\"").append(variantFilter.getDescription()).append("\">\n");
+            VariantFilter filter = variantCaller.getFilter(i);
+            stringBuilder.append("##FILTER=<ID=").append(filter.getId()).
+                    append(",Description=\"").append(filter.getDescription()).append("\">\n");
         }
 
         // FORMAT fields
         // todo: no genotyping so far
-        stringBuilder.
-                append("##FORMAT=<ID=GT,Number=1,Type=String,Description=\"Genotype\">\n");
+        stringBuilder.append(VcfUtil.FORMAT_HEADER).append("\n");
 
-        stringBuilder.append("#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\n");
+        stringBuilder.append("#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t").
+                append(sample.getFullName()).append("\n");
+
         return stringBuilder.toString();
     }
 
+    @Override
+    public synchronized void write(VcfRecord record) throws IOException {
+        writer.println(record.toString());
+    }
+
+    public void write(Variant variant) throws IOException {
+        VcfRecord vcfRecord = VcfUtil.create(variant);
+        write(vcfRecord);
+    }
 }

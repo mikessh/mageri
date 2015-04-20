@@ -84,7 +84,7 @@ public class Preprocessor<MigType extends Mig> implements ReadSpecific, Serializ
 
         String sampleName = sample.getName();
 
-        return new MigOutputPort<>(migReader, sampleName, getOverSeq(sampleName));
+        return new MigOutputPort<>(migReader, sample, getOverSeq(sampleName));
     }
 
     public int getOverSeq(String sampleName) {

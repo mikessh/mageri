@@ -32,7 +32,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicIntegerArray;
 import java.util.concurrent.atomic.AtomicLongArray;
 
-public final class ConsensusAlignerTable implements Serializable {
+public final class MutationsTable implements Serializable {
     private final Reference reference;
     private final AtomicInteger migCount;
     private final NucleotideCoverage majorMigs, minorMigs;
@@ -40,7 +40,7 @@ public final class ConsensusAlignerTable implements Serializable {
     private final AtomicLongArray cqsSumCoverage;
     private final Set<Mutation> mutations;
 
-    public ConsensusAlignerTable(Reference reference) {
+    public MutationsTable(Reference reference) {
         this.reference = reference;
         int l = reference.getSequence().size();
         this.majorMigs = new NucleotideCoverage(l);

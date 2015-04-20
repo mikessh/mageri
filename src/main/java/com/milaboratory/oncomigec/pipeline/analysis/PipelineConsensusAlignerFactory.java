@@ -19,14 +19,10 @@
 package com.milaboratory.oncomigec.pipeline.analysis;
 
 import com.milaboratory.oncomigec.core.PipelineBlock;
-import com.milaboratory.oncomigec.core.mapping.alignment.AlignerFactory;
-import com.milaboratory.oncomigec.core.mapping.ConsensusAlignerParameters;
-import com.milaboratory.oncomigec.core.mapping.PConsensusAlignerFactory;
-import com.milaboratory.oncomigec.core.mapping.SConsensusAlignerFactory;
-import com.milaboratory.oncomigec.core.mapping.ConsensusAlignerTable;
-import com.milaboratory.oncomigec.core.mapping.ConsensusAligner;
 import com.milaboratory.oncomigec.core.genomic.Reference;
 import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
+import com.milaboratory.oncomigec.core.mapping.*;
+import com.milaboratory.oncomigec.core.mapping.alignment.AlignerFactory;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
@@ -48,9 +44,7 @@ public class PipelineConsensusAlignerFactory extends PipelineBlock {
         Collections.sort(references, new Comparator<Reference>() {
             @Override
             public int compare(Reference o1, Reference o2) {
-                if (o1.isReverseComplement() == o2.isReverseComplement())
-                    return o1.getName().compareTo(o2.getName());
-                return o1.isReverseComplement() ? 1 : -1;
+                return o1.getName().compareTo(o2.getName());
             }
         });
     }
@@ -69,7 +63,8 @@ public class PipelineConsensusAlignerFactory extends PipelineBlock {
             referenceNames.add(reference.getName());
 
         return "sample.group\tsample\t" +
-                "migs.aligned\tmigs.bad\tmigs.chimeric\tmigs.skipped\t" +
+                "migs.good.alignment\tmigs.aligned\t" +
+                "migs.chimeric\tmigs.skipped\tmigs.total" +
                 StringUtils.join(referenceNames, "\t");
     }
 
@@ -80,15 +75,15 @@ public class PipelineConsensusAlignerFactory extends PipelineBlock {
             ConsensusAligner aligner = alignersBySample.get(sample);
             stringBuilder.append(sample.getParent().getName()).append("\t").
                     append(sample.getName()).append("\t").
+                    append(aligner.getGoodAlignmentMigs()).append("\t").
                     append(aligner.getAlignedMigs()).append("\t").
-                    append(aligner.getFailedMigs()).append("\t").
                     append(aligner.getChimericMigs()).append("\t").
-                    append(aligner.getSkippedMigs());
+                    append(aligner.getSkippedMigs()).append("\t").
+                    append(aligner.getTotalMigs());
 
             for (Reference reference : references) {
-                ConsensusAlignerTable consensusAlignerTable =
-                        aligner.getAlignerTable().getSubstitutionsAndCoverage(reference);
-                stringBuilder.append("\t").append(consensusAlignerTable.getMigCount());
+                MutationsTable mutationsTable = aligner.getAlignerTable(reference);
+                stringBuilder.append("\t").append(mutationsTable.getMigCount());
             }
 
             stringBuilder.append("\n");

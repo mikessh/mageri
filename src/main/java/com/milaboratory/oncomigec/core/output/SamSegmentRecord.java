@@ -18,9 +18,11 @@
 
 package com.milaboratory.oncomigec.core.output;
 
+import java.io.Serializable;
+
 import static com.milaboratory.oncomigec.core.output.SamUtil.*;
 
-public final class SamSegmentRecord implements Comparable<SamSegmentRecord> {
+public final class SamSegmentRecord implements Comparable<SamSegmentRecord>, Serializable {
     private final String queryName, referenceName,
             cigarString, sequence, quality;
     private String nextReferenceName;

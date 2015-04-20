@@ -1,9 +1,9 @@
 package com.milaboratory.oncomigec.pipeline;
 
+import com.milaboratory.oncomigec.misc.Util;
 import com.milaboratory.oncomigec.pipeline.analysis.ProjectAnalysis;
 import com.milaboratory.oncomigec.pipeline.input.Input;
 import com.milaboratory.oncomigec.pipeline.input.InputParser;
-import com.milaboratory.oncomigec.misc.Util;
 import org.apache.commons.cli.*;
 import org.apache.commons.io.FileUtils;
 
@@ -28,7 +28,6 @@ public final class Oncomigec {
         Presets presets = null;
         Input input = null;
         String outputFolder = null;
-        boolean noBinary = false;
 
         try {
             // parse the command line arguments
@@ -68,9 +67,8 @@ public final class Oncomigec {
             if (commandLine.hasOption(OPT_VERBOSITY)) {
                 verbosity = Byte.parseByte(commandLine.getOptionValue(OPT_VERBOSITY));
             }
-            boolean dumpVariants = commandLine.hasOption(OPT_DEBUG);
 
-            runtimeParameters = new RuntimeParameters(numberOfThreads, readLimit, verbosity, dumpVariants);
+            runtimeParameters = new RuntimeParameters(numberOfThreads, readLimit, verbosity);
 
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // Presets
@@ -107,7 +105,6 @@ public final class Oncomigec {
                 outputFolder = commandLine.getOptionValue(OPT_OUTPUT_SHORT);
             }
             FileUtils.forceMkdir(new File(outputFolder));
-            noBinary = commandLine.hasOption(OPT_NO_BINARY);
         } catch (ParseException e) {
             System.err.println("Bad arguments: " + e.getMessage());
             System.exit(-1);
@@ -127,18 +124,14 @@ public final class Oncomigec {
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Run
-        projectAnalysis.run();
-
-        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        // Save output
-        projectAnalysis.serialize(outputFolder, noBinary);
+        projectAnalysis.run(outputFolder);
     }
 
     private static final String OPT_HELP_SHORT = "h", OPT_HELP_LONG = "help", OPT_VERSION_SHORT = "v", OPT_VERSION_LONG = "version",
             OPT_VERBOSITY = "verbosity", OPT_THREADS = "threads", OPT_LIMIT = "limit",
             OPT_INSTRUMENT = "instrument", OPT_IMPORT_PRESET = "import-preset", OPT_EXPORT_PRESET = "export-preset",
             OPT_INPUT_LONG = "input", OPT_INPUT_SHORT = "I",
-            OPT_OUTPUT_LONG = "output-path", OPT_OUTPUT_SHORT = "O", OPT_NO_BINARY = "no-binary", OPT_DEBUG = "debug";
+            OPT_OUTPUT_LONG = "output-path", OPT_OUTPUT_SHORT = "O";
 
     private static final Options CLI = new Options()
             //
@@ -236,17 +229,5 @@ public final class Oncomigec {
                             .withDescription("Path to output. [default = \".\"]")
                             .withLongOpt(OPT_OUTPUT_LONG)
                             .create(OPT_OUTPUT_SHORT)
-            )
-            .addOption(
-                    OptionBuilder
-                            .withDescription("Do not perform binary output. Only plain-text output will be stored.")
-                            .withLongOpt(OPT_NO_BINARY)
-                            .create()
-            )
-            .addOption(
-                    OptionBuilder
-                            .withDescription("Dump minor variants for debugging.")
-                            .withLongOpt(OPT_DEBUG)
-                            .create()
             );
 }
