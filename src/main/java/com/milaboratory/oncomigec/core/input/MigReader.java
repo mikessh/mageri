@@ -136,7 +136,15 @@ public abstract class MigReader<MigType extends Mig> implements Serializable, Re
         return umiHistogramBySample.get(sampleName).isMismatch(umi);
     }
 
-    protected abstract MigType take(Sample sample, int sizeThreshold);
+    protected abstract MigType take(Sample sample, String barcodeName, int sizeThreshold);
+
+    public MigType take(Sample sample, int sizeThreshold) {
+        return take(sample, sample.getName(), sizeThreshold);
+    }
+
+    public MigType take(String barcodeName, int sizeThreshold) {
+        return take(Sample.create(barcodeName, isPairedEnd()), barcodeName, sizeThreshold);
+    }
 
     @SuppressWarnings("unchecked")
     public List<String> getSampleNames() {

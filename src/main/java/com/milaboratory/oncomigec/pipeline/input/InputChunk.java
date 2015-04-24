@@ -25,14 +25,14 @@ import java.io.Serializable;
 
 public class InputChunk implements ReadSpecific, Serializable {
     protected transient final InputStream inputStream1, inputStream2;
-    protected final String index;
+    protected final String name;
     protected final CheckoutRule checkoutRule;
 
     public InputChunk(InputStream inputStream1, InputStream inputStream2,
-                      String index, CheckoutRule checkoutRule) {
+                      String name, CheckoutRule checkoutRule) {
         this.inputStream1 = inputStream1;
         this.inputStream2 = inputStream2;
-        this.index = index;
+        this.name = name;
         this.checkoutRule = checkoutRule;
     }
 
@@ -44,8 +44,8 @@ public class InputChunk implements ReadSpecific, Serializable {
         return inputStream2;
     }
 
-    public String getIndex() {
-        return index;
+    public String getName() {
+        return name;
     }
 
     public CheckoutRule getCheckoutRule() {
@@ -59,7 +59,7 @@ public class InputChunk implements ReadSpecific, Serializable {
 
     @Override
     public String toString() {
-        String out = index + "\n-paired:" + isPairedEnd() + "\n-checkout:";
+        String out = name + "\n-paired:" + isPairedEnd() + "\n-checkout:";
         String[] tokens = checkoutRule.toString().split("\n");
         for (String token : tokens) {
             out += "\n-" + token;

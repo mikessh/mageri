@@ -28,7 +28,7 @@ import java.net.URISyntaxException;
 
 public class AlignersTest {
     int nReferences = 100, nRepetitions1 = 100, nRepetitions2 = 100;
-
+/*
     @Test
     public void runTests() throws InvocationTargetException, IOException,
             IllegalAccessException, NoSuchMethodException, URISyntaxException {
@@ -123,4 +123,5 @@ public class AlignersTest {
         substitutionRatioAssertRange.assertInRange(substitutionRate);
         percentAlignedAssertRange.assertInRange(nAligned, nRepetitions2 * nReferences);
     }
+    */
 }

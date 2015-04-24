@@ -15,18 +15,12 @@
  */
 package com.milaboratory.oncomigec.core.mapping.consensus;
 
-import com.milaboratory.oncomigec.core.mapping.PAlignedConsensus;
-import com.milaboratory.oncomigec.core.mapping.MutationsTable;
-import com.milaboratory.oncomigec.core.mapping.ConsensusAligner;
-import com.milaboratory.oncomigec.core.mapping.SConsensusAligner;
-import com.milaboratory.oncomigec.core.mapping.alignment.ExtendedKmerAligner;
-import com.milaboratory.oncomigec.core.assemble.Consensus;
-import com.milaboratory.oncomigec.core.assemble.AssemblerParameters;
-import com.milaboratory.oncomigec.core.assemble.Assembler;
-import com.milaboratory.oncomigec.core.assemble.SAssembler;
+import com.milaboratory.oncomigec.core.assemble.*;
 import com.milaboratory.oncomigec.core.genomic.Reference;
 import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
 import com.milaboratory.oncomigec.core.input.SMig;
+import com.milaboratory.oncomigec.core.mapping.*;
+import com.milaboratory.oncomigec.core.mapping.alignment.ExtendedKmerAligner;
 import com.milaboratory.oncomigec.misc.Basics;
 import com.milaboratory.oncomigec.misc.testing.DoubleRange;
 import com.milaboratory.oncomigec.misc.testing.PercentRange;
@@ -94,15 +88,14 @@ public class ConsensusAlignerTest {
                 Consensus cons = assembler.assemble(mig);
 
                 if (cons != null) {
-                    PAlignedConsensus alignmentData = consensusAligner.align(cons);
+                    AlignedConsensus alignedConsensus = consensusAligner.align(cons);
 
-                    if (alignmentData != null)
+                    if (alignedConsensus.isAligned())
                         nAlignedConsensuses++;
                 }
             }
 
-            MutationsTable mutCov = consensusAligner.getAlignerTable().
-                    getSubstitutionsAndCoverage(reference);
+            MutationsTable mutCov = consensusAligner.getAlignerTable(reference);
 
             int len = reference.getSequence().size();
             for (int i = 0; i < len; i++) {
@@ -152,22 +145,23 @@ public class ConsensusAlignerTest {
         int alignmentFails = 0, incorrectAlignments = 0, totalConsensuses = 0;
         for (int n = 0; n < nRepetiotions; n++) {
             ReferenceLibrary library = referenceGenerator.nextReferenceLibrary(nReferences);
-            Assembler assembler = new SAssembler();
-            ConsensusAligner consensusAligner = new SConsensusAligner(new ExtendedKmerAligner(library));
+            SAssembler assembler = new SAssembler();
+            SConsensusAligner consensusAligner = new SConsensusAligner(new ExtendedKmerAligner(library));
 
             for (int m = 0; m < nMigs; m++) {
                 Reference reference = referenceGenerator.nextReference(library);
                 SMig mig = migGenerator.nextMig(reference).getMig();
 
-                Consensus cons = assembler.assemble(mig);
+                SConsensus cons = assembler.assemble(mig);
 
                 if (cons != null) {
-                    PAlignedConsensus alignmentData = consensusAligner.align(cons);
+                    SAlignedConsensus alignedConsensus = (SAlignedConsensus) consensusAligner.align(cons);
 
-                    if (alignmentData == null)
+                    if (!alignedConsensus.isMapped()) {
                         alignmentFails++;
-                    else if (!alignmentData.getReference().equals(reference))
+                    } else if (!alignedConsensus.getAlignmentResult().getReference().equals(reference)) {
                         incorrectAlignments++;
+                    }
 
                     totalConsensuses++;
                 }

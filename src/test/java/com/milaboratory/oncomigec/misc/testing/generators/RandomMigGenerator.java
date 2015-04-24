@@ -1,12 +1,10 @@
 package com.milaboratory.oncomigec.misc.testing.generators;
 
-import com.milaboratory.core.sequence.NucleotideSQPair;
 import com.milaboratory.core.sequence.mutations.Mutations;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
-import com.milaboratory.core.sequence.quality.SequenceQualityPhred;
 import com.milaboratory.oncomigec.core.genomic.Reference;
 import com.milaboratory.oncomigec.core.input.SMig;
-import com.milaboratory.oncomigec.misc.Util;
+import com.milaboratory.oncomigec.core.input.index.Read;
 
 import java.util.*;
 
@@ -47,7 +45,7 @@ public class RandomMigGenerator {
     private RandomMigGeneratorResult nextMig(NucleotideSequence sequence, int[] pcrMutations) {
         sequence = Mutations.mutate(sequence, pcrMutations);
 
-        List<NucleotideSQPair> reads = new ArrayList<>();
+        List<Read> reads = new ArrayList<>();
         int migSize = generatorMutationModel.nextFromRange(migSizeMin, migSizeMax);
         int readsWithIndels = 0;
         Map<Integer, Integer> minorMutationCounts = new HashMap<>();
@@ -69,22 +67,21 @@ public class RandomMigGenerator {
             NucleotideSequence seq = Mutations.mutate(sequence,
                     mutations);
 
-            byte[] qual = new byte[seq.size()];
-            Arrays.fill(qual, Util.PH33_MAX_QUAL);
+            BitSet qualMask = new BitSet(seq.size());
 
             if (markMinorMutations) {
                 for (int k = 0; k < mutations.length; k++) {
                     int code = mutations[k];
                     if (Mutations.isSubstitution(code))
-                        qual[Mutations.convertPosition(mutations, Mutations.getPosition(code))] = Util.PH33_BAD_QUAL;
+                        qualMask.set(Mutations.convertPosition(mutations, Mutations.getPosition(code)));
                 }
             }
 
-            reads.add(new NucleotideSQPair(seq, new SequenceQualityPhred(qual)));
+            reads.add(new Read(seq, qualMask));
         }
 
         boolean indelHeavy = (readsWithIndels / (double) migSize) > indelHeavyThreshold;
-        SMig sMig = new SMig(reads, randomSequence(umiSize));
+        SMig sMig = new SMig(null, randomSequence(umiSize), reads);
 
         return new RandomMigGeneratorResult(sMig, indelHeavy, minorMutationCounts, pcrMutations);
     }

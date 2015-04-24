@@ -18,19 +18,15 @@
 
 package com.milaboratory.oncomigec.pipeline.analysis;
 
-import com.milaboratory.oncomigec.core.ReadSpecific;
 import com.milaboratory.oncomigec.core.Mig;
-import com.milaboratory.oncomigec.core.input.PreprocessorParameters;
-import com.milaboratory.oncomigec.core.input.MigSizeDistribution;
-import com.milaboratory.oncomigec.core.input.MigOutputPort;
-import com.milaboratory.oncomigec.core.input.MigReader;
-import com.milaboratory.oncomigec.core.input.PMigReader;
-import com.milaboratory.oncomigec.core.input.SMigReader;
+import com.milaboratory.oncomigec.core.ReadSpecific;
+import com.milaboratory.oncomigec.core.input.*;
 import com.milaboratory.oncomigec.pipeline.RuntimeParameters;
 import com.milaboratory.oncomigec.pipeline.input.CheckoutRule;
+import com.milaboratory.oncomigec.pipeline.input.Input;
 import com.milaboratory.oncomigec.pipeline.input.InputChunk;
-import com.milaboratory.oncomigec.preprocessing.DemultiplexParameters;
 import com.milaboratory.oncomigec.preprocessing.CheckoutProcessor;
+import com.milaboratory.oncomigec.preprocessing.DemultiplexParameters;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -40,23 +36,23 @@ public class Preprocessor<MigType extends Mig> implements ReadSpecific, Serializ
     private final SampleGroup sampleGroup;
     private final MigReader migReader;
 
-    public Preprocessor(SampleGroup sampleGroup) throws IOException, InterruptedException {
-        this(sampleGroup, DemultiplexParameters.DEFAULT, PreprocessorParameters.DEFAULT);
+    public Preprocessor(Input input, SampleGroup sampleGroup) throws IOException, InterruptedException {
+        this(input, sampleGroup, DemultiplexParameters.DEFAULT, PreprocessorParameters.DEFAULT);
     }
 
-    public Preprocessor(SampleGroup sampleGroup,
+    public Preprocessor(Input input, SampleGroup sampleGroup,
                         DemultiplexParameters demultiplexParameters,
                         PreprocessorParameters preprocessorParameters) throws IOException, InterruptedException {
-        this(sampleGroup, demultiplexParameters, preprocessorParameters, RuntimeParameters.DEFAULT);
+        this(input, sampleGroup, demultiplexParameters, preprocessorParameters, RuntimeParameters.DEFAULT);
     }
 
-    public Preprocessor(SampleGroup sampleGroup,
+    public Preprocessor(Input input, SampleGroup sampleGroup,
                         DemultiplexParameters demultiplexParameters,
                         PreprocessorParameters preprocessorParameters,
                         RuntimeParameters runtimeParameters) throws IOException, InterruptedException {
         this.preprocessorParameters = preprocessorParameters;
         this.sampleGroup = sampleGroup;
-        InputChunk inputChunk = sampleGroup.getInputChunk();
+        InputChunk inputChunk = input.getByName(sampleGroup.getName());
 
         CheckoutRule checkoutRule = inputChunk.getCheckoutRule();
 
@@ -96,8 +92,8 @@ public class Preprocessor<MigType extends Mig> implements ReadSpecific, Serializ
     public SampleGroup getSampleGroup() {
         return sampleGroup;
     }
-    
-    public CheckoutProcessor getCheckoutProcessor(){
+
+    public CheckoutProcessor getCheckoutProcessor() {
         return migReader.getCheckoutProcessor();
     }
 

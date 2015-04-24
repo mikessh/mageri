@@ -25,28 +25,59 @@ import java.io.Serializable;
 public class Sample implements Comparable<Sample>, Serializable, ReadSpecific {
     private final SampleGroup parent;
     private final String name;
-    private final int id;
+    private int id = -1;
+    private final boolean submultiplexed;
 
-    Sample(int id, String name, SampleGroup parent) {
-        this.id = id;
-        this.name = name;
-        this.parent = parent;
+    public static Sample create(String sampleName, boolean pairedEnd, String groupName, String projectName) {
+        return new Project(projectName).createSampleGroup(groupName, pairedEnd).createSample(sampleName);
     }
 
-    public int getId() {
-        return id;
+    public static Sample create(String sampleName, boolean pairedEnd) {
+        return create(sampleName, pairedEnd, "dummy", "dummy");
+    }
+
+    public Sample(String name, SampleGroup parent) {
+        this.name = name;
+        this.parent = parent;
+        this.submultiplexed = true;
+    }
+
+    protected Sample(SampleGroup parent) {
+        this.name = null;
+        this.parent = parent;
+        this.submultiplexed = false;
     }
 
     public SampleGroup getParent() {
         return parent;
     }
 
+    public int getId() {
+        return id;
+    }
+
+    protected void setId(int id) {
+        this.id = id;
+    }
+
     public String getName() {
-        return name != null ? (parent.getName() + "." + name) : parent.getName();
+        return submultiplexed ? name : parent.getName();
+    }
+
+    public String getGroupName() {
+        return parent.getName();
+    }
+
+    public String getProjectName() {
+        return parent.getParent().getName();
     }
 
     public String getFullName() {
-        return parent.getName() + (name != null ? ("." + name) : "");
+        return parent.getFullName() + (submultiplexed ? ("." + name) : "");
+    }
+
+    public boolean isSubmultiplexed() {
+        return submultiplexed;
     }
 
     @Override
@@ -61,14 +92,14 @@ public class Sample implements Comparable<Sample>, Serializable, ReadSpecific {
 
         Sample sample = (Sample) o;
 
-        if (id != sample.id) return false;
+        if (!getFullName().equals(sample.getFullName())) return false;
 
         return true;
     }
 
     @Override
     public int hashCode() {
-        return id;
+        return getFullName().hashCode();
     }
 
     @Override

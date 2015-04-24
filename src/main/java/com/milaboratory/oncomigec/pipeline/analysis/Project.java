@@ -24,50 +24,49 @@ import com.milaboratory.oncomigec.pipeline.input.InputChunk;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 
 // Project structure that could be deduced from input
 public class Project implements Serializable {
     private final List<SampleGroup> sampleGroups = new ArrayList<>();
     private final List<Sample> samples = new ArrayList<>();
-    private final HashMap<Integer, Sample> sampleById = new HashMap<>();
-    private final Input input;
+    private final String name;
 
     public static Project fromInput(Input input) {
-        Project project = new Project(input);
-
-        int sampleId = 0;
+        Project project = new Project(input.getProjectName());
 
         for (InputChunk inputChunk : input.getInputChunks()) {
-            SampleGroup group = new SampleGroup(inputChunk, project);
+            SampleGroup group = project.createSampleGroup(inputChunk.getName(),
+                    inputChunk.isPairedEnd());
             if (inputChunk.getCheckoutRule().hasSubMultiplexing()) {
                 for (String sampleName : inputChunk.getCheckoutRule().getSampleNames()) {
-                    Sample sample = new Sample(sampleId++, sampleName, group);
-                    project.addSample(sample);
+                    group.createSample(sampleName);
                 }
             } else {
-                Sample sample = new Sample(sampleId++, null, group);
-                project.addSample(sample);
-                group.addSample(sample);
+                project.addSample(new Sample(group));
             }
-            project.sampleGroups.add(group);
         }
 
         return project;
     }
 
-    private void addSample(Sample sample) {
-        samples.add(sample);
-        sampleById.put(sample.getId(), sample);
+    public Project(String name) {
+        this.name = name;
     }
 
-    private Project(Input input) {
-        this.input = input;
+    protected void addSample(Sample sample) {
+        sample.setId(samples.size());
+        samples.add(sample);
+    }
+
+    public SampleGroup createSampleGroup(String name, boolean pairedEnd) {
+        SampleGroup sampleGroup = new SampleGroup(name, pairedEnd, this);
+        sampleGroups.add(sampleGroup);
+        return sampleGroup;
     }
 
     public String getName() {
-        return input.getProjectName();
+        return name;
     }
 
     public List<Sample> getSamples() {
@@ -79,6 +78,6 @@ public class Project implements Serializable {
     }
 
     public Sample getSample(int id) {
-        return sampleById.get(id);
+        return samples.get(id);
     }
 }

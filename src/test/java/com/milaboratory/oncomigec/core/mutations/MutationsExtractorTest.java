@@ -1,37 +1,10 @@
 package com.milaboratory.oncomigec.core.mutations;
 
-import com.milaboratory.core.sequence.NucleotideSQPair;
-import com.milaboratory.core.sequence.alignment.KAligner;
-import com.milaboratory.core.sequence.alignment.KAlignerParameters;
-import com.milaboratory.core.sequence.alignment.KAlignmentHit;
-import com.milaboratory.core.sequence.alignment.LocalAlignment;
-import com.milaboratory.core.sequence.mutations.MutationType;
-import com.milaboratory.core.sequence.mutations.Mutations;
-import com.milaboratory.core.sequence.nucleotide.NucleotideAlphabet;
-import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
-import com.milaboratory.oncomigec.core.mapping.alignment.AlignmentResult;
-import com.milaboratory.oncomigec.core.mapping.alignment.ExtendedKmerAligner;
-import com.milaboratory.oncomigec.core.assemble.SConsensus;
-import com.milaboratory.oncomigec.core.assemble.SAssembler;
-import com.milaboratory.oncomigec.core.mapping.ConsensusAlignerParameters;
-import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
-import com.milaboratory.oncomigec.core.input.SMig;
-import com.milaboratory.oncomigec.misc.Basics;
-import com.milaboratory.oncomigec.misc.Util;
-import com.milaboratory.oncomigec.misc.testing.generators.GeneratorMutationModel;
-import com.milaboratory.oncomigec.misc.testing.generators.RandomMigGenerator;
-import com.milaboratory.oncomigec.misc.testing.generators.RandomReferenceGenerator;
-import org.junit.Assert;
-import org.junit.Test;
-
-import java.util.HashSet;
-import java.util.Set;
-
 public class MutationsExtractorTest {
     private final int nRepetiotions1 = 10, nRepetiotions2 = 20, nReferences = 50;
     private final int majorOverlapThreshold = 90, minorOverlapThreshold = 60,
             majorDeltaThreshold = -5, minorDeltaThreshold = -5;
-
+/*
     @Test
     public void randomizedConsistencyIndelExomeTest() {
         SAssembler assembler = new SAssembler();
@@ -373,4 +346,5 @@ public class MutationsExtractorTest {
         Assert.assertTrue("More than " + CLEANED_CONS_INDEL_THRESHOLD + "% of consensuses " +
                 "should be cleaned from LQ errors", cleanedConsensusesPercent > CLEANED_CONS_INDEL_THRESHOLD);
     }
+    */
 }

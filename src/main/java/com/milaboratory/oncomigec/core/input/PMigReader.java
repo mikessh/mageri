@@ -78,12 +78,11 @@ public final class PMigReader extends MigReader<PMig> {
     }
 
     @Override
-    protected synchronized PMig take(Sample sample, int sizeThreshold) {
-        String sampleName = sample.getName();
-        Iterator<Map.Entry<NucleotideSequence, List<ReadInfo>>> iterator = iteratorMap.get(sampleName);
+    protected synchronized PMig take(Sample sample, String barcodeName, int sizeThreshold) {
+        Iterator<Map.Entry<NucleotideSequence, List<ReadInfo>>> iterator = iteratorMap.get(barcodeName);
         while (iterator.hasNext()) {
             Map.Entry<NucleotideSequence, List<ReadInfo>> entry = iterator.next();
-            if (entry.getValue().size() >= sizeThreshold && !checkUmiMismatch(sampleName, entry.getKey())) {
+            if (entry.getValue().size() >= sizeThreshold && !checkUmiMismatch(barcodeName, entry.getKey())) {
                 List<Read> readList1 = new LinkedList<>(),
                         readList2 = new LinkedList<>();
 

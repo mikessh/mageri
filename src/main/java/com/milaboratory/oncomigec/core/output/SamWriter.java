@@ -50,9 +50,9 @@ public class SamWriter extends RecordWriter<SamRecord> {
         // TODO: instrument (platform)
         stringBuilder.append("\n@RG").
                 append("\tID:").append(sample.getId()).
-                append("\tSM:").append(sample.getName().replaceAll("[ \t]", "_")).
-                append("\tPU:").append(sample.getParent().getName().replaceAll("[ \t]", "_")).
-                append("\tLB:").append(sample.getParent().getParent().getName().replaceAll("[ \t]", "_")).
+                append("\tSM:").append(groomString(sample.getName())).
+                append("\tPU:").append(groomString(sample.getGroupName())).
+                append("\tLB:").append(groomString(sample.getProjectName())).
                 append("\tPL:").append("ILLUMINA");
 
         stringBuilder.append("\n@PG").
@@ -60,6 +60,10 @@ public class SamWriter extends RecordWriter<SamRecord> {
                 append("\tVN:").append(Oncomigec.MY_VERSION);
 
         return stringBuilder.toString();
+    }
+
+    private static String groomString(String string) {
+        return string.replaceAll("[ \t]", "_");
     }
 
     @Override

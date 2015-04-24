@@ -36,6 +36,7 @@ import static com.milaboratory.oncomigec.misc.Util.cloneRead;
 import static com.milaboratory.oncomigec.misc.Util.randomSequence;
 
 public class AssemblerTest {
+    /*
     private static final int nRepetitions = 1000, randomTestAssertThreshold = 70, randomTestAssertIDHThreshold = 50;
 
     @Test
@@ -146,5 +147,5 @@ public class AssemblerTest {
         consensus = (SConsensus) assembler.process(mig).getResult();
         Assert.assertEquals("Incorrect consensus should be assembled",
                 ((SConsensus) consensus).getConsensusSQPair().getSequence(), read3.getSequence());
-    }
+    }*/
 }

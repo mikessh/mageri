@@ -61,12 +61,13 @@ public class OverlapTest {
 
             Overlapper.OverlapResult result = ro.overlap(r1, r2);
 
-            NucleotideSequence overlappedSequence = result.getSQPair().getSequence().
-                    concatenate(result.getConsensus2().getSequence());
-            NucleotideSequence trueSequence = s1.concatenate(s2.getRange(TOTAL_OVERLAP_SIZE, SEQ_LENGTH));
+            if (result.overlapped()) {
+                NucleotideSequence overlappedSequence = result.getSQPair().getSequence();
+                NucleotideSequence trueSequence = s1.concatenate(s2.getRange(TOTAL_OVERLAP_SIZE, SEQ_LENGTH));
 
-            if (overlappedSequence.equals(trueSequence))
-                overlapped++;
+                if (overlappedSequence.equals(trueSequence))
+                    overlapped++;
+            }
         }
         System.out.println("True positives: " + overlapped + " of " + total);
         Assert.assertTrue("TP > 99.9%", (double) overlapped / (double) total >= MIN_TP);
@@ -92,11 +93,13 @@ public class OverlapTest {
 
             Overlapper.OverlapResult result = ro.overlap(r1, r2);
 
-            if (result.getSQPair().getSequence().concatenate(result.getConsensus2().getSequence()).equals(fragment))
-                overlappedT++;
+            if (result.overlapped()) {
+                if (result.getSQPair().getSequence().equals(fragment))
+                    overlappedT++;
 
-            if (result.getOffset() != barcodeOffset)
-                overlappedF++;
+                if (result.getOffset1() != barcodeOffset)
+                    overlappedF++;
+            }
         }
 
         System.out.println("True positives (read-through): " + overlappedT + " of " + total);
@@ -122,12 +125,9 @@ public class OverlapTest {
 
             Overlapper.OverlapResult result = ro.overlap(r1, r2);
 
-            NucleotideSequence overlappedSequence = result.getSQPair().getSequence().
-                    concatenate(result.getConsensus2().getSequence());
-            NucleotideSequence trueSequence = s1.concatenate(s2);
-
-            if (overlappedSequence.equals(trueSequence))
+            if (!result.overlapped()) {
                 overlapped--;
+            }
         }
         System.out.println("False positives: " + overlapped + " of " + total);
         Assert.assertTrue("FP < 2%", (double) overlapped / (double) total <= MAX_FP);

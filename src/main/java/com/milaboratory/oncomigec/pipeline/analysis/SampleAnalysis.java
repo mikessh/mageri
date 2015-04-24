@@ -80,7 +80,7 @@ public class SampleAnalysis implements ReadSpecific, Serializable {
     }
 
     private void sout(String message, int verbosityLevel) {
-        Speaker.INSTANCE.sout("[" + parent.getProject().getName() + "] [" + sample.getFullName() + "] " +
+        Speaker.INSTANCE.sout("[" + sample.getFullName() + "] " +
                 message, verbosityLevel);
     }
 

@@ -45,6 +45,7 @@ import java.util.TreeMap;
 public class ProjectAnalysis implements Serializable {
     protected final ReferenceLibrary referenceLibrary;
     protected final Project project;
+    protected final Input input;
     protected final Presets presets;
     protected final RuntimeParameters runtimeParameters;
 
@@ -63,6 +64,7 @@ public class ProjectAnalysis implements Serializable {
                            RuntimeParameters runtimeParameters) throws IOException {
         this.presets = presets;
         this.runtimeParameters = runtimeParameters;
+        this.input = input;
         this.project = Project.fromInput(input);
 
         this.referenceLibrary = ReferenceLibrary.fromInput(input.getReferences(),
@@ -91,7 +93,7 @@ public class ProjectAnalysis implements Serializable {
 
         for (SampleGroup sampleGroup : project.getSampleGroups()) {
             sout("Pre-processing sample group " + sampleGroup.getName() + ".", 1);
-            final Preprocessor preprocessor = preprocessorFactory.create(sampleGroup, runtimeParameters);
+            final Preprocessor preprocessor = preprocessorFactory.create(input, sampleGroup, runtimeParameters);
 
             sout("Running analysis for sample group " + sampleGroup.getName() + ".", 1);
             for (Sample sample : sampleGroup.getSamples()) {

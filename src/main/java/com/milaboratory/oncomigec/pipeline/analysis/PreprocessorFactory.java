@@ -21,6 +21,7 @@ package com.milaboratory.oncomigec.pipeline.analysis;
 import com.milaboratory.oncomigec.core.PipelineBlock;
 import com.milaboratory.oncomigec.core.input.PreprocessorParameters;
 import com.milaboratory.oncomigec.pipeline.RuntimeParameters;
+import com.milaboratory.oncomigec.pipeline.input.Input;
 import com.milaboratory.oncomigec.preprocessing.DemultiplexParameters;
 import com.milaboratory.oncomigec.preprocessing.CheckoutProcessor;
 import com.milaboratory.oncomigec.preprocessing.PAdapterExtractor;
@@ -40,12 +41,12 @@ public class PreprocessorFactory extends PipelineBlock {
         this.preprocessorParameters = preprocessorParameters;
     }
 
-    public Preprocessor create(SampleGroup sampleGroup) throws IOException, InterruptedException {
-        return create(sampleGroup, RuntimeParameters.DEFAULT);
+    public Preprocessor create(Input input, SampleGroup sampleGroup) throws IOException, InterruptedException {
+        return create(input, sampleGroup, RuntimeParameters.DEFAULT);
     }
 
-    public Preprocessor create(SampleGroup sampleGroup, RuntimeParameters runtimeParameters) throws IOException, InterruptedException {
-        Preprocessor preprocessor = new Preprocessor(sampleGroup,
+    public Preprocessor create(Input input, SampleGroup sampleGroup, RuntimeParameters runtimeParameters) throws IOException, InterruptedException {
+        Preprocessor preprocessor = new Preprocessor(input, sampleGroup,
                 demultiplexParameters,
                 preprocessorParameters,
                 runtimeParameters);

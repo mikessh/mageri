@@ -19,8 +19,10 @@
 package com.milaboratory.oncomigec.pipeline.input;
 
 import java.io.Serializable;
-import java.util.Collections;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * An object representing input metadata that is provided in json + tab delimited format
@@ -28,12 +30,15 @@ import java.util.List;
 public class Input implements Serializable {
     protected final String projectName;
     protected final InputStreamWrapper references;
-    protected final List<InputChunk> inputChunks;
+    protected final Map<String, InputChunk> inputChunksByIndex;
 
     public Input(String projectName, InputStreamWrapper references, List<InputChunk> inputChunks) {
         this.projectName = projectName;
         this.references = references;
-        this.inputChunks = inputChunks;
+        this.inputChunksByIndex = new HashMap<>();
+        for (InputChunk inputChunk : inputChunks) {
+            inputChunksByIndex.put(inputChunk.getName(), inputChunk);
+        }
     }
 
     public String getProjectName() {
@@ -44,14 +49,18 @@ public class Input implements Serializable {
         return references;
     }
 
-    public List<InputChunk> getInputChunks() {
-        return Collections.unmodifiableList(inputChunks);
+    public Collection<InputChunk> getInputChunks() {
+        return inputChunksByIndex.values();
+    }
+
+    public InputChunk getByName(String name) {
+        return inputChunksByIndex.get(name);
     }
 
     @Override
     public String toString() {
         String out = projectName;
-        for (InputChunk chunk : inputChunks) {
+        for (InputChunk chunk : inputChunksByIndex.values()) {
             String[] tokens = chunk.toString().split("\n");
             for (String token : tokens) {
                 out += "\n-" + token;
