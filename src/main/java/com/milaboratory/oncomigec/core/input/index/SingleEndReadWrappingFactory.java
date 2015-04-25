@@ -27,7 +27,7 @@ public class SingleEndReadWrappingFactory extends ReadWrappingFactory<SSequencin
 
     @Override
     public ReadContainer wrap(SSequencingRead read) {
-        return new SingleReadContainer(new Read(read.getData().getSequence(),
-                qualityProvider.convert(read.getData().getQuality())));
+        return new SingleReadContainer(new Read(read.getData(),
+                qualityProvider));
     }
 }

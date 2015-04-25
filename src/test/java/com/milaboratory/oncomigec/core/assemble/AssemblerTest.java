@@ -13,16 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.milaboratory.oncomigec.core.assemble.processor;
+package com.milaboratory.oncomigec.core.assemble;
 
 import com.milaboratory.core.sequence.NucleotideSQPair;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
-import com.milaboratory.oncomigec.core.assemble.Assembler;
-import com.milaboratory.oncomigec.core.assemble.Consensus;
-import com.milaboratory.oncomigec.core.assemble.SAssembler;
-import com.milaboratory.oncomigec.core.assemble.SConsensus;
 import com.milaboratory.oncomigec.core.Mig;
 import com.milaboratory.oncomigec.core.input.SMig;
+import com.milaboratory.oncomigec.core.input.index.QualityProvider;
+import com.milaboratory.oncomigec.core.input.index.Read;
 import com.milaboratory.oncomigec.misc.Basics;
 import com.milaboratory.oncomigec.misc.testing.generators.RandomMigGenerator;
 import com.milaboratory.oncomigec.misc.testing.generators.RandomReferenceGenerator;
@@ -32,11 +30,11 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.milaboratory.oncomigec.misc.Util.cloneRead;
 import static com.milaboratory.oncomigec.misc.Util.randomSequence;
 
+@SuppressWarnings("unchecked")
 public class AssemblerTest {
-    /*
+
     private static final int nRepetitions = 1000, randomTestAssertThreshold = 70, randomTestAssertIDHThreshold = 50;
 
     @Test
@@ -84,6 +82,7 @@ public class AssemblerTest {
                 (100 - percentIncorrectIndelHeavy + percentDroppedIndelHeavy) >= randomTestAssertIDHThreshold);
     }
 
+    private static final QualityProvider qualityProvider = new QualityProvider((byte) 30);
     private static final NucleotideSQPair
             read1 = new NucleotideSQPair(
             "ATAGCAGAAATAAAAGAAAAGATTGGAACTAGTCAGATAGCAGAAATAAAAGAAAAGATTGGAACTAGTCAG",
@@ -98,16 +97,17 @@ public class AssemblerTest {
     @Test
     public void fixedMutationCasesTest() {
         Assembler assembler = new SAssembler();
-        List<NucleotideSQPair> reads;
+        List<Read> reads;
         Mig mig;
         Consensus consensus;
 
         // No mutations
         System.out.println("Testing Assembler. Case: no mutations");
         reads = new ArrayList<>();
-        for (int i = 0; i < 30; i++)
-            reads.add(cloneRead(read1));
-        mig = new SMig(reads, randomSequence(12));
+        for (int i = 0; i < 30; i++) {
+            reads.add(new Read(read1, qualityProvider));
+        }
+        mig = new SMig(null, randomSequence(12), reads);
         consensus = (SConsensus) assembler.process(mig).getResult();
         Assert.assertEquals("Correct consensus should be assembled",
                 ((SConsensus) consensus).getConsensusSQPair().getSequence(), read1.getSequence());
@@ -115,11 +115,13 @@ public class AssemblerTest {
         // Bad qual mutation, not recorded at all, dont affect consensus
         System.out.println("Testing Assembler. Case: frequent mutation with bad sequencing quality");
         reads = new ArrayList<>();
-        for (int i = 0; i < 10; i++)
-            reads.add(cloneRead(read1));
-        for (int i = 0; i < 20; i++)
-            reads.add(cloneRead(read2));
-        mig = new SMig(reads, randomSequence(12));
+        for (int i = 0; i < 10; i++) {
+            reads.add(new Read(read1, qualityProvider));
+        }
+        for (int i = 0; i < 20; i++) {
+            reads.add(new Read(read2, qualityProvider));
+        }
+        mig = new SMig(null, randomSequence(12), reads);
         consensus = (SConsensus) assembler.process(mig).getResult();
         Assert.assertEquals("Correct consensus should be assembled",
                 ((SConsensus) consensus).getConsensusSQPair().getSequence(), read1.getSequence());
@@ -127,11 +129,13 @@ public class AssemblerTest {
         // Good qual mutation, rare - recorded in reads only
         System.out.println("Testing Assembler. Case: rare mutation with good sequencing quality");
         reads = new ArrayList<>();
-        for (int i = 0; i < 20; i++)
-            reads.add(cloneRead(read1));
-        for (int i = 0; i < 10; i++)
-            reads.add(cloneRead(read3));
-        mig = new SMig(reads, randomSequence(12));
+        for (int i = 0; i < 20; i++) {
+            reads.add(new Read(read1, qualityProvider));
+        }
+        for (int i = 0; i < 10; i++) {
+            reads.add(new Read(read3, qualityProvider));
+        }
+        mig = new SMig(null, randomSequence(12), reads);
         consensus = (SConsensus) assembler.process(mig).getResult();
         Assert.assertEquals("Correct consensus should be assembled",
                 ((SConsensus) consensus).getConsensusSQPair().getSequence(), read1.getSequence());
@@ -139,13 +143,15 @@ public class AssemblerTest {
         // Good qual mutation, frequent - recorded both in reads and in consensus
         System.out.println("Testing Assembler. Case: dominating mutation with good sequencing quality");
         reads = new ArrayList<>();
-        for (int i = 0; i < 10; i++)
-            reads.add(cloneRead(read1));
-        for (int i = 0; i < 20; i++)
-            reads.add(cloneRead(read3));
-        mig = new SMig(reads, randomSequence(12));
+        for (int i = 0; i < 10; i++) {
+            reads.add(new Read(read1, qualityProvider));
+        }
+        for (int i = 0; i < 20; i++) {
+            reads.add(new Read(read3, qualityProvider));
+        }
+        mig = new SMig(null, randomSequence(12), reads);
         consensus = (SConsensus) assembler.process(mig).getResult();
         Assert.assertEquals("Incorrect consensus should be assembled",
                 ((SConsensus) consensus).getConsensusSQPair().getSequence(), read3.getSequence());
-    }*/
+    }
 }

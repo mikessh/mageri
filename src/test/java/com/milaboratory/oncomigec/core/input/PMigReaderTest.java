@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.milaboratory.oncomigec.core.input.io;
+package com.milaboratory.oncomigec.core.input;
 
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.core.sequencing.io.fastq.SFastqReader;
@@ -35,7 +35,7 @@ import org.junit.Test;
 import java.io.InputStream;
 import java.util.*;
 
-import static com.milaboratory.oncomigec.misc.testing.DefaultTestSet.*;
+import static com.milaboratory.oncomigec.TestDataset.*;
 
 public class PMigReaderTest {
     @Test

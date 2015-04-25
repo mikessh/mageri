@@ -1,4 +1,4 @@
-package com.milaboratory.oncomigec.core.input.index;
+package com.milaboratory.oncomigec.core.input;
 
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.oncomigec.core.input.MigSizeDistribution;

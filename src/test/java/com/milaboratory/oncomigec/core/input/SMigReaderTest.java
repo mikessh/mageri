@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.milaboratory.oncomigec.core.input.io;
+package com.milaboratory.oncomigec.core.input;
 
 import com.milaboratory.core.sequencing.io.fastq.SFastqReader;
 import com.milaboratory.core.sequencing.read.SSequencingRead;
@@ -26,8 +26,8 @@ import com.milaboratory.util.CompressionType;
 import org.junit.Assert;
 import org.junit.Test;
 
-import static com.milaboratory.oncomigec.misc.testing.DefaultTestSet.SAMPLE_NAME;
-import static com.milaboratory.oncomigec.misc.testing.DefaultTestSet.getR1;
+import static com.milaboratory.oncomigec.TestDataset.SAMPLE_NAME;
+import static com.milaboratory.oncomigec.TestDataset.getR1;
 
 public class SMigReaderTest {
     @Test

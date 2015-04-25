@@ -18,12 +18,18 @@
 
 package com.milaboratory.oncomigec.core.input.index;
 
+import com.milaboratory.core.sequence.NucleotideSQPair;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
+import com.milaboratory.core.sequence.nucleotide.NucleotideSequenceBuilder;
+import com.milaboratory.core.sequence.quality.SequenceQualityPhred;
+import com.milaboratory.core.sequence.quality.SequenceQualityUtils;
 
 import java.io.Serializable;
 import java.util.BitSet;
+import java.util.Random;
 
 public class Read implements Serializable {
+    private static final Random rnd = new Random(511022);
     private final NucleotideSequence sequence;
     private final BitSet qualityMask;
 
@@ -31,6 +37,29 @@ public class Read implements Serializable {
                 BitSet qualityMask) {
         this.sequence = sequence;
         this.qualityMask = qualityMask;
+    }
+
+    public Read(NucleotideSQPair nucleotideSQPair,
+                QualityProvider qualityProvider) {
+        NucleotideSequence sequence = nucleotideSQPair.getSequence();
+        
+        SequenceQualityPhred qual = nucleotideSQPair.getQuality();
+        
+        // This is required as old milib reader replaces N's with A.
+        // It also sets quality to BAD_QUALITY_VALUE, so here we
+        // generate a random base at those positions
+        NucleotideSequenceBuilder nsb = new NucleotideSequenceBuilder(sequence.size());
+
+        for (int i = 0; i < sequence.size(); i++) {
+            if (qual.value(i) > SequenceQualityUtils.BAD_QUALITY_VALUE) {
+                nsb.setCode(i, sequence.codeAt(i));
+            } else {
+                nsb.setCode(i, (byte) rnd.nextInt(4));
+            }
+        }
+
+        this.sequence = nsb.create();
+        this.qualityMask = qualityProvider.convert(nucleotideSQPair.getQuality());
     }
 
     public Read rc() {

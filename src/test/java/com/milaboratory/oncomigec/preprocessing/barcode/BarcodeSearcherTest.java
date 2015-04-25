@@ -25,7 +25,7 @@ import com.milaboratory.core.sequence.quality.SequenceQualityPhred;
 import com.milaboratory.core.sequencing.io.fastq.SFastqReader;
 import com.milaboratory.core.sequencing.read.SSequencingRead;
 import com.milaboratory.oncomigec.misc.Util;
-import com.milaboratory.oncomigec.misc.testing.DefaultTestSet;
+import com.milaboratory.oncomigec.TestDataset;
 import com.milaboratory.util.CompressionType;
 import org.junit.Assert;
 import org.junit.Test;
@@ -179,7 +179,7 @@ public class BarcodeSearcherTest {
 
     @Test
     public void resourcesTest() throws IOException {
-        SFastqReader reader = new SFastqReader(DefaultTestSet.getR1(),
+        SFastqReader reader = new SFastqReader(TestDataset.getR1(),
                 CompressionType.None);
 
         String signature = "NNNNNNNNNNNNNNtgatcttGACGTTGtagatgag";

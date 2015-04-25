@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.milaboratory.oncomigec.preprocessing.processor;
+package com.milaboratory.oncomigec.preprocessing;
 
 import com.milaboratory.core.sequence.quality.QualityFormat;
 import com.milaboratory.core.sequencing.io.fastq.PFastqReader;
@@ -31,7 +31,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.List;
 
-import static com.milaboratory.oncomigec.misc.testing.DefaultTestSet.*;
+import static com.milaboratory.oncomigec.TestDataset.*;
 
 public class CheckoutProcessorTest {
     private static void assertProcessor(CheckoutProcessor processor) {
