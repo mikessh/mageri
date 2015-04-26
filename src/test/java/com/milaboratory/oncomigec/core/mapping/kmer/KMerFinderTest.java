@@ -4,8 +4,8 @@ import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.oncomigec.IntRangeAssertion;
 import com.milaboratory.oncomigec.PercentRangeAssertion;
 import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
-import com.milaboratory.oncomigec.generators.GeneratorMutationModel;
 import com.milaboratory.oncomigec.generators.RandomReferenceGenerator;
+import com.milaboratory.oncomigec.generators.ReferenceParentChildPair;
 import org.apache.commons.math.stat.descriptive.DescriptiveStatistics;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -24,8 +24,9 @@ public class KMerFinderTest {
 
         System.out.println("Generating real-world-size reference library, n=" + referenceLibrarySize);
         // human exome
-        RandomReferenceGenerator randomReferenceGenerator = new RandomReferenceGenerator(GeneratorMutationModel.DEFAULT,
-                exonMedianSize, exonMedianSize);
+        RandomReferenceGenerator randomReferenceGenerator = new RandomReferenceGenerator();
+        randomReferenceGenerator.setReferenceSizeMin(exonMedianSize);
+        randomReferenceGenerator.setReferenceSizeMax(exonMedianSize);
         ReferenceLibrary referenceLibrary = randomReferenceGenerator.nextReferenceLibrary(referenceLibrarySize);
 
         System.out.println("Building K-mer finder");
@@ -55,15 +56,15 @@ public class KMerFinderTest {
     @Test
     public void kmerFinderHitTest() {
         kmerFinderHitTest(false, PercentRangeAssertion.createLowerBound("CorrectHits", "KmerFinder-NonHomologous", 99));
-        kmerFinderHitTest(true, PercentRangeAssertion.createLowerBound("CorrectHits", "KmerFinder-Homologous", 70));
+        kmerFinderHitTest(true, PercentRangeAssertion.createLowerBound("CorrectHits", "KmerFinder-Homologous", 90));
     }
 
     private void kmerFinderHitTest(boolean homologous, PercentRangeAssertion assertRange) {
-        int nReferences = 100, nRepetitions1 = 100, nRepetitions2 = 100;
+        int nReferences = homologous ? 50 : 100, nRepetitions1 = 100, nRepetitions2 = 100;
 
         RandomReferenceGenerator randomReferenceGenerator = new RandomReferenceGenerator();
 
-        int nCorrect = 0;
+        int nCorrect = 0, nFailed = 0;
         DescriptiveStatistics correctInformation = new DescriptiveStatistics(),
                 incorrectInformation = new DescriptiveStatistics(),
                 correctMapq = new DescriptiveStatistics(),
@@ -76,10 +77,15 @@ public class KMerFinderTest {
             KMerFinder kMerFinder = new KMerFinder(referenceLibrary, k);
 
             for (int j = 0; j < nRepetitions2; j++) {
-                RandomReferenceGenerator.ParentChildPair parentChildPair =
+                ReferenceParentChildPair parentChildPair =
                         randomReferenceGenerator.nextParentChildPair(referenceLibrary);
 
                 KMerFinderResult result = kMerFinder.find(parentChildPair.getChildSequence());
+
+                if (result == null) {
+                    nFailed++;
+                    continue;
+                }
 
                 if (result.getHit().equals(parentChildPair.getParentReference())) {
                     nCorrect++;

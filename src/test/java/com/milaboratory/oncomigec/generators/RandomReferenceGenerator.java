@@ -17,43 +17,28 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static com.milaboratory.oncomigec.misc.Util.randomSequence;
 
 public class RandomReferenceGenerator {
-    private int referenceSizeMin, referenceSizeMax;
-    private final GeneratorMutationModel generatorMutationModel;
-    private AtomicInteger referenceIndex = new AtomicInteger();
-
-
-    public RandomReferenceGenerator() {
-        this(GeneratorMutationModel.DEFAULT, 75, 300);
-    }
-
-    public RandomReferenceGenerator(GeneratorMutationModel generatorMutationModel) {
-        this(generatorMutationModel, 75, 300);
-    }
-
-    public RandomReferenceGenerator(GeneratorMutationModel generatorMutationModel, int referenceSizeMin, int referenceSizeMax) {
-        this.generatorMutationModel = generatorMutationModel;
-        this.referenceSizeMin = referenceSizeMin;
-        this.referenceSizeMax = referenceSizeMax;
-    }
+    protected int referenceSizeMin = 75, referenceSizeMax = 300;
+    protected GeneratorMutationModel generatorMutationModel = GeneratorMutationModel.DEFAULT;
+    protected final AtomicInteger referenceIndex = new AtomicInteger();
 
     public NucleotideSequence nextSequence() {
         return randomSequence(generatorMutationModel.nextFromRange(referenceSizeMin, referenceSizeMax));
     }
 
-    public ParentChildPair nextParentChildPair() {
+    public ReferenceParentChildPair nextParentChildPair() {
         NucleotideSequence parent = nextSequence();
         int[] mutations = generatorMutationModel.nextMutations(parent);
         NucleotideSequence child = Mutations.mutate(parent, mutations);
-        return new ParentChildPair(mutations, null, parent, child);
+        return new ReferenceParentChildPair(mutations, null, parent, child);
     }
 
-    public ParentChildPair nextParentChildPair(ReferenceLibrary referenceLibrary) {
+    public ReferenceParentChildPair nextParentChildPair(ReferenceLibrary referenceLibrary) {
         Reference parentReference = nextReference(referenceLibrary);
         NucleotideSequence parentSequence = parentReference.getSequence();
         int[] mutations = generatorMutationModel.nextMutations(parentSequence);
         Mutations.shiftIndelsAtHomopolymers(parentSequence, mutations);
         NucleotideSequence childSequence = Mutations.mutate(parentSequence, mutations);
-        return new ParentChildPair(mutations, parentReference, parentSequence, childSequence);
+        return new ReferenceParentChildPair(mutations, parentReference, parentSequence, childSequence);
     }
 
     public Reference nextReference() {
@@ -123,33 +108,11 @@ public class RandomReferenceGenerator {
         this.referenceSizeMax = referenceSizeMax;
     }
 
-    public class ParentChildPair {
-        private final int[] mutations;
-        private final NucleotideSequence parentSequence, childSequence;
-        private final Reference parentReference;
+    public GeneratorMutationModel getGeneratorMutationModel() {
+        return generatorMutationModel;
+    }
 
-        public ParentChildPair(int[] mutations, Reference parentReference,
-                               NucleotideSequence parentSequence, NucleotideSequence childSequence) {
-            this.mutations = mutations;
-            this.parentReference = parentReference;
-            this.parentSequence = parentSequence;
-            this.childSequence = childSequence;
-        }
-
-        public int[] getMutations() {
-            return mutations;
-        }
-
-        public Reference getParentReference() {
-            return parentReference;
-        }
-
-        public NucleotideSequence getParentSequence() {
-            return parentSequence;
-        }
-
-        public NucleotideSequence getChildSequence() {
-            return childSequence;
-        }
+    public void setGeneratorMutationModel(GeneratorMutationModel generatorMutationModel) {
+        this.generatorMutationModel = generatorMutationModel;
     }
 }

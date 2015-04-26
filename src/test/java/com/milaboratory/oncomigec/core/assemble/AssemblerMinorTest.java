@@ -22,6 +22,7 @@ import com.milaboratory.core.sequence.mutations.Mutations;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.oncomigec.PercentRangeAssertion;
 import com.milaboratory.oncomigec.generators.GeneratorMutationModel;
+import com.milaboratory.oncomigec.generators.MigWithMutations;
 import com.milaboratory.oncomigec.generators.RandomMigGenerator;
 import com.milaboratory.oncomigec.generators.RandomReferenceGenerator;
 import org.junit.Test;
@@ -57,7 +58,7 @@ public class AssemblerMinorTest {
         int minorsTN = 0, minorsTP = 0, minorsFP = 0, minorsFN = 0;
         for (int i = 0; i < nRepetitions; i++) {
             NucleotideSequence core = referenceGenerator.nextSequence();
-            RandomMigGenerator.RandomMigGeneratorResult randomMig = migGenerator.nextMig(core);
+            MigWithMutations randomMig = migGenerator.nextMig(core);
 
             consensus = assembler.assemble(randomMig.getMig());
 

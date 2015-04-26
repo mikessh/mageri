@@ -23,6 +23,7 @@ import com.milaboratory.oncomigec.core.input.SMig;
 import com.milaboratory.oncomigec.core.input.index.QualityProvider;
 import com.milaboratory.oncomigec.core.input.index.Read;
 import com.milaboratory.oncomigec.generators.GeneratorMutationModel;
+import com.milaboratory.oncomigec.generators.MigWithMutations;
 import com.milaboratory.oncomigec.generators.RandomMigGenerator;
 import com.milaboratory.oncomigec.generators.RandomReferenceGenerator;
 import org.junit.Assert;
@@ -74,7 +75,7 @@ public class AssemblerBasicTest {
 
         for (int i = 0; i < nRepetitions; i++) {
             NucleotideSequence core = referenceGenerator.nextSequence();
-            RandomMigGenerator.RandomMigGeneratorResult randomMig = migGenerator.nextMig(core);
+            MigWithMutations randomMig = migGenerator.nextMig(core);
 
             SMig mig = randomMig.getMig();
 

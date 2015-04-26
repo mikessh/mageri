@@ -34,7 +34,7 @@ public class KMerFinder {
         }
 
         final Map<Integer, Double> informationMap = new HashMap<>();
-        final double N = (double) referenceCount;
+        final double N = (double) kmerMap.getTotal();
         double maxInformationValue = Double.MIN_VALUE,
                 nextMaxInformationValue = Double.MIN_VALUE;
         int maxInformationId = 0;
@@ -45,8 +45,7 @@ public class KMerFinder {
             KmerMap.KmerData kmerData = kmerMap.getData(kmer);
             if (kmerData != null) {
                 // Note that we auto-correct repetitive k-mers by incrementing their count for the same reference
-                double information = kmerData.getCounter() < referenceCount ?
-                        -Math.log(kmerData.getCounter() / N) : 0.0;
+                double information = -Math.log(kmerData.getCounter() / N);
 
                 IntArrayList parentIds = kmerData.getParentSequenceIds();
 
@@ -57,9 +56,11 @@ public class KMerFinder {
                     parentInformation = parentInformation == null ? information : (parentInformation + information);
 
                     if (parentInformation > maxInformationValue) {
-                        nextMaxInformationValue = maxInformationValue;
                         maxInformationValue = parentInformation;
-                        maxInformationId = parentId;
+                        if (maxInformationId != parentId) {
+                            maxInformationId = parentId;
+                            nextMaxInformationValue = maxInformationValue;
+                        }
                     }
 
                     informationMap.put(parentId, parentInformation);
@@ -72,10 +73,13 @@ public class KMerFinder {
             return null;
         }
 
+        maxInformationValue /= kmers.length;
+        nextMaxInformationValue /= kmers.length;
+
         boolean rc = maxInformationId < 0; // RC reference sequences are stored as -(index+1)
 
         return new KMerFinderResult(maxInformationValue,
-                maxInformationValue - Math.max(0, nextMaxInformationValue),
+                10 * (maxInformationValue - Math.max(0, nextMaxInformationValue)) / Math.log(10),
                 referenceLibrary.getAt((rc ? -maxInformationId : maxInformationId) - 1), // hash index is 1-based
                 rc);
     }

@@ -28,11 +28,14 @@ package com.milaboratory.oncomigec.core.mapping.kmer;
 
 import com.milaboratory.util.IntArrayList;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 /**
  * A fast hash-table based implementation of an integer counter. The keys are
  * long integers, and counters associated with each key are integers.
  */
 public class KmerMap {
+    private final AtomicLong total = new AtomicLong();
 
     //
     // Declarations
@@ -195,6 +198,7 @@ public class KmerMap {
      * @param kmer Key of the counter to increment.
      */
     public void increment(long kmer, int parentSequenceId) {
+        total.incrementAndGet();
 
         KmerData element;
         int bucketIndex;
@@ -269,6 +273,10 @@ public class KmerMap {
 
     public long getSize() {
         return size;
+    }
+
+    public long getTotal() {
+        return total.get();
     }
 
     //

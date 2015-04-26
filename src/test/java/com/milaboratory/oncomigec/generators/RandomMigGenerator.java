@@ -23,28 +23,28 @@ public class RandomMigGenerator {
         setGeneratorMutationModel(GeneratorMutationModel.DEFAULT);
     }
 
-    public RandomMigGeneratorResult nextMig(RandomReferenceGenerator referenceGenerator) {
+    public MigWithMutations nextMig(RandomReferenceGenerator referenceGenerator) {
         return nextMig(referenceGenerator.nextSequence());
     }
 
-    public RandomMigGeneratorResult nextMigPCR(Reference reference) {
+    public MigWithMutations nextMigPCR(Reference reference) {
         return nextMigPCR(reference.getSequence());
     }
 
-    public RandomMigGeneratorResult nextMigPCR(NucleotideSequence reference) {
+    public MigWithMutations nextMigPCR(NucleotideSequence reference) {
         int[] pcrMutations = pcrGeneratorMutationModel.nextMutations(reference);
         return nextMig(reference, pcrMutations);
     }
 
-    public RandomMigGeneratorResult nextMig(Reference reference) {
+    public MigWithMutations nextMig(Reference reference) {
         return nextMig(reference.getSequence());
     }
 
-    public RandomMigGeneratorResult nextMig(NucleotideSequence sequence) {
+    public MigWithMutations nextMig(NucleotideSequence sequence) {
         return nextMig(sequence, new int[0]);
     }
 
-    private RandomMigGeneratorResult nextMig(NucleotideSequence sequence, int[] pcrMutations) {
+    private MigWithMutations nextMig(NucleotideSequence sequence, int[] pcrMutations) {
         sequence = Mutations.mutate(sequence, pcrMutations);
 
         List<Read> reads = new ArrayList<>();
@@ -86,7 +86,7 @@ public class RandomMigGenerator {
 
         SMig sMig = new SMig(null, randomSequence(umiSize), reads);
 
-        return new RandomMigGeneratorResult(sequence, sMig, minorMutationCounts, pcrMutations);
+        return new MigWithMutations(sequence, sMig, minorMutationCounts, pcrMutations);
     }
 
     public int getMigSizeMin() {
@@ -153,37 +153,5 @@ public class RandomMigGenerator {
 
     public void setMaxRandomFlankSize(int maxRandomFlankSize) {
         this.maxRandomFlankSize = maxRandomFlankSize;
-    }
-
-    public class RandomMigGeneratorResult {
-        private final SMig mig;
-        private final int[] pcrMutations;
-        private final NucleotideSequence consensus;
-        private final Map<Integer, Integer> minorMutationCounts;
-
-        public RandomMigGeneratorResult(NucleotideSequence consensus,
-                                        SMig mig, Map<Integer, Integer> minorMutationCounts,
-                                        int[] pcrMutations) {
-            this.consensus = consensus;
-            this.mig = mig;
-            this.pcrMutations = pcrMutations;
-            this.minorMutationCounts = minorMutationCounts;
-        }
-
-        public NucleotideSequence getConsensus() {
-            return consensus;
-        }
-
-        public SMig getMig() {
-            return mig;
-        }
-
-        public Map<Integer, Integer> getMinorMutationCounts() {
-            return minorMutationCounts;
-        }
-
-        public int[] getPcrMutations() {
-            return pcrMutations;
-        }
     }
 }
