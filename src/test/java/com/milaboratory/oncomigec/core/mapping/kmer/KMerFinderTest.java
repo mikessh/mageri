@@ -1,9 +1,11 @@
 package com.milaboratory.oncomigec.core.mapping.kmer;
 
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
+import com.milaboratory.oncomigec.DoubleRangeAssertion;
 import com.milaboratory.oncomigec.IntRangeAssertion;
 import com.milaboratory.oncomigec.PercentRangeAssertion;
 import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
+import com.milaboratory.oncomigec.generators.GeneratorMutationModel;
 import com.milaboratory.oncomigec.generators.RandomReferenceGenerator;
 import com.milaboratory.oncomigec.generators.ReferenceParentChildPair;
 import org.apache.commons.math.stat.descriptive.DescriptiveStatistics;
@@ -55,14 +57,39 @@ public class KMerFinderTest {
 
     @Test
     public void kmerFinderHitTest() {
-        kmerFinderHitTest(false, PercentRangeAssertion.createLowerBound("CorrectHits", "KmerFinder-NonHomologous", 99));
-        kmerFinderHitTest(true, PercentRangeAssertion.createLowerBound("CorrectHits", "KmerFinder-Homologous", 90));
+        String model, range1Name = "Correct hits percent", range2Name = "Mean MAPQ score";
+
+        model = "KmerFinder: Homologous references";
+        kmerFinderHitTest(50, 1.0, 1.0,
+                PercentRangeAssertion.createLowerBound(range1Name, model, 95),
+                DoubleRangeAssertion.createLowerBound(range2Name, model, 15));
+
+        model = "KmerFinder: Less-homologous references";
+        kmerFinderHitTest(100, 10.0, 1.0,
+                PercentRangeAssertion.createLowerBound(range1Name, model, 99),
+                DoubleRangeAssertion.createLowerBound(range2Name, model, 25));
+
+        model = "KmerFinder: Non-homologous references, more errors";
+        kmerFinderHitTest(500, 100.0, 3.0,
+                PercentRangeAssertion.createLowerBound(range1Name, model, 99),
+                DoubleRangeAssertion.createLowerBound(range2Name, model, 35));
+
+        model = "KmerFinder: Single reference, extreme errors";
+        kmerFinderHitTest(1, 1.0, 10.0,
+                PercentRangeAssertion.createLowerBound(range1Name, model, 95),
+                DoubleRangeAssertion.createLowerBound(range2Name, model, 5));
     }
 
-    private void kmerFinderHitTest(boolean homologous, PercentRangeAssertion assertRange) {
-        int nReferences = homologous ? 50 : 100, nRepetitions1 = 100, nRepetitions2 = 100;
+    private void kmerFinderHitTest(int nReferences,
+                                   double nonHomologyMultiplier, double errorMultiplier,
+                                   PercentRangeAssertion correctRateRange,
+                                   DoubleRangeAssertion mapqRange) {
+        RandomReferenceGenerator randomReferenceGenerator = new RandomReferenceGenerator(), randomReferenceGenerator1 = new RandomReferenceGenerator();
 
-        RandomReferenceGenerator randomReferenceGenerator = new RandomReferenceGenerator();
+        randomReferenceGenerator.setGeneratorMutationModel(GeneratorMutationModel.DEFAULT.multiply(nonHomologyMultiplier));
+        randomReferenceGenerator1.setGeneratorMutationModel(GeneratorMutationModel.DEFAULT.multiply(errorMultiplier));
+
+        int nRepetitions1 = 100, nRepetitions2 = 100;
 
         int nCorrect = 0, nFailed = 0;
         DescriptiveStatistics correctInformation = new DescriptiveStatistics(),
@@ -71,14 +98,15 @@ public class KMerFinderTest {
                 incorrectMapq = new DescriptiveStatistics();
 
         for (int i = 0; i < nRepetitions1; i++) {
-            ReferenceLibrary referenceLibrary = homologous ?
-                    randomReferenceGenerator.nextHomologousReferenceLibrary(nReferences) :
-                    randomReferenceGenerator.nextReferenceLibrary(nReferences);
+            ReferenceLibrary referenceLibrary = nonHomologyMultiplier > 100 ?
+                    randomReferenceGenerator.nextReferenceLibrary(nReferences) :
+                    randomReferenceGenerator.nextHomologousReferenceLibrary(nReferences);
+
             KMerFinder kMerFinder = new KMerFinder(referenceLibrary, k);
 
             for (int j = 0; j < nRepetitions2; j++) {
                 ReferenceParentChildPair parentChildPair =
-                        randomReferenceGenerator.nextParentChildPair(referenceLibrary);
+                        randomReferenceGenerator1.nextParentChildPair(referenceLibrary);
 
                 KMerFinderResult result = kMerFinder.find(parentChildPair.getChildSequence());
 
@@ -98,8 +126,6 @@ public class KMerFinderTest {
             }
         }
 
-        assertRange.assertInRange(nCorrect, nRepetitions1 * nRepetitions2);
-
         System.out.println("Correct reference:");
         System.out.println("Information=" + correctInformation.getMean() + "±" + correctInformation.getStandardDeviation());
         System.out.println("MAPQ=" + correctMapq.getMean() + "±" + correctMapq.getStandardDeviation());
@@ -108,5 +134,8 @@ public class KMerFinderTest {
         System.out.println("Information=" + incorrectInformation.getMean() + "±" + incorrectInformation.getStandardDeviation());
         System.out.println("MAPQ=" + incorrectMapq.getMean() + "±" + incorrectMapq.getStandardDeviation());
         System.out.println();
+
+        correctRateRange.assertInRange(nCorrect, nRepetitions1 * nRepetitions2);
+        mapqRange.assertInRange(correctMapq.getMean());
     }
 }
