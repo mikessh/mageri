@@ -4,6 +4,9 @@ import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
 import com.milaboratory.util.IntArrayList;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class KMerFinder {
     public static final int DEFAULT_K = 11;
 
@@ -30,7 +33,7 @@ public class KMerFinder {
             return null;
         }
 
-        final double[] informationVector = new double[2 * referenceCount + 1];
+        final Map<Integer, Double> informationMap = new HashMap<>();
         final double N = (double) referenceCount;
         double maxInformationValue = Double.MIN_VALUE,
                 nextMaxInformationValue = Double.MIN_VALUE;
@@ -49,14 +52,17 @@ public class KMerFinder {
 
                 for (int j = 0; j < parentIds.size(); j++) {
                     int parentId = parentIds.get(j);
-                    double parentInformation = informationVector[referenceCount + parentId] + information;
-                    informationVector[referenceCount + parentId] = parentInformation;
+
+                    Double parentInformation = informationMap.get(parentId);
+                    parentInformation = parentInformation == null ? information : (parentInformation + information);
 
                     if (parentInformation > maxInformationValue) {
                         nextMaxInformationValue = maxInformationValue;
                         maxInformationValue = parentInformation;
                         maxInformationId = parentId;
                     }
+
+                    informationMap.put(parentId, parentInformation);
                 }
             }
         }

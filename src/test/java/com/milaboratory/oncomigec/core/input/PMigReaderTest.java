@@ -68,7 +68,7 @@ public class PMigReaderTest {
         double avgSizeDifference = 0;
         int readsWithDifferentUmisCount = 0, totalReads = 0;
 
-        PMig pMig, slaveFirstMig;
+        PMig pMig;
         while ((pMig = reader.take(SAMPLE_NAME, 5)) != null) {
             NucleotideSequence umi = pMig.getUmi();
 
@@ -96,11 +96,11 @@ public class PMigReaderTest {
         orientationTest(getR2(), getR1(), getBarcodesGood());
     }
 
-    private static void addToMap(Map<NucleotideSequence, Integer> coutners, List<NucleotideSequence> sequences) {
+    private static void addToMap(Map<NucleotideSequence, Integer> counters, List<NucleotideSequence> sequences) {
         for (NucleotideSequence sequence : sequences) {
-            Integer counter = coutners.get(sequence);
+            Integer counter = counters.get(sequence);
             counter = counter == null ? 1 : (counter + 1);
-            coutners.put(sequence, counter);
+            counters.put(sequence, counter);
         }
     }
 
@@ -131,7 +131,7 @@ public class PMigReaderTest {
         PMigReader slaveFirstReader = new PMigReader(r1, r2, processorSlaveFirst);
 
         Map<NucleotideSequence, Integer> counters1 = new HashMap<>(), counters2 = new HashMap<>(),
-                slaveFirstCoutners1 = new HashMap<>(), slaveFirstCoutners2 = new HashMap<>();
+                slaveFirstCounters1 = new HashMap<>(), slaveFirstCounters2 = new HashMap<>();
 
         int readsCount = 0, slaveFirstReadsCount = 0;
 
@@ -142,16 +142,16 @@ public class PMigReaderTest {
             // Add reads for comparison
             addToMap(counters1, mig.getMig1().getSequences());
             addToMap(counters2, mig.getMig2().getSequences());
-            addToMap(slaveFirstCoutners1, slaveFirstMig.getMig1().getSequences());
-            addToMap(slaveFirstCoutners2, slaveFirstMig.getMig2().getSequences());
+            addToMap(slaveFirstCounters1, slaveFirstMig.getMig1().getSequences());
+            addToMap(slaveFirstCounters2, slaveFirstMig.getMig2().getSequences());
 
             readsCount += mig.size();
             slaveFirstReadsCount += slaveFirstMig.size();
         }
 
         PercentRangeAssertion.createLowerBound("MasterFirstSlaveFirstIntersection", "Read1", 90).
-                assertInRange(intersect(counters1, slaveFirstCoutners1, readsCount, slaveFirstReadsCount));
+                assertInRange(intersect(counters1, slaveFirstCounters1, readsCount, slaveFirstReadsCount));
         PercentRangeAssertion.createLowerBound("MasterFirstSlaveFirstIntersection", "Read2", 90).
-                assertInRange(intersect(counters2, slaveFirstCoutners2, readsCount, slaveFirstReadsCount));
+                assertInRange(intersect(counters2, slaveFirstCounters2, readsCount, slaveFirstReadsCount));
     }
 }

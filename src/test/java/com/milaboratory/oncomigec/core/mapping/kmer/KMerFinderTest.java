@@ -1,34 +1,55 @@
 package com.milaboratory.oncomigec.core.mapping.kmer;
 
-import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
+import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.oncomigec.IntRangeAssertion;
 import com.milaboratory.oncomigec.PercentRangeAssertion;
+import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
 import com.milaboratory.oncomigec.generators.GeneratorMutationModel;
 import com.milaboratory.oncomigec.generators.RandomReferenceGenerator;
+import org.apache.commons.math.stat.descriptive.DescriptiveStatistics;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
 public class KMerFinderTest {
-    int nReferences = 100, nRepetitions1 = 100, nRepetitions2 = 100, k = 11;
-    int nBins = 100;
+    int k = 11;
 
     @Ignore("Too heavy")
     @Test
     public void kmerFinderStressTest() {
-        System.out.println("Generating real-world-size reference library");
+        int referenceLibrarySize = 233785, benchmarkSetSize = 100000, exonMedianSize = 150;
+        long now, elapsed;
+
+        System.out.println("Generating real-world-size reference library, n=" + referenceLibrarySize);
         // human exome
         RandomReferenceGenerator randomReferenceGenerator = new RandomReferenceGenerator(GeneratorMutationModel.DEFAULT,
-                150, 150);
-        ReferenceLibrary referenceLibrary = randomReferenceGenerator.nextReferenceLibrary(233785);
+                exonMedianSize, exonMedianSize);
+        ReferenceLibrary referenceLibrary = randomReferenceGenerator.nextReferenceLibrary(referenceLibrarySize);
 
         System.out.println("Building K-mer finder");
-        long now = System.nanoTime(); // todo: timer
-        new KMerFinder(referenceLibrary, k);
-        long elpased = System.nanoTime() - now;
-        IntRangeAssertion intRange = IntRangeAssertion.createUpperBound("Time elpased, s", "KmerFinder-BuildHash", 60);
-        intRange.assertInRange((int) (elpased / 1_000_000_000L));
+        now = System.nanoTime(); // todo: timer
+        KMerFinder kMerFinder = new KMerFinder(referenceLibrary, k);
+        elapsed = System.nanoTime() - now;
+        IntRangeAssertion.createUpperBound("Time elpased, s", "KmerFinder: building kmer hash", 60).
+                assertInRange((int) (elapsed / 1_000_000_000L));
+
+        System.out.println("Preparing references to align");
+        List<NucleotideSequence> sequenceList = new LinkedList<>();
+
+        for (int i = 0; i < benchmarkSetSize; i++) {
+            sequenceList.add(randomReferenceGenerator.nextMutatedReferenceSequence(referenceLibrary));
+        }
+
+        System.out.println("Mapping n=" + benchmarkSetSize + " reads");
+        now = System.nanoTime();
+        for (NucleotideSequence sequence : sequenceList) {
+            kMerFinder.find(sequence);
+        }
+        elapsed = System.nanoTime() - now;
+        IntRangeAssertion.createUpperBound("Time elpased, s", "KmerFinder: mapping", 60).
+                assertInRange((int) (elapsed / 1_000_000_000L));
     }
 
     @Test
@@ -38,10 +59,15 @@ public class KMerFinderTest {
     }
 
     private void kmerFinderHitTest(boolean homologous, PercentRangeAssertion assertRange) {
+        int nReferences = 100, nRepetitions1 = 100, nRepetitions2 = 100;
+
         RandomReferenceGenerator randomReferenceGenerator = new RandomReferenceGenerator();
 
         int nCorrect = 0;
-        int[] correctInformationHistogram = new int[nBins], incorrectInformationHistogram = new int[nBins];
+        DescriptiveStatistics correctInformation = new DescriptiveStatistics(),
+                incorrectInformation = new DescriptiveStatistics(),
+                correctMapq = new DescriptiveStatistics(),
+                incorrectMapq = new DescriptiveStatistics();
 
         for (int i = 0; i < nRepetitions1; i++) {
             ReferenceLibrary referenceLibrary = homologous ?
@@ -57,19 +83,24 @@ public class KMerFinderTest {
 
                 if (result.getHit().equals(parentChildPair.getParentReference())) {
                     nCorrect++;
-                    correctInformationHistogram[getBin(result.getInformation())]++;
+                    correctInformation.addValue(result.getInformation());
+                    correctMapq.addValue(result.getScore());
                 } else {
-                    incorrectInformationHistogram[getBin(result.getInformation())]++;
+                    incorrectInformation.addValue(result.getInformation());
+                    incorrectMapq.addValue(result.getScore());
                 }
             }
         }
 
         assertRange.assertInRange(nCorrect, nRepetitions1 * nRepetitions2);
-        System.out.println("CorrectInformationHistogram=" + Arrays.toString(correctInformationHistogram));
-        System.out.println("IncorrectInformationHistogram=" + Arrays.toString(incorrectInformationHistogram));
-    }
 
-    private int getBin(double value) {
-        return Math.min(nBins - 1, (int) (value * nBins));
+        System.out.println("Correct reference:");
+        System.out.println("Information=" + correctInformation.getMean() + "±" + correctInformation.getStandardDeviation());
+        System.out.println("MAPQ=" + correctMapq.getMean() + "±" + correctMapq.getStandardDeviation());
+        System.out.println();
+        System.out.println("Incorrect reference:");
+        System.out.println("Information=" + incorrectInformation.getMean() + "±" + incorrectInformation.getStandardDeviation());
+        System.out.println("MAPQ=" + incorrectMapq.getMean() + "±" + incorrectMapq.getStandardDeviation());
+        System.out.println();
     }
 }
