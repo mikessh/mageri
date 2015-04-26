@@ -16,7 +16,7 @@
  * Last modified on 4.3.2015 by mikesh
  */
 
-package com.milaboratory.oncomigec.misc.testing;
+package com.milaboratory.oncomigec;
 
 import com.milaboratory.oncomigec.core.PipelineBlock;
 import org.apache.commons.lang3.SerializationUtils;

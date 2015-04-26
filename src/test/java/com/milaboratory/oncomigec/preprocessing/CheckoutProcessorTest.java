@@ -20,10 +20,9 @@ import com.milaboratory.core.sequencing.io.fastq.PFastqReader;
 import com.milaboratory.core.sequencing.io.fastq.SFastqReader;
 import com.milaboratory.core.sequencing.read.PSequencingRead;
 import com.milaboratory.core.sequencing.read.SSequencingRead;
-import com.milaboratory.oncomigec.preprocessing.*;
 import com.milaboratory.oncomigec.preprocessing.barcode.BarcodeListParser;
-import com.milaboratory.oncomigec.misc.testing.PercentRange;
-import com.milaboratory.oncomigec.misc.testing.TestUtil;
+import com.milaboratory.oncomigec.PercentRangeAssertion;
+import com.milaboratory.oncomigec.TestUtil;
 import com.milaboratory.util.CompressionType;
 import org.junit.Assert;
 import org.junit.Test;
@@ -90,7 +89,7 @@ public class CheckoutProcessorTest {
         }
 
         if (mask2 != null && seed != null)
-            PercentRange.createLowerBound("CorrectUMIExtracted", "SlaveSlidingSearcher", 95).assertInRange(seedFound, nReads);
+            PercentRangeAssertion.createLowerBound("CorrectUMIExtracted", "SlaveSlidingSearcher", 95).assertInRange(seedFound, nReads);
 
         return processor;
     }

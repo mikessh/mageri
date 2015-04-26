@@ -18,12 +18,8 @@ package com.milaboratory.oncomigec.core.input;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.core.sequencing.io.fastq.SFastqReader;
 import com.milaboratory.core.sequencing.read.SSequencingRead;
-import com.milaboratory.oncomigec.core.input.MigSizeDistribution;
-import com.milaboratory.oncomigec.core.input.PMig;
-import com.milaboratory.oncomigec.core.input.PMigReader;
-import com.milaboratory.oncomigec.core.input.PreprocessorParameters;
 import com.milaboratory.oncomigec.misc.Util;
-import com.milaboratory.oncomigec.misc.testing.PercentRange;
+import com.milaboratory.oncomigec.PercentRangeAssertion;
 import com.milaboratory.oncomigec.preprocessing.DemultiplexParameters;
 import com.milaboratory.oncomigec.preprocessing.HeaderExtractor;
 import com.milaboratory.oncomigec.preprocessing.PAdapterExtractor;
@@ -153,9 +149,9 @@ public class PMigReaderTest {
             slaveFirstReadsCount += slaveFirstMig.size();
         }
 
-        PercentRange.createLowerBound("MasterFirstSlaveFirstIntersection", "Read1", 95).
+        PercentRangeAssertion.createLowerBound("MasterFirstSlaveFirstIntersection", "Read1", 90).
                 assertInRange(intersect(counters1, slaveFirstCoutners1, readsCount, slaveFirstReadsCount));
-        PercentRange.createLowerBound("MasterFirstSlaveFirstIntersection", "Read2", 95).
+        PercentRangeAssertion.createLowerBound("MasterFirstSlaveFirstIntersection", "Read2", 90).
                 assertInRange(intersect(counters2, slaveFirstCoutners2, readsCount, slaveFirstReadsCount));
     }
 }

@@ -17,13 +17,14 @@ package com.milaboratory.oncomigec.core.assemble;
 
 import com.milaboratory.core.sequence.NucleotideSQPair;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
+import com.milaboratory.oncomigec.PercentRangeAssertion;
 import com.milaboratory.oncomigec.core.Mig;
 import com.milaboratory.oncomigec.core.input.SMig;
 import com.milaboratory.oncomigec.core.input.index.QualityProvider;
 import com.milaboratory.oncomigec.core.input.index.Read;
-import com.milaboratory.oncomigec.misc.Basics;
-import com.milaboratory.oncomigec.misc.testing.generators.RandomMigGenerator;
-import com.milaboratory.oncomigec.misc.testing.generators.RandomReferenceGenerator;
+import com.milaboratory.oncomigec.generators.GeneratorMutationModel;
+import com.milaboratory.oncomigec.generators.RandomMigGenerator;
+import com.milaboratory.oncomigec.generators.RandomReferenceGenerator;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -33,53 +34,76 @@ import java.util.List;
 import static com.milaboratory.oncomigec.misc.Util.randomSequence;
 
 @SuppressWarnings("unchecked")
-public class AssemblerTest {
-
-    private static final int nRepetitions = 1000, randomTestAssertThreshold = 70, randomTestAssertIDHThreshold = 50;
-
+public class AssemblerBasicTest {
     @Test
     public void randomMutationsTest() {
         RandomMigGenerator migGenerator = new RandomMigGenerator();
-        RandomReferenceGenerator referenceGenerator = new RandomReferenceGenerator();
-        Assembler assembler = new SAssembler();
-        Consensus consensus;
 
-        int nAssembled = 0, nDroppedIndelHeavy = 0, nIncorrectIndelHeavy = 0;
-        int indelHeavyMigs = 0;
+        migGenerator.setMaxRandomFlankSize(5);
+
+        String mode = "With indels";
+
+        randomMutationsTest(migGenerator,
+                PercentRangeAssertion.createLowerBound("Reads assembled", mode, 90),
+                PercentRangeAssertion.createLowerBound("MIGs assembled", mode, 95),
+                PercentRangeAssertion.createUpperBound("MIGs dropped", mode, 1),
+                PercentRangeAssertion.createUpperBound("Incorrect consensus", mode, 20));
+
+        migGenerator.setGeneratorMutationModel(GeneratorMutationModel.NO_INDEL);
+        mode = "No indels";
+
+        randomMutationsTest(migGenerator,
+                PercentRangeAssertion.createLowerBound("Reads assembled", mode, 95),
+                PercentRangeAssertion.createLowerBound("MIGs assembled", mode, 95),
+                PercentRangeAssertion.createUpperBound("MIGs dropped", mode, 1),
+                PercentRangeAssertion.createUpperBound("Incorrect consensus", mode, 5));
+    }
+
+    public void randomMutationsTest(RandomMigGenerator migGenerator,
+                                    PercentRangeAssertion readAssembly,
+                                    PercentRangeAssertion migAssembly,
+                                    PercentRangeAssertion migDropping,
+                                    PercentRangeAssertion migIncorrect) {
+        int nRepetitions = 1000;
+        RandomReferenceGenerator referenceGenerator = new RandomReferenceGenerator();
+        SAssembler assembler = new SAssembler();
+        SConsensus consensus;
+
+        int readsTotal = 0, readsAssembled = 0,
+                migsTotal = 0, migsAssembled = 0, migsDropped = 0, migsIncorrectlyAssembled = 0;
+
         for (int i = 0; i < nRepetitions; i++) {
             NucleotideSequence core = referenceGenerator.nextSequence();
             RandomMigGenerator.RandomMigGeneratorResult randomMig = migGenerator.nextMig(core);
 
-            boolean indelHeavy = randomMig.indelHeavy();
-            if (randomMig.indelHeavy())
-                indelHeavyMigs++;
+            SMig mig = randomMig.getMig();
 
-            consensus = assembler.assemble(randomMig.getMig());
+            migsTotal++;
+
+            consensus = assembler.assemble(mig);
 
             if (consensus != null) {
-                String consensusSequence = ((SConsensus) consensus).getConsensusSQPair().getSequence().toString(),
+                String consensusSequence = consensus.getConsensusSQPair().getSequence().toString(),
                         coreStr = core.toString();
 
+                readsAssembled += consensus.getAssembledSize();
+                readsTotal += consensus.getTrueSize();
+
+                migsAssembled++;
+
                 // Consensus could be larger or smaller than core due to indels
-                if (coreStr.contains(consensusSequence) || consensusSequence.contains(coreStr))
-                    nAssembled++;
-                else if (indelHeavy)
-                    nIncorrectIndelHeavy++;
-            } else if (indelHeavy)
-                nDroppedIndelHeavy++;
+                if (!coreStr.contains(consensusSequence) && !consensusSequence.contains(coreStr)) {
+                    migsIncorrectlyAssembled++;
+                }
+            } else {
+                migsDropped++;
+            }
         }
 
-        int percentAssembled = Basics.percent(nAssembled, nRepetitions),
-                percentDroppedIndelHeavy = Basics.percent(nDroppedIndelHeavy, indelHeavyMigs),
-                percentIncorrectIndelHeavy = Basics.percent(nIncorrectIndelHeavy, indelHeavyMigs);
-        System.out.println("Indel heavy MIGs=" + Basics.percent(indelHeavyMigs, nRepetitions) + "%");
-        System.out.println("MIGs assembled correctly=" + percentAssembled +
-                "%; indel-heavy: dropped=" + percentDroppedIndelHeavy +
-                "%, incorrectly assembled=" + percentIncorrectIndelHeavy + "%");
-        Assert.assertTrue("At least " + randomTestAssertThreshold + "% MIGs assembled correctly",
-                percentAssembled >= randomTestAssertThreshold);
-        Assert.assertTrue("At least " + randomTestAssertIDHThreshold + "% indel-heavy MIGs assembled correctly",
-                (100 - percentIncorrectIndelHeavy + percentDroppedIndelHeavy) >= randomTestAssertIDHThreshold);
+        readAssembly.assertInRange(readsAssembled, readsTotal);
+        migAssembly.assertInRange(migsAssembled, migsTotal);
+        migDropping.assertInRange(migsDropped, migsTotal);
+        migIncorrect.assertInRange(migsIncorrectlyAssembled, migsTotal);
     }
 
     private static final QualityProvider qualityProvider = new QualityProvider((byte) 30);

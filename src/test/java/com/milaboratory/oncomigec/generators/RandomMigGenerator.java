@@ -1,4 +1,4 @@
-package com.milaboratory.oncomigec.misc.testing.generators;
+package com.milaboratory.oncomigec.generators;
 
 import com.milaboratory.core.sequence.mutations.Mutations;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
@@ -11,10 +11,12 @@ import java.util.*;
 import static com.milaboratory.oncomigec.misc.Util.randomSequence;
 
 public class RandomMigGenerator {
-    private boolean markMinorMutations = false;
+    private static final Random rnd = new Random(123456);
+    private boolean maskMinorSubstitutions = false;
     private int migSizeMin = 100, migSizeMax = 300;
-    private double indelHeavyThreshold = 0.7, pcrErrorMultiplier = 0.1;
+    private double pcrErrorMultiplier = 0.1;
     private int umiSize = 12;
+    private int maxRandomFlankSize = 0;
     private GeneratorMutationModel generatorMutationModel, pcrGeneratorMutationModel;
 
     public RandomMigGenerator() {
@@ -47,43 +49,44 @@ public class RandomMigGenerator {
 
         List<Read> reads = new ArrayList<>();
         int migSize = generatorMutationModel.nextFromRange(migSizeMin, migSizeMax);
-        int readsWithIndels = 0;
+
         Map<Integer, Integer> minorMutationCounts = new HashMap<>();
         for (int j = 0; j < migSize; j++) {
+
             int[] mutations = generatorMutationModel.nextMutations(sequence);
             Mutations.shiftIndelsAtHomopolymers(sequence, mutations);
 
-            for (int k = 0; k < mutations.length; k++) {
-                int code = mutations[k];
+            for (int code : mutations) {
                 Integer count = minorMutationCounts.get(code);
                 minorMutationCounts.put(code, count == null ? 1 : (count + 1));
-
-                if (!Mutations.isSubstitution(mutations[k])) {
-                    readsWithIndels++;
-                    break;
-                }
             }
 
-            NucleotideSequence seq = Mutations.mutate(sequence,
+            NucleotideSequence sequence2 = Mutations.mutate(sequence,
                     mutations);
 
-            BitSet qualMask = new BitSet(seq.size());
+            int offset5 = rnd.nextInt(maxRandomFlankSize + 1),
+                    offset3 = rnd.nextInt(maxRandomFlankSize + 1);
 
-            if (markMinorMutations) {
-                for (int k = 0; k < mutations.length; k++) {
-                    int code = mutations[k];
-                    if (Mutations.isSubstitution(code))
-                        qualMask.set(Mutations.convertPosition(mutations, Mutations.getPosition(code)));
+            NucleotideSequence flank5 = randomSequence(offset5),
+                    flank3 = randomSequence(offset3),
+                    sequence3 = flank5.concatenate(sequence2.concatenate(flank3));
+
+            BitSet qualMask = new BitSet(sequence3.size());
+
+            if (maskMinorSubstitutions) {
+                for (int code : mutations) {
+                    if (Mutations.isSubstitution(code)) {
+                        qualMask.set(offset5 + Mutations.convertPosition(mutations, Mutations.getPosition(code)));
+                    }
                 }
             }
 
-            reads.add(new Read(seq, qualMask));
+            reads.add(new Read(sequence3, qualMask));
         }
 
-        boolean indelHeavy = (readsWithIndels / (double) migSize) > indelHeavyThreshold;
         SMig sMig = new SMig(null, randomSequence(umiSize), reads);
 
-        return new RandomMigGeneratorResult(sMig, indelHeavy, minorMutationCounts, pcrMutations);
+        return new RandomMigGeneratorResult(sequence, sMig, minorMutationCounts, pcrMutations);
     }
 
     public int getMigSizeMin() {
@@ -102,20 +105,12 @@ public class RandomMigGenerator {
         this.migSizeMax = migSizeMax;
     }
 
-    public boolean getMarkMinorMutations() {
-        return markMinorMutations;
+    public boolean getMaskMinorSubstitutions() {
+        return maskMinorSubstitutions;
     }
 
-    public void setMarkMinorMutations(boolean markMinorMutations) {
-        this.markMinorMutations = markMinorMutations;
-    }
-
-    public double getIndelHeavyThreshold() {
-        return indelHeavyThreshold;
-    }
-
-    public void setIndelHeavyThreshold(double indelHeavyThreshold) {
-        this.indelHeavyThreshold = indelHeavyThreshold;
+    public void setMaskMinorSubstitutions(boolean maskMinorSubstitutions) {
+        this.maskMinorSubstitutions = maskMinorSubstitutions;
     }
 
     public double getPcrErrorMultiplier() {
@@ -152,26 +147,35 @@ public class RandomMigGenerator {
         this.umiSize = umiSize;
     }
 
+    public int getMaxRandomFlankSize() {
+        return maxRandomFlankSize;
+    }
+
+    public void setMaxRandomFlankSize(int maxRandomFlankSize) {
+        this.maxRandomFlankSize = maxRandomFlankSize;
+    }
+
     public class RandomMigGeneratorResult {
         private final SMig mig;
-        private final boolean indelHeavy;
         private final int[] pcrMutations;
+        private final NucleotideSequence consensus;
         private final Map<Integer, Integer> minorMutationCounts;
 
-        public RandomMigGeneratorResult(SMig mig, boolean indelHeavy, Map<Integer, Integer> minorMutationCounts,
+        public RandomMigGeneratorResult(NucleotideSequence consensus,
+                                        SMig mig, Map<Integer, Integer> minorMutationCounts,
                                         int[] pcrMutations) {
+            this.consensus = consensus;
             this.mig = mig;
             this.pcrMutations = pcrMutations;
-            this.indelHeavy = indelHeavy;
             this.minorMutationCounts = minorMutationCounts;
+        }
+
+        public NucleotideSequence getConsensus() {
+            return consensus;
         }
 
         public SMig getMig() {
             return mig;
-        }
-
-        public boolean indelHeavy() {
-            return indelHeavy;
         }
 
         public Map<Integer, Integer> getMinorMutationCounts() {

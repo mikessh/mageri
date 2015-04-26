@@ -119,12 +119,4 @@ public final class Basics {
         Document document = new Document(e);
         new XMLOutputter(Format.getPrettyFormat()).output(document, System.out);
     }
-
-    public static int percent(int n, int N) {
-        return (int) (100.0 * (n / (double) N));
-    }
-
-    public static int percent(double p) {
-        return (int) (100.0 * p);
-    }
 }

@@ -1,4 +1,4 @@
-package com.milaboratory.oncomigec.misc.testing.generators;
+package com.milaboratory.oncomigec.generators;
 
 import com.milaboratory.core.sequence.mutations.GenericNucleotideMutationModel;
 import com.milaboratory.core.sequence.mutations.Mutations;

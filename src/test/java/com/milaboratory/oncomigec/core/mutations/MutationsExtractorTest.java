@@ -249,7 +249,7 @@ public class MutationsExtractorTest {
 
         RandomMigGenerator randomMigGenerator = new RandomMigGenerator();
         randomMigGenerator.setGeneratorMutationModel(GeneratorMutationModel.NO_INDEL);
-        randomMigGenerator.setMarkMinorMutations(true);
+        randomMigGenerator.setMaskMinorSubstitutions(true);
 
         RandomReferenceGenerator randomReferenceGenerator = new RandomReferenceGenerator();
 
@@ -301,7 +301,7 @@ public class MutationsExtractorTest {
         // Todo: rewrite to single method
         SAssembler assembler = new SAssembler();
         RandomMigGenerator randomMigGenerator = new RandomMigGenerator();
-        randomMigGenerator.setMarkMinorMutations(true);
+        randomMigGenerator.setMaskMinorSubstitutions(true);
         RandomReferenceGenerator randomReferenceGenerator = new RandomReferenceGenerator();
 
         int nCleanConsensuses = 0, nGoodConsensuses = 0;

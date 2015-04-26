@@ -30,7 +30,7 @@ public class KMerFinder {
             return null;
         }
 
-        final double[] informationVector = new double[referenceCount];
+        final double[] informationVector = new double[2 * referenceCount + 1];
         final double N = (double) referenceCount;
         double maxInformationValue = Double.MIN_VALUE,
                 nextMaxInformationValue = Double.MIN_VALUE;
@@ -49,8 +49,8 @@ public class KMerFinder {
 
                 for (int j = 0; j < parentIds.size(); j++) {
                     int parentId = parentIds.get(j);
-                    double parentInformation = informationVector[parentId] + information;
-                    informationVector[parentId] = parentInformation;
+                    double parentInformation = informationVector[referenceCount + parentId] + information;
+                    informationVector[referenceCount + parentId] = parentInformation;
 
                     if (parentInformation > maxInformationValue) {
                         nextMaxInformationValue = maxInformationValue;

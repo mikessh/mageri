@@ -15,17 +15,6 @@
  */
 package com.milaboratory.oncomigec.core.mapping.alignment;
 
-import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
-import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
-import com.milaboratory.oncomigec.misc.testing.PercentRange;
-import com.milaboratory.oncomigec.misc.testing.generators.RandomIndelGenerator;
-import com.milaboratory.oncomigec.misc.testing.generators.RandomReferenceGenerator;
-import org.junit.Test;
-
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.net.URISyntaxException;
-
 public class AlignersTest {
     int nReferences = 100, nRepetitions1 = 100, nRepetitions2 = 100;
 /*

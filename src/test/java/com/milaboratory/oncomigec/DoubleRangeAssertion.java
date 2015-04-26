@@ -1,25 +1,29 @@
-package com.milaboratory.oncomigec.misc.testing;
+package com.milaboratory.oncomigec;
 
 import org.junit.Assert;
 
-public class DoubleRange {
+public class DoubleRangeAssertion {
     private final String paramName, condition;
     private final double from, to;
     private final boolean lowerBound, upperBound;
 
-    public static DoubleRange createLowerBound(String paramName, String condition, double from) {
-        return new DoubleRange(paramName, condition, from, Double.MAX_VALUE, true, false);
+    public static DoubleRangeAssertion createLowerBound(String paramName, String condition, double from) {
+        return new DoubleRangeAssertion(paramName, condition, from, Double.MAX_VALUE, true, false);
     }
 
-    public static DoubleRange createUpperBound(String paramName, String condition, double to) {
-        return new DoubleRange(paramName, condition, Double.MIN_VALUE, to, false, true);
+    public static DoubleRangeAssertion createUpperBound(String paramName, String condition, double to) {
+        return new DoubleRangeAssertion(paramName, condition, Double.MIN_VALUE, to, false, true);
     }
 
-    public static DoubleRange createRange(String paramName, String condition, double from, double to) {
-        return new DoubleRange(paramName, condition, from, to, false, false);
+    public static DoubleRangeAssertion createRange(String paramName, String condition, double from, double to) {
+        return new DoubleRangeAssertion(paramName, condition, from, to, false, false);
     }
 
-    private DoubleRange(String paramName, String condition, double from, double to, boolean lowerBound, boolean upperBound) {
+    public static DoubleRangeAssertion createDummy(String paramName, String condition) {
+        return new DoubleRangeAssertion(paramName, condition, Double.MIN_VALUE, Double.MAX_VALUE, true, true);
+    }
+
+    private DoubleRangeAssertion(String paramName, String condition, double from, double to, boolean lowerBound, boolean upperBound) {
         if (from > to)
             throw new IllegalArgumentException("From > to in range");
         this.paramName = paramName;

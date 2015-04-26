@@ -20,7 +20,7 @@ package com.milaboratory.oncomigec.pipeline.analysis;
 
 import com.milaboratory.oncomigec.pipeline.input.ResourceIOProvider;
 import com.milaboratory.oncomigec.pipeline.input.InputParser;
-import com.milaboratory.oncomigec.misc.testing.TestUtil;
+import com.milaboratory.oncomigec.TestUtil;
 import org.junit.Test;
 
 import java.io.IOException;

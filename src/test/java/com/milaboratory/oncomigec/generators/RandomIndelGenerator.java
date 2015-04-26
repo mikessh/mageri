@@ -1,4 +1,4 @@
-package com.milaboratory.oncomigec.misc.testing.generators;
+package com.milaboratory.oncomigec.generators;
 
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.oncomigec.misc.Util;
@@ -15,7 +15,6 @@ public class RandomIndelGenerator {
         this.maxIndelSize = maxIndelSize;
         this.insertionMode = insertionMode;
     }
-
 
     public NucleotideSequence mutate(NucleotideSequence nucleotideSequence) {
         int len = nucleotideSequence.size();

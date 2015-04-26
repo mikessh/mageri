@@ -88,7 +88,7 @@ public class Read implements Serializable {
     }
 
     public boolean goodQuality(int pos) {
-        return qualityMask.get(pos);
+        return !qualityMask.get(pos);
     }
 
     public int length() {

@@ -15,26 +15,9 @@
  */
 package com.milaboratory.oncomigec.core.correct;
 
-import com.milaboratory.core.sequence.mutations.Mutations;
-import com.milaboratory.oncomigec.core.mapping.alignment.ExtendedKmerAligner;
-import com.milaboratory.oncomigec.core.assemble.SConsensus;
-import com.milaboratory.oncomigec.core.assemble.SAssembler;
-import com.milaboratory.oncomigec.core.mapping.PAlignedConsensus;
-import com.milaboratory.oncomigec.core.mapping.ConsensusAligner;
-import com.milaboratory.oncomigec.core.mapping.SConsensusAligner;
-import com.milaboratory.oncomigec.core.genomic.Reference;
-import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
-import com.milaboratory.oncomigec.core.input.SMig;
-import com.milaboratory.oncomigec.core.variant.VariantCallerParameters;
-import com.milaboratory.oncomigec.misc.testing.generators.GeneratorMutationModel;
-import com.milaboratory.oncomigec.misc.testing.generators.RandomMigGenerator;
-import com.milaboratory.oncomigec.misc.testing.generators.RandomReferenceGenerator;
-import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
 
 public class CorrectorTest {
     private final int nReferences = 10, nMigs = 100;

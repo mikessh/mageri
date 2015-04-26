@@ -111,12 +111,4 @@ public final class Util {
                 read.getData().getRange(from, read.getData().size()),
                 read.id());
     }
-
-    public static byte freqToCqs(double nonMajorFreq) {
-        return (byte) Math.max(PH33_MIN_QUAL, Math.min(PH33_MAX_QUAL, -10 * Math.log10(nonMajorFreq)));
-    }
-
-    public static double cqsToFreq(byte cqs) {
-        return Math.pow(10, -cqs / 10);
-    }
 }

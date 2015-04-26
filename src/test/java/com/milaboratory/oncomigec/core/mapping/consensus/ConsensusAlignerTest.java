@@ -15,18 +15,17 @@
  */
 package com.milaboratory.oncomigec.core.mapping.consensus;
 
+import com.milaboratory.oncomigec.DoubleRangeAssertion;
+import com.milaboratory.oncomigec.PercentRangeAssertion;
 import com.milaboratory.oncomigec.core.assemble.*;
 import com.milaboratory.oncomigec.core.genomic.Reference;
 import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
 import com.milaboratory.oncomigec.core.input.SMig;
 import com.milaboratory.oncomigec.core.mapping.*;
 import com.milaboratory.oncomigec.core.mapping.alignment.ExtendedKmerAligner;
-import com.milaboratory.oncomigec.misc.Basics;
-import com.milaboratory.oncomigec.misc.testing.DoubleRange;
-import com.milaboratory.oncomigec.misc.testing.PercentRange;
-import com.milaboratory.oncomigec.misc.testing.generators.GeneratorMutationModel;
-import com.milaboratory.oncomigec.misc.testing.generators.RandomMigGenerator;
-import com.milaboratory.oncomigec.misc.testing.generators.RandomReferenceGenerator;
+import com.milaboratory.oncomigec.generators.GeneratorMutationModel;
+import com.milaboratory.oncomigec.generators.RandomMigGenerator;
+import com.milaboratory.oncomigec.generators.RandomReferenceGenerator;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -43,31 +42,31 @@ public class ConsensusAlignerTest {
         condition = "Reads with indels, default assembler";
         assemblerDiagnosticsTest(randomMigGenerator,
                 AssemblerParameters.DEFAULT,
-                DoubleRange.createLowerBound("MeanCQS", condition, 25.0),
-                DoubleRange.createLowerBound("MeanUMICoverage", condition, 0.95),
-                PercentRange.createLowerBound("MeanAlignmentRate", condition, 95));
+                DoubleRangeAssertion.createLowerBound("MeanCQS", condition, 25.0),
+                DoubleRangeAssertion.createLowerBound("MeanUMICoverage", condition, 0.95),
+                PercentRangeAssertion.createLowerBound("MeanAlignmentRate", condition, 95));
 
         condition = "Reads with indels, TORRENT454 assembler";
         assemblerDiagnosticsTest(randomMigGenerator,
                 AssemblerParameters.TORRENT454,
-                DoubleRange.createLowerBound("MeanCQS", condition, 37.0),
-                DoubleRange.createLowerBound("MeanUMICoverage", condition, 0.90),
-                PercentRange.createLowerBound("MeanAlignmentRate", condition, 90));
+                DoubleRangeAssertion.createLowerBound("MeanCQS", condition, 37.0),
+                DoubleRangeAssertion.createLowerBound("MeanUMICoverage", condition, 0.90),
+                PercentRangeAssertion.createLowerBound("MeanAlignmentRate", condition, 90));
 
         condition = "Reads without indels, default assembler";
         randomMigGenerator.setGeneratorMutationModel(GeneratorMutationModel.NO_INDEL);
         assemblerDiagnosticsTest(randomMigGenerator,
                 AssemblerParameters.DEFAULT,
-                DoubleRange.createLowerBound("MeanCQS", condition, 39.0),
-                DoubleRange.createLowerBound("MeanUMICoverage", condition, 1.00),
-                PercentRange.createLowerBound("MeanAlignmentRate", condition, 100));
+                DoubleRangeAssertion.createLowerBound("MeanCQS", condition, 39.0),
+                DoubleRangeAssertion.createLowerBound("MeanUMICoverage", condition, 1.00),
+                PercentRangeAssertion.createLowerBound("MeanAlignmentRate", condition, 100));
     }
 
     private void assemblerDiagnosticsTest(RandomMigGenerator migGenerator,
                                           AssemblerParameters parameters,
-                                          DoubleRange meanCqsRange,
-                                          DoubleRange meanUmiCoverageRange,
-                                          PercentRange meanAlignmentRateRange) throws Exception {
+                                          DoubleRangeAssertion meanCqsRange,
+                                          DoubleRangeAssertion meanUmiCoverageRange,
+                                          PercentRangeAssertion meanAlignmentRateRange) throws Exception {
         final RandomReferenceGenerator referenceGenerator = new RandomReferenceGenerator();
         final int nBins = 20;
 
@@ -168,7 +167,7 @@ public class ConsensusAlignerTest {
             }
         }
 
-        System.out.println("Alignment fails=" + Basics.percent(alignmentFails, totalConsensuses) +
-                "%, incorrect alignment=" + Basics.percent(incorrectAlignments, totalConsensuses) + "%");
+        System.out.println("Alignment fails=" + PercentRangeAssertion.percent(alignmentFails, totalConsensuses) +
+                "%, incorrect alignment=" + PercentRangeAssertion.percent(incorrectAlignments, totalConsensuses) + "%");
     }
 }

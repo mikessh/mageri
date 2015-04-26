@@ -1,9 +1,8 @@
 package com.milaboratory.oncomigec.core.input;
 
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
-import com.milaboratory.oncomigec.core.input.MigSizeDistribution;
 import com.milaboratory.oncomigec.misc.Util;
-import com.milaboratory.oncomigec.misc.testing.TestUtil;
+import com.milaboratory.oncomigec.TestUtil;
 import org.apache.commons.math.random.MersenneTwister;
 import org.apache.commons.math.random.RandomGenerator;
 import org.junit.Assert;

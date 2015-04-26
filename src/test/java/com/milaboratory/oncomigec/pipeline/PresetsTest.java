@@ -1,7 +1,7 @@
 package com.milaboratory.oncomigec.pipeline;
 
 import com.milaboratory.oncomigec.misc.Basics;
-import com.milaboratory.oncomigec.misc.testing.TestUtil;
+import com.milaboratory.oncomigec.TestUtil;
 import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.junit.Assert;

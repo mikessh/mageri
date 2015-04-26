@@ -22,7 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
-import static com.milaboratory.oncomigec.misc.testing.TestUtil.getResourceAsStream;
+import static com.milaboratory.oncomigec.TestUtil.getResourceAsStream;
 import static org.apache.commons.io.IOUtils.readLines;
 
 public class TestDataset {

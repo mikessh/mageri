@@ -7,10 +7,11 @@ import com.milaboratory.core.sequence.nucleotide.NucleotideSequenceBuilder;
 import com.milaboratory.core.sequence.quality.SequenceQualityPhred;
 import com.milaboratory.oncomigec.core.input.SMig;
 import com.milaboratory.oncomigec.core.input.index.Read;
-import com.milaboratory.oncomigec.misc.Util;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
+
+import static com.milaboratory.oncomigec.misc.Util.*;
 
 public final class SAssembler extends Assembler<SConsensus, SMig> {
     private final AssemblerParameters parameters;
@@ -172,17 +173,25 @@ public final class SAssembler extends Assembler<SConsensus, SMig> {
             byte mostFreqLetter = 0;
             double maxLetterFreq = 0;
             for (byte l = 0; l < 4; l++) {
-                if (maxLetterFreq < pwm[k][l]) {
-                    maxLetterFreq = pwm[k][l];
+                double freq = pwm[k][l];
+                if (maxLetterFreq < freq) {
+                    maxLetterFreq = freq;
                     mostFreqLetter = l;
                 }
             }
             consensusSequence.setCode(k, mostFreqLetter);
-            byte cqs = Util.freqToCqs((n - maxLetterFreq) / (double) n);
+            /*
+            Math.max(PH33_MIN_QUAL, Math.min(PH33_MAX_QUAL, -10 * Math.log10(nonMajorFreq)))
+             */
+            byte cqs = (byte) Math.max(PH33_MIN_QUAL,
+                    Math.min(PH33_MAX_QUAL,
+                            40 * ((maxLetterFreq / (double) n - 0.25) / 0.75)
+                    )
+            );
             consensusQuality[k] = cqs;
 
             // Quality trimming - 5' end
-            if (cqs <= Util.PH33_BAD_QUAL && parameters.performQualityTrimming()) {
+            if (cqs <= PH33_BAD_QUAL && parameters.performQualityTrimming()) {
                 if (goodSeqStart == k) {
                     goodSeqStart++;
                 }
@@ -196,7 +205,7 @@ public final class SAssembler extends Assembler<SConsensus, SMig> {
         int goodSeqEnd = pwmLen;
         if (parameters.performQualityTrimming()) {
             for (; goodSeqEnd >= goodSeqStart; goodSeqEnd--) {
-                if (consensusQuality[goodSeqEnd - 1] > Util.PH33_BAD_QUAL)
+                if (consensusQuality[goodSeqEnd - 1] > PH33_BAD_QUAL)
                     break;
             }
 
@@ -209,7 +218,7 @@ public final class SAssembler extends Assembler<SConsensus, SMig> {
             byte from = consensusSQPair.getSequence().codeAt(k - goodSeqStart);
             for (byte l = 0; l < 4; l++) {
                 if (l != from && exactPwm[k][l] > 0) {
-                    minors.add(Mutations.createSubstitution(k, from, l));
+                    minors.add(Mutations.createSubstitution(k - goodSeqStart, from, l));
                 }
             }
         }

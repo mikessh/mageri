@@ -1,10 +1,10 @@
 package com.milaboratory.oncomigec.core.mapping.kmer;
 
 import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
-import com.milaboratory.oncomigec.misc.testing.IntRange;
-import com.milaboratory.oncomigec.misc.testing.PercentRange;
-import com.milaboratory.oncomigec.misc.testing.generators.GeneratorMutationModel;
-import com.milaboratory.oncomigec.misc.testing.generators.RandomReferenceGenerator;
+import com.milaboratory.oncomigec.IntRangeAssertion;
+import com.milaboratory.oncomigec.PercentRangeAssertion;
+import com.milaboratory.oncomigec.generators.GeneratorMutationModel;
+import com.milaboratory.oncomigec.generators.RandomReferenceGenerator;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -27,17 +27,17 @@ public class KMerFinderTest {
         long now = System.nanoTime(); // todo: timer
         new KMerFinder(referenceLibrary, k);
         long elpased = System.nanoTime() - now;
-        IntRange intRange = IntRange.createUpperBound("Time elpased, s", "KmerFinder-BuildHash", 60);
+        IntRangeAssertion intRange = IntRangeAssertion.createUpperBound("Time elpased, s", "KmerFinder-BuildHash", 60);
         intRange.assertInRange((int) (elpased / 1_000_000_000L));
     }
 
     @Test
     public void kmerFinderHitTest() {
-        kmerFinderHitTest(false, PercentRange.createLowerBound("CorrectHits", "KmerFinder-NonHomologous", 99));
-        kmerFinderHitTest(true, PercentRange.createLowerBound("CorrectHits", "KmerFinder-Homologous", 70));
+        kmerFinderHitTest(false, PercentRangeAssertion.createLowerBound("CorrectHits", "KmerFinder-NonHomologous", 99));
+        kmerFinderHitTest(true, PercentRangeAssertion.createLowerBound("CorrectHits", "KmerFinder-Homologous", 70));
     }
 
-    private void kmerFinderHitTest(boolean homologous, PercentRange assertRange) {
+    private void kmerFinderHitTest(boolean homologous, PercentRangeAssertion assertRange) {
         RandomReferenceGenerator randomReferenceGenerator = new RandomReferenceGenerator();
 
         int nCorrect = 0;
