@@ -63,30 +63,4 @@ public class AlignmentResult {
     public boolean isGood() {
         return good;
     }
-
-    /*
-    public float calculateSimilarity() {
-        return Mutations.similarity(reference.getSequence().getRange(alignment.getSequence1Range()),
-                alignment.getMutations());
-    }
-
-    public float calculateSubstitutionRatio() {
-        int[] mutations = alignment.getMutations();
-        int substitutionCount = calculateSubstitutionCount(mutations);
-
-        return substitutionCount / (float) alignment.getSequence1Range().length();
-    }
-
-    private int calculateSubstitutionCount(int[] mutations) {
-        int substitutionCount = 0;
-        for (int mutation : mutations)
-            if (Mutations.isSubstitution(mutation))
-                substitutionCount++;
-        return substitutionCount;
-    }
-
-    public int calculateIdentity() {
-        return alignment.getSequence1Range().length() - alignment.getMutations().length;
-    }
-    */
 }

@@ -81,7 +81,6 @@ public class RandomReferenceGenerator {
         for (int i = 0; i < size; i++)
             referenceSequences.add(generatorMutationModel.nextMutatedSequence(core));
 
-
         List<SSequencingRead> references = new LinkedList<>();
         int i = 0;
         for (NucleotideSequence referenceSequence : referenceSequences)

@@ -16,8 +16,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class KMerFinderTest {
-    int k = 11;
-
     @Ignore("Too heavy")
     @Test
     public void kmerFinderStressTest() {
@@ -33,7 +31,7 @@ public class KMerFinderTest {
 
         System.out.println("Building K-mer finder");
         now = System.nanoTime(); // todo: timer
-        KMerFinder kMerFinder = new KMerFinder(referenceLibrary, k);
+        KMerFinder kMerFinder = new KMerFinder(referenceLibrary);
         elapsed = System.nanoTime() - now;
         IntRangeAssertion.createUpperBound("Time elpased, s", "KmerFinder: building kmer hash", 60).
                 assertInRange((int) (elapsed / 1_000_000_000L));
@@ -102,7 +100,7 @@ public class KMerFinderTest {
                     randomReferenceGenerator.nextReferenceLibrary(nReferences) :
                     randomReferenceGenerator.nextHomologousReferenceLibrary(nReferences);
 
-            KMerFinder kMerFinder = new KMerFinder(referenceLibrary, k);
+            KMerFinder kMerFinder = new KMerFinder(referenceLibrary);
 
             for (int j = 0; j < nRepetitions2; j++) {
                 ReferenceParentChildPair parentChildPair =
