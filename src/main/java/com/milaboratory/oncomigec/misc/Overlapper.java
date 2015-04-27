@@ -73,7 +73,10 @@ public class Overlapper implements Serializable {
         totalCount.incrementAndGet();
         int l1 = seq1.length(), l2 = seq2.length();
 
-        for (int y = 0; y < seq2.length() - overlapSeedSize - (allowPartialOverlap ? 0 : overlapFuzzySize) + 1; y++) {
+        int maxOffset = Math.min(seq2.length() - overlapSeedSize - (allowPartialOverlap ? 0 : overlapFuzzySize) + 1,
+                seq2.length() / 2);
+
+        for (int y = 0; y < maxOffset; y++) {
             if (y + overlapSeedSize > seq2.length())
                 break; // No more seeds
 
@@ -106,18 +109,19 @@ public class Overlapper implements Serializable {
                         }
                     }
 
+                    boolean readThrough = l2 - y < l1 - x;
+
                     if (nConsMms < maxConsMms &&
-                            (allowPartialOverlap || alignedAll) &&
+                            ((allowPartialOverlap && !readThrough) || alignedAll) &&
                             (nMms / (double) actualFuzzyOverlapSize) <= maxOverlapMismatchRatio) {
                         // Determine whether normal overlap or readthrough
                         StringBuilder overlappedSeq = new StringBuilder(),
                                 overlappedQual = new StringBuilder();
 
                         overlappedCount.incrementAndGet();
-                        boolean readThrough = false;
 
                         // Normal overlap
-                        if (l2 - y >= l1 - x) {
+                        if (!readThrough) {
                             // - skipped
                             // = as is
                             // ~ best taken
@@ -149,9 +153,10 @@ public class Overlapper implements Serializable {
                             }
 
                             // p3
+                            j++;
                             for (; j < l2; j++) {
-                                overlappedSeq.append(seq1.charAt(j));
-                                overlappedQual.append(qual1.charAt(j));
+                                overlappedSeq.append(seq2.charAt(j));
+                                overlappedQual.append(qual2.charAt(j));
                             }
                         }
                         // Read-through 
@@ -171,8 +176,8 @@ public class Overlapper implements Serializable {
                             // p1
                             int j = 0;
                             for (; j < y; j++) {
-                                overlappedSeq.append(seq2.charAt(y));
-                                overlappedQual.append(qual2.charAt(y));
+                                overlappedSeq.append(seq2.charAt(j));
+                                overlappedQual.append(qual2.charAt(j));
                             }
 
                             // p2
@@ -189,9 +194,10 @@ public class Overlapper implements Serializable {
                             }
 
                             // p3
+                            i++;
                             for (; i < l1; i++) {
-                                overlappedSeq.append(seq1.charAt(j));
-                                overlappedQual.append(qual1.charAt(j));
+                                overlappedSeq.append(seq1.charAt(i));
+                                overlappedQual.append(qual1.charAt(i));
                             }
                         }
 
