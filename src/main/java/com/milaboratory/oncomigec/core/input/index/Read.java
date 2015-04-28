@@ -39,12 +39,16 @@ public class Read implements Serializable {
         this.qualityMask = qualityMask;
     }
 
+    public Read(NucleotideSQPair nucleotideSQPair) {
+        this(nucleotideSQPair, QualityProvider.DEFAULT);
+    }
+
     public Read(NucleotideSQPair nucleotideSQPair,
                 QualityProvider qualityProvider) {
         NucleotideSequence sequence = nucleotideSQPair.getSequence();
-        
+
         SequenceQualityPhred qual = nucleotideSQPair.getQuality();
-        
+
         // This is required as old milib reader replaces N's with A.
         // It also sets quality to BAD_QUALITY_VALUE, so here we
         // generate a random base at those positions

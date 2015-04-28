@@ -56,4 +56,10 @@ public final class PConsensus extends Consensus<PSequencingRead> {
     public boolean isPairedEnd() {
         return true;
     }
+
+    @Override
+    public String toString() {
+        return consensus1.toString() + "\t" +
+                consensus2.getConsensusSQPair().getSequence() + "\t" + consensus2.getConsensusSQPair().getQuality();
+    }
 }

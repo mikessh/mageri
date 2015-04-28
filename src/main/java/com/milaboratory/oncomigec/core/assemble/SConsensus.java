@@ -69,4 +69,9 @@ public final class SConsensus extends Consensus<SSequencingRead> {
     public boolean isPairedEnd() {
         return false;
     }
+    
+    @Override
+    public String toString() {
+        return umi + "\t" + consensusSQPair.getSequence() + "\t" + consensusSQPair.getQuality();
+    }
 }

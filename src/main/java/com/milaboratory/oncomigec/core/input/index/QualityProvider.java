@@ -25,18 +25,22 @@ import java.util.BitSet;
 public class QualityProvider {
     private final byte goodQualityThrehsold;
 
-    public QualityProvider(byte goodQualityThrehsold) {
-        this.goodQualityThrehsold = goodQualityThrehsold;
+    public static final QualityProvider DEFAULT = new QualityProvider();
+
+    public QualityProvider() {
+        this((byte) 30);
     }
 
-    public boolean covert(byte ph33Quality) {
-        return ph33Quality >= goodQualityThrehsold;
+    public QualityProvider(byte goodQualityThrehsold) {
+        this.goodQualityThrehsold = goodQualityThrehsold;
     }
 
     public BitSet convert(SequenceQualityPhred sequenceQualityPhred) {
         BitSet qualityString = new BitSet(sequenceQualityPhred.size());
         for (int i = 0; i < sequenceQualityPhred.size(); i++) {
-            qualityString.set(i, covert(sequenceQualityPhred.value(i)));
+            if (sequenceQualityPhred.value(i) < goodQualityThrehsold) {
+                qualityString.set(i);
+            }
         }
         return qualityString;
     }
