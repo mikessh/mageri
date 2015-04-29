@@ -151,7 +151,7 @@ public class AssemblerMinorTest {
             NucleotideSequence core = referenceGenerator.nextSequence();
             MigWithMutations randomMig = migGenerator.nextMig(core);
 
-            consensus = assembler.assemble(randomMig.getMig());
+            consensus = assembler.assemble(randomMig.getSMig());
 
             if (consensus != null) {
                 Set<Integer> minors = new HashSet<>();

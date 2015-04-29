@@ -5,6 +5,7 @@ import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.oncomigec.core.genomic.Reference;
 import com.milaboratory.oncomigec.core.input.SMig;
 import com.milaboratory.oncomigec.core.input.index.Read;
+import com.milaboratory.oncomigec.pipeline.analysis.Sample;
 
 import java.util.*;
 
@@ -13,7 +14,7 @@ import static com.milaboratory.oncomigec.misc.Util.randomSequence;
 public class RandomMigGenerator {
     private static final Random rnd = new Random(123456);
     private boolean maskMinorSubstitutions = false;
-    private int migSizeMin = 100, migSizeMax = 300;
+    private int migSizeMin = 5, migSizeMax = 100;
     private int umiSize = 12;
     private int maxRandomFlankSize = 0;
     private GeneratorMutationModel generatorMutationModel = GeneratorMutationModel.DEFAULT,
@@ -84,7 +85,7 @@ public class RandomMigGenerator {
             reads.add(new Read(sequence3, qualMask));
         }
 
-        SMig sMig = new SMig(null, randomSequence(umiSize), reads);
+        SMig sMig = new SMig(Sample.create("dummy", false), randomSequence(umiSize), reads);
 
         return new MigWithMutations(sequence, sMig, minorMutationCounts, pcrMutations);
     }

@@ -47,11 +47,19 @@ public class PercentRangeAssertion {
         assertInRange(percent(n, N));
     }
 
+    public void assertInRange(long n, long N) {
+        assertInRange(percent(n, N));
+    }
+
     public void assertInRange(double p) {
         assertInRange(percent(p));
     }
 
     public static int percent(int n, int N) {
+        return (int) (100.0 * (n / (double) N));
+    }
+
+    public static int percent(long n, long N) {
         return (int) (100.0 * (n / (double) N));
     }
 

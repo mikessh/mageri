@@ -21,7 +21,7 @@ public class MutationsExtractorTest {
                 RandomMigGenerator.RandomMigGeneratorResult rndMig =
                         migGenerator.nextMig(parentChildPair.getChildSequence());
 
-                SConsensus consensus = assembler.assemble(rndMig.getMig());
+                SConsensus consensus = assembler.assemble(rndMig.getSMig());
                 if (consensus != null) {
                     AlignmentResult result = aligner.align(consensus.getConsensusSQPair().getSequence());
 
@@ -97,7 +97,7 @@ public class MutationsExtractorTest {
                 RandomMigGenerator.RandomMigGeneratorResult rndMig =
                         migGenerator.nextMig(parentChildPair.getChildSequence());
 
-                SConsensus consensus = assembler.assemble(rndMig.getMig());
+                SConsensus consensus = assembler.assemble(rndMig.getSMig());
                 if (consensus != null) {
                     AlignmentResult result = aligner.align(consensus.getConsensusSQPair().getSequence());
 
@@ -256,7 +256,7 @@ public class MutationsExtractorTest {
 
         int nCleanConsensuses = 0, nGoodConsensuses = 0;
         for (int i = 0; i < nRepetiotions2; i++) {
-            SMig mig = randomMigGenerator.nextMig(randomReferenceGenerator).getMig();
+            SMig mig = randomMigGenerator.nextMig(randomReferenceGenerator).getSMig();
             SConsensus consensus = assembler.assemble(mig);
 
             if (consensus != null) {
@@ -306,7 +306,7 @@ public class MutationsExtractorTest {
 
         int nCleanConsensuses = 0, nGoodConsensuses = 0;
         for (int i = 0; i < nRepetiotions2; i++) {
-            SMig mig = randomMigGenerator.nextMig(randomReferenceGenerator).getMig();
+            SMig mig = randomMigGenerator.nextMig(randomReferenceGenerator).getSMig();
             SConsensus consensus = assembler.assemble(mig);
 
             if (consensus != null) {

@@ -19,11 +19,19 @@
 package com.milaboratory.oncomigec.generators;
 
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
+import com.milaboratory.oncomigec.core.input.PMig;
 import com.milaboratory.oncomigec.core.input.SMig;
+import com.milaboratory.oncomigec.core.input.index.Read;
+import com.milaboratory.oncomigec.pipeline.analysis.Sample;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 public class MigWithMutations {
+    private static final Random rnd = new Random(480011);
+
     private final SMig mig;
     private final int[] pcrMutations;
     private final NucleotideSequence consensus;
@@ -42,8 +50,33 @@ public class MigWithMutations {
         return consensus;
     }
 
-    public SMig getMig() {
+    public SMig getSMig() {
         return mig;
+    }
+
+    public PMig getPMig() {
+        return getPMig(-5, 5);
+    }
+
+    public PMig getPMig(int overlapHalfSzMin, int overlapHalfSzMax) {
+        List<Read> reads1 = new ArrayList<>(), reads2 = new ArrayList<>();
+
+        int overlap = GeneratorMutationModel.DEFAULT.nextFromRange(overlapHalfSzMin, overlapHalfSzMax);
+
+        for (Read read : mig.getReads()) {
+            int mid = read.getSequence().size() / 2;
+
+            Read read1 = read.region(0, mid + overlap),
+                    read2 = read.region(mid - overlap, read.getSequence().size());
+
+            reads1.add(read1);
+            reads2.add(read2);
+        }
+
+        Sample sample = Sample.create("dummy", true);
+
+        return new PMig(new SMig(sample, mig.getUmi(), reads1),
+                new SMig(sample, mig.getUmi(), reads2));
     }
 
     public Map<Integer, Integer> getMinorMutationCounts() {

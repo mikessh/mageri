@@ -42,7 +42,7 @@ public class CorrectorTest {
                 RandomMigGenerator.RandomMigGeneratorResult randomMigResult = migGenerator.nextMigPCR(reference);
                 stage0ErrorFrequency += randomMigResult.getPcrMutations().length;
 
-                SMig mig = randomMigResult.getMig();
+                SMig mig = randomMigResult.getSMig();
                 SConsensus consensus = assembler.assemble(mig);
 
                 if (consensus != null) {

@@ -73,7 +73,7 @@ public class AssemblerModeTest {
             NucleotideSequence core = referenceGenerator.nextSequence();
             MigWithMutations randomMig = migGenerator.nextMig(core);
 
-            SMig mig = randomMig.getMig();
+            SMig mig = randomMig.getSMig();
 
             consensus = assembler.assemble(mig);
 
