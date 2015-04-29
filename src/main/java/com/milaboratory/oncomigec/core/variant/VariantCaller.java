@@ -32,11 +32,12 @@ import com.milaboratory.oncomigec.core.variant.filter.QualFilter;
 import com.milaboratory.oncomigec.core.variant.filter.SingletonFilter;
 import com.milaboratory.oncomigec.core.variant.filter.VariantFilter;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 
 public class VariantCaller extends PipelineBlock {
     protected final ReferenceLibrary referenceLibrary;
-    protected final Map<Reference, VariantCallerTable> variantCallerTableByReference = new HashMap<>();
     protected final VariantFilter[] filters;
     protected final List<Variant> variants = new LinkedList<>();
 
@@ -53,7 +54,9 @@ public class VariantCaller extends PipelineBlock {
         filters[1] = new SingletonFilter(variantCallerParameters.getSingletonFrequencyThreshold());
         filters[2] = new CoverageFilter(variantCallerParameters.getCoverageThreshold());
 
-        ErrorModel errorModel = new ErrorModel(variantCallerParameters.getModelCycles(),
+        ErrorModel errorModel = new ErrorModel(
+                variantCallerParameters.getOrder(),
+                variantCallerParameters.getModelCycles(),
                 variantCallerParameters.getModelEfficiency() - 1.0);
 
         for (Reference reference : referenceLibrary.getReferences()) {

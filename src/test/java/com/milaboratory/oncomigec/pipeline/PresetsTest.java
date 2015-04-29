@@ -37,6 +37,7 @@ public class PresetsTest {
         Presets recoveredPresets = Presets.readFromStream(input);
 
         Basics.printXml(recoveredPresets.toXml());
+        Basics.printXml(presets.toXml());
 
         Assert.assertEquals("Parameters I/O successful", presets, recoveredPresets);
     }

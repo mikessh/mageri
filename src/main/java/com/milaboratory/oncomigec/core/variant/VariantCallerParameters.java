@@ -4,13 +4,13 @@ import com.milaboratory.oncomigec.misc.ParameterSet;
 import org.jdom.Element;
 
 public final class VariantCallerParameters implements ParameterSet {
-    private final double modelCycles, modelEfficiency;
+    private final double order, modelCycles, modelEfficiency;
     private final int qualityThreshold, singletonFrequencyThreshold, coverageThreshold;
 
-    public static VariantCallerParameters DEFAULT = new VariantCallerParameters(20.0, 1.95,
+    public static VariantCallerParameters DEFAULT = new VariantCallerParameters(1.0, 20.0, 1.95,
             20, 10000, 100);
 
-    public VariantCallerParameters(double modelCycles, double modelEfficiency,
+    public VariantCallerParameters(double order, double modelCycles, double modelEfficiency,
                                    int qualityThreshold, int singletonFrequencyThreshold, int coverageThreshold) {
         if (modelCycles < 10 || modelCycles > 40)
             throw new IllegalArgumentException("(model parameters) Number of PCR cycles should be in [10,40]");
@@ -25,6 +25,7 @@ public final class VariantCallerParameters implements ParameterSet {
         if (coverageThreshold < 0)
             throw new IllegalArgumentException("(filter parameters) Coverage threshold should be >= 0");
 
+        this.order = order;
         this.modelCycles = modelCycles;
         this.modelEfficiency = modelEfficiency;
         this.singletonFrequencyThreshold = singletonFrequencyThreshold;
@@ -32,6 +33,9 @@ public final class VariantCallerParameters implements ParameterSet {
         this.coverageThreshold = coverageThreshold;
     }
 
+    public double getOrder() {
+        return order;
+    }
 
     public double getModelCycles() {
         return modelCycles;
@@ -56,10 +60,11 @@ public final class VariantCallerParameters implements ParameterSet {
     @Override
     public Element toXml() {
         Element e = new Element("VariantCallerParameters");
+        e.addContent(new Element("order").setText(Double.toString(order)));
         e.addContent(new Element("modelCycles").setText(Double.toString(modelCycles)));
         e.addContent(new Element("modelEfficiency").setText(Double.toString(modelEfficiency)));
-        e.addContent(new Element("singletonFrequencyThreshold").setText(Integer.toString(singletonFrequencyThreshold)));
         e.addContent(new Element("qualityThreshold").setText(Integer.toString(qualityThreshold)));
+        e.addContent(new Element("singletonFrequencyThreshold").setText(Integer.toString(singletonFrequencyThreshold)));
         e.addContent(new Element("coverageThreshold").setText(Integer.toString(coverageThreshold)));
         return e;
     }
@@ -67,10 +72,11 @@ public final class VariantCallerParameters implements ParameterSet {
     public static VariantCallerParameters fromXml(Element parent) {
         Element e = parent.getChild("VariantCallerParameters");
         return new VariantCallerParameters(
+                Double.parseDouble(e.getChildTextTrim("order")),
                 Double.parseDouble(e.getChildTextTrim("modelCycles")),
                 Double.parseDouble(e.getChildTextTrim("modelEfficiency")),
-                Integer.parseInt(e.getChildTextTrim("singletonFrequencyThreshold")),
                 Integer.parseInt(e.getChildTextTrim("qualityThreshold")),
+                Integer.parseInt(e.getChildTextTrim("singletonFrequencyThreshold")),
                 Integer.parseInt(e.getChildTextTrim("coverageThreshold"))
         );
     }
@@ -85,6 +91,7 @@ public final class VariantCallerParameters implements ParameterSet {
         if (coverageThreshold != that.coverageThreshold) return false;
         if (Double.compare(that.modelCycles, modelCycles) != 0) return false;
         if (Double.compare(that.modelEfficiency, modelEfficiency) != 0) return false;
+        if (Double.compare(that.order, order) != 0) return false;
         if (qualityThreshold != that.qualityThreshold) return false;
         if (singletonFrequencyThreshold != that.singletonFrequencyThreshold) return false;
 
@@ -95,8 +102,10 @@ public final class VariantCallerParameters implements ParameterSet {
     public int hashCode() {
         int result;
         long temp;
-        temp = Double.doubleToLongBits(modelCycles);
+        temp = Double.doubleToLongBits(order);
         result = (int) (temp ^ (temp >>> 32));
+        temp = Double.doubleToLongBits(modelCycles);
+        result = 31 * result + (int) (temp ^ (temp >>> 32));
         temp = Double.doubleToLongBits(modelEfficiency);
         result = 31 * result + (int) (temp ^ (temp >>> 32));
         result = 31 * result + qualityThreshold;

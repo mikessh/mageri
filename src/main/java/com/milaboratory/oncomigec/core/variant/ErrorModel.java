@@ -23,14 +23,16 @@ import org.apache.commons.math.distribution.BinomialDistribution;
 import org.apache.commons.math.distribution.BinomialDistributionImpl;
 
 public class ErrorModel {
+    private double order;
     private double cycles, lambda;
     private double propagateProb;
 
     public ErrorModel() {
-        this(20, 0.95);
+        this(1.0, 20, 0.95);
     }
 
-    public ErrorModel(double cycles, double lambda) {
+    public ErrorModel(double order, double cycles, double lambda) {
+        this.order = order;
         this.cycles = cycles;
         this.lambda = lambda;
         calcPropagateProb();
@@ -69,7 +71,16 @@ public class ErrorModel {
         calcPropagateProb();
     }
 
+    public double getOrder() {
+        return order;
+    }
+
+    public void setOrder(double order) {
+        this.order = order;
+        calcPropagateProb();
+    }
+
     private void calcPropagateProb() {
-        this.propagateProb = lambda * (1 - lambda);
+        this.propagateProb = lambda * Math.pow(1.0 - lambda, order);
     }
 }
