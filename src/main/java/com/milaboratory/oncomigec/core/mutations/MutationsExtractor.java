@@ -7,6 +7,7 @@ import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.core.sequence.quality.SequenceQualityPhred;
 import com.milaboratory.oncomigec.core.genomic.Reference;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import static com.milaboratory.core.sequence.mutations.Mutations.*;
@@ -68,7 +69,9 @@ public final class MutationsExtractor {
     }
 
     public Set<Integer> recomputeMinorMutations() {
-        for (int code : minors) {
+        Set<Integer> minors = new HashSet<>();
+        
+        for (int code : this.minors) {
             // Todo: not fully tested for Indel minors
             if (rc) {
                 code = rc(code);

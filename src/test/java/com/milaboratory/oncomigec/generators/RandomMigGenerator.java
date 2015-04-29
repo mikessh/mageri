@@ -14,13 +14,13 @@ public class RandomMigGenerator {
     private static final Random rnd = new Random(123456);
     private boolean maskMinorSubstitutions = false;
     private int migSizeMin = 100, migSizeMax = 300;
-    private double pcrErrorMultiplier = 0.1;
     private int umiSize = 12;
     private int maxRandomFlankSize = 0;
-    private GeneratorMutationModel generatorMutationModel, pcrGeneratorMutationModel;
+    private GeneratorMutationModel generatorMutationModel = GeneratorMutationModel.DEFAULT,
+            pcrGeneratorMutationModel = GeneratorMutationModel.DEFAULT.multiply(0.1);
 
     public RandomMigGenerator() {
-        setGeneratorMutationModel(GeneratorMutationModel.DEFAULT);
+
     }
 
     public MigWithMutations nextMig(RandomReferenceGenerator referenceGenerator) {
@@ -113,22 +113,12 @@ public class RandomMigGenerator {
         this.maskMinorSubstitutions = maskMinorSubstitutions;
     }
 
-    public double getPcrErrorMultiplier() {
-        return pcrErrorMultiplier;
-    }
-
-    public void setPcrErrorMultiplier(double pcrErrorMultiplier) {
-        this.pcrErrorMultiplier = pcrErrorMultiplier;
-        this.pcrGeneratorMutationModel = generatorMutationModel.multiply(pcrErrorMultiplier);
-    }
-
     public GeneratorMutationModel getGeneratorMutationModel() {
         return generatorMutationModel;
     }
 
     public void setGeneratorMutationModel(GeneratorMutationModel generatorMutationModel) {
         this.generatorMutationModel = generatorMutationModel;
-        this.pcrGeneratorMutationModel = generatorMutationModel.multiply(pcrErrorMultiplier);
     }
 
     public GeneratorMutationModel getPcrGeneratorMutationModel() {

@@ -41,7 +41,7 @@ public class AssemblerMinorTest {
     @Test
     public void exactTest() {
         System.out.println("Exact consensus assembly test");
-        
+
         // Prepare reads with minors (bad and good quality), majors and N's
         String
                 //                                                    M(C)                        M(bad qual)
@@ -81,6 +81,8 @@ public class AssemblerMinorTest {
         qua2 = qua2.substring(0, cons.length() - 3);
         seq3 = "AA" + seq3;
         qua3 = "##" + qua3;
+        seq4 = seq4.substring(2);
+        qua4 = qua4.substring(2);
 
         // Convert to reads (set quality mask)
 
