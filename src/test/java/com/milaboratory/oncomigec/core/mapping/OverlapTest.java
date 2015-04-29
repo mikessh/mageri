@@ -32,7 +32,7 @@ import static com.milaboratory.oncomigec.misc.Util.randomSequence;
 
 
 public class OverlapTest {
-    private final int TOTAL_OVERLAP_SIZE = 15, SEQ_LENGTH = 75, TOTAL_ATTEMPTS = 10000;
+    private final int totalOverlapSize = 15, seqSize = 75, totalRuns = 10000;
 
     @Test
     public void positiveTest() {
@@ -49,12 +49,12 @@ public class OverlapTest {
                              PercentRangeAssertion incorrectOverlapRate) {
         Overlapper ro = new Overlapper();
 
-        int overlapped = 0, overlappedCorrectly = 0, total = TOTAL_ATTEMPTS;
+        int overlapped = 0, overlappedCorrectly = 0, total = totalRuns;
         for (int i = 0; i < total; i++) {
-            NucleotideSequence s1orig = randomSequence(SEQ_LENGTH - TOTAL_OVERLAP_SIZE),
-                    s2 = randomSequence(SEQ_LENGTH);
+            NucleotideSequence s1orig = randomSequence(seqSize - totalOverlapSize),
+                    s2 = randomSequence(seqSize);
 
-            NucleotideSequence s1 = s1orig.concatenate(s2.getRange(0, TOTAL_OVERLAP_SIZE));
+            NucleotideSequence s1 = s1orig.concatenate(s2.getRange(0, totalOverlapSize));
 
             int[] mutations1 = mutationModel.nextMutations(s1),
                     mutations2 = mutationModel.nextMutations(s2);
@@ -64,7 +64,7 @@ public class OverlapTest {
 
             NucleotideSequence s12 = Mutations.mutate(s1orig,
                     Mutations.extractMutationsForRange(mutations1, 0,
-                            SEQ_LENGTH - TOTAL_OVERLAP_SIZE)
+                            seqSize - totalOverlapSize)
             ).concatenate(s2);
 
             byte[] q1 = new byte[s1.size()], q2 = new byte[s2.size()];
@@ -95,11 +95,11 @@ public class OverlapTest {
 
         int correctOverlap = 0, correctOffset = 0,
                 readThroughIdentified = 0,
-                total = TOTAL_ATTEMPTS;
-        int barcodeOffset = (int) (0.1 * SEQ_LENGTH), overhangSize = (int) (0.05 * SEQ_LENGTH);
+                total = totalRuns;
+        int barcodeOffset = (int) (0.1 * seqSize), overhangSize = (int) (0.05 * seqSize);
 
         for (int i = 0; i < total; i++) {
-            NucleotideSequence fragment = randomSequence(2 * SEQ_LENGTH),
+            NucleotideSequence fragment = randomSequence(2 * seqSize),
                     barcode = randomSequence(barcodeOffset),
                     overhang = randomSequence(overhangSize);
 
@@ -134,9 +134,9 @@ public class OverlapTest {
     public void negativeTest() throws Exception {
         Overlapper ro = new Overlapper();
 
-        int overlapped = TOTAL_ATTEMPTS, total = overlapped;
+        int overlapped = totalRuns, total = overlapped;
         for (int i = 0; i < total; i++) {
-            NucleotideSequence s1 = randomSequence(SEQ_LENGTH), s2 = randomSequence(SEQ_LENGTH);
+            NucleotideSequence s1 = randomSequence(seqSize), s2 = randomSequence(seqSize);
 
             byte[] q1 = new byte[s1.size()], q2 = new byte[s2.size()];
             Arrays.fill(q1, (byte) (40 + 33));

@@ -18,7 +18,7 @@ import java.util.List;
 public class KMerFinderTest {
     @Ignore("Too heavy")
     @Test
-    public void kmerFinderStressTest() {
+    public void stressTest() {
         int referenceLibrarySize = 233785, benchmarkSetSize = 100000, exonMedianSize = 150;
         long now, elapsed;
 
@@ -54,34 +54,34 @@ public class KMerFinderTest {
     }
 
     @Test
-    public void kmerFinderHitTest() {
+    public void hitTest() {
         String model, range1Name = "Correct hits percent", range2Name = "Mean MAPQ score";
 
         model = "KmerFinder: Homologous references";
-        kmerFinderHitTest(50, 1.0, 1.0,
+        hitTest(50, 1.0, 1.0,
                 PercentRangeAssertion.createLowerBound(range1Name, model, 95),
                 DoubleRangeAssertion.createLowerBound(range2Name, model, 15));
 
         model = "KmerFinder: Less-homologous references";
-        kmerFinderHitTest(100, 10.0, 1.0,
+        hitTest(100, 10.0, 1.0,
                 PercentRangeAssertion.createLowerBound(range1Name, model, 99),
                 DoubleRangeAssertion.createLowerBound(range2Name, model, 25));
 
         model = "KmerFinder: Non-homologous references, more errors";
-        kmerFinderHitTest(500, 100.0, 3.0,
+        hitTest(500, 100.0, 3.0,
                 PercentRangeAssertion.createLowerBound(range1Name, model, 99),
                 DoubleRangeAssertion.createLowerBound(range2Name, model, 35));
 
         model = "KmerFinder: Single reference, extreme errors";
-        kmerFinderHitTest(1, 1.0, 10.0,
+        hitTest(1, 1.0, 10.0,
                 PercentRangeAssertion.createLowerBound(range1Name, model, 95),
                 DoubleRangeAssertion.createLowerBound(range2Name, model, 5));
     }
 
-    private void kmerFinderHitTest(int nReferences,
-                                   double nonHomologyMultiplier, double errorMultiplier,
-                                   PercentRangeAssertion correctRateRange,
-                                   DoubleRangeAssertion mapqRange) {
+    private void hitTest(int nReferences,
+                         double nonHomologyMultiplier, double errorMultiplier,
+                         PercentRangeAssertion correctRateRange,
+                         DoubleRangeAssertion mapqRange) {
         RandomReferenceGenerator randomReferenceGenerator = new RandomReferenceGenerator(), randomReferenceGenerator1 = new RandomReferenceGenerator();
 
         randomReferenceGenerator.setGeneratorMutationModel(GeneratorMutationModel.DEFAULT.multiply(nonHomologyMultiplier));

@@ -27,6 +27,7 @@ import com.milaboratory.oncomigec.generators.MigWithMutations;
 import com.milaboratory.oncomigec.generators.RandomMigGenerator;
 import com.milaboratory.oncomigec.generators.RandomReferenceGenerator;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -36,6 +37,11 @@ import static com.milaboratory.oncomigec.misc.Util.randomSequence;
 
 @SuppressWarnings("unchecked")
 public class AssemblerBasicTest {
+    @Test
+    @Ignore("TODO")
+    public void parallelTest() {
+    }
+    
     @Test
     public void randomMutationsTest() {
         RandomMigGenerator migGenerator = new RandomMigGenerator();
