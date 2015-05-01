@@ -20,7 +20,7 @@ import com.milaboratory.core.sequence.mutations.Mutations;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.oncomigec.PercentRangeAssertion;
 import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
-import com.milaboratory.oncomigec.generators.GeneratorMutationModel;
+import com.milaboratory.oncomigec.generators.MutationGenerator;
 import com.milaboratory.oncomigec.generators.RandomReferenceGenerator;
 import com.milaboratory.oncomigec.generators.ReferenceParentChildPair;
 import org.junit.Test;
@@ -70,8 +70,8 @@ public class AlignerTest {
         RandomReferenceGenerator randomReferenceGenerator = new RandomReferenceGenerator(),
                 randomReferenceGenerator1 = new RandomReferenceGenerator();
 
-        randomReferenceGenerator.setGeneratorMutationModel(GeneratorMutationModel.DEFAULT.multiply(10));
-        randomReferenceGenerator1.setGeneratorMutationModel(GeneratorMutationModel.DEFAULT.multiply(10));
+        randomReferenceGenerator.setMutationGenerator(MutationGenerator.DEFAULT.multiply(10));
+        randomReferenceGenerator1.setMutationGenerator(MutationGenerator.DEFAULT.multiply(10));
 
         int nReferences = 500, nRepetitions1 = 100, nRepetitions2 = 100;
 

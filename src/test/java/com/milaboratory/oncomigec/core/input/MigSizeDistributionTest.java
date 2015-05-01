@@ -1,7 +1,6 @@
 package com.milaboratory.oncomigec.core.input;
 
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
-import com.milaboratory.oncomigec.misc.Util;
 import com.milaboratory.oncomigec.TestUtil;
 import org.apache.commons.math.random.MersenneTwister;
 import org.apache.commons.math.random.RandomGenerator;
@@ -9,6 +8,8 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.IOException;
+
+import static com.milaboratory.oncomigec.generators.RandomUtil.randomSequence;
 
 
 public class MigSizeDistributionTest {
@@ -20,7 +21,7 @@ public class MigSizeDistributionTest {
         // correct
         for (int i = 0; i < 1000; i++) {
             int migSize = (int) Math.pow(2, randomGenerator.nextGaussian() + 5);
-            NucleotideSequence umi = Util.randomSequence(12);
+            NucleotideSequence umi = randomSequence(12);
             for (int k = 0; k < migSize; k++)
                 histogram.update(umi);
         }
@@ -28,7 +29,7 @@ public class MigSizeDistributionTest {
         // errors
         for (int i = 0; i < 10000; i++) {
             int migSize = (int) Math.pow(2, randomGenerator.nextGaussian() * 0.5);
-            NucleotideSequence umi = Util.randomSequence(12);
+            NucleotideSequence umi = randomSequence(12);
             for (int k = 0; k < migSize; k++)
                 histogram.update(umi);
         }

@@ -24,8 +24,8 @@ import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.core.sequence.quality.SequenceQualityPhred;
 import com.milaboratory.core.sequencing.io.fastq.SFastqReader;
 import com.milaboratory.core.sequencing.read.SSequencingRead;
-import com.milaboratory.oncomigec.misc.Util;
 import com.milaboratory.oncomigec.TestDataset;
+import com.milaboratory.oncomigec.misc.QualityDefaults;
 import com.milaboratory.util.CompressionType;
 import org.junit.Assert;
 import org.junit.Test;
@@ -34,6 +34,8 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
+
+import static com.milaboratory.oncomigec.generators.RandomUtil.randomSequence;
 
 public class BarcodeSearcherTest {
     // todo: more sliding barcode searcher tests
@@ -54,9 +56,9 @@ public class BarcodeSearcherTest {
         // Check for correct determination of position
         for (int n = 0; n < 10000; n++) {
             int leftRndSize = rnd.nextInt(50), rightRndSize = rnd.nextInt(50);
-            NucleotideSequence sequence = Util.randomSequence(leftRndSize);
+            NucleotideSequence sequence = randomSequence(leftRndSize);
             sequence = sequence.concatenate(new NucleotideSequence(signature));
-            sequence = sequence.concatenate(Util.randomSequence(rightRndSize));
+            sequence = sequence.concatenate(randomSequence(rightRndSize));
             BarcodeSearcherResult result = bs.search(new NucleotideSQPair(sequence));
             Assert.assertNotNull("BC found", result);
             Assert.assertEquals("Start position correct", leftRndSize, result.getFrom());
@@ -80,7 +82,7 @@ public class BarcodeSearcherTest {
         int total = 10000, found = 0;
         for (int n = 0; n < total; n++) {
             int leftRndSize = rnd.nextInt(50), rightRndSize = rnd.nextInt(50);
-            NucleotideSequence sequence = Util.randomSequence(leftRndSize);
+            NucleotideSequence sequence = randomSequence(leftRndSize);
 
             mutations = Mutations.generateMutations(leftRef,
                     mm);
@@ -92,7 +94,7 @@ public class BarcodeSearcherTest {
                     mm);
             sequence = sequence.concatenate(Mutations.mutate(rightRef, mutations));
 
-            sequence = sequence.concatenate(Util.randomSequence(rightRndSize));
+            sequence = sequence.concatenate(randomSequence(rightRndSize));
             BarcodeSearcherResult result = bs.search(new NucleotideSQPair(sequence));
 
             if (result != null)
@@ -119,7 +121,7 @@ public class BarcodeSearcherTest {
         for (int n = 0; n < total; n++) {
             Set<Integer> mutationPositions = new HashSet<>();
             int leftRndSize = rnd.nextInt(50), rightRndSize = rnd.nextInt(50);
-            NucleotideSequence sequence = Util.randomSequence(leftRndSize);
+            NucleotideSequence sequence = randomSequence(leftRndSize);
 
             mutations = Mutations.generateMutations(leftRef,
                     mmNoIndel);
@@ -135,12 +137,12 @@ public class BarcodeSearcherTest {
                 mutationPositions.add(sequence.size() + Mutations.getPosition(mutation));
             sequence = sequence.concatenate(Mutations.mutate(rightRef, mutations));
 
-            sequence = sequence.concatenate(Util.randomSequence(rightRndSize));
+            sequence = sequence.concatenate(randomSequence(rightRndSize));
 
             byte[] quality = new byte[sequence.size()];
             for (int i = 0; i < sequence.size(); i++)
                 quality[i] = mutationPositions.contains(i) ?
-                        (byte) rnd.nextInt(Util.PH33_BAD_QUAL + 1) :
+                        (byte) rnd.nextInt(QualityDefaults.PH33_BAD_QUAL + 1) :
                         (byte) rnd.nextInt(40);
 
             BarcodeSearcherResult result = bs.search(new NucleotideSQPair(sequence,
@@ -162,16 +164,16 @@ public class BarcodeSearcherTest {
 
         // Negative testing, mainly for purposes of catching errors
         for (int n = 0; n < 100000; n++) {
-            NucleotideSequence sequence = Util.randomSequence(150);
+            NucleotideSequence sequence = randomSequence(150);
             BarcodeSearcherResult result = bs.search(new NucleotideSQPair(sequence));
             Assert.assertNull("BC should not be found at random", result);
         }
         // We mix seed here
         for (int n = 0; n < 100000; n++) {
             int leftRndSize = rnd.nextInt(50), rightRndSize = rnd.nextInt(50);
-            NucleotideSequence sequence = Util.randomSequence(leftRndSize);
+            NucleotideSequence sequence = randomSequence(leftRndSize);
             sequence = sequence.concatenate(new NucleotideSequence(seed));
-            sequence = sequence.concatenate(Util.randomSequence(rightRndSize));
+            sequence = sequence.concatenate(randomSequence(rightRndSize));
             BarcodeSearcherResult result = bs.search(new NucleotideSQPair(sequence));
             Assert.assertNull("BC should not be found at random, even with seed", result);
         }

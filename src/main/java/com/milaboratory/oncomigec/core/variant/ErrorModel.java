@@ -80,6 +80,10 @@ public class ErrorModel {
         calcPropagateProb();
     }
 
+    public double getPropagateProb() {
+        return propagateProb;
+    }
+
     private void calcPropagateProb() {
         this.propagateProb = lambda * Math.pow(1.0 - lambda, order);
     }

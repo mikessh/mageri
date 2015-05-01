@@ -30,19 +30,17 @@ import java.util.Map;
 import java.util.Random;
 
 public class MigWithMutations {
-    private static final Random rnd = new Random(480011);
-
     private final SMig mig;
-    private final int[] pcrMutations;
+    private final int[] majorMutations;
     private final NucleotideSequence consensus;
     private final Map<Integer, Integer> minorMutationCounts;
 
     public MigWithMutations(NucleotideSequence consensus,
                             SMig mig, Map<Integer, Integer> minorMutationCounts,
-                            int[] pcrMutations) {
+                            int[] majorMutations) {
         this.consensus = consensus;
         this.mig = mig;
-        this.pcrMutations = pcrMutations;
+        this.majorMutations = majorMutations;
         this.minorMutationCounts = minorMutationCounts;
     }
 
@@ -61,7 +59,7 @@ public class MigWithMutations {
     public PMig getPMig(int overlapHalfSzMin, int overlapHalfSzMax) {
         List<Read> reads1 = new ArrayList<>(), reads2 = new ArrayList<>();
 
-        int overlap = GeneratorMutationModel.DEFAULT.nextFromRange(overlapHalfSzMin, overlapHalfSzMax);
+        int overlap = RandomUtil.nextFromRange(overlapHalfSzMin, overlapHalfSzMax);
 
         for (Read read : mig.getReads()) {
             int mid = read.getSequence().size() / 2;
@@ -83,7 +81,7 @@ public class MigWithMutations {
         return minorMutationCounts;
     }
 
-    public int[] getPcrMutations() {
-        return pcrMutations;
+    public int[] getMajorMutations() {
+        return majorMutations;
     }
 }

@@ -1,7 +1,7 @@
 package com.milaboratory.oncomigec.core.input;
 
 import com.milaboratory.oncomigec.misc.ParameterSet;
-import com.milaboratory.oncomigec.misc.Util;
+import com.milaboratory.oncomigec.misc.QualityDefaults;
 import org.jdom.Element;
 
 public class PreprocessorParameters implements ParameterSet {
@@ -11,7 +11,7 @@ public class PreprocessorParameters implements ParameterSet {
     private final double minUmiMismatchRatio;
 
     public static PreprocessorParameters DEFAULT = new PreprocessorParameters(
-            Util.PH33_BAD_QUAL, Util.PH33_GOOD_QUAL,
+            QualityDefaults.PH33_BAD_QUAL, QualityDefaults.PH33_GOOD_QUAL,
             true,
             20.0, false, 5);
 

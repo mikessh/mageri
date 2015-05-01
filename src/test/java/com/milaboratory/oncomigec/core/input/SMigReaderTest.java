@@ -17,11 +17,8 @@ package com.milaboratory.oncomigec.core.input;
 
 import com.milaboratory.core.sequencing.io.fastq.SFastqReader;
 import com.milaboratory.core.sequencing.read.SSequencingRead;
-import com.milaboratory.oncomigec.core.input.PreprocessorParameters;
-import com.milaboratory.oncomigec.core.input.SMig;
-import com.milaboratory.oncomigec.core.input.SMigReader;
 import com.milaboratory.oncomigec.preprocessing.HeaderExtractor;
-import com.milaboratory.oncomigec.misc.Util;
+import com.milaboratory.oncomigec.misc.QualityDefaults;
 import com.milaboratory.util.CompressionType;
 import org.junit.Assert;
 import org.junit.Test;
@@ -45,7 +42,7 @@ public class SMigReaderTest {
             SSequencingRead read;
             int rawCount = 0;
             while ((read = standardReader.take()) != null)
-                if (read.getDescription().contains(Util.UMI_FIELD_ID + ":" + sMig.getUmi()))
+                if (read.getDescription().contains(QualityDefaults.UMI_FIELD_ID + ":" + sMig.getUmi()))
                     rawCount++;
             Assert.assertEquals(sMig.size(), rawCount);
         }

@@ -18,7 +18,7 @@ package com.milaboratory.oncomigec.core.input;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.core.sequencing.io.fastq.SFastqReader;
 import com.milaboratory.core.sequencing.read.SSequencingRead;
-import com.milaboratory.oncomigec.misc.Util;
+import com.milaboratory.oncomigec.misc.QualityDefaults;
 import com.milaboratory.oncomigec.PercentRangeAssertion;
 import com.milaboratory.oncomigec.preprocessing.DemultiplexParameters;
 import com.milaboratory.oncomigec.preprocessing.HeaderExtractor;
@@ -48,7 +48,7 @@ public class PMigReaderTest {
             SSequencingRead read;
             int rawCount = 0;
             while ((read = standardReader.take()) != null)
-                if (read.getDescription().contains(Util.UMI_FIELD_ID + ":" + umi.toString()))
+                if (read.getDescription().contains(QualityDefaults.UMI_FIELD_ID + ":" + umi.toString()))
                     rawCount++;
 
             Assert.assertEquals("MIG size is correct", pMig.size(), rawCount);

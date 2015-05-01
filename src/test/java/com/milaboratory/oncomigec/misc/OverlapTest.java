@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.milaboratory.oncomigec.core.mapping;
+package com.milaboratory.oncomigec.misc;
 
 import com.milaboratory.core.sequence.NucleotideSQPair;
 import com.milaboratory.core.sequence.mutations.Mutations;
@@ -21,14 +21,14 @@ import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.core.sequence.quality.QualityFormat;
 import com.milaboratory.core.sequence.quality.SequenceQualityPhred;
 import com.milaboratory.oncomigec.PercentRangeAssertion;
-import com.milaboratory.oncomigec.generators.GeneratorMutationModel;
+import com.milaboratory.oncomigec.generators.MutationGenerator;
 import com.milaboratory.oncomigec.misc.Overlapper;
 import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Arrays;
 
-import static com.milaboratory.oncomigec.misc.Util.randomSequence;
+import static com.milaboratory.oncomigec.generators.RandomUtil.randomSequence;
 
 
 public class OverlapTest {
@@ -36,15 +36,15 @@ public class OverlapTest {
 
     @Test
     public void positiveTest() {
-        positiveTest(GeneratorMutationModel.DEFAULT,
+        positiveTest(MutationGenerator.DEFAULT,
                 PercentRangeAssertion.createLowerBound("Correct overlap rate", "Overlap with indels", 70),
                 PercentRangeAssertion.createUpperBound("Incorrect overlap rate", "Overlap with indels", 30));
-        positiveTest(GeneratorMutationModel.NO_INDEL,
+        positiveTest(MutationGenerator.NO_INDEL,
                 PercentRangeAssertion.createLowerBound("Correct overlap rate", "Overlap without indels", 90),
                 PercentRangeAssertion.createUpperBound("Incorrect overlap rate", "Overlap without indels", 10));
     }
 
-    public void positiveTest(GeneratorMutationModel mutationModel,
+    public void positiveTest(MutationGenerator mutationModel,
                              PercentRangeAssertion correctOverlapRate,
                              PercentRangeAssertion incorrectOverlapRate) {
         Overlapper ro = new Overlapper();

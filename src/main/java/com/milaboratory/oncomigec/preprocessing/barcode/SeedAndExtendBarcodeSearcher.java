@@ -17,7 +17,7 @@ package com.milaboratory.oncomigec.preprocessing.barcode;
 
 import com.milaboratory.core.sequence.NucleotideSQPair;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
-import com.milaboratory.oncomigec.misc.Util;
+import com.milaboratory.oncomigec.misc.QualityDefaults;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -40,7 +40,7 @@ public class SeedAndExtendBarcodeSearcher implements BarcodeSearcher {
     protected final int maxGoodMMs, maxLowQualityMMs;
 
     public SeedAndExtendBarcodeSearcher(String signature) {
-        this(signature, 2, 0.05, signature.length(), Util.PH33_BAD_QUAL);
+        this(signature, 2, 0.05, signature.length(), QualityDefaults.PH33_BAD_QUAL);
     }
 
     public SeedAndExtendBarcodeSearcher(String signature, int maxTruncations,

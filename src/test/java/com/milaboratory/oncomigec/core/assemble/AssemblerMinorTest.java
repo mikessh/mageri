@@ -25,7 +25,7 @@ import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.oncomigec.PercentRangeAssertion;
 import com.milaboratory.oncomigec.core.input.SMig;
 import com.milaboratory.oncomigec.core.input.index.Read;
-import com.milaboratory.oncomigec.generators.GeneratorMutationModel;
+import com.milaboratory.oncomigec.generators.MutationGenerator;
 import com.milaboratory.oncomigec.generators.MigWithMutations;
 import com.milaboratory.oncomigec.generators.RandomMigGenerator;
 import com.milaboratory.oncomigec.generators.RandomReferenceGenerator;
@@ -139,7 +139,7 @@ public class AssemblerMinorTest {
         int nRepetitions = 1000;
         RandomMigGenerator migGenerator = new RandomMigGenerator();
         if (noIndel) {
-            migGenerator.setGeneratorMutationModel(GeneratorMutationModel.NO_INDEL);
+            migGenerator.setMutationGenerator(MutationGenerator.NO_INDEL);
         }
         migGenerator.setMaxRandomFlankSize(10);
         RandomReferenceGenerator referenceGenerator = new RandomReferenceGenerator();

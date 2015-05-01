@@ -9,7 +9,7 @@ import com.milaboratory.oncomigec.pipeline.analysis.Sample;
 
 import java.util.*;
 
-import static com.milaboratory.oncomigec.misc.Util.randomSequence;
+import static com.milaboratory.oncomigec.generators.RandomUtil.randomSequence;
 
 public class RandomMigGenerator {
     private static final Random rnd = new Random(123456);
@@ -17,8 +17,8 @@ public class RandomMigGenerator {
     private int migSizeMin = 5, migSizeMax = 100;
     private int umiSize = 12;
     private int maxRandomFlankSize = 0;
-    private GeneratorMutationModel generatorMutationModel = GeneratorMutationModel.DEFAULT,
-            pcrGeneratorMutationModel = GeneratorMutationModel.DEFAULT.multiply(0.1);
+    private MutationGenerator mutationGenerator = MutationGenerator.DEFAULT,
+            majorMutationGenerator = MutationGenerator.DEFAULT.multiply(0.1);
 
     public RandomMigGenerator() {
 
@@ -28,13 +28,13 @@ public class RandomMigGenerator {
         return nextMig(referenceGenerator.nextSequence());
     }
 
-    public MigWithMutations nextMigPCR(Reference reference) {
-        return nextMigPCR(reference.getSequence());
+    public MigWithMutations nextMigWithMajorMutations(Reference reference) {
+        return nextMigWithMajorMutations(reference.getSequence());
     }
 
-    public MigWithMutations nextMigPCR(NucleotideSequence reference) {
-        int[] pcrMutations = pcrGeneratorMutationModel.nextMutations(reference);
-        return nextMig(reference, pcrMutations);
+    public MigWithMutations nextMigWithMajorMutations(NucleotideSequence reference) {
+        int[] majorMutations = majorMutationGenerator.nextMutations(reference);
+        return nextMig(reference, majorMutations);
     }
 
     public MigWithMutations nextMig(Reference reference) {
@@ -45,16 +45,16 @@ public class RandomMigGenerator {
         return nextMig(sequence, new int[0]);
     }
 
-    private MigWithMutations nextMig(NucleotideSequence sequence, int[] pcrMutations) {
-        sequence = Mutations.mutate(sequence, pcrMutations);
+    private MigWithMutations nextMig(NucleotideSequence sequence, int[] majorMutations) {
+        sequence = Mutations.mutate(sequence, majorMutations);
 
         List<Read> reads = new ArrayList<>();
-        int migSize = generatorMutationModel.nextFromRange(migSizeMin, migSizeMax);
+        int migSize = RandomUtil.nextFromRange(migSizeMin, migSizeMax);
 
         Map<Integer, Integer> minorMutationCounts = new HashMap<>();
         for (int j = 0; j < migSize; j++) {
 
-            int[] mutations = generatorMutationModel.nextMutations(sequence);
+            int[] mutations = mutationGenerator.nextMutations(sequence);
             Mutations.shiftIndelsAtHomopolymers(sequence, mutations);
 
             for (int code : mutations) {
@@ -87,7 +87,7 @@ public class RandomMigGenerator {
 
         SMig sMig = new SMig(Sample.create("dummy", false), randomSequence(umiSize), reads);
 
-        return new MigWithMutations(sequence, sMig, minorMutationCounts, pcrMutations);
+        return new MigWithMutations(sequence, sMig, minorMutationCounts, majorMutations);
     }
 
     public int getMigSizeMin() {
@@ -114,20 +114,20 @@ public class RandomMigGenerator {
         this.maskMinorSubstitutions = maskMinorSubstitutions;
     }
 
-    public GeneratorMutationModel getGeneratorMutationModel() {
-        return generatorMutationModel;
+    public MutationGenerator getMutationGenerator() {
+        return mutationGenerator;
     }
 
-    public void setGeneratorMutationModel(GeneratorMutationModel generatorMutationModel) {
-        this.generatorMutationModel = generatorMutationModel;
+    public void setMutationGenerator(MutationGenerator mutationGenerator) {
+        this.mutationGenerator = mutationGenerator;
     }
 
-    public GeneratorMutationModel getPcrGeneratorMutationModel() {
-        return pcrGeneratorMutationModel;
+    public MutationGenerator getMajorMutationGenerator() {
+        return majorMutationGenerator;
     }
 
-    public void setPcrGeneratorMutationModel(GeneratorMutationModel pcrGeneratorMutationModel) {
-        this.pcrGeneratorMutationModel = pcrGeneratorMutationModel;
+    public void setMajorMutationGenerator(MutationGenerator majorMutationGenerator) {
+        this.majorMutationGenerator = majorMutationGenerator;
     }
 
     public int getUmiSize() {

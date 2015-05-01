@@ -14,20 +14,20 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.milaboratory.oncomigec.misc.Util.randomSequence;
+import static com.milaboratory.oncomigec.generators.RandomUtil.randomSequence;
 
 public class RandomReferenceGenerator {
     protected int referenceSizeMin = 75, referenceSizeMax = 300;
-    protected GeneratorMutationModel generatorMutationModel = GeneratorMutationModel.DEFAULT;
+    protected MutationGenerator mutationGenerator = MutationGenerator.DEFAULT;
     protected final AtomicInteger referenceIndex = new AtomicInteger();
 
     public NucleotideSequence nextSequence() {
-        return randomSequence(generatorMutationModel.nextFromRange(referenceSizeMin, referenceSizeMax));
+        return randomSequence(RandomUtil.nextFromRange(referenceSizeMin, referenceSizeMax));
     }
 
     public ReferenceParentChildPair nextParentChildPair() {
         NucleotideSequence parent = nextSequence();
-        int[] mutations = generatorMutationModel.nextMutations(parent);
+        int[] mutations = mutationGenerator.nextMutations(parent);
         NucleotideSequence child = Mutations.mutate(parent, mutations);
         return new ReferenceParentChildPair(mutations, null, parent, child);
     }
@@ -35,7 +35,7 @@ public class RandomReferenceGenerator {
     public ReferenceParentChildPair nextParentChildPair(ReferenceLibrary referenceLibrary) {
         Reference parentReference = nextReference(referenceLibrary);
         NucleotideSequence parentSequence = parentReference.getSequence();
-        int[] mutations = generatorMutationModel.nextMutations(parentSequence);
+        int[] mutations = mutationGenerator.nextMutations(parentSequence);
         Mutations.shiftIndelsAtHomopolymers(parentSequence, mutations);
         NucleotideSequence childSequence = Mutations.mutate(parentSequence, mutations);
         return new ReferenceParentChildPair(mutations, parentReference, parentSequence, childSequence);
@@ -51,11 +51,11 @@ public class RandomReferenceGenerator {
     }
 
     public NucleotideSequence nextMutatedReferenceSequence() {
-        return generatorMutationModel.nextMutatedSequence(nextReference());
+        return mutationGenerator.nextMutatedSequence(nextReference());
     }
 
     public Reference nextReference(ReferenceLibrary library) {
-        return library.getReferences().get(generatorMutationModel.nextIndex(library.getReferences().size()));
+        return library.getReferences().get(RandomUtil.nextIndex(library.getReferences().size()));
     }
 
     public NucleotideSequence nextReferenceSequence(ReferenceLibrary library) {
@@ -63,7 +63,7 @@ public class RandomReferenceGenerator {
     }
 
     public NucleotideSequence nextMutatedReferenceSequence(ReferenceLibrary library) {
-        return generatorMutationModel.nextMutatedSequence(nextReference(library));
+        return mutationGenerator.nextMutatedSequence(nextReference(library));
     }
 
     public ReferenceLibrary nextReferenceLibrary(int size) {
@@ -79,7 +79,7 @@ public class RandomReferenceGenerator {
         NucleotideSequence core = nextSequence();
         Set<NucleotideSequence> referenceSequences = new HashSet<>();
         for (int i = 0; i < size; i++)
-            referenceSequences.add(generatorMutationModel.nextMutatedSequence(core));
+            referenceSequences.add(mutationGenerator.nextMutatedSequence(core));
 
         List<SSequencingRead> references = new LinkedList<>();
         int i = 0;
@@ -107,11 +107,11 @@ public class RandomReferenceGenerator {
         this.referenceSizeMax = referenceSizeMax;
     }
 
-    public GeneratorMutationModel getGeneratorMutationModel() {
-        return generatorMutationModel;
+    public MutationGenerator getMutationGenerator() {
+        return mutationGenerator;
     }
 
-    public void setGeneratorMutationModel(GeneratorMutationModel generatorMutationModel) {
-        this.generatorMutationModel = generatorMutationModel;
+    public void setMutationGenerator(MutationGenerator mutationGenerator) {
+        this.mutationGenerator = mutationGenerator;
     }
 }

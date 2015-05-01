@@ -1,6 +1,5 @@
 package com.milaboratory.oncomigec.pipeline;
 
-import com.milaboratory.oncomigec.misc.Util;
 import com.milaboratory.oncomigec.pipeline.analysis.ProjectAnalysis;
 import com.milaboratory.oncomigec.pipeline.input.Input;
 import com.milaboratory.oncomigec.pipeline.input.InputParser;
@@ -54,7 +53,7 @@ public final class Oncomigec {
 
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // Runtime
-            int numberOfThreads = Util.THREADS;
+            int numberOfThreads = Runtime.getRuntime().availableProcessors();
             long readLimit = -1;
             byte verbosity = 2;
 

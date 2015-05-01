@@ -22,8 +22,8 @@ import com.milaboratory.oncomigec.core.Mig;
 import com.milaboratory.oncomigec.core.input.SMig;
 import com.milaboratory.oncomigec.core.input.index.QualityProvider;
 import com.milaboratory.oncomigec.core.input.index.Read;
-import com.milaboratory.oncomigec.generators.GeneratorMutationModel;
 import com.milaboratory.oncomigec.generators.MigWithMutations;
+import com.milaboratory.oncomigec.generators.MutationGenerator;
 import com.milaboratory.oncomigec.generators.RandomMigGenerator;
 import com.milaboratory.oncomigec.generators.RandomReferenceGenerator;
 import org.junit.Assert;
@@ -33,7 +33,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.milaboratory.oncomigec.misc.Util.randomSequence;
+import static com.milaboratory.oncomigec.generators.RandomUtil.randomSequence;
 
 @SuppressWarnings("unchecked")
 public class AssemblerBasicTest {
@@ -59,7 +59,7 @@ public class AssemblerBasicTest {
                 PercentRangeAssertion.createUpperBound("Incorrect consensus", mode, 40),
                 false);
 
-        migGenerator.setGeneratorMutationModel(GeneratorMutationModel.NO_INDEL);
+        migGenerator.setMutationGenerator(MutationGenerator.NO_INDEL);
         mode = "Single, No indels";
 
         randomMutationsTest(migGenerator,
@@ -70,7 +70,7 @@ public class AssemblerBasicTest {
                 PercentRangeAssertion.createUpperBound("Incorrect consensus", mode, 1),
                 false);
 
-        migGenerator.setGeneratorMutationModel(GeneratorMutationModel.DEFAULT);
+        migGenerator.setMutationGenerator(MutationGenerator.DEFAULT);
         mode = "Paired, With indels";
 
         randomMutationsTest(migGenerator,
@@ -82,7 +82,7 @@ public class AssemblerBasicTest {
                 PercentRangeAssertion.createUpperBound("Incorrect consensus", mode, 50),
                 true);
 
-        migGenerator.setGeneratorMutationModel(GeneratorMutationModel.NO_INDEL);
+        migGenerator.setMutationGenerator(MutationGenerator.NO_INDEL);
         mode = "Paired, No indels";
 
         randomMutationsTest(migGenerator,

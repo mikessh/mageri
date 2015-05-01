@@ -22,7 +22,7 @@ import com.milaboratory.core.sequence.NucleotideSQPair;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.oncomigec.DoubleRangeAssertion;
 import com.milaboratory.oncomigec.core.input.SMig;
-import com.milaboratory.oncomigec.generators.GeneratorMutationModel;
+import com.milaboratory.oncomigec.generators.MutationGenerator;
 import com.milaboratory.oncomigec.generators.MigWithMutations;
 import com.milaboratory.oncomigec.generators.RandomMigGenerator;
 import com.milaboratory.oncomigec.generators.RandomReferenceGenerator;
@@ -50,7 +50,7 @@ public class AssemblerModeTest {
                 DoubleRangeAssertion.createDummy("MeanUMICoverage", condition));
 
         condition = "Reads without indels, default assembler";
-        randomMigGenerator.setGeneratorMutationModel(GeneratorMutationModel.NO_INDEL);
+        randomMigGenerator.setMutationGenerator(MutationGenerator.NO_INDEL);
         assemblerDiagnosticsTest(randomMigGenerator,
                 AssemblerParameters.DEFAULT,
                 DoubleRangeAssertion.createLowerBound("MeanCQS", condition, 35),

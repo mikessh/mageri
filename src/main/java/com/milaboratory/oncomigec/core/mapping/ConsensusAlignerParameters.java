@@ -1,13 +1,13 @@
 package com.milaboratory.oncomigec.core.mapping;
 
 import com.milaboratory.oncomigec.misc.ParameterSet;
-import com.milaboratory.oncomigec.misc.Util;
+import com.milaboratory.oncomigec.misc.QualityDefaults;
 import org.jdom.Element;
 
 public final class ConsensusAlignerParameters implements ParameterSet {
     private final byte consensusQualityThreshold;
 
-    public static ConsensusAlignerParameters DEFAULT = new ConsensusAlignerParameters(Util.PH33_GOOD_QUAL),
+    public static ConsensusAlignerParameters DEFAULT = new ConsensusAlignerParameters(QualityDefaults.PH33_GOOD_QUAL),
             NO_FILTER = new ConsensusAlignerParameters((byte) 0);
 
     public ConsensusAlignerParameters(byte consensusQualityThreshold) {

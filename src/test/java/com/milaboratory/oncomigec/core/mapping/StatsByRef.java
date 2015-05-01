@@ -46,7 +46,7 @@ public class StatsByRef {
                 minorCounts = minorCountsByRef.get(reference);
 
         Integer count;
-        for (int major : MigWithMutations.getPcrMutations()) {
+        for (int major : MigWithMutations.getMajorMutations()) {
             major = move(major, offset);
             majorCounts.put(major,
                     ((count = majorCounts.get(major)) == null ? 0 : count) + 1);

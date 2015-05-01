@@ -5,7 +5,7 @@ import com.milaboratory.oncomigec.DoubleRangeAssertion;
 import com.milaboratory.oncomigec.IntRangeAssertion;
 import com.milaboratory.oncomigec.PercentRangeAssertion;
 import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
-import com.milaboratory.oncomigec.generators.GeneratorMutationModel;
+import com.milaboratory.oncomigec.generators.MutationGenerator;
 import com.milaboratory.oncomigec.generators.RandomReferenceGenerator;
 import com.milaboratory.oncomigec.generators.ReferenceParentChildPair;
 import org.apache.commons.math.stat.descriptive.DescriptiveStatistics;
@@ -84,8 +84,8 @@ public class KMerFinderTest {
                          DoubleRangeAssertion mapqRange) {
         RandomReferenceGenerator randomReferenceGenerator = new RandomReferenceGenerator(), randomReferenceGenerator1 = new RandomReferenceGenerator();
 
-        randomReferenceGenerator.setGeneratorMutationModel(GeneratorMutationModel.DEFAULT.multiply(nonHomologyMultiplier));
-        randomReferenceGenerator1.setGeneratorMutationModel(GeneratorMutationModel.DEFAULT.multiply(errorMultiplier));
+        randomReferenceGenerator.setMutationGenerator(MutationGenerator.DEFAULT.multiply(nonHomologyMultiplier));
+        randomReferenceGenerator1.setMutationGenerator(MutationGenerator.DEFAULT.multiply(errorMultiplier));
 
         int nRepetitions1 = 100, nRepetitions2 = 100;
 

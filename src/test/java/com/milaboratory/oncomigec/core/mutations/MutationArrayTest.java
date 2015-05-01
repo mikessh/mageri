@@ -18,10 +18,9 @@
 
 package com.milaboratory.oncomigec.core.mutations;
 
-import com.milaboratory.core.sequence.mutations.Mutations;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.oncomigec.core.genomic.Reference;
-import com.milaboratory.oncomigec.generators.GeneratorMutationModel;
+import com.milaboratory.oncomigec.generators.MutationGenerator;
 import com.milaboratory.oncomigec.generators.RandomReferenceGenerator;
 import org.junit.Assert;
 import org.junit.Test;
@@ -29,7 +28,7 @@ import org.junit.Test;
 public class MutationArrayTest {
     @Test
     public void test() {
-        GeneratorMutationModel generatorMutationModel = GeneratorMutationModel.DEFAULT.multiply(10);
+        MutationGenerator mutationGenerator = MutationGenerator.DEFAULT.multiply(10);
         RandomReferenceGenerator randomReferenceGenerator = new RandomReferenceGenerator();
         int n = 100000;
 
@@ -37,7 +36,7 @@ public class MutationArrayTest {
             Reference reference = randomReferenceGenerator.nextReference();
             NucleotideSequence sequence = reference.getSequence();
 
-            int[] mutations = generatorMutationModel.nextMutations(sequence);
+            int[] mutations = mutationGenerator.nextMutations(sequence);
             //mutations = Mutations.filterMutations(sequence, mutations);
             //Mutations.shiftIndelsAtHomopolymers(sequence, mutations);
 

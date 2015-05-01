@@ -11,7 +11,7 @@ import com.milaboratory.oncomigec.core.input.index.Read;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static com.milaboratory.oncomigec.misc.Util.*;
+import static com.milaboratory.oncomigec.misc.QualityDefaults.*;
 
 public final class SAssembler extends Assembler<SConsensus, SMig> {
     private final AssemblerParameters parameters;
