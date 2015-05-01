@@ -53,28 +53,13 @@ public final class MutationsExtractor {
         return new MutationArray(reference, consensusMutations);
     }
 
-    private int rc(int code) {
-        int pos = consensus.size() - 1 - Mutations.getPosition(code);
-        if (isSubstitution(code)) {
-            return createSubstitution(pos,
-                    getComplement((byte) getFrom(code)),
-                    getComplement((byte) getTo(code)));
-        } else if (isInsertion(code)) {
-            return createInsertion(pos,
-                    getComplement((byte) getTo(code)));
-        } else {
-            return createInsertion(pos,
-                    getComplement((byte) getFrom(code)));
-        }
-    }
-
     public Set<Integer> recomputeMinorMutations() {
         Set<Integer> minors = new HashSet<>();
-        
+
         for (int code : this.minors) {
             // Todo: not fully tested for Indel minors
             if (rc) {
-                code = rc(code);
+                code = rc(code, consensus.size());
             }
 
             // Get absolute position in consensus
@@ -103,6 +88,21 @@ public final class MutationsExtractor {
         }
 
         return minors;
+    }
+
+    static int rc(int code, int len) {
+        int pos = len - 1 - Mutations.getPosition(code);
+        if (isSubstitution(code)) {
+            return createSubstitution(pos,
+                    getComplement((byte) getFrom(code)),
+                    getComplement((byte) getTo(code)));
+        } else if (isInsertion(code)) {
+            return createInsertion(pos,
+                    getComplement((byte) getTo(code)));
+        } else {
+            return createInsertion(pos,
+                    getComplement((byte) getFrom(code)));
+        }
     }
 
     static int[] computeMajorMutations(SequenceQualityPhred queryQuality,

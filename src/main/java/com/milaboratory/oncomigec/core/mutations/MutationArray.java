@@ -36,26 +36,28 @@ public class MutationArray {
         this.mutations = new ArrayList<>();
         this.length = codes.length;
 
-        IndelAccumulator insertionAccumulaor = new InsertionAccumulator(),
+        IndelAccumulator insertionAccumulator = new InsertionAccumulator(),
                 deletionAccumulator = new DeletionAccumulator();
 
         for (int code : codes) {
             switch (Mutations.getType(code)) {
                 case Insertion:
-                    insertionAccumulaor.append(code);
+                    deletionAccumulator.safeFlush();
+                    insertionAccumulator.append(code);
                     break;
                 case Deletion:
+                    insertionAccumulator.safeFlush();
                     deletionAccumulator.append(code);
                     break;
                 case Substitution:
-                    insertionAccumulaor.safeFlush();
+                    insertionAccumulator.safeFlush();
                     deletionAccumulator.safeFlush();
                     mutations.add(new Substitution(this, code));
                     break;
             }
         }
 
-        insertionAccumulaor.safeFlush();
+        insertionAccumulator.safeFlush();
         deletionAccumulator.safeFlush();
     }
 
@@ -126,9 +128,10 @@ public class MutationArray {
                 codes[counter++] = code;
         }
 
+        protected abstract Indel create();
+
         public boolean flush() {
-            mutations.add(new Insertion(MutationArray.this,
-                    Arrays.copyOf(codes, counter)));
+            mutations.add(create());
             counter = 0;
             return true;
         }
@@ -144,6 +147,12 @@ public class MutationArray {
         protected boolean canExtend(int pos) {
             return getLastPos() == pos;
         }
+
+        @Override
+        public Indel create() {
+            return new Insertion(MutationArray.this,
+                    Arrays.copyOf(codes, counter));
+        }
     }
 
 
@@ -151,6 +160,12 @@ public class MutationArray {
         @Override
         protected boolean canExtend(int pos) {
             return getLastPos() + 1 == pos;
+        }
+
+        @Override
+        public Indel create() {
+            return new Deletion(MutationArray.this,
+                    Arrays.copyOf(codes, counter));
         }
     }
 }

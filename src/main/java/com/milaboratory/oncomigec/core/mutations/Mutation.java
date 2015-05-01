@@ -41,6 +41,8 @@ public abstract class Mutation {
         return filtered;
     }
 
+    public abstract char getType();
+
     public abstract int getStart();
 
     public abstract int getEnd();
@@ -50,4 +52,9 @@ public abstract class Mutation {
     public abstract NucleotideSequence getAlt();
 
     public abstract int getLength();
+
+    @Override
+    public String toString() {
+        return getType() + "" + getStart() + "-" + getEnd() + ":" + getRef().toString() + ">" + getAlt().toString();
+    }
 }

@@ -28,6 +28,11 @@ public class Deletion extends Indel {
     }
 
     @Override
+    public char getType() {
+        return 'D';
+    }
+
+    @Override
     public int getStart() {
         return Mutations.getPosition(codes[0]);
     }

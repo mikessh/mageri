@@ -18,12 +18,41 @@
 
 package com.milaboratory.oncomigec.core.mutations;
 
-import org.junit.Ignore;
+import com.milaboratory.core.sequence.mutations.Mutations;
+import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
+import com.milaboratory.oncomigec.core.genomic.Reference;
+import com.milaboratory.oncomigec.generators.GeneratorMutationModel;
+import com.milaboratory.oncomigec.generators.RandomReferenceGenerator;
+import org.junit.Assert;
 import org.junit.Test;
 
 public class MutationArrayTest {
     @Test
-    @Ignore("TODO")
     public void test() {
+        GeneratorMutationModel generatorMutationModel = GeneratorMutationModel.DEFAULT.multiply(10);
+        RandomReferenceGenerator randomReferenceGenerator = new RandomReferenceGenerator();
+        int n = 100000;
+
+        for (int i = 0; i < n; i++) {
+            Reference reference = randomReferenceGenerator.nextReference();
+            NucleotideSequence sequence = reference.getSequence();
+
+            int[] mutations = generatorMutationModel.nextMutations(sequence);
+            //mutations = Mutations.filterMutations(sequence, mutations);
+            //Mutations.shiftIndelsAtHomopolymers(sequence, mutations);
+
+            MutationArray mutationArray = new MutationArray(reference, mutations);
+
+            int[] recoveredMutations = mutationArray.getMutationCodes(false);
+
+            /*for (int j = 0; j < mutations.length; j++) {
+                System.out.println(
+                        Mutations.toString(NucleotideAlphabet.INSTANCE, mutations[j]) + "\t" +
+                                Mutations.toString(NucleotideAlphabet.INSTANCE, recoveredMutations[j]));
+            }
+            System.out.println();*/
+
+            Assert.assertArrayEquals("Correct mutations recovered", mutations, recoveredMutations);
+        }
     }
 }

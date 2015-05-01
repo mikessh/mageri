@@ -32,6 +32,11 @@ public class Substitution extends Mutation {
     }
 
     @Override
+    public char getType() {
+        return 'S';
+    }
+
+    @Override
     public int getStart() {
         return Mutations.getPosition(code);
     }

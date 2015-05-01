@@ -28,6 +28,11 @@ public class Insertion extends Indel {
     }
 
     @Override
+    public char getType() {
+        return 'I';
+    }
+
+    @Override
     public int getStart() {
         return Mutations.getPosition(codes[0]);
     }
