@@ -42,7 +42,7 @@ public class SMigReaderTest {
             SSequencingRead read;
             int rawCount = 0;
             while ((read = standardReader.take()) != null)
-                if (read.getDescription().contains(QualityDefaults.UMI_FIELD_ID + ":" + sMig.getUmi()))
+                if (read.getDescription().contains(HeaderExtractor.UMI_FIELD_ID + ":" + sMig.getUmi()))
                     rawCount++;
             Assert.assertEquals(sMig.size(), rawCount);
         }

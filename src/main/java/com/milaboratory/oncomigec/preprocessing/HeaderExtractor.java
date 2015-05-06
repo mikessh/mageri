@@ -29,10 +29,10 @@ public final class HeaderExtractor extends CheckoutProcessor<SequencingRead, Che
         throw new NotImplementedException();
     }
 
-    protected static final String UMI_FIELD_ID = "UMI";
-    protected static final int UMI_QUAL_OFFSET = UMI_FIELD_ID.length() + 2;
+    public static final String UMI_FIELD_ID = "UMI";
+    public static final int UMI_QUAL_OFFSET = UMI_FIELD_ID.length() + 2;
 
-    protected static NucleotideSQPair extractUmiWithQual(String header) {
+    public static NucleotideSQPair extractUmiWithQual(String header) {
         for (String field : header.split("[ \t]")) {
             if (field.startsWith(UMI_FIELD_ID)) {
                 String seq = field.split(":")[1];

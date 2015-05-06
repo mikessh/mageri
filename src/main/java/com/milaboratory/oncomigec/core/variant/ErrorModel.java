@@ -39,6 +39,12 @@ public class ErrorModel {
     }
 
     public double getLog10PValue(int majorCount, int minorCount, int total) {
+        if (majorCount == 0) {
+            return 0;
+        }
+
+        minorCount = minorCount == 0 ? 1 : minorCount;
+
         double errorRateBase = Math.pow(1.0 - minorCount / (double) total, 1.0 / cycles),
                 errorRate = Math.log(lambda) - Math.log((1.0 + lambda) * errorRateBase - 1);
 

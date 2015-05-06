@@ -15,7 +15,7 @@ public class MutationGenerator {
     public static final MutationGenerator DEFAULT = new MutationGenerator(51102L, 1.0),
             NO_INDEL = new MutationGenerator(51102L, 0.0),
             NO_INDEL_SKEWED = new MutationGenerator(51102L, 0.0, getSkewedNucleotideSubstitutionModel()),
-            SOMATIC = new MutationGenerator(51102L, 1e-3, SubstitutionModels.getUniformNucleotideSubstitutionModel(1e-5));
+            SOMATIC = new MutationGenerator(51102L, 1e-7, SubstitutionModels.getUniformNucleotideSubstitutionModel(1e-5));
 
     private static SubstitutionModel getSkewedNucleotideSubstitutionModel() {
         return getSkewedNucleotideSubstitutionModel(SubstitutionModels.getEmpiricalNucleotideSubstitutionModel());
@@ -27,7 +27,7 @@ public class MutationGenerator {
         for (byte i = 0; i < 4; i++) {
             for (byte j = 0; j < 4; j++) {
                 if (i != j) {
-                    builder.setProbability(i, j, Math.pow(substitutionModel.getValue(i, j), 3) * 1000);
+                    builder.setProbability(i, j, Math.pow(substitutionModel.getValue(i, j), 3) * 500_000);
                 }
             }
         }

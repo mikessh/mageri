@@ -74,7 +74,7 @@ public class VariantCaller extends PipelineBlock {
 
                         int coverage = mutationsTable.getMigCoverage(pos);
 
-                        double score = errorModel.getLog10PValue(
+                        double score = 10 * errorModel.getLog10PValue(
                                 majorCount,
                                 mutationsTable.getMinorMigCount(pos, base),
                                 coverage);

@@ -32,37 +32,92 @@ import java.util.*;
 import static com.milaboratory.oncomigec.generators.RandomUtil.randomSequence;
 
 public class ModelMigGenerator {
-    private int migSizeMin = 5, migSizeMax = 100;
+    private static final Random rnd = new Random(480011L);
+    private double hotSpotPositionRatio = 0.1, pcrPositionRatio = 0.4,
+            somaticMutationRatio = 0.1, somaticMutationFreq = 0.0005;
     private ErrorModel errorModel = new ErrorModel();
-    private MutationGenerator read = MutationGenerator.NO_INDEL,
-            pcr = MutationGenerator.NO_INDEL_SKEWED,
-            pcrHotSpot = pcr.multiply(errorModel.getPropagateProb()),
-            somatic = MutationGenerator.SOMATIC;
+    private MutationGenerator readErrorGenerator = MutationGenerator.NO_INDEL,
+            pcrErrorGenerator = MutationGenerator.NO_INDEL_SKEWED,
+            pcrHotSpotErrorGenerator = MutationGenerator.NO_INDEL_SKEWED.multiply(errorModel.getPropagateProb());
+
+    private int[] somaticMutations;
 
     private final NucleotideSequence reference;
-    private final Set<Integer> hotSpotPositions = new HashSet<>();
+    private final Set<Integer> hotSpotPositions = new HashSet<>(),
+            pcrPositions = new HashSet<>();
     private final Map<Integer, Integer> somaticMutationCounters = new HashMap<>(),
-            hotSpotMutationCounters = new HashMap<>();
-
+            hotSpotMutationCounters = new HashMap<>(),
+            totalMutationCounters = new HashMap<>();
 
     public ModelMigGenerator(NucleotideSequence reference) {
         this.reference = reference;
+        generateHotSpots();
+
+        int[] somaticMutations = new int[reference.size()];
+        int j = 0;
+
+        for (int i = 0; i < reference.size(); i++) {
+            double p = rnd.nextDouble();
+            if (p < somaticMutationRatio) {
+                int from = reference.codeAt(i);
+                int to;
+                do {
+                    to = rnd.nextInt(3);
+                } while (to == from);
+                somaticMutations[j++] = Mutations.createSubstitution(i, from, to);
+            }
+        }
+
+        this.somaticMutations = Arrays.copyOf(somaticMutations, j);
     }
 
-    public void generateHotSpots() {
-        int[] mutations = pcr.multiply(1000).nextMutations(reference);
+    private static int[] generateAndFilterMutations(MutationGenerator mutationGenerator,
+                                                    NucleotideSequence sequence,
+                                                    Set<Integer> positions) {
+        int l = 0;
+        int[] mutations = mutationGenerator.nextMutations(sequence);
+        for (int j = 0; j < mutations.length; j++) {
+            int code = mutations[j];
+            if (positions.contains(Mutations.getPosition(code))) {
+                mutations[l++] = code;
+            }
+        }
+        return Arrays.copyOf(mutations, l);
+    }
 
-        for (int mutation : mutations) {
-            hotSpotPositions.add(Mutations.getPosition(mutation));
+    private static int[] selectMutations(int[] mutations, double p) {
+        int l = 0;
+        int[] _mutations = new int[mutations.length];
+        for (int code : mutations) {
+            if (rnd.nextDouble() < p) {
+                _mutations[l++] = code;
+            }
+        }
+        return Arrays.copyOf(_mutations, l);
+    }
+
+    private void generateHotSpots() {
+        for (int i = 0; i < reference.size(); i++) {
+            double p = rnd.nextDouble();
+            if (p < hotSpotPositionRatio) {
+                hotSpotPositions.add(i);
+            }
+            if (p < pcrPositionRatio) {
+                pcrPositions.add(i);
+            }
         }
     }
 
     public SMig nextMig() {
-        int[] somaticMutations = somatic.nextMutations(reference);
+        int[] somaticMutations = selectMutations(this.somaticMutations, somaticMutationFreq);
+
         Integer counter;
-        for (int mutation : somaticMutations) {
-            somaticMutationCounters.put(mutation,
-                    (((counter = somaticMutationCounters.get(mutation)) == null) ? 0 : counter) + 1
+        for (int code : somaticMutations) {
+            somaticMutationCounters.put(code,
+                    (((counter = somaticMutationCounters.get(code)) == null) ? 0 : counter) + 1
+            );
+            totalMutationCounters.put(code,
+                    (((counter = totalMutationCounters.get(code)) == null) ? 0 : counter) + 1
             );
         }
 
@@ -70,32 +125,30 @@ public class ModelMigGenerator {
 
         //
 
-        int[] hotSpotMutations = pcrHotSpot.nextMutations(reference),
-                hotSpotMutationsFiltered = new int[hotSpotMutations.length];
-        int k = 0;
-        for (int mutation : hotSpotMutations) {
-            if (hotSpotPositions.contains(Mutations.getPosition(mutation))) {
-                hotSpotMutationCounters.put(mutation,
-                        (((counter = hotSpotMutationCounters.get(mutation)) == null) ? 0 : counter) + 1
-                );
-                hotSpotMutationsFiltered[k++] = mutation;
-            }
+        int[] hotSpotMutations = generateAndFilterMutations(pcrHotSpotErrorGenerator,
+                reference, hotSpotPositions);
+
+        for (int code : hotSpotMutations) {
+            hotSpotMutationCounters.put(code,
+                    (((counter = hotSpotMutationCounters.get(code)) == null) ? 0 : counter) + 1
+            );
+            totalMutationCounters.put(code,
+                    (((counter = totalMutationCounters.get(code)) == null) ? 0 : counter) + 1
+            );
         }
-        hotSpotMutations = Arrays.copyOf(hotSpotMutationsFiltered, k);
 
         NucleotideSequence sequence2 = Mutations.mutate(sequence1, hotSpotMutations);
 
         //
 
-        int nReads = RandomUtil.nextFromRange(migSizeMin, migSizeMax);
-
         List<Read> reads = new ArrayList<>();
 
-        for (int i = 0; i < nReads; i++) {
-            int[] pcrMutations = pcr.nextMutations(sequence2);
+        for (int i = 0; i < Math.pow(errorModel.getCycles(), 0.5 + 1.5 * rnd.nextDouble()); i++) {
+            int[] pcrMutations = generateAndFilterMutations(pcrErrorGenerator,
+                    sequence2, pcrPositions);
             NucleotideSequence sequence3 = Mutations.mutate(sequence2, pcrMutations);
 
-            int[] readMutations = read.nextMutations(sequence3);
+            int[] readMutations = readErrorGenerator.nextMutations(sequence3);
             NucleotideSequence sequence4 = Mutations.mutate(sequence3, readMutations);
             byte[] quality = new byte[sequence4.size()];
             Arrays.fill(quality, (byte) 40);
@@ -105,7 +158,9 @@ public class ModelMigGenerator {
                         from = Mutations.getFrom(mutation),
                         to = Mutations.getTo(mutation);
 
-                byte qual = (byte) Math.max(2, Math.min(40, -10 * Math.log10(read.getSubstitutionModel().getValue(from, to))));
+                byte qual = (byte) Math.max(2, Math.min(40,
+                        -10 * Math.log10(readErrorGenerator.getSubstitutionModel().getValue(from, to)
+                        )));
                 quality[pos] = qual;
             }
 
@@ -113,5 +168,40 @@ public class ModelMigGenerator {
         }
 
         return new SMig(Sample.create("dummy", false), randomSequence(12), reads);
+    }
+
+    public int getSomaticCount(int mutationCode) {
+        Integer count = somaticMutationCounters.get(mutationCode);
+        return count != null ? count : 0;
+    }
+
+    public int getHotSpotCount(int mutationCode) {
+        Integer count = hotSpotMutationCounters.get(mutationCode);
+        return count != null ? count : 0;
+    }
+
+    public int getVariantCount(int mutationCode) {
+        Integer count = totalMutationCounters.get(mutationCode);
+        return count != null ? count : 0;
+    }
+
+    public int somaticSize() {
+        return somaticMutationCounters.size();
+    }
+
+    public int hotSpotSize() {
+        return hotSpotMutationCounters.size();
+    }
+
+    public int totalSize() {
+        return totalMutationCounters.size();
+    }
+
+    public int totalCount() {
+        int totalCount = 0;
+        for (int count : totalMutationCounters.values()) {
+            totalCount += count;
+        }
+        return totalCount;
     }
 }
