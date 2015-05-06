@@ -33,12 +33,9 @@ import static com.milaboratory.oncomigec.generators.RandomUtil.randomSequence;
 
 public class ModelMigGenerator {
     private static final Random rnd = new Random(480011L);
-    private double hotSpotPositionRatio = 0.1, pcrPositionRatio = 0.4,
-            somaticMutationRatio = 0.1, somaticMutationFreq = 0.0005;
-    private ErrorModel errorModel = new ErrorModel();
-    private MutationGenerator readErrorGenerator = MutationGenerator.NO_INDEL,
-            pcrErrorGenerator = MutationGenerator.NO_INDEL_SKEWED,
-            pcrHotSpotErrorGenerator = MutationGenerator.NO_INDEL_SKEWED.multiply(errorModel.getPropagateProb());
+    private final double somaticMutationFreq;
+    private final ErrorModel errorModel;
+    private final MutationGenerator readErrorGenerator, pcrErrorGenerator, pcrHotSpotErrorGenerator;
 
     private int[] somaticMutations;
 
@@ -49,9 +46,28 @@ public class ModelMigGenerator {
             hotSpotMutationCounters = new HashMap<>(),
             totalMutationCounters = new HashMap<>();
 
-    public ModelMigGenerator(NucleotideSequence reference) {
+    public ModelMigGenerator(double hotSpotPositionRatio, double pcrPositionRatio, double somaticMutationRatio,
+                             double somaticMutationFreq,
+                             ErrorModel errorModel,
+                             MutationGenerator readErrorGenerator, MutationGenerator pcrErrorGenerator,
+                             MutationGenerator pcrHotSpotErrorGenerator,
+                             NucleotideSequence reference) {
+        this.somaticMutationFreq = somaticMutationFreq;
+        this.errorModel = errorModel;
+        this.readErrorGenerator = readErrorGenerator;
+        this.pcrErrorGenerator = pcrErrorGenerator;
+        this.pcrHotSpotErrorGenerator = pcrHotSpotErrorGenerator;
         this.reference = reference;
-        generateHotSpots();
+
+        for (int i = 0; i < reference.size(); i++) {
+            double p = rnd.nextDouble();
+            if (p < hotSpotPositionRatio) {
+                hotSpotPositions.add(i);
+            }
+            if (p < pcrPositionRatio) {
+                pcrPositions.add(i);
+            }
+        }
 
         int[] somaticMutations = new int[reference.size()];
         int j = 0;
@@ -94,18 +110,6 @@ public class ModelMigGenerator {
             }
         }
         return Arrays.copyOf(_mutations, l);
-    }
-
-    private void generateHotSpots() {
-        for (int i = 0; i < reference.size(); i++) {
-            double p = rnd.nextDouble();
-            if (p < hotSpotPositionRatio) {
-                hotSpotPositions.add(i);
-            }
-            if (p < pcrPositionRatio) {
-                pcrPositions.add(i);
-            }
-        }
     }
 
     public SMig nextMig() {
