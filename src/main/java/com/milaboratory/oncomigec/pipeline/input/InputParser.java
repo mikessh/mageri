@@ -66,9 +66,17 @@ public class InputParser {
 
         String projectName = rootObject.getString("project"),
                 referencesFileName = rootObject.getString("references");
-        InputStreamWrapper references = ioProvider.getWrappedStream(referencesFileName);
+        InputStreamWrapper references = ioProvider.getWrappedStream(referencesFileName),
+                bedFile = null, contigFile = null;
 
-        return new Input(projectName, references, chunks);
+        if (rootObject.has("bed")) {
+            bedFile = ioProvider.getWrappedStream(rootObject.getString("bed"));
+        }
+        if (rootObject.has("contigs")) {
+            contigFile = ioProvider.getWrappedStream(rootObject.getString("contigs"));
+        }
+
+        return new Input(projectName, references, bedFile, contigFile, chunks);
     }
 
     private List<InputChunk> parseChunks(JSONObject table) throws IOException {
