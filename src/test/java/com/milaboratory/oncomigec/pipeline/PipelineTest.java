@@ -19,6 +19,9 @@
 package com.milaboratory.oncomigec.pipeline;
 
 import com.milaboratory.oncomigec.TestUtil;
+import com.milaboratory.oncomigec.core.mapping.AlignedConsensus;
+import com.milaboratory.oncomigec.core.output.SamWriter;
+import com.milaboratory.oncomigec.core.output.VcfWriter;
 import com.milaboratory.oncomigec.core.variant.Variant;
 import com.milaboratory.oncomigec.core.variant.VariantCaller;
 import com.milaboratory.oncomigec.pipeline.analysis.ProjectAnalysis;
@@ -27,9 +30,17 @@ import com.milaboratory.oncomigec.pipeline.analysis.SampleAnalysis;
 import com.milaboratory.oncomigec.pipeline.input.Input;
 import com.milaboratory.oncomigec.pipeline.input.InputParser;
 import com.milaboratory.oncomigec.pipeline.input.ResourceIOProvider;
+import htsjdk.samtools.SAMRecord;
+import htsjdk.samtools.SamReader;
+import htsjdk.samtools.SamReaderFactory;
+import htsjdk.variant.variantcontext.VariantContext;
+import htsjdk.variant.vcf.VCFFileReader;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -65,9 +76,48 @@ public class PipelineTest {
             for (String v : expectedVariants) {
                 Assert.assertTrue("Real variant present", observedVariants.contains(v));
             }
+
+            //samOutputTest(sampleAnalysis);
+            vcfOutputTest(sampleAnalysis);
         }
 
         TestUtil.serializationCheck(projectAnalysis);
     }
 
+    private void samOutputTest(SampleAnalysis sampleAnalysis) throws IOException {
+        File file = new File("target/test.sam");
+
+        SamWriter samWriter = new SamWriter(sampleAnalysis.getSample(),
+                new FileOutputStream(file), sampleAnalysis.getConsensusAligner());
+
+        for (AlignedConsensus alignedConsensus : sampleAnalysis.getAlignmentDataList()) {
+            samWriter.write(alignedConsensus);
+        }
+
+        samWriter.close();
+
+        SamReader samReader = SamReaderFactory.makeDefault().open(file);
+        for (SAMRecord samRecord : samReader) {
+            System.out.println(samRecord);
+        }
+    }
+
+    private void vcfOutputTest(SampleAnalysis sampleAnalysis) throws IOException {
+        File file = new File("target/test.vcf");
+
+        VcfWriter vcfWriter = new VcfWriter(sampleAnalysis.getSample(),
+                new FileOutputStream(file), sampleAnalysis.getVariantCaller());
+
+        for (Variant variant : sampleAnalysis.getVariantCaller().getVariants()) {
+            vcfWriter.write(variant);
+        }
+
+        vcfWriter.close();
+
+        VCFFileReader vcfFileReader = new VCFFileReader(file, false);
+
+        for (VariantContext variantContext : vcfFileReader) {
+            System.out.println(variantContext);
+        }
+    }
 }

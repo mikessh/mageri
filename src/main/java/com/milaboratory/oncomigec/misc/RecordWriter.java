@@ -18,23 +18,28 @@
 
 package com.milaboratory.oncomigec.misc;
 
+import com.milaboratory.oncomigec.core.PipelineBlock;
 import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
 import com.milaboratory.oncomigec.pipeline.analysis.Sample;
 
-import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 
-public abstract class RecordWriter<RecordType extends Record> implements AutoCloseable {
+public abstract class RecordWriter<RecordType extends Record, BlockType extends PipelineBlock> implements AutoCloseable {
     protected final ReferenceLibrary referenceLibrary;
     protected final Sample sample;
     protected final PrintWriter writer;
+    protected final BlockType pipelineBlock;
 
-    public RecordWriter(Sample sample, File outputFile, ReferenceLibrary referenceLibrary) throws IOException {
+    public RecordWriter(Sample sample, OutputStream outputStream,
+                        ReferenceLibrary referenceLibrary,
+                        BlockType pipelineBlock) throws IOException {
         this.sample = sample;
-        this.writer = new PrintWriter(outputFile);
+        this.writer = new PrintWriter(outputStream);
         this.referenceLibrary = referenceLibrary;
-        
+        this.pipelineBlock = pipelineBlock;
+
         writer.println(getHeader());
     }
 
@@ -52,5 +57,9 @@ public abstract class RecordWriter<RecordType extends Record> implements AutoClo
 
     public Sample getSample() {
         return sample;
+    }
+
+    public BlockType getPipelineBlock() {
+        return pipelineBlock;
     }
 }

@@ -27,13 +27,13 @@ import com.milaboratory.oncomigec.misc.RecordWriter;
 import com.milaboratory.oncomigec.pipeline.Oncomigec;
 import com.milaboratory.oncomigec.pipeline.analysis.Sample;
 
-import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 
-public class SamWriter extends RecordWriter<SamRecord> {
+public class SamWriter extends RecordWriter<SamRecord, ConsensusAligner> {
 
-    public SamWriter(Sample sample, File outputFile, ConsensusAligner consensusAligner) throws IOException {
-        super(sample, outputFile, consensusAligner.getReferenceLibrary());
+    public SamWriter(Sample sample, OutputStream outputStream, ConsensusAligner consensusAligner) throws IOException {
+        super(sample, outputStream, consensusAligner.getReferenceLibrary(), consensusAligner);
     }
 
     @Override

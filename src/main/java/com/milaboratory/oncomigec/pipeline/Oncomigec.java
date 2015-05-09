@@ -13,8 +13,11 @@ import java.nio.file.Paths;
 @SuppressWarnings("static-access")
 public final class Oncomigec {
     private static final Class ME = Oncomigec.class;
-    public static final String MY_PATH = ME.getProtectionDomain().getCodeSource().getLocation().getFile(),
-            MY_VERSION = ME.getPackage().getImplementationVersion();
+    public static final String
+            MY_NAME = "oncomigec",
+            MY_PATH = ME.getProtectionDomain().getCodeSource().getLocation().getFile(),
+            MY_VERSION = ME.getPackage().getImplementationVersion(),
+            MY_COMMAND = System.getProperty("sun.java.command");
 
     public static ProjectAnalysis loadAnalysis(File file) throws IOException, ClassNotFoundException {
         return (ProjectAnalysis) SerializationUtils.readObjectFromFile(file);

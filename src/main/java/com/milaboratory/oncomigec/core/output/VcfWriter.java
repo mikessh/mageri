@@ -26,19 +26,16 @@ import com.milaboratory.oncomigec.misc.RecordWriter;
 import com.milaboratory.oncomigec.pipeline.Oncomigec;
 import com.milaboratory.oncomigec.pipeline.analysis.Sample;
 
-import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Date;
 
-public class VcfWriter extends RecordWriter<VcfRecord> {
-    private final VariantCaller variantCaller;
-
-    public VcfWriter(Sample sample, File outputFile,
-                     VariantCaller variantCaller) throws IOException {
-        super(sample, outputFile, variantCaller.getReferenceLibrary());
-        this.variantCaller = variantCaller;
+public class VcfWriter extends RecordWriter<VcfRecord, VariantCaller> {
+    public VcfWriter(Sample sample, OutputStream outputStream, VariantCaller variantCaller) throws IOException {
+        super(sample, outputStream, variantCaller.getReferenceLibrary(), variantCaller);
     }
 
+    @Override
     public String getHeader() {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.
@@ -56,8 +53,8 @@ public class VcfWriter extends RecordWriter<VcfRecord> {
         stringBuilder.append(VcfUtil.INFO_HEADER).append("\n");
 
         // FILTER fields
-        for (int i = 0; i < variantCaller.getFilterCount(); i++) {
-            VariantFilter filter = variantCaller.getFilter(i);
+        for (int i = 0; i < pipelineBlock.getFilterCount(); i++) {
+            VariantFilter filter = pipelineBlock.getFilter(i);
             stringBuilder.append("##FILTER=<ID=").append(filter.getId()).
                     append(",Description=\"").append(filter.getDescription()).append("\">\n");
         }
@@ -67,7 +64,7 @@ public class VcfWriter extends RecordWriter<VcfRecord> {
         stringBuilder.append(VcfUtil.FORMAT_HEADER).append("\n");
 
         stringBuilder.append("#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\tFORMAT\t").
-                append(sample.getFullName()).append("\n");
+                append(sample.getFullName());
 
         return stringBuilder.toString();
     }

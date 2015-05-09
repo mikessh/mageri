@@ -129,9 +129,11 @@ public class SampleAnalysis implements ReadSpecific, Serializable {
                 new ParallelProcessor<>(assemblyResults, consensusAligner, parent.getRuntimeParameters().getNumberOfThreads());
 
         ProcessorResultWrapper<AlignedConsensus> alignmentDataWrapped;
-        while ((alignmentDataWrapped = alignerResults.take()) != null)
-            if (alignmentDataWrapped.hasResult())
+        while ((alignmentDataWrapped = alignerResults.take()) != null) {
+            if (alignmentDataWrapped.hasResult()) {
                 alignmentDataList.add(alignmentDataWrapped.getResult());
+            }
+        }
 
         sout("Finished, " + countingInput.getCount() + " MIGs processed in total.", 1);
 

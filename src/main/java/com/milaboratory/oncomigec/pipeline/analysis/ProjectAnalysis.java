@@ -36,6 +36,7 @@ import com.milaboratory.oncomigec.pipeline.Speaker;
 import com.milaboratory.oncomigec.pipeline.input.Input;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -137,7 +138,7 @@ public class ProjectAnalysis implements Serializable {
 
                 // Write SAM file
                 SamWriter samWriter = new SamWriter(sample,
-                        new File(prefix2 + ".sam"), sampleAnalysis.getConsensusAligner());
+                        new FileOutputStream(prefix2 + ".sam"), sampleAnalysis.getConsensusAligner());
 
                 for (AlignedConsensus alignedConsensus : sampleAnalysis.getAlignmentDataList()) {
                     samWriter.write(alignedConsensus);
@@ -148,7 +149,7 @@ public class ProjectAnalysis implements Serializable {
                 // Write VCF file
                 VariantCaller variantCaller = sampleAnalysis.getVariantCaller();
                 VcfWriter vcfWriter = new VcfWriter(sample,
-                        new File(prefix2 + ".vcf"), variantCaller);
+                        new FileOutputStream(prefix2 + ".vcf"), variantCaller);
 
                 for (Variant variant : variantCaller.getVariants()) {
                     vcfWriter.write(variant);

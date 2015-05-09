@@ -30,6 +30,12 @@
         </dependency>
 
         <dependency>
+            <groupId>com.github.samtools</groupId>
+            <artifactId>htsjdk</artifactId>
+            <version>1.130</version>
+        </dependency>
+
+        <dependency>
             <groupId>cc.redberry</groupId>
             <artifactId>pipe</artifactId>
             <version>0.9.3</version>
