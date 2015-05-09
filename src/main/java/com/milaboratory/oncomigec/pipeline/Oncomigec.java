@@ -123,7 +123,11 @@ public final class Oncomigec {
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Run
-        projectAnalysis.run(outputFolder);
+        projectAnalysis.run();
+
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        // Write output
+        projectAnalysis.write(outputFolder, true);
     }
 
     private static final String OPT_HELP_SHORT = "h", OPT_HELP_LONG = "help", OPT_VERSION_SHORT = "v", OPT_VERSION_LONG = "version",

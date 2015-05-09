@@ -55,4 +55,9 @@ public class Insertion extends Indel {
         }
         return nsb.create();
     }
+
+    @Override
+    public String toString() {
+        return getType() + "" + getStart() + ":" + getRef().toString() + ">" + getAlt().toString();
+    }
 }

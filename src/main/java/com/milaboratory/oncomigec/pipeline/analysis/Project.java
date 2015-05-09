@@ -43,7 +43,7 @@ public class Project implements Serializable {
                     group.createSample(sampleName);
                 }
             } else {
-                project.addSample(new Sample(group));
+                group.createSample();
             }
         }
 

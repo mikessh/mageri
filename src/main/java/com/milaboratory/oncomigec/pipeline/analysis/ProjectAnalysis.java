@@ -89,10 +89,8 @@ public class ProjectAnalysis implements Serializable {
                 message, verbosityLevel);
     }
 
-    public void run(String outputPath) throws Exception {
+    public void run() throws Exception {
         sout("Started analysis.", 1);
-
-        String prefix = outputPath + "/" + project.getName();
 
         for (SampleGroup sampleGroup : project.getSampleGroups()) {
             sout("Pre-processing sample group " + sampleGroup.getName() + ".", 1);
@@ -115,6 +113,20 @@ public class ProjectAnalysis implements Serializable {
 
                 // don't need reads associated with current sample anymore in memory
                 inputPort.clear();
+            }
+        }
+
+        sout("Done.", 1);
+    }
+
+    public void write(String outputPath, boolean writeBinary) throws IOException {
+        sout("Writing output.", 1);
+
+        String prefix = outputPath + "/" + project.getName();
+
+        for (SampleGroup sampleGroup : project.getSampleGroups()) {
+            for (Sample sample : sampleGroup.getSamples()) {
+                SampleAnalysis sampleAnalysis = getAnalysis(sample);
 
                 String prefix2 = prefix + "." + sampleAnalysis.getSample().getFullName();
 
@@ -150,9 +162,12 @@ public class ProjectAnalysis implements Serializable {
         pipelineAssemblerFactory.writePlainText(prefix);
         pipelineConsensusAlignerFactory.writePlainText(prefix);
 
-        SerializationUtils.writeObjectToFile(new File(prefix + ".mi"), this);
+        if (writeBinary) {
+            SerializationUtils.writeObjectToFile(new File(prefix + ".mi"), this);
+        }
 
         sout("Done.", 1);
+
     }
 
     public ReferenceLibrary getReferenceLibrary() {

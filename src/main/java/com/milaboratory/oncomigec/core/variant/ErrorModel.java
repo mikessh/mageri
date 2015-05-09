@@ -22,7 +22,9 @@ import org.apache.commons.math.MathException;
 import org.apache.commons.math.distribution.BinomialDistribution;
 import org.apache.commons.math.distribution.BinomialDistributionImpl;
 
-public class ErrorModel {
+import java.io.Serializable;
+
+public class ErrorModel implements Serializable {
     private double order;
     private double cycles, lambda;
     private double propagateProb;

@@ -21,12 +21,13 @@ package com.milaboratory.oncomigec.core.mutations;
 import com.milaboratory.core.sequence.mutations.Mutations;
 import com.milaboratory.oncomigec.core.genomic.Reference;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-public class MutationArray {
+public class MutationArray implements Serializable {
     protected final Reference reference;
     protected final List<Mutation> mutations;
     protected int length, numberOfFiltered = 0;

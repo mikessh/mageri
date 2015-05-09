@@ -85,4 +85,9 @@ public class Substitution extends Mutation {
     public int hashCode() {
         return code;
     }
+
+    @Override
+    public String toString() {
+        return getType() + "" + getStart() + ":" + getRef().toString() + ">" + getAlt().toString();
+    }
 }

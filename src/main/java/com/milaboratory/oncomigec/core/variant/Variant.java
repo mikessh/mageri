@@ -23,7 +23,9 @@ import com.milaboratory.oncomigec.core.genomic.Reference;
 import com.milaboratory.oncomigec.core.mutations.Mutation;
 import com.milaboratory.oncomigec.core.variant.filter.FilterSummary;
 
-public class Variant {
+import java.io.Serializable;
+
+public class Variant  implements Serializable {
     private final Reference reference;
     private final Mutation mutation;
     private final int count, depth;

@@ -21,7 +21,9 @@ package com.milaboratory.oncomigec.core.variant.filter;
 import com.milaboratory.oncomigec.core.variant.Variant;
 import com.milaboratory.oncomigec.core.variant.VariantCaller;
 
-public class FilterSummary {
+import java.io.Serializable;
+
+public class FilterSummary implements Serializable {
     private final VariantCaller parent;
     private final boolean[] filterMask;
     private final boolean passed;

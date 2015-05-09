@@ -38,9 +38,9 @@ public class MutationsExtractorTest {
         LocalAlignment alignment = align(reference.getSequence(), query);
 
         Set<String> expectedMajors = new HashSet<>(), observedMajors = new HashSet<>();
-        expectedMajors.add("S2-3:A>G");
-        expectedMajors.add("I26-26:>AA");
-        expectedMajors.add("S40-41:C>T");
+        expectedMajors.add("S2:A>G");
+        expectedMajors.add("I26:>AA");
+        expectedMajors.add("S40:C>T");
         expectedMajors.add("D47-50:AAA>");
 
         // Minor mutations

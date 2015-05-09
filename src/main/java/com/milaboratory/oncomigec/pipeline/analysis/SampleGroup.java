@@ -44,6 +44,13 @@ public class SampleGroup implements Serializable, ReadSpecific {
         return sample;
     }
 
+    public Sample createSample() {
+        Sample sample = new Sample(this);
+        samples.add(sample);
+        parent.addSample(sample);
+        return sample;
+    }
+
     public String getName() {
         return name;
     }

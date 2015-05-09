@@ -20,7 +20,9 @@ package com.milaboratory.oncomigec.core.mutations;
 
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 
-public abstract class Mutation {
+import java.io.Serializable;
+
+public abstract class Mutation implements Serializable {
     protected final MutationArray parent;
     protected boolean filtered = false;
 

@@ -20,7 +20,9 @@ package com.milaboratory.oncomigec.core.variant.filter;
 
 import com.milaboratory.oncomigec.core.variant.Variant;
 
-public interface VariantFilter {
+import java.io.Serializable;
+
+public interface VariantFilter extends Serializable {
     public boolean pass(Variant variant);
 
     public String getDescription();

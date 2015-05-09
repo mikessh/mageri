@@ -19,7 +19,9 @@ import com.milaboratory.core.sequence.alignment.LocalAlignment;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.oncomigec.core.genomic.Reference;
 
-public class AlignmentResult {
+import java.io.Serializable;
+
+public class AlignmentResult implements Serializable {
     private final NucleotideSequence query;
     private final LocalAlignment alignment;
     private final Reference reference;

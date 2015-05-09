@@ -18,8 +18,23 @@
 
 package com.milaboratory.oncomigec.pipeline;
 
+import com.milaboratory.oncomigec.TestUtil;
+import com.milaboratory.oncomigec.core.variant.Variant;
+import com.milaboratory.oncomigec.core.variant.VariantCaller;
+import com.milaboratory.oncomigec.pipeline.analysis.ProjectAnalysis;
+import com.milaboratory.oncomigec.pipeline.analysis.Sample;
+import com.milaboratory.oncomigec.pipeline.analysis.SampleAnalysis;
+import com.milaboratory.oncomigec.pipeline.input.Input;
+import com.milaboratory.oncomigec.pipeline.input.InputParser;
+import com.milaboratory.oncomigec.pipeline.input.ResourceIOProvider;
+import org.junit.Assert;
+import org.junit.Test;
+
+import java.util.HashSet;
+import java.util.Set;
+
 public class PipelineTest {
-    /*
+
     public static final InputParser INPUT_PARSER = new InputParser(new ResourceIOProvider());
 
     @Test
@@ -30,25 +45,29 @@ public class PipelineTest {
         ProjectAnalysis projectAnalysis = new ProjectAnalysis(input);
         projectAnalysis.run();
 
+        Set<String> expectedVariants = new HashSet<>();
+        expectedVariants.add("S30:T>C");
+        expectedVariants.add("S87:T>C");
+        expectedVariants.add("S88:T>C");
+
         for (Sample sample : projectAnalysis.getProject().getSamples()) {
-            HaplotypeAssembler haplotypeAssembler = projectAnalysis.getAnalysis(sample).getHaplotypeAssembler();
-            Assert.assertTrue(haplotypeAssembler.getFilteredHaplotypes().size() > 0);
-            //Assert.assertTrue(haplotypeAssembler.getFilteredHaplotypes().size() <= 3);
-            for (Haplotype haplotype : haplotypeAssembler.getFilteredHaplotypes()) {
-                Assert.assertEquals(
-                        projectAnalysis.getReferenceLibrary().getByName("SPIKE1"),
-                        haplotype.getReference());
+            System.out.println(sample.getFullName());
+
+            SampleAnalysis sampleAnalysis = projectAnalysis.getAnalysis(sample);
+            VariantCaller variantCaller = sampleAnalysis.getVariantCaller();
+
+            Set<String> observedVariants = new HashSet<>();
+            for (Variant variant : variantCaller.getVariants()) {
+                System.out.println(variant.getReference().getName() + "\t" + variant.toString());
+                observedVariants.add(variant.getMutation().toString());
             }
 
-            SampleAnalysis analysis = projectAnalysis.getAnalysis(sample);
-            MigSizeDistribution migSizeDistribution = analysis.getMigSizeDistribution();
-            Assert.assertEquals(migSizeDistribution.calculateMigsRetained(migSizeDistribution.getMigSizeThreshold()),
-                    analysis.getAssembler().getMigsTotal());
+            for (String v : expectedVariants) {
+                Assert.assertTrue("Real variant present", observedVariants.contains(v));
+            }
         }
-
-        projectAnalysis.serialize("./test_output/", false);
 
         TestUtil.serializationCheck(projectAnalysis);
     }
-    */
+
 }
