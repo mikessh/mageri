@@ -21,10 +21,10 @@ package com.milaboratory.oncomigec.core.output;
 import com.milaboratory.core.sequence.NucleotideSQPair;
 import com.milaboratory.core.sequence.alignment.LocalAlignment;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
+import com.milaboratory.oncomigec.core.genomic.GenomicInfo;
 import com.milaboratory.oncomigec.core.mapping.PAlignedConsensus;
 import com.milaboratory.oncomigec.core.mapping.SAlignedConsensus;
 import com.milaboratory.oncomigec.core.mapping.alignment.AlignmentResult;
-import com.milaboratory.oncomigec.core.genomic.GenomicInfo;
 import com.milaboratory.oncomigec.core.mutations.Indel;
 import com.milaboratory.oncomigec.core.mutations.Insertion;
 import com.milaboratory.oncomigec.core.mutations.Mutation;
@@ -120,7 +120,7 @@ public final class SamUtil {
 
             return new SamSegmentRecord(name,
                     (alignmentResult.isReverseComplement() ? RC_FLAG : BLANK_FLAG) |
-                            (alignmentResult.isGood() ? BAD_MAPPING_FLAG : BLANK_FLAG),
+                            (alignmentResult.isGood() ? BLANK_FLAG : BAD_MAPPING_FLAG),
                     chrom, pos,
                     (int) alignmentResult.getScore(), cigar,
                     sequence, quality

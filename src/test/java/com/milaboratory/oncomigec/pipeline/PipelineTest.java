@@ -77,7 +77,7 @@ public class PipelineTest {
                 Assert.assertTrue("Real variant present", observedVariants.contains(v));
             }
 
-            //samOutputTest(sampleAnalysis);
+            samOutputTest(sampleAnalysis);
             vcfOutputTest(sampleAnalysis);
         }
 
@@ -85,7 +85,7 @@ public class PipelineTest {
     }
 
     private void samOutputTest(SampleAnalysis sampleAnalysis) throws IOException {
-        File file = new File("target/test.sam");
+        File file = new File("target/test." + sampleAnalysis.getSample().getName() + ".sam");
 
         SamWriter samWriter = new SamWriter(sampleAnalysis.getSample(),
                 new FileOutputStream(file), sampleAnalysis.getConsensusAligner());
@@ -103,7 +103,7 @@ public class PipelineTest {
     }
 
     private void vcfOutputTest(SampleAnalysis sampleAnalysis) throws IOException {
-        File file = new File("target/test.vcf");
+        File file = new File("target/test." + sampleAnalysis.getSample().getName() + ".vcf");
 
         VcfWriter vcfWriter = new VcfWriter(sampleAnalysis.getSample(),
                 new FileOutputStream(file), sampleAnalysis.getVariantCaller());

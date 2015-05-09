@@ -60,10 +60,9 @@ public class SamRecord implements Record {
 
         for (int i = 0; i < samSegmentRecords.length; i++) {
             SamSegmentRecord currentRecord = samSegmentRecords[i];
-            currentRecord.setFlag(
-                    (multiSegment ? MULTIPLE_SEGMENTS_FLAG : BLANK_FLAG) |
-                            (allAligned ? ALL_ALIGNED_FLAG : BLANK_FLAG)
-            );
+            if (multiSegment) {
+                currentRecord.setFlag(MULTIPLE_SEGMENTS_FLAG | (allAligned ? ALL_ALIGNED_FLAG : BLANK_FLAG));
+            }
 
             if (i < samSegmentRecords.length - 1) {
                 SamSegmentRecord nextRecord = samSegmentRecords[i + 1];

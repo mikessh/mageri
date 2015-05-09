@@ -34,8 +34,8 @@ public class BasicGenomicInfoProvider implements GenomicInfoProvider {
             existing = contig;
         }
 
-        reference.setGenomicInfo(new GenomicInfo(existing, 1,
-                reference.getSequence().size()));
+        reference.setGenomicInfo(new GenomicInfo(existing, 0, // make 0-based to be consistent with BED format
+                reference.getSequence().size() - 1));
     }
 
     @Override
