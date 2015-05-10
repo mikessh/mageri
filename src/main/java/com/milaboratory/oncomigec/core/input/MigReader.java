@@ -21,7 +21,7 @@ import java.io.Serializable;
 import java.util.*;
 
 public abstract class MigReader<MigType extends Mig> implements Serializable, ReadSpecific {
-    private static final boolean ENABLE_BUFFERING = false;
+    //private static final boolean ENABLE_BUFFERING = true;
 
     protected final PreprocessorParameters preprocessorParameters;
     protected final RuntimeParameters runtimeParameters;
@@ -55,16 +55,17 @@ public abstract class MigReader<MigType extends Mig> implements Serializable, Re
             throws InterruptedException {
 
         // Set limit if required
-        if (runtimeParameters.getReadLimit() > -1)
+        if (runtimeParameters.getReadLimit() > -1) {
             input = new CountLimitingOutputPort<>(input, runtimeParameters.getReadLimit());
+        }
 
         // Buffering reads in separate thread
-        if (ENABLE_BUFFERING) {
-            final Merger<SequencingRead> bufferedInput = new Merger<>();
-            bufferedInput.merge(input);
-            bufferedInput.start();
-            input = bufferedInput;
-        }
+        //if (ENABLE_BUFFERING) {
+        final Merger<SequencingRead> bufferedInput = new Merger<>(2048);
+        bufferedInput.merge(input);
+        bufferedInput.start();
+        input = bufferedInput;
+        //}
 
         //To count input sequences
         final CountingOutputPort<SequencingRead> countingInput = new CountingOutputPort<>(input);
@@ -82,7 +83,7 @@ public abstract class MigReader<MigType extends Mig> implements Serializable, Re
                             if (prevCount != count) {
                                 Speaker.INSTANCE.sout("[Indexer] Building UMI index, " +
                                         count + " reads processed, " +
-                                        (int) (umiIndexer.getCheckoutProcessor().extractionRatio() * 100) +
+                                        ((int) (umiIndexer.getCheckoutProcessor().extractionRatio() * 10000) / 100.0) +
                                         "% extracted..", 2);
                                 prevCount = count;
                             }
@@ -129,7 +130,7 @@ public abstract class MigReader<MigType extends Mig> implements Serializable, Re
 
         Speaker.INSTANCE.sout("[Indexer] Finished building UMI index, " +
                 countingInput.getCount() + " reads processed, " +
-                (int) (umiIndexer.getCheckoutProcessor().extractionRatio() * 100) + "% extracted", 1);
+                ((int) (umiIndexer.getCheckoutProcessor().extractionRatio() * 10000) / 100.0) + "% extracted", 1);
     }
 
     protected boolean checkUmiMismatch(String sampleName, NucleotideSequence umi) {
@@ -142,8 +143,16 @@ public abstract class MigReader<MigType extends Mig> implements Serializable, Re
         return take(sample, sample.getName(), sizeThreshold);
     }
 
+    public MigType take(Sample sample) {
+        return take(sample, 1);
+    }
+
     public MigType take(String barcodeName, int sizeThreshold) {
         return take(Sample.create(barcodeName, isPairedEnd()), barcodeName, sizeThreshold);
+    }
+
+    public MigType take(String barcodeName) {
+        return take(barcodeName, 1);
     }
 
     @SuppressWarnings("unchecked")

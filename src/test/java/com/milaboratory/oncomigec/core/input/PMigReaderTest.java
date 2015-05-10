@@ -19,6 +19,7 @@ import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.core.sequencing.io.fastq.SFastqReader;
 import com.milaboratory.core.sequencing.read.SSequencingRead;
 import com.milaboratory.oncomigec.PercentRangeAssertion;
+import com.milaboratory.oncomigec.pipeline.RuntimeParameters;
 import com.milaboratory.oncomigec.preprocessing.DemultiplexParameters;
 import com.milaboratory.oncomigec.preprocessing.HeaderExtractor;
 import com.milaboratory.oncomigec.preprocessing.PAdapterExtractor;
@@ -52,6 +53,26 @@ public class PMigReaderTest {
 
             Assert.assertEquals("MIG size is correct", pMig.size(), rawCount);
         }
+    }
+
+    @Test
+    public void limitTest() throws Exception {
+        PAdapterExtractor processor = BarcodeListParser.generatePCheckoutProcessor(getBarcodesGood(),
+                DemultiplexParameters.DEFAULT);
+
+        int totalReads = 0, readThreshold = 1000;
+
+        PMigReader reader = new PMigReader(getR1(), getR2(), processor,
+                PreprocessorParameters.DEFAULT.withMinUmiMismatchRatio(-1).withUmiQualThreshold((byte) 0),
+                RuntimeParameters.DEFAULT.withReadLimit(readThreshold));
+
+        PMig pMig;
+        while ((pMig = reader.take(SAMPLE_NAME)) != null) {
+            totalReads += pMig.size();
+        }
+
+        Assert.assertEquals("Correct number of reads taken", readThreshold, processor.getTotal());
+        Assert.assertEquals("Correct number of reads in MIGs", processor.getSlaveCounter(SAMPLE_NAME), totalReads);
     }
 
     @Test

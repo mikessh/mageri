@@ -89,6 +89,10 @@ public abstract class CheckoutProcessor<ReadType extends SequencingRead, ResultT
         return 1.0 - notFound / total;
     }
 
+    public long getTotal() {
+        return totalCounter.get();
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder("Counter");
