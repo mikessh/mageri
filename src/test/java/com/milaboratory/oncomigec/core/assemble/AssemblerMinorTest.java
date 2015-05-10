@@ -76,7 +76,7 @@ public class AssemblerMinorTest {
 
         // Some noise
         seq1 = "AAA" + seq1;
-        qua1 = "###" + qua2;
+        qua1 = "###" + qua1;
         seq2 = seq2.substring(0, cons.length() - 3);
         qua2 = qua2.substring(0, cons.length() - 3);
         seq3 = "AA" + seq3;
