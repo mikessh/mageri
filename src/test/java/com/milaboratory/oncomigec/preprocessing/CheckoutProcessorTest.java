@@ -71,7 +71,7 @@ public class CheckoutProcessorTest {
     private static void assertResult(String resultType,
                                      NucleotideSQPair read, BarcodeSearcherResult result) {
         Assert.assertTrue(resultType + " result in bounds (from=" + result.getFrom() + ",read_sz=" + read.size() + ")",
-                result.getFrom() < read.size() - 1 && result.getFrom() >= 0);
+                result.getFrom() < read.size() && result.getFrom() >= 0);
         Assert.assertTrue(resultType + " result in bounds (to=" + result.getTo() + ",read_sz=" + read.size() + ")",
                 result.getTo() <= read.size() && result.getTo() > 0);
     }
@@ -134,8 +134,10 @@ public class CheckoutProcessorTest {
             nReads++;
         }
 
-        if (mask2 != null && seed != null)
-            PercentRangeAssertion.createLowerBound("CorrectUMIExtracted", "SlaveSlidingSearcher", 95).assertInRange(seedFound, nReads);
+        if (mask2 != null && seed != null) {
+            PercentRangeAssertion.createLowerBound("CorrectUMIExtracted", "SlaveSlidingSearcher", 95).
+                    assertInRange(seedFound, nReads);
+        }
 
         return processor;
     }
@@ -178,6 +180,14 @@ public class CheckoutProcessorTest {
                 "CTTAAAG");
 
         assertProcessor(processor);
+
+        runOnSampleData2Positional(
+                "NNNNNNNNNNNNNNtgatcttgacgttgtagatgag",
+                "aggactgcttaaagaagtcggg", null);
+
+        runOnSampleData2Positional(
+                "NNNNNNNNNNNNNNtgatcttgacgttgtagatgag",
+                "a", null);
     }
 
     private static CheckoutProcessor runOnSampleData1Adapter() throws IOException {

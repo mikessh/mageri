@@ -32,8 +32,12 @@ public class TestDataset {
         return readLines(getResourceAsStream("sample/R1.fastq.gz")).size() / 4;
     }
 
-    public static List<String> getBarcodes() throws IOException {
-        return readLines(getResourceAsStream("sample/barcodes.txt"));
+    public static List<String> getBarcodesMix() throws IOException {
+        return readLines(getResourceAsStream("sample/barcodes_mix.txt"));
+    }
+
+    public static List<String> getBarcodesNoSlave() throws IOException {
+        return readLines(getResourceAsStream("sample/barcodes_noslave.txt"));
     }
 
     public static List<String> getBarcodesGood() throws IOException {

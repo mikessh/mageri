@@ -38,6 +38,8 @@ public class BarcodeSearcherResult {
         this.truncations = truncations;
         this.from = from;
         this.to = to;
+
+        assert from <= to;
     }
 
     public BarcodeSearcherResult(NucleotideSQPair umiSQPair) {
@@ -45,9 +47,9 @@ public class BarcodeSearcherResult {
                 0, 0, 0, 0, 0);
     }
 
-    public BarcodeSearcherResult(NucleotideSQPair umiSQPair, int from) {
+    public BarcodeSearcherResult(NucleotideSQPair umiSQPair, int from, int matchLen) {
         this(umiSQPair.getSequence(), umiSQPair.getQuality().minValue(),
-                0, 0, 0, from, from + umiSQPair.size());
+                0, 0, 0, from, from + matchLen);
     }
 
     public NucleotideSequence getUmi() {

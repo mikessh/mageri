@@ -45,9 +45,9 @@ public class SlidingBarcodeSearcher implements BarcodeSearcher {
                 // Protective n's
                 // when added to the beginning of barcode, several offsets will be scanned
                 // could also be added to regulate read shifting
-                // E.g.  nnnNNNNtct
+                // e.g.  nnnNNNNtct
                 //
-                // tATGCtct
+                // "tATGCtct" case:
                 // nnnNNNNtct - bad
                 // nnNNNNtct  - bad
                 // nNNNNtct   - good
@@ -108,16 +108,17 @@ public class SlidingBarcodeSearcher implements BarcodeSearcher {
 
         if (umiSQPair == null) {
             return null;
-        } else
-            return new BarcodeSearcherResult(umiSQPair, goodOffset);
+        } else {
+            return new BarcodeSearcherResult(umiSQPair, goodOffset, mask.length() - goodOffset);
+        }
     }
 
     public SlidingBarcodeSearcher getForSlave() {
-        return new SlidingBarcodeSearcerR(this);
+        return new SlidingBarcodeSearcherR(this);
     }
 
-    private static class SlidingBarcodeSearcerR extends SlidingBarcodeSearcher {
-        public SlidingBarcodeSearcerR(SlidingBarcodeSearcher slidingBarcodeSearcher) {
+    private static class SlidingBarcodeSearcherR extends SlidingBarcodeSearcher {
+        public SlidingBarcodeSearcherR(SlidingBarcodeSearcher slidingBarcodeSearcher) {
             super(convertMask(slidingBarcodeSearcher._mask),
                     slidingBarcodeSearcher.maxMismatchRatio);
         }
@@ -145,8 +146,8 @@ public class SlidingBarcodeSearcher implements BarcodeSearcher {
                     result.getUmi().getReverseComplement(), // we have searched in RC
                     result.getUmiWorstQual(),
                     0, 0, 0, // unused
-                    read.size() - result.getTo() + 1, // transform the coordinates, respect inclusive/exclusive
-                    read.size() - result.getFrom() - 1);
+                    read.size() - result.getTo(), // transform the coordinates, respect inclusive/exclusive
+                    read.size() - result.getFrom());
         }
     }
 }
