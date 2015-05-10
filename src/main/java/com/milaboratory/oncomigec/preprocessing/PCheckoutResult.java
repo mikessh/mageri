@@ -41,15 +41,16 @@ public final class PCheckoutResult extends CheckoutResult {
     }
 
     public boolean slaveFound() {
-        return slaveResult != null;
+        return slaveResult != null && !slaveResult.equals(BarcodeSearcherResult.BLANK_RESULT);
     }
 
     @Override
     public NucleotideSequence getUmi() {
-        if (slaveResult != null)
+        if (slaveFound()) {
             return masterResult.getUmi().concatenate(slaveResult.getUmi());
-        else
+        } else {
             return masterResult.getUmi();
+        }
     }
 
     @Override

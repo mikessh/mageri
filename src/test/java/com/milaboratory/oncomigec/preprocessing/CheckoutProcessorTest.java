@@ -15,14 +15,17 @@
  */
 package com.milaboratory.oncomigec.preprocessing;
 
+import com.milaboratory.core.sequence.NucleotideSQPair;
 import com.milaboratory.core.sequence.quality.QualityFormat;
 import com.milaboratory.core.sequencing.io.fastq.PFastqReader;
 import com.milaboratory.core.sequencing.io.fastq.SFastqReader;
 import com.milaboratory.core.sequencing.read.PSequencingRead;
 import com.milaboratory.core.sequencing.read.SSequencingRead;
-import com.milaboratory.oncomigec.preprocessing.barcode.BarcodeListParser;
+import com.milaboratory.core.sequencing.read.SequencingRead;
 import com.milaboratory.oncomigec.PercentRangeAssertion;
 import com.milaboratory.oncomigec.TestUtil;
+import com.milaboratory.oncomigec.preprocessing.barcode.BarcodeListParser;
+import com.milaboratory.oncomigec.preprocessing.barcode.BarcodeSearcherResult;
 import com.milaboratory.util.CompressionType;
 import org.junit.Assert;
 import org.junit.Test;
@@ -33,6 +36,46 @@ import java.util.List;
 import static com.milaboratory.oncomigec.TestDataset.*;
 
 public class CheckoutProcessorTest {
+    private static void assertResult(SequencingRead read, CheckoutResult checkoutResult) {
+        if (checkoutResult != null) {
+            assertResult(checkoutResult);
+            BarcodeSearcherResult masterResult = checkoutResult.getMasterResult();
+
+            assertResult("Master",
+                    checkoutResult.getOrientation() ? read.getData(0) : read.getData(1),
+                    masterResult);
+
+            if (checkoutResult instanceof PCheckoutResult) {
+                PCheckoutResult pCheckoutResult = ((PCheckoutResult) checkoutResult);
+
+                if (pCheckoutResult.slaveFound()) {
+                    BarcodeSearcherResult slaveResult = pCheckoutResult.getSlaveResult();
+                    assertResult("Slave",
+                            checkoutResult.getOrientation() ? read.getData(1) : read.getData(0),
+                            slaveResult);
+                    Assert.assertEquals(checkoutResult.getUmi(), masterResult.getUmi().
+                            concatenate(slaveResult.getUmi()));
+                }
+            } else {
+                Assert.assertEquals(checkoutResult.getUmi(), masterResult.getUmi());
+            }
+        }
+    }
+
+    private static void assertResult(CheckoutResult checkoutResult) {
+        Assert.assertNotNull(checkoutResult.getSampleName());
+        Assert.assertNotNull(checkoutResult.getMasterResult());
+        Assert.assertNotNull(checkoutResult.getUmi());
+    }
+
+    private static void assertResult(String resultType,
+                                     NucleotideSQPair read, BarcodeSearcherResult result) {
+        Assert.assertTrue(resultType + " result in bounds (from=" + result.getFrom() + ",read_sz=" + read.size() + ")",
+                result.getFrom() < read.size() - 1 && result.getFrom() >= 0);
+        Assert.assertTrue(resultType + " result in bounds (to=" + result.getTo() + ",read_sz=" + read.size() + ")",
+                result.getTo() <= read.size() && result.getTo() > 0);
+    }
+
     private static void assertProcessor(CheckoutProcessor processor) {
         System.out.println(processor);
         double extractionRatio = processor.extractionRatio();
@@ -53,7 +96,7 @@ public class CheckoutProcessorTest {
 
         SSequencingRead read;
         while ((read = reader.take()) != null) {
-            processor.checkout(read);
+            assertResult(read, processor.checkout(read));
         }
 
         return processor;
@@ -79,6 +122,9 @@ public class CheckoutProcessorTest {
 
         while ((read = reader.take()) != null) {
             PCheckoutResult checkoutResult = processor.checkout(read);
+
+            assertResult(read, checkoutResult);
+
             if (checkoutResult != null &&
                     checkoutResult.slaveFound() &&
                     seed != null &&
@@ -135,7 +181,7 @@ public class CheckoutProcessorTest {
     }
 
     private static CheckoutProcessor runOnSampleData1Adapter() throws IOException {
-        SAdapterExtractor processor = BarcodeListParser.generateSCheckoutProcessor(getBarcodes(),
+        SAdapterExtractor processor = BarcodeListParser.generateSCheckoutProcessor(getBarcodesMix(),
                 DemultiplexParameters.DEFAULT);
 
         SFastqReader reader = new SFastqReader(getR1(),
@@ -150,7 +196,7 @@ public class CheckoutProcessorTest {
     }
 
     private static CheckoutProcessor runOnSampleData2Adapter() throws IOException {
-        return runOnSampleData2Adapter(getBarcodes());
+        return runOnSampleData2Adapter(getBarcodesMix());
     }
 
     private static CheckoutProcessor runOnSampleData2Adapter(List<String> barcodes) throws IOException {
@@ -163,7 +209,7 @@ public class CheckoutProcessorTest {
 
         PSequencingRead read;
         while ((read = reader.take()) != null) {
-            processor.checkout(read);
+            assertResult(read, processor.checkout(read));
         }
 
         return processor;
