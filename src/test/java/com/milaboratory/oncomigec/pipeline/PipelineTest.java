@@ -78,6 +78,7 @@ public class PipelineTest {
             }
 
             samOutputTest(sampleAnalysis);
+            
             vcfOutputTest(sampleAnalysis);
         }
 
@@ -85,6 +86,7 @@ public class PipelineTest {
     }
 
     private void samOutputTest(SampleAnalysis sampleAnalysis) throws IOException {
+        System.out.println("Testing SAM output");
         File file = new File("target/test." + sampleAnalysis.getSample().getName() + ".sam");
 
         SamWriter samWriter = new SamWriter(sampleAnalysis.getSample(),
@@ -103,6 +105,8 @@ public class PipelineTest {
     }
 
     private void vcfOutputTest(SampleAnalysis sampleAnalysis) throws IOException {
+        System.out.println("Testing VCF output");
+
         File file = new File("target/test." + sampleAnalysis.getSample().getName() + ".vcf");
 
         VcfWriter vcfWriter = new VcfWriter(sampleAnalysis.getSample(),

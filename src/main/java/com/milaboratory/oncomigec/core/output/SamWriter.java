@@ -56,7 +56,7 @@ public class SamWriter extends RecordWriter<SamRecord, ConsensusAligner> {
                 append("\tPL:").append("ILLUMINA");
 
         stringBuilder.append("\n@PG").
-                append("\tID:").append("oncomigec").
+                append("\tID:").append(Oncomigec.MY_NAME).
                 append("\tVN:").append(Oncomigec.MY_VERSION).
                 append("\tCL:").append(Oncomigec.MY_COMMAND);
 

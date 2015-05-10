@@ -41,7 +41,7 @@ public class VcfWriter extends RecordWriter<VcfRecord, VariantCaller> {
         stringBuilder.
                 append("##fileformat=VCFv4.0").append("\n").
                 append("##fileDate=").append(new Date().toString()).append("\n").
-                append("##source=oncomigec").append(Oncomigec.MY_VERSION).append("\n").
+                append("##source=").append(Oncomigec.MY_NAME).append(Oncomigec.MY_VERSION).append("\n").
                 append("##reference=").append(referenceLibrary.getPath()).append("\n");
         for (Contig contig : referenceLibrary.getGenomicInfoProvider().getContigs()) {
             stringBuilder.append("##contig=<ID=").append(contig.getID()).
