@@ -31,8 +31,7 @@ public class RuntimeParameters implements Serializable {
     private final long readLimit;
     private final byte verbosityLevel;
 
-    public static RuntimeParameters DEFAULT = new RuntimeParameters();
-
+    public static final RuntimeParameters DEFAULT = new RuntimeParameters();
 
     private RuntimeParameters() {
         this(Runtime.getRuntime().availableProcessors(), -1, (byte) 3);
@@ -54,6 +53,18 @@ public class RuntimeParameters implements Serializable {
 
     public byte getVerbosityLevel() {
         return verbosityLevel;
+    }
+
+    public RuntimeParameters withNumberOfThreads(int numberOfThreads) {
+        return new RuntimeParameters(numberOfThreads, readLimit, verbosityLevel);
+    }
+
+    public RuntimeParameters withReadLimit(long readLimit) {
+        return new RuntimeParameters(numberOfThreads, readLimit, verbosityLevel);
+    }
+
+    public RuntimeParameters withVerbosityLevel(byte verbosityLevel) {
+        return new RuntimeParameters(numberOfThreads, readLimit, verbosityLevel);
     }
 
     @Override

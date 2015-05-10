@@ -10,12 +10,12 @@ public class PreprocessorParameters implements ParameterSet {
     private final int defaultOverseq;
     private final double minUmiMismatchRatio;
 
-    public static PreprocessorParameters DEFAULT = new PreprocessorParameters(
+    public static final PreprocessorParameters DEFAULT = new PreprocessorParameters(
             QualityDefaults.PH33_BAD_QUAL, QualityDefaults.PH33_GOOD_QUAL,
             true,
             20.0, false, 5);
 
-    public static PreprocessorParameters IGNORE_QUAL = new PreprocessorParameters(
+    public static final PreprocessorParameters IGNORE_QUAL = new PreprocessorParameters(
             (byte) 0, (byte) 0,
             true,
             20.0, false, 5);
@@ -54,6 +54,36 @@ public class PreprocessorParameters implements ParameterSet {
 
     public int getDefaultOverseq() {
         return defaultOverseq;
+    }
+
+    public PreprocessorParameters withUmiQualThreshold(byte umiQualThreshold) {
+        return new PreprocessorParameters(umiQualThreshold, goodQualityThreshold,
+                trimAdapters, minUmiMismatchRatio, forceOverseq, defaultOverseq);
+    }
+
+    public PreprocessorParameters withGoodQualityThreshold(byte goodQualityThreshold) {
+        return new PreprocessorParameters(umiQualThreshold, goodQualityThreshold,
+                trimAdapters, minUmiMismatchRatio, forceOverseq, defaultOverseq);
+    }
+
+    public PreprocessorParameters withTrimAdapters(boolean trimAdapters) {
+        return new PreprocessorParameters(umiQualThreshold, goodQualityThreshold,
+                trimAdapters, minUmiMismatchRatio, forceOverseq, defaultOverseq);
+    }
+
+    public PreprocessorParameters withForceOverseq(boolean forceOverseq) {
+        return new PreprocessorParameters(umiQualThreshold, goodQualityThreshold,
+                trimAdapters, minUmiMismatchRatio, forceOverseq, defaultOverseq);
+    }
+
+    public PreprocessorParameters withDefaultOverseq(int defaultOverseq) {
+        return new PreprocessorParameters(umiQualThreshold, goodQualityThreshold,
+                trimAdapters, minUmiMismatchRatio, forceOverseq, defaultOverseq);
+    }
+
+    public PreprocessorParameters withMinUmiMismatchRatio(double minUmiMismatchRatio) {
+        return new PreprocessorParameters(umiQualThreshold, goodQualityThreshold,
+                trimAdapters, minUmiMismatchRatio, forceOverseq, defaultOverseq);
     }
 
     @Override
