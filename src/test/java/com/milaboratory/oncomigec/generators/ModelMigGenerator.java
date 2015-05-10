@@ -130,7 +130,7 @@ public class ModelMigGenerator {
         //
 
         int[] hotSpotMutations = generateAndFilterMutations(pcrHotSpotErrorGenerator,
-                reference, hotSpotPositions);
+                sequence1, hotSpotPositions);
 
         for (int code : hotSpotMutations) {
             hotSpotMutationCounters.put(code,
