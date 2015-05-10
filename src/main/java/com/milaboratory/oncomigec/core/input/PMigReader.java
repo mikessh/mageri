@@ -27,6 +27,7 @@ import com.milaboratory.oncomigec.pipeline.RuntimeParameters;
 import com.milaboratory.oncomigec.pipeline.analysis.Sample;
 import com.milaboratory.oncomigec.preprocessing.CheckoutProcessor;
 import com.milaboratory.oncomigec.preprocessing.PCheckoutResult;
+import com.milaboratory.oncomigec.preprocessing.barcode.BarcodeSearcherResult;
 import com.milaboratory.util.CompressionType;
 
 import java.io.IOException;
@@ -109,9 +110,15 @@ public final class PMigReader extends MigReader<PMig> {
                             // -M-|            |-S-
                             // -R1|---> -R2----|-->
 
-                            read1 = read1.trim5Prime(result.getMasterResult().getTo()); // getTo() is exclusive to
-                            if (result.slaveFound()) {
-                                read2 = read2.trim3Prime(result.getSlaveResult().getFrom());
+                            BarcodeSearcherResult masterResult = result.getMasterResult(),
+                                    slaveResult = result.getSlaveResult();
+
+                            if (masterResult.hasMatch()) {
+                                read1 = read1.trim5Prime(masterResult.getTo()); // getTo() is exclusive to
+                            }
+
+                            if (result.slaveFound() && slaveResult.hasMatch()) {
+                                read2 = read2.trim3Prime(slaveResult.getFrom());
                             }
                         }
 

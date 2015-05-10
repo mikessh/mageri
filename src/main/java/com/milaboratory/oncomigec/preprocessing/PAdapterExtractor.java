@@ -49,15 +49,17 @@ public final class PAdapterExtractor extends CheckoutProcessor<PSequencingRead, 
         this.slaveBarcodes = new BarcodeSearcher[slaveBarcodes.length];
         for (int i = 0; i < slaveBarcodes.length; i++) {
             BarcodeSearcher slaveBarcode = slaveBarcodes[i];
-            // could also contain sliding barcode searcher
-            // in case no capital letters exist in barcode
-            // we of course don't forget to wrap it into SlidingBarcodeSearcherR
-            if (slaveBarcode instanceof SlidingBarcodeSearcher) {
-                this.slaveBarcodes[i] = ((SlidingBarcodeSearcher) slaveBarcode).getForSlave();
-            } else if (slaveBarcode instanceof SeedAndExtendBarcodeSearcher) {
-                this.slaveBarcodes[i] = slaveBarcode;
-            } else {
-                throw new RuntimeException("Unsupported barcode searcher: " + slaveBarcode.getClass().getName());
+            if (slaveBarcode != null) {
+                // could also contain sliding barcode searcher
+                // in case no capital letters exist in barcode
+                // we of course don't forget to wrap it into SlidingBarcodeSearcherR
+                if (slaveBarcode instanceof SlidingBarcodeSearcher) {
+                    this.slaveBarcodes[i] = ((SlidingBarcodeSearcher) slaveBarcode).getForSlave();
+                } else if (slaveBarcode instanceof SeedAndExtendBarcodeSearcher) {
+                    this.slaveBarcodes[i] = slaveBarcode;
+                } else {
+                    throw new RuntimeException("Unsupported barcode searcher: " + slaveBarcode.getClass().getName());
+                }
             }
         }
         this.orientedReads = orientedReads;

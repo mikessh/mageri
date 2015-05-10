@@ -241,6 +241,17 @@ public class CheckoutProcessorTest {
         CheckoutProcessor processor = runOnSampleData2Adapter();
 
         assertProcessor(processor);
+
+        runOnSampleData2Adapter(getBarcodesNoSlave());
+    }
+
+    @Test
+    public void adapterPairedNoSlave() throws Exception {
+        System.out.println("Running performance test for vanilla Checkout processor (paired-end) without slave");
+
+        CheckoutProcessor processor = runOnSampleData2Adapter(getBarcodesNoSlave());
+
+        assertProcessor(processor);
     }
 
     @Test

@@ -80,6 +80,14 @@ public class BarcodeSearcherResult {
         return to;
     }
 
+    public int getMatchSize() {
+        return to - from;
+    }
+
+    public boolean hasMatch() {
+        return to > from;
+    }
+
     @Override
     public String toString() {
         return "BarcodeSearcherResult{" +
