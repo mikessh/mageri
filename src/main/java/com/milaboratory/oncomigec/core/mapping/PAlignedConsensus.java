@@ -70,7 +70,7 @@ public final class PAlignedConsensus extends AlignedConsensus {
     }
 
     public boolean isMapped2() {
-        return alignmentResult1 != null;
+        return alignmentResult2 != null;
     }
 
     public boolean isAligned1() {
