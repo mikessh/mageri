@@ -41,7 +41,7 @@ public final class PCheckoutResult extends CheckoutResult {
     }
 
     public boolean slaveFound() {
-        return slaveResult != null && !slaveResult.equals(BarcodeSearcherResult.BLANK_RESULT);
+        return slaveResult != null;
     }
 
     @Override

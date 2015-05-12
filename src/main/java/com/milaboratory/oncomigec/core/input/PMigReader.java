@@ -113,11 +113,11 @@ public final class PMigReader extends MigReader<PMig> {
                             BarcodeSearcherResult masterResult = result.getMasterResult(),
                                     slaveResult = result.getSlaveResult();
 
-                            if (masterResult.hasMatch()) {
+                            if (masterResult.hasAdapterMatch()) {
                                 read1 = read1.trim5Prime(masterResult.getTo()); // getTo() is exclusive to
                             }
 
-                            if (result.slaveFound() && slaveResult.hasMatch()) {
+                            if (result.slaveFound() && slaveResult.hasAdapterMatch()) {
                                 read2 = read2.trim3Prime(slaveResult.getFrom());
                             }
                         }

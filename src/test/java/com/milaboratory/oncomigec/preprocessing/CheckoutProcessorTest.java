@@ -41,6 +41,12 @@ public class CheckoutProcessorTest {
             assertResult(checkoutResult);
             BarcodeSearcherResult masterResult = checkoutResult.getMasterResult();
 
+            if (checkoutResult instanceof SimpleCheckoutResult) {
+                Assert.assertTrue("UMI is specified in simple checkout result", checkoutResult.getUmi().size() > 0);
+                Assert.assertTrue("No adapter match for simple checkout result", !checkoutResult.getMasterResult().hasAdapterMatch());
+                return;
+            }
+
             assertResult("Master",
                     checkoutResult.getOrientation() ? read.getData(0) : read.getData(1),
                     masterResult);
@@ -70,10 +76,15 @@ public class CheckoutProcessorTest {
 
     private static void assertResult(String resultType,
                                      NucleotideSQPair read, BarcodeSearcherResult result) {
-        Assert.assertTrue(resultType + " result in bounds (from=" + result.getFrom() + ",read_sz=" + read.size() + ")",
-                result.getFrom() < read.size() && result.getFrom() >= 0);
-        Assert.assertTrue(resultType + " result in bounds (to=" + result.getTo() + ",read_sz=" + read.size() + ")",
-                result.getTo() <= read.size() && result.getTo() > 0);
+        if (result.hasAdapterMatch()) {
+            Assert.assertTrue(resultType + " result in bounds (from=" + result.getFrom() + ",read_sz=" + read.size() + ")",
+                    result.getFrom() < read.size() && result.getFrom() >= 0);
+            Assert.assertTrue(resultType + " result in bounds (to=" + result.getTo() + ",read_sz=" + read.size() + ")",
+                    result.getTo() <= read.size() && result.getTo() > 0);
+        } else {
+            Assert.assertEquals("Blank result is used when no adapter match present and no UMI is specified",
+                    BarcodeSearcherResult.BLANK_RESULT, result);
+        }
     }
 
     private static void assertProcessor(CheckoutProcessor processor) {
@@ -152,7 +163,7 @@ public class CheckoutProcessorTest {
 
         SSequencingRead read;
         while ((read = reader.take()) != null) {
-            processor.checkout(read);
+            assertResult(read, processor.checkout(read));
         }
 
         double extractionRatio = processor.extractionRatio();
@@ -199,7 +210,7 @@ public class CheckoutProcessorTest {
 
         SSequencingRead read;
         while ((read = reader.take()) != null) {
-            processor.checkout(read);
+            assertResult(read, processor.checkout(read));
         }
 
         return processor;

@@ -63,23 +63,23 @@ public class PPositionalExtractor extends CheckoutProcessor<PSequencingRead, PCh
         BarcodeSearcherResult masterResult = masterBarcode.search(sequencingRead.getData(0)),
                 slaveResult;
 
-        if (masterResult == null)
+        if (masterResult == null) {
             return null;
+        }
 
-        if (slaveBarcode == null)
+        if (slaveBarcode == null) {
             return new PCheckoutResult(0, sampleName, true, true,
                     masterResult, BarcodeSearcherResult.BLANK_RESULT);
+        }
 
         slaveResult = slaveBarcode.search(sequencingRead.getData(1));
 
         if (slaveResult == null) {
             slaveNotFoundCounter.incrementAndGet();
-            return new PCheckoutResult(0, sampleName, true, true,
-                    masterResult, BarcodeSearcherResult.BLANK_RESULT);
-        } else {
-            return new PCheckoutResult(0, sampleName, true, true,
-                    masterResult, slaveResult);
         }
+
+        return new PCheckoutResult(0, sampleName, true, true,
+                masterResult, slaveResult);
     }
 
     public long getSlaveCounter(String sampleName) throws Exception {

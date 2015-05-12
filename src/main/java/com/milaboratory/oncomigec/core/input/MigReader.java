@@ -21,8 +21,6 @@ import java.io.Serializable;
 import java.util.*;
 
 public abstract class MigReader<MigType extends Mig> implements Serializable, ReadSpecific {
-    //private static final boolean ENABLE_BUFFERING = true;
-
     protected final PreprocessorParameters preprocessorParameters;
     protected final RuntimeParameters runtimeParameters;
     private transient final UmiIndexer umiIndexer;
@@ -59,15 +57,13 @@ public abstract class MigReader<MigType extends Mig> implements Serializable, Re
             input = new CountLimitingOutputPort<>(input, runtimeParameters.getReadLimit());
         }
 
-        // Buffering reads in separate thread
-        //if (ENABLE_BUFFERING) {
-        final Merger<SequencingRead> bufferedInput = new Merger<>(2048);
+        // Buffer the input - speed up and protect from parallelization problems
+        final Merger<SequencingRead> bufferedInput = new Merger<>(524288);
         bufferedInput.merge(input);
         bufferedInput.start();
         input = bufferedInput;
-        //}
 
-        //To count input sequences
+        // To count input sequences
         final CountingOutputPort<SequencingRead> countingInput = new CountingOutputPort<>(input);
 
         // Run checkout in parallel

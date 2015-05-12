@@ -34,6 +34,13 @@ public class SlidingBarcodeSearcher implements BarcodeSearcher {
     }
 
     public SlidingBarcodeSearcher(String mask, double maxMismatchRatio) {
+        if (mask.length() == 0) {
+            throw new IllegalArgumentException("Mask length should be > 0");
+        }
+        if (maxMismatchRatio < 0 || maxMismatchRatio > 1) {
+            throw new IllegalArgumentException("Max mismatch ratio should be in [0,1]");
+        }
+
         this.umiPositions = new boolean[mask.length()];
         int umiPositionsCount = 0, matchPositionsCount = 0, minOffset = 0;
         for (int i = 0; i < mask.length(); i++) {

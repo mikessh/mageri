@@ -84,7 +84,7 @@ public class BarcodeSearcherResult {
         return to - from;
     }
 
-    public boolean hasMatch() {
+    public boolean hasAdapterMatch() {
         return to > from;
     }
 

@@ -56,28 +56,34 @@ public class PMigReaderTest {
     }
 
     @Test
-    public void limitTest() throws Exception {
-        PAdapterExtractor processor = BarcodeListParser.generatePCheckoutProcessor(getBarcodesGood(),
+    public void checkoutTest() throws Exception {
+        limitTest(getBarcodesGood());
+        limitTest(getBarcodesNoSlave());
+        extractionTest(getBarcodesGood(), "Correct master&slave");
+        extractionTest(getBarcodesNoSlave(), "Correct master, no slave");
+    }
+
+    public void limitTest(List<String> barcodes) throws Exception {
+        PAdapterExtractor processor = BarcodeListParser.generatePCheckoutProcessor(barcodes,
                 DemultiplexParameters.DEFAULT);
 
-        int totalReads = 0, readThreshold = 1000;
+        int totalReads = 0, readLimit = 1000;
 
         PMigReader reader = new PMigReader(getR1(), getR2(), processor,
                 PreprocessorParameters.DEFAULT.withMinUmiMismatchRatio(-1).withUmiQualThreshold((byte) 0),
-                RuntimeParameters.DEFAULT.withReadLimit(readThreshold));
+                RuntimeParameters.DEFAULT.withReadLimit(readLimit));
 
         PMig pMig;
         while ((pMig = reader.take(SAMPLE_NAME)) != null) {
             totalReads += pMig.size();
         }
 
-        Assert.assertEquals("Correct number of reads taken", readThreshold, processor.getTotal());
+        Assert.assertEquals("Correct number of reads taken", readLimit, processor.getTotal());
         Assert.assertEquals("Correct number of reads in MIGs", processor.getSlaveCounter(SAMPLE_NAME), totalReads);
     }
 
-    @Test
-    public void checkoutTest() throws Exception {
-        PAdapterExtractor processor = BarcodeListParser.generatePCheckoutProcessor(getBarcodesGood(),
+    public void extractionTest(List<String> barcodes, String condition) throws Exception {
+        PAdapterExtractor processor = BarcodeListParser.generatePCheckoutProcessor(barcodes,
                 DemultiplexParameters.DEFAULT);
 
         PMigReader reader = new PMigReader(getR1(), getR2(), processor);
@@ -97,15 +103,15 @@ public class PMigReaderTest {
             // Use histogram to count number of reads with UMI in original data
             int rawCount = histogram.migSize(umi);
 
-            avgSizeDifference += 2.0 * (pMig.size() - rawCount) / (pMig.size() + rawCount);
+            avgSizeDifference += 2.0 * Math.abs(pMig.size() - rawCount) / (pMig.size() + rawCount);
         }
 
-        double readsWithDifferentUmisRatio = readsWithDifferentUmisCount / (double) totalReads;
         avgSizeDifference /= histogram.getMigsTotal();
 
-        Assert.assertTrue("Less than 0.1% reads have different UMIs assigned", readsWithDifferentUmisRatio < 0.001);
-        System.out.println("Average difference in MIG size is " + (int) (avgSizeDifference * 100) + "%");
-        Assert.assertTrue("Average MIG size difference if < 0.1%", Math.abs(avgSizeDifference) < 0.001);
+        PercentRangeAssertion.createUpperBound("Reads have different UMIs assigned", condition, 1).
+                assertInRange(readsWithDifferentUmisCount, totalReads);
+        PercentRangeAssertion.createUpperBound("Average MIG size difference", condition, 1).
+                assertInRange(avgSizeDifference * 100);
     }
 
     @Test
@@ -116,29 +122,6 @@ public class PMigReaderTest {
         orientationTest(getR2(), getR1(), getBarcodesGood());
     }
 
-    private static void addToMap(Map<NucleotideSequence, Integer> counters, List<NucleotideSequence> sequences) {
-        for (NucleotideSequence sequence : sequences) {
-            Integer counter = counters.get(sequence);
-            counter = counter == null ? 1 : (counter + 1);
-            counters.put(sequence, counter);
-        }
-    }
-
-    private static double intersect(Map<NucleotideSequence, Integer> countersA,
-                                    Map<NucleotideSequence, Integer> countersB,
-                                    int totalA, int totalB) {
-        double intersection = 0;
-        Set<NucleotideSequence> sequences = new HashSet<>(countersA.keySet());
-        sequences.addAll(countersB.keySet());
-        for (NucleotideSequence sequence : sequences) {
-            Integer counterA = countersA.get(sequence),
-                    counterB = countersB.get(sequence);
-            counterA = counterA == null ? 0 : counterA;
-            counterB = counterB == null ? 0 : counterB;
-            intersection += Math.sqrt(counterA * counterB / (double) totalA / (double) totalB);
-        }
-        return intersection;
-    }
 
     private void orientationTest(InputStream r1, InputStream r2,
                                  List<String> barcodes) throws Exception {
@@ -173,5 +156,29 @@ public class PMigReaderTest {
                 assertInRange(intersect(counters1, slaveFirstCounters1, readsCount, slaveFirstReadsCount));
         PercentRangeAssertion.createLowerBound("MasterFirstSlaveFirstIntersection", "Read2", 90).
                 assertInRange(intersect(counters2, slaveFirstCounters2, readsCount, slaveFirstReadsCount));
+    }
+    
+    private static void addToMap(Map<NucleotideSequence, Integer> counters, List<NucleotideSequence> sequences) {
+        for (NucleotideSequence sequence : sequences) {
+            Integer counter = counters.get(sequence);
+            counter = counter == null ? 1 : (counter + 1);
+            counters.put(sequence, counter);
+        }
+    }
+
+    private static double intersect(Map<NucleotideSequence, Integer> countersA,
+                                    Map<NucleotideSequence, Integer> countersB,
+                                    int totalA, int totalB) {
+        double intersection = 0;
+        Set<NucleotideSequence> sequences = new HashSet<>(countersA.keySet());
+        sequences.addAll(countersB.keySet());
+        for (NucleotideSequence sequence : sequences) {
+            Integer counterA = countersA.get(sequence),
+                    counterB = countersB.get(sequence);
+            counterA = counterA == null ? 0 : counterA;
+            counterB = counterB == null ? 0 : counterB;
+            intersection += Math.sqrt(counterA * counterB / (double) totalA / (double) totalB);
+        }
+        return intersection;
     }
 }
