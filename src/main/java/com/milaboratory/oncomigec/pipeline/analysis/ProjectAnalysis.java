@@ -18,7 +18,6 @@
 
 package com.milaboratory.oncomigec.pipeline.analysis;
 
-import com.milaboratory.oncomigec.core.PipelineBlock;
 import com.milaboratory.oncomigec.core.genomic.BasicGenomicInfoProvider;
 import com.milaboratory.oncomigec.core.genomic.BedGenomicInfoProvider;
 import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
@@ -50,6 +49,8 @@ public class ProjectAnalysis implements Serializable {
     protected final Input input;
     protected final Presets presets;
     protected final RuntimeParameters runtimeParameters;
+    protected String outputPath = null;
+    protected boolean writeBinary = false;
 
     private final PreprocessorFactory preprocessorFactory;
     private transient final PipelineAssemblerFactory pipelineAssemblerFactory;
@@ -118,57 +119,55 @@ public class ProjectAnalysis implements Serializable {
         }
 
         sout("Done.", 1);
+
+        write();
     }
 
-    public void write(String outputPath, boolean writeBinary) throws IOException {
-        sout("Writing output.", 1);
+    private void write() throws IOException {
+        if (outputPath != null) {
+            sout("Writing output.", 1);
 
-        String prefix = outputPath + "/" + project.getName();
+            for (SampleGroup sampleGroup : project.getSampleGroups()) {
+                for (Sample sample : sampleGroup.getSamples()) {
+                    SampleAnalysis sampleAnalysis = getAnalysis(sample);
 
-        for (SampleGroup sampleGroup : project.getSampleGroups()) {
-            for (Sample sample : sampleGroup.getSamples()) {
-                SampleAnalysis sampleAnalysis = getAnalysis(sample);
+                    String prefix = sampleAnalysis.getOutputPrefix();
 
-                String prefix2 = prefix + "." + sampleAnalysis.getSample().getFullName();
+                    // Write SAM file
+                    SamWriter samWriter = new SamWriter(sample,
+                            new FileOutputStream(prefix + ".sam"), sampleAnalysis.getConsensusAligner());
 
-                // Write plain-text and consensus FASTQ files
-                for (PipelineBlock pipelineBlock : sampleAnalysis.getBlocks()) {
-                    pipelineBlock.writePlainText(prefix2);
+                    for (AlignedConsensus alignedConsensus : sampleAnalysis.getAlignmentDataList()) {
+                        samWriter.write(alignedConsensus);
+                    }
+
+                    samWriter.close();
+
+                    // Write VCF file
+                    VariantCaller variantCaller = sampleAnalysis.getVariantCaller();
+                    VcfWriter vcfWriter = new VcfWriter(sample,
+                            new FileOutputStream(prefix + ".vcf"), variantCaller);
+
+                    for (Variant variant : variantCaller.getVariants()) {
+                        vcfWriter.write(variant);
+                    }
+
+                    vcfWriter.close();
                 }
-
-                // Write SAM file
-                SamWriter samWriter = new SamWriter(sample,
-                        new FileOutputStream(prefix2 + ".sam"), sampleAnalysis.getConsensusAligner());
-
-                for (AlignedConsensus alignedConsensus : sampleAnalysis.getAlignmentDataList()) {
-                    samWriter.write(alignedConsensus);
-                }
-
-                samWriter.close();
-
-                // Write VCF file
-                VariantCaller variantCaller = sampleAnalysis.getVariantCaller();
-                VcfWriter vcfWriter = new VcfWriter(sample,
-                        new FileOutputStream(prefix2 + ".vcf"), variantCaller);
-
-                for (Variant variant : variantCaller.getVariants()) {
-                    vcfWriter.write(variant);
-                }
-
-                vcfWriter.close();
             }
+
+            String outputPath = this.outputPath + project.getName();
+
+            preprocessorFactory.writePlainText(outputPath);
+            pipelineAssemblerFactory.writePlainText(outputPath);
+            pipelineConsensusAlignerFactory.writePlainText(outputPath);
+
+            if (writeBinary) {
+                SerializationUtils.writeObjectToFile(new File(outputPath + ".mi"), this);
+            }
+
+            sout("Done.", 1);
         }
-
-        preprocessorFactory.writePlainText(prefix);
-        pipelineAssemblerFactory.writePlainText(prefix);
-        pipelineConsensusAlignerFactory.writePlainText(prefix);
-
-        if (writeBinary) {
-            SerializationUtils.writeObjectToFile(new File(prefix + ".mi"), this);
-        }
-
-        sout("Done.", 1);
-
     }
 
     public ReferenceLibrary getReferenceLibrary() {
@@ -189,6 +188,17 @@ public class ProjectAnalysis implements Serializable {
 
     public SampleAnalysis getAnalysis(Sample sample) {
         return analysisBySample.get(sample);
+    }
+
+    public void setOutputPath(String outputPath) {
+        if (!outputPath.endsWith(File.separator)) {
+            outputPath += File.separator;
+        }
+        this.outputPath = outputPath;
+    }
+
+    public void setWriteBinary(boolean writeBinary) {
+        this.writeBinary = writeBinary;
     }
 
     public Preprocessor getPreprocessor(SampleGroup sampleGroup) {

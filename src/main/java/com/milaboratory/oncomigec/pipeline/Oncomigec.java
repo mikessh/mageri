@@ -30,6 +30,7 @@ public final class Oncomigec {
         Presets presets = null;
         Input input = null;
         String outputFolder = null;
+        boolean writeBinary = false, writeVariantDetails = false;
 
         try {
             // parse the command line arguments
@@ -107,6 +108,9 @@ public final class Oncomigec {
                 outputFolder = commandLine.getOptionValue(OPT_OUTPUT_SHORT);
             }
             FileUtils.forceMkdir(new File(outputFolder));
+
+            writeBinary = commandLine.hasOption(OPT_BINARY_OUTPUT);
+            writeVariantDetails = commandLine.hasOption(OPT_VARIANT_DETAILS_OUTPUT);
         } catch (ParseException e) {
             System.err.println("Bad arguments: " + e.getMessage());
             System.exit(-1);
@@ -124,20 +128,20 @@ public final class Oncomigec {
         // Prepare
         ProjectAnalysis projectAnalysis = new ProjectAnalysis(input, presets, runtimeParameters);
 
+        projectAnalysis.setOutputPath(outputFolder);
+        projectAnalysis.setWriteBinary(writeBinary);
+
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Run
         projectAnalysis.run();
-
-        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        // Write output
-        projectAnalysis.write(outputFolder, true);
     }
 
     private static final String OPT_HELP_SHORT = "h", OPT_HELP_LONG = "help", OPT_VERSION_SHORT = "v", OPT_VERSION_LONG = "version",
             OPT_VERBOSITY = "verbosity", OPT_THREADS = "threads", OPT_LIMIT = "limit",
             OPT_INSTRUMENT = "instrument", OPT_IMPORT_PRESET = "import-preset", OPT_EXPORT_PRESET = "export-preset",
             OPT_INPUT_LONG = "input", OPT_INPUT_SHORT = "I",
-            OPT_OUTPUT_LONG = "output-path", OPT_OUTPUT_SHORT = "O";
+            OPT_OUTPUT_LONG = "output-path", OPT_OUTPUT_SHORT = "O",
+            OPT_BINARY_OUTPUT = "write-binary", OPT_VARIANT_DETAILS_OUTPUT = "write-variant-details";
 
     private static final Options CLI = new Options()
             //
@@ -235,5 +239,19 @@ public final class Oncomigec {
                             .withDescription("Path to output. [default = \".\"]")
                             .withLongOpt(OPT_OUTPUT_LONG)
                             .create(OPT_OUTPUT_SHORT)
+            )
+                    //
+                    // Advanced
+            .addOption(
+                    OptionBuilder
+                            .withDescription("[advanced] Write an additional binary file with output.")
+                            .withLongOpt(OPT_BINARY_OUTPUT)
+                            .create()
+            )
+            .addOption(
+                    OptionBuilder
+                            .withDescription("[advanced] Write variant details used by MIGEC algorithm.")
+                            .withLongOpt(OPT_VARIANT_DETAILS_OUTPUT)
+                            .create()
             );
 }

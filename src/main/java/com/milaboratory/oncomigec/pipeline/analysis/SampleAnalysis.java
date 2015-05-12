@@ -23,7 +23,6 @@ import cc.redberry.pipe.blocks.Merger;
 import cc.redberry.pipe.blocks.ParallelProcessor;
 import cc.redberry.pipe.util.CountingOutputPort;
 import com.milaboratory.oncomigec.core.Mig;
-import com.milaboratory.oncomigec.core.PipelineBlock;
 import com.milaboratory.oncomigec.core.ReadSpecific;
 import com.milaboratory.oncomigec.core.assemble.Assembler;
 import com.milaboratory.oncomigec.core.assemble.Consensus;
@@ -36,12 +35,10 @@ import com.milaboratory.oncomigec.misc.ProcessorResultWrapper;
 import com.milaboratory.oncomigec.pipeline.Speaker;
 
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
 public class SampleAnalysis implements ReadSpecific, Serializable {
-    private static final boolean ENABLE_BUFFERING = true;
     protected final boolean paired;
 
     protected final ProjectAnalysis parent;
@@ -90,14 +87,14 @@ public class SampleAnalysis implements ReadSpecific, Serializable {
             return;
         }
 
+        String outputPrefix = getOutputPrefix();
+
         OutputPort<Mig> input = reader;
 
-        if (ENABLE_BUFFERING) {
-            final Merger<Mig> bufferedInput = new Merger<>(524288);
-            bufferedInput.merge(input);
-            bufferedInput.start();
-            input = bufferedInput;
-        }
+        final Merger<Mig> bufferedInput = new Merger<>(524288);
+        bufferedInput.merge(input);
+        bufferedInput.start();
+        input = bufferedInput;
 
         final CountingOutputPort<Mig> countingInput = new CountingOutputPort<>(input);
 
@@ -135,6 +132,16 @@ public class SampleAnalysis implements ReadSpecific, Serializable {
             }
         }
 
+        // Write plain-text and consensus FASTQ files
+        // Write consensus aligner output now, as it will be cleared upon creation of VariantCaller
+        if (outputPrefix != null) {
+            migSizeDistribution.writePlainText(outputPrefix);
+            assembler.writePlainText(outputPrefix);
+            consensusAligner.writePlainText(outputPrefix);
+        }
+
+        assembler.clear();
+
         sout("Finished, " + countingInput.getCount() + " MIGs processed in total.", 1);
 
         sout("Calling variants.", 1);
@@ -142,9 +149,23 @@ public class SampleAnalysis implements ReadSpecific, Serializable {
         this.variantCaller = new VariantCaller(consensusAligner,
                 parent.getPresets().getVariantCallerParameters());
 
+        if (outputPrefix != null) {
+            variantCaller.writePlainText(outputPrefix);
+        }
+
         sout("Finished", 1);
 
         ran = true;
+    }
+
+    protected String getOutputPrefix() {
+        String outputPath = parent.outputPath;
+
+        if (outputPath == null) {
+            return null;
+        } else {
+            return outputPath + sample.getFullName();
+        }
     }
 
     public MigOutputPort getReader() {
@@ -181,15 +202,6 @@ public class SampleAnalysis implements ReadSpecific, Serializable {
 
     public boolean wasRan() {
         return ran;
-    }
-
-    public List<PipelineBlock> getBlocks() {
-        return Arrays.asList(
-                migSizeDistribution,
-                assembler,
-                consensusAligner,
-                variantCaller
-        );
     }
 
     @Override
