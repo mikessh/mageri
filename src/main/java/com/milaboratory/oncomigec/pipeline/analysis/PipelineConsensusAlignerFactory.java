@@ -21,7 +21,10 @@ package com.milaboratory.oncomigec.pipeline.analysis;
 import com.milaboratory.oncomigec.core.PipelineBlock;
 import com.milaboratory.oncomigec.core.genomic.Reference;
 import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
-import com.milaboratory.oncomigec.core.mapping.*;
+import com.milaboratory.oncomigec.core.mapping.ConsensusAligner;
+import com.milaboratory.oncomigec.core.mapping.ConsensusAlignerParameters;
+import com.milaboratory.oncomigec.core.mapping.PConsensusAlignerFactory;
+import com.milaboratory.oncomigec.core.mapping.SConsensusAlignerFactory;
 import com.milaboratory.oncomigec.core.mapping.alignment.AlignerFactory;
 import org.apache.commons.lang3.StringUtils;
 
@@ -64,8 +67,8 @@ public class PipelineConsensusAlignerFactory extends PipelineBlock {
 
         return "sample.group\tsample\t" +
                 "migs.good.alignment\tmigs.aligned\t" +
-                "migs.chimeric\tmigs.skipped\tmigs.total" +
-                StringUtils.join(referenceNames, "\t");
+                "migs.chimeric\tmigs.skipped\tmigs.total";// +
+                //StringUtils.join(referenceNames, "\t");
     }
 
     @Override
@@ -81,10 +84,10 @@ public class PipelineConsensusAlignerFactory extends PipelineBlock {
                     append(aligner.getSkippedMigs()).append("\t").
                     append(aligner.getTotalMigs());
 
-            for (Reference reference : references) {
+            /*for (Reference reference : references) {
                 MutationsTable mutationsTable = aligner.getAlignerTable(reference);
                 stringBuilder.append("\t").append(mutationsTable.getMigCount());
-            }
+            }*/
 
             stringBuilder.append("\n");
         }
