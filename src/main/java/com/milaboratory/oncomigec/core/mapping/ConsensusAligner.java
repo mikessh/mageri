@@ -52,7 +52,7 @@ public abstract class ConsensusAligner<ConsensusType extends Consensus> extends 
     protected boolean cleared = false;
 
     protected ConsensusAligner(Aligner aligner, ConsensusAlignerParameters parameters) {
-        super("consensusAligner");
+        super("mapper");
         this.aligner = aligner;
         this.referenceLibrary = aligner.getReferenceLibrary();
         this.parameters = parameters;
