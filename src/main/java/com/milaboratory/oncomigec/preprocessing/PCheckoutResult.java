@@ -40,6 +40,9 @@ public final class PCheckoutResult extends CheckoutResult {
         return masterFirst;
     }
 
+    // Should be removed - null checkout result is returned when slave is not found
+    // If no slave search is performed, BarcodeSearcherResult.hasAdapterMatch() function can handle all checks
+    @Deprecated
     public boolean slaveFound() {
         return slaveResult != null;
     }

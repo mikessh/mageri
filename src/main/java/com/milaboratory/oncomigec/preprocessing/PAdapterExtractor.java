@@ -109,22 +109,26 @@ public final class PAdapterExtractor extends CheckoutProcessor<PSequencingRead, 
                 }
 
                 // Position slave to master strand
+                // Lazy calculation here
                 if (orientation) {
-                    if (read2o1 == null)
+                    if (read2o1 == null) {
                         read2o1 = read.getData(1).getRC();
-                } else if (read2o2 == null)
+                    }
+                } else if (read2o2 == null) {
                     read2o2 = read.getData(0).getRC();
+                }
 
                 // Get slave for correct orientation
                 NucleotideSQPair slaveRead = orientation ? read2o1 : read2o2;
 
-                if ((slaveResult = slaveBarcodes[i].search(slaveRead)) != null)
+                if ((slaveResult = slaveBarcodes[i].search(slaveRead)) != null) {
                     slaveCounters.incrementAndGet(i);
-                else
+                    return new PCheckoutResult(i, sampleNames[i], orientation, masterFirst[i],
+                            masterResult, slaveResult);
+                } else {
                     slaveNotFoundCounter.incrementAndGet();
-
-                return new PCheckoutResult(i, sampleNames[i], orientation, masterFirst[i],
-                        masterResult, slaveResult);
+                    return null;
+                }
             }
         }
 
