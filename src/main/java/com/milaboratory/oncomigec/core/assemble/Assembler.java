@@ -20,12 +20,13 @@ import com.milaboratory.core.sequence.quality.QualityFormat;
 import com.milaboratory.core.sequencing.io.fastq.PFastqWriter;
 import com.milaboratory.core.sequencing.io.fastq.SFastqWriter;
 import com.milaboratory.oncomigec.core.Mig;
-import com.milaboratory.oncomigec.core.ReadSpecific;
 import com.milaboratory.oncomigec.core.PipelineBlock;
+import com.milaboratory.oncomigec.core.ReadSpecific;
 import com.milaboratory.oncomigec.misc.FastqWriter;
 import com.milaboratory.oncomigec.misc.PFastqFastqWriterWrapper;
 import com.milaboratory.oncomigec.misc.ProcessorResultWrapper;
 import com.milaboratory.oncomigec.misc.SFastqFastqWriterWrapper;
+import com.milaboratory.oncomigec.pipeline.Speaker;
 import com.milaboratory.util.CompressionType;
 
 import java.io.IOException;
@@ -40,7 +41,7 @@ public abstract class Assembler<ConsensusType extends Consensus, MigType extends
     protected final AtomicLong readsTotal = new AtomicLong(), readsAssembled = new AtomicLong();
     protected final AtomicInteger migsTotal = new AtomicInteger(), migsAssembled = new AtomicInteger();
     protected final List<ConsensusType> consensusList = Collections.synchronizedList(new LinkedList<ConsensusType>());
-    protected boolean storeConsensuses = true;
+    protected boolean storeConsensuses = true, cleared = false;
 
     protected Assembler() {
         super("assemble");
@@ -50,10 +51,11 @@ public abstract class Assembler<ConsensusType extends Consensus, MigType extends
     @SuppressWarnings("unchecked")
     public ProcessorResultWrapper<ConsensusType> process(MigType mig) {
         ConsensusType consensus = assemble(mig);
-        if (consensus == null)
+        if (consensus == null) {
             return ProcessorResultWrapper.BLANK;
-        else
+        } else {
             return new ProcessorResultWrapper<>(consensus);
+        }
     }
 
     public abstract ConsensusType assemble(MigType mig);
@@ -82,8 +84,9 @@ public abstract class Assembler<ConsensusType extends Consensus, MigType extends
 
     public abstract long getReadsDroppedErrorR2();
 
-    public List<ConsensusType> getConsensusList() {
-        return Collections.unmodifiableList(consensusList);
+    public void clear() {
+        consensusList.clear();
+        cleared = true;
     }
 
     @Override
@@ -108,6 +111,12 @@ public abstract class Assembler<ConsensusType extends Consensus, MigType extends
     @Override
     public void writePlainText(String pathPrefix) throws IOException {
         super.writePlainText(pathPrefix);
+
+        if (cleared) {
+            Speaker.INSTANCE.sout("WARNING: Calling output for Assembler that was cleared", 1);
+            return;
+        }
+
         FastqWriter writer = isPairedEnd() ?
                 new PFastqFastqWriterWrapper(
                         new PFastqWriter(pathPrefix + ".assemble.R1.fastq.gz", pathPrefix + ".assemble.R2.fastq.gz",
@@ -119,6 +128,7 @@ public abstract class Assembler<ConsensusType extends Consensus, MigType extends
         for (Consensus consensus : consensusList) {
             writer.write(consensus.asRead());
         }
+
         writer.close();
     }
 }

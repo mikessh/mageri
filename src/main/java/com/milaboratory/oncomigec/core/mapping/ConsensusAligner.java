@@ -30,6 +30,7 @@ import com.milaboratory.oncomigec.core.mapping.alignment.AlignmentResult;
 import com.milaboratory.oncomigec.core.mutations.MutationArray;
 import com.milaboratory.oncomigec.core.mutations.MutationsExtractor;
 import com.milaboratory.oncomigec.misc.ProcessorResultWrapper;
+import com.milaboratory.oncomigec.pipeline.Speaker;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -48,6 +49,7 @@ public abstract class ConsensusAligner<ConsensusType extends Consensus> extends 
             skippedMigs = new AtomicInteger(),
             chimericMigs = new AtomicInteger(),
             totalMigs = new AtomicInteger();
+    protected boolean cleared = false;
 
     protected ConsensusAligner(Aligner aligner, ConsensusAlignerParameters parameters) {
         super("consensusAligner");
@@ -152,6 +154,7 @@ public abstract class ConsensusAligner<ConsensusType extends Consensus> extends 
 
     public void clear() {
         alignerTableByReference.clear();
+        cleared = true;
     }
 
     @Override
@@ -170,7 +173,13 @@ public abstract class ConsensusAligner<ConsensusType extends Consensus> extends 
 
     @Override
     public String getBody() {
+        if (cleared) {
+            Speaker.INSTANCE.sout("WARNING: Calling output for Aligner that was cleared", 1);
+            return "Was cleared..";
+        }
+
         StringBuilder stringBuilder = new StringBuilder();
+
         for (Reference reference : referenceLibrary.getReferences()) {
             MutationsTable mutationsTable = alignerTableByReference.get(reference);
 
