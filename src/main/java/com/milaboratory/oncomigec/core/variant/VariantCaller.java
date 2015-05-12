@@ -72,18 +72,19 @@ public class VariantCaller extends PipelineBlock {
 
                         assert majorCount > 0;
 
-                        int coverage = mutationsTable.getMigCoverage(pos);
+                        int coverage = mutationsTable.getMigCoverage(pos),
+                                minorCount = mutationsTable.getMinorMigCount(pos, base);
 
                         double score = 10 * errorModel.getLog10PValue(
                                 majorCount,
-                                mutationsTable.getMinorMigCount(pos, base),
+                                minorCount,
                                 coverage);
 
                         NucleotideSequenceBuilder nsb = new NucleotideSequenceBuilder(1);
                         nsb.setCode(0, mutationsTable.getAncestralBase(pos));
 
                         Variant variant = new Variant(reference,
-                                mutation, majorCount,
+                                mutation, majorCount, minorCount,
                                 mutationsTable.getMigCoverage(pos),
                                 majorCount / (double) coverage, score,
                                 nsb.create(), mutationsTable.hasReferenceBase(pos));
@@ -125,11 +126,17 @@ public class VariantCaller extends PipelineBlock {
 
     @Override
     public String getHeader() {
-        return null;
+        return Variant.getHeader();
     }
 
     @Override
     public String getBody() {
-        return null;
+        StringBuilder stringBuilder = new StringBuilder();
+
+        for (Variant variant : variants) {
+            stringBuilder.append(variant.toString()).append("\n");
+        }
+
+        return stringBuilder.toString();
     }
 }

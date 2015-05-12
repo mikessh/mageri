@@ -25,21 +25,22 @@ import com.milaboratory.oncomigec.core.variant.filter.FilterSummary;
 
 import java.io.Serializable;
 
-public class Variant  implements Serializable {
+public class Variant implements Serializable {
     private final Reference reference;
     private final Mutation mutation;
-    private final int count, depth;
+    private final int count, depth, minorCount;
     private final double alleleFrequency, qual;
     private final NucleotideSequence ancestralAllele;
     private final boolean hasReference;
     private FilterSummary filterSummary = FilterSummary.DUMMY;
 
     public Variant(Reference reference, Mutation mutation,
-                   int count, int depth, double alleleFrequency, double qual,
+                   int count, int minorCount, int depth, double alleleFrequency, double qual,
                    NucleotideSequence ancestralAllele, boolean hasReference) {
         this.reference = reference;
         this.mutation = mutation;
         this.count = count;
+        this.minorCount = minorCount;
         this.depth = depth;
         this.alleleFrequency = alleleFrequency;
         this.qual = qual;
@@ -61,6 +62,10 @@ public class Variant  implements Serializable {
 
     public int getCount() {
         return count;
+    }
+
+    public int getMinorCount() {
+        return minorCount;
     }
 
     public double getAlleleFrequency() {
@@ -87,8 +92,15 @@ public class Variant  implements Serializable {
         this.filterSummary = new FilterSummary(variantCaller, this);
     }
 
+    public static String getHeader() {
+        return "reference\tmutation\tcount.major\tcount.minor\tcoverage\tscore\thas.reference\tancestral.allele";
+    }
+
     @Override
     public String toString() {
-        return mutation.toString() + "\t" + getCount() + "\t" + getQual();
+        return reference.getName() + "\t" + mutation.toString() + "\t" +
+                count + "\t" + minorCount + "\t" + depth + "\t" +
+                qual + "\t" +
+                (hasReference ? "TRUE" : "FALSE") + "\t" + ancestralAllele.toString();
     }
 }
