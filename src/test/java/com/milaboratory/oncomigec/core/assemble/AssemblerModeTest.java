@@ -21,16 +21,19 @@ package com.milaboratory.oncomigec.core.assemble;
 import com.milaboratory.core.sequence.NucleotideSQPair;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.oncomigec.DoubleRangeAssertion;
+import com.milaboratory.oncomigec.FastTests;
 import com.milaboratory.oncomigec.core.input.SMig;
 import com.milaboratory.oncomigec.generators.MutationGenerator;
 import com.milaboratory.oncomigec.generators.MigWithMutations;
 import com.milaboratory.oncomigec.generators.RandomMigGenerator;
 import com.milaboratory.oncomigec.generators.RandomReferenceGenerator;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 @SuppressWarnings("unchecked")
 public class AssemblerModeTest {
     @Test
+    @Category(FastTests.class)
     public void assemblerDiagnosticsTest() throws Exception {
         String condition;
 

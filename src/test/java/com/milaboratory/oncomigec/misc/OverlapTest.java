@@ -20,11 +20,13 @@ import com.milaboratory.core.sequence.mutations.Mutations;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.core.sequence.quality.QualityFormat;
 import com.milaboratory.core.sequence.quality.SequenceQualityPhred;
+import com.milaboratory.oncomigec.FastTests;
 import com.milaboratory.oncomigec.PercentRangeAssertion;
 import com.milaboratory.oncomigec.generators.MutationGenerator;
 import com.milaboratory.oncomigec.misc.Overlapper;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.util.Arrays;
 
@@ -35,6 +37,7 @@ public class OverlapTest {
     private final int totalOverlapSize = 15, seqSize = 75, totalRuns = 10000;
 
     @Test
+    @Category(FastTests.class)
     public void positiveTest() {
         positiveTest(MutationGenerator.DEFAULT,
                 PercentRangeAssertion.createLowerBound("Correct overlap rate", "Overlap with indels", 70),
@@ -90,6 +93,7 @@ public class OverlapTest {
     }
 
     @Test
+    @Category(FastTests.class)
     public void readThroughTest() {
         Overlapper ro = new Overlapper();
 
@@ -131,6 +135,7 @@ public class OverlapTest {
     }
 
     @Test
+    @Category(FastTests.class)
     public void negativeTest() throws Exception {
         Overlapper ro = new Overlapper();
 

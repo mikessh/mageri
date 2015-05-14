@@ -1,11 +1,13 @@
 package com.milaboratory.oncomigec.pipeline;
 
+import com.milaboratory.oncomigec.FastTests;
 import com.milaboratory.oncomigec.misc.Basics;
 import com.milaboratory.oncomigec.TestUtil;
 import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -13,6 +15,7 @@ import java.io.IOException;
 
 public class PresetsTest {
     @Test
+    @Category(FastTests.class)
     public void serializationTest() throws IOException {
         Presets presets = Presets.DEFAULT;
         Element e = presets.toXml();
@@ -23,6 +26,7 @@ public class PresetsTest {
     }
 
     @Test
+    @Category(FastTests.class)
     public void ioTest() throws IOException, JDOMException {
         Presets presets = Presets.DEFAULT;
 

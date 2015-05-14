@@ -1,23 +1,21 @@
 package com.milaboratory.oncomigec.core.mapping.kmer;
 
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
-import com.milaboratory.oncomigec.DoubleRangeAssertion;
-import com.milaboratory.oncomigec.IntRangeAssertion;
-import com.milaboratory.oncomigec.PercentRangeAssertion;
+import com.milaboratory.oncomigec.*;
 import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
 import com.milaboratory.oncomigec.generators.MutationGenerator;
 import com.milaboratory.oncomigec.generators.RandomReferenceGenerator;
 import com.milaboratory.oncomigec.generators.ReferenceParentChildPair;
 import org.apache.commons.math.stat.descriptive.DescriptiveStatistics;
-import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.util.LinkedList;
 import java.util.List;
 
 public class KMerFinderTest {
-    @Ignore("Too heavy")
     @Test
+    @Category(PerformanceTests.class)
     public void stressTest() {
         int referenceLibrarySize = 233785, benchmarkSetSize = 100000, exonMedianSize = 150;
         long now, elapsed;
@@ -54,6 +52,7 @@ public class KMerFinderTest {
     }
 
     @Test
+    @Category(FastTests.class)
     public void hitTest() {
         String model, range1Name = "Correct hits percent", range2Name = "Mean MAPQ score";
 

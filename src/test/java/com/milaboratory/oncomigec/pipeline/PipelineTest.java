@@ -18,6 +18,7 @@
 
 package com.milaboratory.oncomigec.pipeline;
 
+import com.milaboratory.oncomigec.FastTests;
 import com.milaboratory.oncomigec.TestUtil;
 import com.milaboratory.oncomigec.core.mapping.AlignedConsensus;
 import com.milaboratory.oncomigec.core.output.SamWriter;
@@ -37,6 +38,7 @@ import htsjdk.variant.variantcontext.VariantContext;
 import htsjdk.variant.vcf.VCFFileReader;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -49,6 +51,7 @@ public class PipelineTest {
     public static final InputParser INPUT_PARSER = new InputParser(new ResourceIOProvider());
 
     @Test
+    @Category(FastTests.class)
     public void fullTest() throws Exception {
         Input input = INPUT_PARSER.parseJson("pipeline/tabular.pri.json");
 

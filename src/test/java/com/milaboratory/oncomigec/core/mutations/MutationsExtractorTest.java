@@ -7,9 +7,11 @@ import com.milaboratory.core.sequence.alignment.LocalAlignment;
 import com.milaboratory.core.sequence.mutations.Mutations;
 import com.milaboratory.core.sequence.nucleotide.NucleotideAlphabet;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
+import com.milaboratory.oncomigec.FastTests;
 import com.milaboratory.oncomigec.core.genomic.Reference;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -21,6 +23,7 @@ public class MutationsExtractorTest {
     }
 
     @Test
+    @Category(FastTests.class)
     public void exactTest() {
         String ref = "ATAGCAGAAATAAAAGAAAAGATTGGAACTAGTCAGATAGCAGAAATAAAAGAAAAGATTGGAACTAGTCAG";
 

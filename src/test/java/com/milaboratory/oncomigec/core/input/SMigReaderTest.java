@@ -17,17 +17,20 @@ package com.milaboratory.oncomigec.core.input;
 
 import com.milaboratory.core.sequencing.io.fastq.SFastqReader;
 import com.milaboratory.core.sequencing.read.SSequencingRead;
+import com.milaboratory.oncomigec.FastTests;
 import com.milaboratory.oncomigec.preprocessing.HeaderExtractor;
 import com.milaboratory.oncomigec.misc.QualityDefaults;
 import com.milaboratory.util.CompressionType;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import static com.milaboratory.oncomigec.TestDataset.SAMPLE_NAME;
 import static com.milaboratory.oncomigec.TestDataset.getR1;
 
 public class SMigReaderTest {
     @Test
+    @Category(FastTests.class)
     public void run() throws Exception {
         SMigReader reader = new SMigReader(getR1(), new HeaderExtractor(SAMPLE_NAME), PreprocessorParameters.IGNORE_QUAL);
 

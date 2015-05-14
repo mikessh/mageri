@@ -1,11 +1,13 @@
 package com.milaboratory.oncomigec.core.input;
 
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
+import com.milaboratory.oncomigec.FastTests;
 import com.milaboratory.oncomigec.TestUtil;
 import org.apache.commons.math.random.MersenneTwister;
 import org.apache.commons.math.random.RandomGenerator;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.io.IOException;
 
@@ -40,6 +42,7 @@ public class MigSizeDistributionTest {
     }
 
     @Test
+    @Category(FastTests.class)
     public void test() {
         System.out.println("Running performance test for UmiHistogram");
         MigSizeDistribution histogram = prepareHistogram();
@@ -60,6 +63,7 @@ public class MigSizeDistributionTest {
     }
 
     @Test
+    @Category(FastTests.class)
     public void serializationTest() throws IOException {
         System.out.println("Testing serialization test for UmiHistogram");
         MigSizeDistribution histogram = prepareHistogram();

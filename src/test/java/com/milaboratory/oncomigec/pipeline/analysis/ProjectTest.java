@@ -18,15 +18,18 @@
 
 package com.milaboratory.oncomigec.pipeline.analysis;
 
+import com.milaboratory.oncomigec.FastTests;
 import com.milaboratory.oncomigec.pipeline.input.ResourceIOProvider;
 import com.milaboratory.oncomigec.pipeline.input.InputParser;
 import com.milaboratory.oncomigec.TestUtil;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.io.IOException;
 
 public class ProjectTest {
     @Test
+    @Category(FastTests.class)
     public void test() throws IOException {
         test("pipeline/tabular.pos.json");
         test("pipeline/tabular.pre.json");

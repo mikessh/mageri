@@ -22,6 +22,7 @@ import com.milaboratory.core.sequencing.io.fastq.SFastqReader;
 import com.milaboratory.core.sequencing.read.PSequencingRead;
 import com.milaboratory.core.sequencing.read.SSequencingRead;
 import com.milaboratory.core.sequencing.read.SequencingRead;
+import com.milaboratory.oncomigec.FastTests;
 import com.milaboratory.oncomigec.PercentRangeAssertion;
 import com.milaboratory.oncomigec.TestUtil;
 import com.milaboratory.oncomigec.preprocessing.barcode.BarcodeListParser;
@@ -29,6 +30,7 @@ import com.milaboratory.oncomigec.preprocessing.barcode.BarcodeSearcherResult;
 import com.milaboratory.util.CompressionType;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.io.IOException;
 import java.util.List;
@@ -154,6 +156,7 @@ public class CheckoutProcessorTest {
     }
 
     @Test
+    @Category(FastTests.class)
     public void headerParserTest() throws Exception {
         System.out.println("Running performance test for Header parser");
         HeaderExtractor processor = new HeaderExtractor(SAMPLE_NAME);
@@ -173,6 +176,7 @@ public class CheckoutProcessorTest {
     }
 
     @Test
+    @Category(FastTests.class)
     public void positionalSingleEnd() throws Exception {
         System.out.println("Running performance test for positional Checkout processor (single)");
 
@@ -182,6 +186,7 @@ public class CheckoutProcessorTest {
     }
 
     @Test
+    @Category(FastTests.class)
     public void positionalPairedEnd() throws Exception {
         System.out.println("Running performance test for positional Checkout processor (paired-end)");
 
@@ -237,6 +242,7 @@ public class CheckoutProcessorTest {
     }
 
     @Test
+    @Category(FastTests.class)
     public void adapterSingleEnd() throws Exception {
         System.out.println("Running performance test for vanilla Checkout processor (single)");
 
@@ -246,6 +252,7 @@ public class CheckoutProcessorTest {
     }
 
     @Test
+    @Category(FastTests.class)
     public void adapterPairedEnd() throws Exception {
         System.out.println("Running performance test for vanilla Checkout processor (paired-end)");
 
@@ -257,6 +264,7 @@ public class CheckoutProcessorTest {
     }
 
     @Test
+    @Category(FastTests.class)
     public void adapterPairedNoSlave() throws Exception {
         System.out.println("Running performance test for vanilla Checkout processor (paired-end) without slave");
 
@@ -266,6 +274,7 @@ public class CheckoutProcessorTest {
     }
 
     @Test
+    @Category(FastTests.class)
     public void adapterBadSlave() throws Exception {
         System.out.println("Running performance test for vanilla Checkout processor (paired-end), bad slave barcode");
 
@@ -279,6 +288,7 @@ public class CheckoutProcessorTest {
     }
 
     @Test
+    @Category(FastTests.class)
     public void serializationTest() throws IOException {
         System.out.println("Running serialization test for Checkout processors");
 

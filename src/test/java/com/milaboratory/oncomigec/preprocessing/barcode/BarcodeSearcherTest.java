@@ -24,11 +24,13 @@ import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.core.sequence.quality.SequenceQualityPhred;
 import com.milaboratory.core.sequencing.io.fastq.SFastqReader;
 import com.milaboratory.core.sequencing.read.SSequencingRead;
+import com.milaboratory.oncomigec.FastTests;
 import com.milaboratory.oncomigec.TestDataset;
 import com.milaboratory.oncomigec.misc.QualityDefaults;
 import com.milaboratory.util.CompressionType;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -48,6 +50,7 @@ public class BarcodeSearcherTest {
                     0, 0, 51102L).multiply(20.0);
 
     @Test
+    @Category(FastTests.class)
     public void exactTest() {
         String left = "cagtggtcctc", seed = "ATTAC", right = "tactgcgggta",
                 signature = left + seed + right;
@@ -67,6 +70,7 @@ public class BarcodeSearcherTest {
     }
 
     @Test
+    @Category(FastTests.class)
     /**
      * Test with random errors present
      */
@@ -106,6 +110,7 @@ public class BarcodeSearcherTest {
     }
 
     @Test
+    @Category(FastTests.class)
     /**
      * Tests with random errors present and quality lowered for errors
      */
@@ -157,6 +162,7 @@ public class BarcodeSearcherTest {
     }
 
     @Test
+    @Category(FastTests.class)
     public void negativeTest() {
         String left = "cagtggtcctcaga", seed = "ATTAC", right = "tactgcgggtagggtgctact",
                 signature = left + seed + right;
@@ -180,6 +186,7 @@ public class BarcodeSearcherTest {
     }
 
     @Test
+    @Category(FastTests.class)
     public void resourcesTest() throws IOException {
         SFastqReader reader = new SFastqReader(TestDataset.getR1(),
                 CompressionType.None);

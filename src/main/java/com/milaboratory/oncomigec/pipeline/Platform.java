@@ -16,7 +16,7 @@
  * Last modified on 9.5.2015 by mikesh
  */
 
-package com.milaboratory.oncomigec.core.output;
+package com.milaboratory.oncomigec.pipeline;
 
 public enum Platform {
     ILLUMINA, ROCHE454, IONTORRENT

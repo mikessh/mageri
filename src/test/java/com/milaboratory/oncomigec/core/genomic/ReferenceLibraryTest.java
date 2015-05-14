@@ -18,15 +18,18 @@
 
 package com.milaboratory.oncomigec.core.genomic;
 
+import com.milaboratory.oncomigec.FastTests;
 import com.milaboratory.oncomigec.pipeline.input.ResourceIOProvider;
 import com.milaboratory.oncomigec.TestUtil;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.io.IOException;
 
 public class ReferenceLibraryTest {
     @Test
+    @Category(FastTests.class)
     public void test() throws IOException {
 
         ReferenceLibrary referenceLibrary = ReferenceLibrary.fromInput(

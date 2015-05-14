@@ -22,6 +22,7 @@ import com.milaboratory.core.sequence.NucleotideSQPair;
 import com.milaboratory.core.sequence.mutations.Mutations;
 import com.milaboratory.core.sequence.nucleotide.NucleotideAlphabet;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
+import com.milaboratory.oncomigec.FastTests;
 import com.milaboratory.oncomigec.PercentRangeAssertion;
 import com.milaboratory.oncomigec.core.input.SMig;
 import com.milaboratory.oncomigec.core.input.index.Read;
@@ -31,6 +32,7 @@ import com.milaboratory.oncomigec.generators.RandomMigGenerator;
 import com.milaboratory.oncomigec.generators.RandomReferenceGenerator;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -39,6 +41,7 @@ import java.util.Set;
 
 public class AssemblerMinorTest {
     @Test
+    @Category(FastTests.class)
     public void exactTest() {
         System.out.println("Exact consensus assembly test");
 
@@ -123,6 +126,7 @@ public class AssemblerMinorTest {
     }
 
     @Test
+    @Category(FastTests.class)
     public void minorTest() {
         minorTest(true,
                 PercentRangeAssertion.createLowerBound("Specificity", "No indel minor recovery", 95),

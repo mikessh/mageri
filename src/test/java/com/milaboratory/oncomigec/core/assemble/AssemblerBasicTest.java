@@ -17,6 +17,7 @@ package com.milaboratory.oncomigec.core.assemble;
 
 import com.milaboratory.core.sequence.NucleotideSQPair;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
+import com.milaboratory.oncomigec.FastTests;
 import com.milaboratory.oncomigec.PercentRangeAssertion;
 import com.milaboratory.oncomigec.core.Mig;
 import com.milaboratory.oncomigec.core.input.SMig;
@@ -29,6 +30,7 @@ import com.milaboratory.oncomigec.generators.RandomReferenceGenerator;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,6 +45,7 @@ public class AssemblerBasicTest {
     }
     
     @Test
+    @Category(FastTests.class)
     public void randomMutationsTest() {
         RandomMigGenerator migGenerator = new RandomMigGenerator();
 
@@ -177,6 +180,7 @@ public class AssemblerBasicTest {
                     "HHHJHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH");
 
     @Test
+    @Category(FastTests.class)
     public void fixedMutationCasesTest() {
         Assembler assembler = new SAssembler();
         List<Read> reads;

@@ -18,6 +18,7 @@
 
 package com.milaboratory.oncomigec.pipeline.input;
 
+import com.milaboratory.oncomigec.pipeline.Speaker;
 import com.milaboratory.oncomigec.preprocessing.barcode.BarcodeListParser;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -69,11 +70,11 @@ public class InputParser {
         InputStreamWrapper references = ioProvider.getWrappedStream(referencesFileName),
                 bedFile = null, contigFile = null;
 
-        if (rootObject.has("bed")) {
+        if (rootObject.has("bed") && rootObject.has("contigs")) {
             bedFile = ioProvider.getWrappedStream(rootObject.getString("bed"));
-        }
-        if (rootObject.has("contigs")) {
             contigFile = ioProvider.getWrappedStream(rootObject.getString("contigs"));
+        } else if (rootObject.has("bed")) {
+            Speaker.INSTANCE.sout("BED file is skipped, as it doesn't have contig length", 1);
         }
 
         return new Input(projectName, references, bedFile, contigFile, chunks);

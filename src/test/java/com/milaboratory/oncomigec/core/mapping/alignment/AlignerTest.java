@@ -18,17 +18,20 @@ package com.milaboratory.oncomigec.core.mapping.alignment;
 import com.milaboratory.core.sequence.alignment.LocalAlignment;
 import com.milaboratory.core.sequence.mutations.Mutations;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
+import com.milaboratory.oncomigec.FastTests;
 import com.milaboratory.oncomigec.PercentRangeAssertion;
 import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
 import com.milaboratory.oncomigec.generators.MutationGenerator;
 import com.milaboratory.oncomigec.generators.RandomReferenceGenerator;
 import com.milaboratory.oncomigec.generators.ReferenceParentChildPair;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 public class AlignerTest {
     private final int mapqThreshold = 20;
 
     @Test
+    @Category(FastTests.class)
     public void falsePositiveTest() {
         int nReferences = 1000, nRepetitions = 10000;
         RandomReferenceGenerator randomReferenceGenerator = new RandomReferenceGenerator();
@@ -66,6 +69,7 @@ public class AlignerTest {
     }
 
     @Test
+    @Category(FastTests.class)
     public void test() {
         RandomReferenceGenerator randomReferenceGenerator = new RandomReferenceGenerator(),
                 randomReferenceGenerator1 = new RandomReferenceGenerator();

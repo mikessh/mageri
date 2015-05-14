@@ -18,6 +18,7 @@
 
 package com.milaboratory.oncomigec.core.variant;
 
+import com.milaboratory.oncomigec.ComplexRandomTests;
 import com.milaboratory.oncomigec.DoubleRangeAssertion;
 import com.milaboratory.oncomigec.PercentRangeAssertion;
 import com.milaboratory.oncomigec.core.Mig;
@@ -38,9 +39,11 @@ import com.milaboratory.oncomigec.generators.ModelMigGeneratorFactory;
 import com.milaboratory.oncomigec.generators.MutationGenerator;
 import com.milaboratory.oncomigec.generators.RandomReferenceGenerator;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 public class VariantCallerTest {
     @Test
+    @Category(ComplexRandomTests.class)
     public void test() {
         System.out.println("Testing identification of somatic mutations and hot-spot errors " +
                 "for various hot spot models");

@@ -19,14 +19,17 @@
 package com.milaboratory.oncomigec.core.mutations;
 
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
+import com.milaboratory.oncomigec.FastTests;
 import com.milaboratory.oncomigec.core.genomic.Reference;
 import com.milaboratory.oncomigec.generators.MutationGenerator;
 import com.milaboratory.oncomigec.generators.RandomReferenceGenerator;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 public class MutationArrayTest {
     @Test
+    @Category(FastTests.class)
     public void test() {
         MutationGenerator mutationGenerator = MutationGenerator.DEFAULT.multiply(10);
         RandomReferenceGenerator randomReferenceGenerator = new RandomReferenceGenerator();

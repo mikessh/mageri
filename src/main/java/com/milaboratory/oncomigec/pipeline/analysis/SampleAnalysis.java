@@ -98,7 +98,7 @@ public class SampleAnalysis implements ReadSpecific, Serializable {
 
         final CountingOutputPort<Mig> countingInput = new CountingOutputPort<>(input);
 
-        new Thread(new Runnable() {
+        Thread reporter = new Thread(new Runnable() {
             long prevCount = -1;
 
             @Override
@@ -116,7 +116,10 @@ public class SampleAnalysis implements ReadSpecific, Serializable {
                     e.printStackTrace();
                 }
             }
-        }).start();
+        });
+
+        reporter.setDaemon(true);
+        reporter.start();
 
         // Assemble & align in parallel
         final OutputPort<ProcessorResultWrapper<Consensus>> assemblyResults =

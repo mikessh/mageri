@@ -18,6 +18,7 @@ package com.milaboratory.oncomigec.core.input;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.core.sequencing.io.fastq.SFastqReader;
 import com.milaboratory.core.sequencing.read.SSequencingRead;
+import com.milaboratory.oncomigec.FastTests;
 import com.milaboratory.oncomigec.PercentRangeAssertion;
 import com.milaboratory.oncomigec.pipeline.RuntimeParameters;
 import com.milaboratory.oncomigec.preprocessing.DemultiplexParameters;
@@ -27,6 +28,7 @@ import com.milaboratory.oncomigec.preprocessing.barcode.BarcodeListParser;
 import com.milaboratory.util.CompressionType;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 import java.io.InputStream;
 import java.util.*;
@@ -35,6 +37,7 @@ import static com.milaboratory.oncomigec.TestDataset.*;
 
 public class PMigReaderTest {
     @Test
+    @Category(FastTests.class)
     public void preprocessedTest() throws Exception {
         PMigReader reader = new PMigReader(getR1(), getR2(),
                 new HeaderExtractor(SAMPLE_NAME), PreprocessorParameters.IGNORE_QUAL);
@@ -56,6 +59,7 @@ public class PMigReaderTest {
     }
 
     @Test
+    @Category(FastTests.class)
     public void checkoutTest() throws Exception {
         limitTest(getBarcodesGood());
         limitTest(getBarcodesNoSlave());

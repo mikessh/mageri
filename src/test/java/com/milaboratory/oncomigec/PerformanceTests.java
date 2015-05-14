@@ -13,22 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Last modified on 16.3.2015 by mikesh
+ * Last modified on 14.5.2015 by mikesh
  */
 
-package com.milaboratory.oncomigec.pipeline;
+package com.milaboratory.oncomigec;
 
-import com.milaboratory.oncomigec.FastTests;
-import com.milaboratory.oncomigec.TestUtil;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
-
-public class RuntimeParametersTest {
-    @Test
-    @Category(FastTests.class)
-    public void test() {
-        RuntimeParameters runtimeParameters = RuntimeParameters.DEFAULT;
-
-        TestUtil.serializationCheck(runtimeParameters);
-    }
+public interface PerformanceTests extends SlowTests {
 }
