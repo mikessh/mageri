@@ -19,8 +19,8 @@
 package com.milaboratory.oncomigec.core.genomic;
 
 import com.milaboratory.oncomigec.FastTests;
-import com.milaboratory.oncomigec.pipeline.input.ResourceIOProvider;
 import com.milaboratory.oncomigec.TestUtil;
+import com.milaboratory.oncomigec.pipeline.input.ResourceIOProvider;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -30,11 +30,27 @@ import java.io.IOException;
 public class ReferenceLibraryTest {
     @Test
     @Category(FastTests.class)
-    public void test() throws IOException {
+    public void basicTest() throws IOException {
 
         ReferenceLibrary referenceLibrary = ReferenceLibrary.fromInput(
                 new ResourceIOProvider().getWrappedStream("pipeline/refs.fa"),
                 new BasicGenomicInfoProvider());
+
+        Assert.assertTrue(!referenceLibrary.getReferences().isEmpty());
+
+        TestUtil.serializationCheck(referenceLibrary);
+    }
+
+    @Test
+    @Category(FastTests.class)
+    public void genomicTest() throws IOException {
+
+        ReferenceLibrary referenceLibrary = ReferenceLibrary.fromInput(
+                new ResourceIOProvider().getWrappedStream("pipeline/refs.fa"),
+                new BedGenomicInfoProvider(
+                        new ResourceIOProvider().getWrappedStream("pipeline/refs.bed"),
+                        new ResourceIOProvider().getWrappedStream("pipeline/contigs.txt")
+                ));
 
         Assert.assertTrue(!referenceLibrary.getReferences().isEmpty());
 

@@ -24,15 +24,17 @@ public class Reference implements Serializable {
     private final String name;
     private final NucleotideSequence sequence;
     private final ReferenceLibrary parent;
-    private GenomicInfo genomicInfo;
+    private final GenomicInfo genomicInfo;
 
     public Reference(ReferenceLibrary parent,
                      int index, String name,
-                     NucleotideSequence sequence) {
+                     NucleotideSequence sequence,
+                     GenomicInfo genomicInfo) {
         this.parent = parent;
         this.index = index;
         this.name = name;
         this.sequence = sequence;
+        this.genomicInfo = genomicInfo;
     }
 
     public int getIndex() {
@@ -49,10 +51,6 @@ public class Reference implements Serializable {
 
     public GenomicInfo getGenomicInfo() {
         return genomicInfo;
-    }
-
-    public void setGenomicInfo(GenomicInfo genomicInfo) {
-        this.genomicInfo = genomicInfo;
     }
 
     public ReferenceLibrary getParent() {

@@ -23,11 +23,13 @@ import java.io.Serializable;
 public class GenomicInfo implements Serializable {
     private final Contig contig;
     private final int from, to;
+    private final boolean strand;
 
-    public GenomicInfo(Contig contig, int from, int to) {
+    public GenomicInfo(Contig contig, int from, int to, boolean strand) {
         this.contig = contig;
         this.from = from;
         this.to = to;
+        this.strand = strand;
     }
 
     public String getChrom() {
@@ -44,5 +46,9 @@ public class GenomicInfo implements Serializable {
 
     public int getTo() {
         return to;
+    }
+
+    protected boolean positiveStrand() {
+        return strand;
     }
 }

@@ -72,12 +72,25 @@ public class ReferenceLibrary implements Serializable {
     public synchronized void addReference(String name, NucleotideSequence sequence) {
         int index = references.size();
 
-        Reference reference = new Reference(this, index, name, sequence);
+        if (nameToId.containsKey(name)) {
+            throw new RuntimeException("Duplicate sequence names are not allowed. " + name);
+        }
 
-        if (nameToId.containsKey(reference.getName()))
-            throw new RuntimeException("Duplicate sequence names are not allowed. " + reference.getName());
+        GenomicInfo genomicInfo = genomicInfoProvider.get(name, sequence);
 
-        genomicInfoProvider.annotate(reference);
+        if (genomicInfo == null) {
+            System.out.println("[WARNING] No genomic info for " + name +
+                    ", skipping reference.");
+            return;
+        }
+
+        if (!genomicInfo.positiveStrand()) {
+            // Only work with + strand
+            sequence = sequence.getReverseComplement();
+        }
+
+        Reference reference = new Reference(this, index, name, sequence, genomicInfo);
+
         nameToId.put(name, index);
         references.add(reference);
     }

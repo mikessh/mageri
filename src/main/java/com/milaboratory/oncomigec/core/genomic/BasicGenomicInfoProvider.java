@@ -18,15 +18,17 @@
 
 package com.milaboratory.oncomigec.core.genomic;
 
+import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
+
 import java.util.*;
 
 public class BasicGenomicInfoProvider implements GenomicInfoProvider {
     private final Map<Contig, Contig> contigs = new HashMap<>();
 
     @Override
-    public void annotate(Reference reference) {
-        Contig contig = new Contig(reference.getName(),
-                "user", reference.getSequence().size());
+    public GenomicInfo get(String name, NucleotideSequence sequence) {
+        Contig contig = new Contig(name,
+                "user", sequence.size());
 
         Contig existing = contigs.get(contig);
         if (existing == null) {
@@ -34,8 +36,8 @@ public class BasicGenomicInfoProvider implements GenomicInfoProvider {
             existing = contig;
         }
 
-        reference.setGenomicInfo(new GenomicInfo(existing, 0, // make 0-based to be consistent with BED format
-                reference.getSequence().size() - 1));
+        return new GenomicInfo(existing, 0, // make 0-based to be consistent with BED format
+                sequence.size() - 1, true);
     }
 
     @Override

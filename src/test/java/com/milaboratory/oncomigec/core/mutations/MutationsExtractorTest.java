@@ -35,7 +35,7 @@ public class MutationsExtractorTest {
         String seq = "ATGGCAGAAGTAAAAGAAAAGATTGGAAAACTAGTCAGATAGTAGAAATAGAAAAGATTGGAACTAGTCGG";
         String qua = "HHHHHHHHH5HHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH5H";
 
-        Reference reference = new Reference(null, -1, "dummy", new NucleotideSequence(ref));
+        Reference reference = new Reference(null, -1, "dummy", new NucleotideSequence(ref), null);
         NucleotideSequence query = new NucleotideSequence(seq);
         NucleotideSQPair consensus = new NucleotideSQPair(seq, qua);
         LocalAlignment alignment = align(reference.getSequence(), query);

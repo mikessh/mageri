@@ -18,11 +18,13 @@
 
 package com.milaboratory.oncomigec.core.genomic;
 
+import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
+
 import java.io.Serializable;
 import java.util.List;
 
 public interface GenomicInfoProvider extends Serializable{
-    public void annotate(Reference reference);
+    public GenomicInfo get(String name, NucleotideSequence sequence);
 
     public List<Contig> getContigs();
 }

@@ -18,6 +18,7 @@
 
 package com.milaboratory.oncomigec.core.genomic;
 
+import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.oncomigec.pipeline.input.InputStreamWrapper;
 
 import java.io.BufferedReader;
@@ -25,10 +26,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.*;
+import java.util.regex.Pattern;
 
 public class BedGenomicInfoProvider implements GenomicInfoProvider {
-    private final List<GenomicInfo> records = new ArrayList<>();
-    private final List<Contig> contigs = new ArrayList<>();
+    private final static Pattern correctBedLine = Pattern.compile("^\\S+[\t ]+\\d+[\t ]+\\d+[\t ]+\\S+[\t ]+\\d+[\t ]+[+-]");
+    private final Map<String, GenomicInfo> records = new HashMap<>();
+    private final List<Contig> contigs;
 
     public BedGenomicInfoProvider(InputStreamWrapper bedRecords, InputStreamWrapper contigRecords) throws IOException {
         InputStream inputStream = contigRecords.getInputStream();
@@ -44,20 +47,27 @@ public class BedGenomicInfoProvider implements GenomicInfoProvider {
             contigByName.put(contig.getID(), contig);
         }
 
+        this.contigs = new ArrayList<>(contigByName.values());
+
         inputStream = bedRecords.getInputStream();
         reader = new BufferedReader(new InputStreamReader(inputStream));
 
         while ((line = reader.readLine()) != null) {
-            splitLine = line.split("\t");
-            GenomicInfo genomicInfo = new GenomicInfo(contigByName.get(splitLine[0]),
-                    Integer.parseInt(splitLine[1]), Integer.parseInt(splitLine[2]));
-            records.add(genomicInfo);
+            if (correctBedLine.matcher(line).find()) {
+                splitLine = line.split("[\t ]+");
+                GenomicInfo genomicInfo = new GenomicInfo(
+                        contigByName.get(splitLine[0]),
+                        Integer.parseInt(splitLine[1]),
+                        Integer.parseInt(splitLine[2]),
+                        splitLine[5].equals("+"));
+                records.put(splitLine[3], genomicInfo);
+            }
         }
     }
 
     @Override
-    public void annotate(Reference reference) {
-        reference.setGenomicInfo(records.get(reference.getIndex()));
+    public GenomicInfo get(String name, NucleotideSequence sequence) {
+        return records.get(name);
     }
 
     @Override
