@@ -139,7 +139,6 @@ public final class Oncomigec {
             FileUtils.forceMkdir(new File(outputFolder));
 
             writeBinary = commandLine.hasOption(OPT_BINARY_OUTPUT);
-            writeVariantDetails = commandLine.hasOption(OPT_VARIANT_DETAILS_OUTPUT);
         } catch (ParseException e) {
             System.err.println("Bad arguments: " + e.getMessage());
             System.exit(-1);
@@ -165,12 +164,29 @@ public final class Oncomigec {
         projectAnalysis.run();
     }
 
-    private static final String OPT_HELP_SHORT = "h", OPT_HELP_LONG = "help", OPT_VERSION_SHORT = "v", OPT_VERSION_LONG = "version",
+    // General options, batch analysis
+    private static final String
+            OPT_HELP_SHORT = "h", OPT_HELP_LONG = "help", OPT_VERSION_SHORT = "v", OPT_VERSION_LONG = "version",
             OPT_VERBOSITY = "verbosity", OPT_THREADS = "threads", OPT_LIMIT = "limit",
             OPT_INSTRUMENT = "instrument", OPT_IMPORT_PRESET = "import-preset", OPT_EXPORT_PRESET = "export-preset",
             OPT_INPUT_LONG = "input", OPT_INPUT_SHORT = "I",
             OPT_OUTPUT_LONG = "output-path", OPT_OUTPUT_SHORT = "O",
-            OPT_BINARY_OUTPUT = "write-binary", OPT_VARIANT_DETAILS_OUTPUT = "write-variant-details";
+            OPT_BINARY_OUTPUT = "write-binary";
+
+    // Manual analysis options
+    private static final String
+            OPT_MODE_MULTIPLEX_LONG = "multiplex", OPT_MODE_MULTIPLEX_SHORT = "M1",
+            OPT_MODE_PRIMER_LONG = "primer", OPT_MODE_PRIMER_SHORT = "M2",
+            OPT_MODE_POSITIONAL_LONG = "positional", OPT_MODE_POSITIONAL_SHORT = "M3",
+            OPT_MODE_HEADER_LONG = "header", OPT_MODE_HEADER_SHORT = "M4",
+            OPT_NAME_PROJECT = "project-name",
+            OPT_NAME_GROUP = "group-name",
+            OPT_NAME_SAMPLE = "sample-name",
+            OPT_META_REFS = "references",
+            OPT_META_BED = "bed",
+            OPT_META_CONTIGS = "contigs",
+            OPT_R1 = "R1", OPT_R2 = "R2";
+
 
     private static final Options CLI = new Options()
             //
@@ -275,12 +291,6 @@ public final class Oncomigec {
                     OptionBuilder
                             .withDescription("[advanced] Write an additional binary file with output.")
                             .withLongOpt(OPT_BINARY_OUTPUT)
-                            .create()
-            )
-            .addOption(
-                    OptionBuilder
-                            .withDescription("[advanced] Write variant details used by MIGEC algorithm.")
-                            .withLongOpt(OPT_VARIANT_DETAILS_OUTPUT)
                             .create()
             );
 }
