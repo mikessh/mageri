@@ -86,13 +86,20 @@ public final class MutationsExtractor {
         Set<Integer> minors = new HashSet<>();
 
         for (int code : this.minors) {
-            // Todo: not fully tested for Indel minors
-            if (rc) {
-                code = rc(code, consensus.size());
-            }
-
             // Get absolute position in consensus
             int pos = Mutations.getPosition(code);
+
+            if (pos >= consensus.size()) {
+                // can happen when an overlap between mate consensuses is read-through
+                // this will cause an exception when calling rc
+                continue;
+            }
+
+            // Todo: not fully tested for Indel minors
+            if (rc) {
+                code = rc(code, pos, consensus.size());
+                pos = Mutations.getPosition(code);
+            }
 
             // Compute position in consensus<->reference frame
 
@@ -119,8 +126,8 @@ public final class MutationsExtractor {
         return minors;
     }
 
-    static int rc(int code, int len) {
-        int pos = len - 1 - Mutations.getPosition(code);
+    static int rc(int code, int pos, int len) {
+        pos = len - 1 - pos;
         if (isSubstitution(code)) {
             return createSubstitution(pos,
                     getComplement((byte) getFrom(code)),
