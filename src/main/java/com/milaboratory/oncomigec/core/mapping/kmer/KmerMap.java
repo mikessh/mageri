@@ -1,30 +1,60 @@
-package com.milaboratory.oncomigec.core.mapping.kmer;
+/*
+ * Copyright (c) 2014-2015, Bolotin Dmitry, Chudakov Dmitry, Shugay Mikhail
+ * (here and after addressed as Inventors)
+ * All Rights Reserved
+ *
+ * Permission to use, copy, modify and distribute any part of this program for
+ * educational, research and non-profit purposes, by non-profit institutions
+ * only, without fee, and without a written agreement is hereby granted,
+ * provided that the above copyright notice, this paragraph and the following
+ * three paragraphs appear in all copies.
+ *
+ * Those desiring to incorporate this work into commercial products or use for
+ * commercial purposes should contact the Inventors using one of the following
+ * email addresses: chudakovdm@mail.ru, chudakovdm@gmail.com
+ *
+ * IN NO EVENT SHALL THE INVENTORS BE LIABLE TO ANY PARTY FOR DIRECT, INDIRECT,
+ * SPECIAL, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, INCLUDING LOST PROFITS,
+ * ARISING OUT OF THE USE OF THIS SOFTWARE, EVEN IF THE INVENTORS HAS BEEN
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * THE SOFTWARE PROVIDED HEREIN IS ON AN "AS IS" BASIS, AND THE INVENTORS HAS
+ * NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR
+ * MODIFICATIONS. THE INVENTORS MAKES NO REPRESENTATIONS AND EXTENDS NO
+ * WARRANTIES OF ANY KIND, EITHER IMPLIED OR EXPRESS, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY OR FITNESS FOR A
+ * PARTICULAR PURPOSE, OR THAT THE USE OF THE SOFTWARE WILL NOT INFRINGE ANY
+ * PATENT, TRADEMARK OR OTHER RIGHTS.
+ *
+ * ---
+ *
+ * Adapted from KAnalyze package, see
+ *
+ * Peter Audano and Fredrik Vannberg.
+ * KAnalyze: a fast versatile pipelined K-mer toolkit.
+ * Bioinformatics, Advance Access publication March 18, 2014
+ * doi:10.1093/bioinformatics/btu152
+ *
+ * KAnalyze is distributed under the following licence:
+ *
+ * Copyright (c) 2014 Peter A. Audano III
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published
+ * by the Free Software Foundation; either version 3 of the License or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Library General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program; see the file COPYING.LESSER.  If not, see
+ * <http://www.gnu.org/licenses/>* *
+ */
 
-//
-// Adapted from KAnalyze package, see
-//
-// Peter Audano and Fredrik Vannberg.
-// KAnalyze: a fast versatile pipelined K-mer toolkit.
-// Bioinformatics, Advance Access publication March 18, 2014
-// doi:10.1093/bioinformatics/btu152
-//
-// ---
-//
-// Copyright (c) 2014 Peter A. Audano III
-//
-// This program is free software; you can redistribute it and/or modify
-// it under the terms of the GNU Lesser General Public License as published
-// by the Free Software Foundation; either version 3 of the License or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful, but
-// WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU Library General Public License for more details.
-//
-// You should have received a copy of the GNU Lesser General Public License
-// along with this program; see the file COPYING.LESSER.  If not, see
-// <http://www.gnu.org/licenses/>
+package com.milaboratory.oncomigec.core.mapping.kmer;
 
 import com.milaboratory.util.IntArrayList;
 
