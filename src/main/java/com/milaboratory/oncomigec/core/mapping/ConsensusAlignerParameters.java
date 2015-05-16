@@ -36,7 +36,8 @@ import org.jdom.Element;
 public final class ConsensusAlignerParameters implements ParameterSet {
     private final byte consensusQualityThreshold;
 
-    public static ConsensusAlignerParameters DEFAULT = new ConsensusAlignerParameters(QualityDefaults.PH33_GOOD_QUAL),
+    public static ConsensusAlignerParameters
+            DEFAULT = new ConsensusAlignerParameters(QualityDefaults.PH33_GOOD_QUAL),
             NO_FILTER = new ConsensusAlignerParameters((byte) 0);
 
     public ConsensusAlignerParameters(byte consensusQualityThreshold) {
@@ -45,6 +46,10 @@ public final class ConsensusAlignerParameters implements ParameterSet {
 
     public byte getConsensusQualityThreshold() {
         return consensusQualityThreshold;
+    }
+
+    public ConsensusAlignerParameters withConsensusQualityThreshold(byte consensusQualityThreshold) {
+        return new ConsensusAlignerParameters(consensusQualityThreshold);
     }
 
     @Override

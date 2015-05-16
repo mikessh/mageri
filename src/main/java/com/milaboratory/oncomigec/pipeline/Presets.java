@@ -53,6 +53,9 @@ public class Presets implements ParameterSet {
     private final VariantCallerParameters variantCallerParameters;
     private final DemultiplexParameters demultiplexParameters;
 
+    private final Platform platform;
+    private final LibraryType libraryType;
+
     private static String DEDUCE_VERSION() {
         return Presets.class.getPackage().getImplementationVersion();
     }
@@ -60,23 +63,25 @@ public class Presets implements ParameterSet {
     private final static boolean TEST_VERSION;
     private final static String VERSION = (TEST_VERSION = (DEDUCE_VERSION() == null)) ? "TEST" : DEDUCE_VERSION();
 
-    private Presets() {
-        this(AssemblerParameters.DEFAULT);
-    }
-
-    public Presets(AssemblerParameters assemblerParameters) {
-        this(DemultiplexParameters.DEFAULT,
+    public Presets() {
+        this(Platform.ILLUMINA,
+                LibraryType.SS,
+                DemultiplexParameters.DEFAULT,
                 PreprocessorParameters.DEFAULT,
-                assemblerParameters,
+                AssemblerParameters.DEFAULT,
                 ConsensusAlignerParameters.DEFAULT,
                 VariantCallerParameters.DEFAULT);
     }
 
-    public Presets(DemultiplexParameters demultiplexParameters,
+    public Presets(Platform platform,
+                   LibraryType libraryType,
+                   DemultiplexParameters demultiplexParameters,
                    PreprocessorParameters preprocessorParameters,
                    AssemblerParameters assemblerParameters,
                    ConsensusAlignerParameters consensusAlignerParameters,
                    VariantCallerParameters variantCallerParameters) {
+        this.platform = platform;
+        this.libraryType = libraryType;
         this.preprocessorParameters = preprocessorParameters;
         this.assemblerParameters = assemblerParameters;
         this.consensusAlignerParameters = consensusAlignerParameters;
@@ -105,6 +110,14 @@ public class Presets implements ParameterSet {
         return variantCallerParameters;
     }
 
+    public Platform getPlatform() {
+        return platform;
+    }
+
+    public LibraryType getLibraryType() {
+        return libraryType;
+    }
+
     public static Presets loadFromFile(File xmlFile) throws JDOMException, IOException {
         return readFromStream(new FileInputStream(xmlFile));
     }
@@ -127,40 +140,92 @@ public class Presets implements ParameterSet {
         return fromXml(document.getRootElement());
     }
 
-    public static Presets create(String instrument, String libraryType) {
-        // todo: extend
-
+    public static Presets create(String platformStr, String libraryTypeStr) {
+        DemultiplexParameters demultiplexParameters = DemultiplexParameters.DEFAULT;
+        PreprocessorParameters preprocessorParameters = PreprocessorParameters.DEFAULT;
+        ConsensusAlignerParameters consensusAlignerParameters = ConsensusAlignerParameters.DEFAULT;
+        VariantCallerParameters variantCallerParameters;
         AssemblerParameters assemblerParameters;
-        switch (instrument.toUpperCase()) {
-            case "ILLUMINA":
+
+        LibraryType libraryType = LibraryType.valueOf(libraryTypeStr.toUpperCase());
+        Platform platform = Platform.valueOf(platformStr.toUpperCase());
+
+        switch (platform) {
+            case ILLUMINA:
                 assemblerParameters = AssemblerParameters.DEFAULT;
                 break;
-            case "454":
-            case "IONTORRENT":
+            case ROCHE454:
+            case IONTORRENT:
                 assemblerParameters = AssemblerParameters.TORRENT454;
                 break;
             default:
-                throw new IllegalArgumentException("Unknown instrument: " + instrument);
+                throw new IllegalArgumentException("Unknown platform: " + platformStr);
         }
 
-        switch (libraryType.toUpperCase()) {
-            case "MULTIPLEX":
+        switch (libraryType) {
+            case SS:
+                variantCallerParameters = VariantCallerParameters.DEFAULT.withOrder(1.0);
                 break;
-            case "TRAPPING":
-                break;
-            case "WALKING":
+            case DS:
+                variantCallerParameters = VariantCallerParameters.DEFAULT.withOrder(2.0);
                 break;
             default:
-                throw new IllegalArgumentException("Unknown library type preset: " + libraryType);
+                throw new IllegalArgumentException("Unknown library type: " + libraryTypeStr);
         }
 
-        return new Presets(assemblerParameters);
+        return new Presets(platform, libraryType,
+                demultiplexParameters, preprocessorParameters, assemblerParameters,
+                consensusAlignerParameters, variantCallerParameters);
+    }
+
+    public Presets withPreprocessorParameters(PreprocessorParameters preprocessorParameters) {
+        return new Presets(platform, libraryType,
+                demultiplexParameters, preprocessorParameters,
+                assemblerParameters, consensusAlignerParameters, variantCallerParameters);
+    }
+
+    public Presets withAssemblerParameters(AssemblerParameters assemblerParameters) {
+        return new Presets(platform, libraryType,
+                demultiplexParameters, preprocessorParameters,
+                assemblerParameters, consensusAlignerParameters, variantCallerParameters);
+    }
+
+    public Presets withConsensusAlignerParameters(ConsensusAlignerParameters consensusAlignerParameters) {
+        return new Presets(platform, libraryType,
+                demultiplexParameters, preprocessorParameters,
+                assemblerParameters, consensusAlignerParameters, variantCallerParameters);
+    }
+
+    public Presets withVariantCallerParameters(VariantCallerParameters variantCallerParameters) {
+        return new Presets(platform, libraryType,
+                demultiplexParameters, preprocessorParameters,
+                assemblerParameters, consensusAlignerParameters, variantCallerParameters);
+    }
+
+    public Presets withDemultiplexParameters(DemultiplexParameters demultiplexParameters) {
+        return new Presets(platform, libraryType,
+                demultiplexParameters, preprocessorParameters,
+                assemblerParameters, consensusAlignerParameters, variantCallerParameters);
+    }
+
+    public Presets withPlatform(Platform platform) {
+        return new Presets(platform, libraryType,
+                demultiplexParameters, preprocessorParameters,
+                assemblerParameters, consensusAlignerParameters, variantCallerParameters);
+    }
+
+    public Presets withLibraryType(LibraryType libraryType) {
+        return new Presets(platform, libraryType,
+                demultiplexParameters, preprocessorParameters,
+                assemblerParameters, consensusAlignerParameters, variantCallerParameters);
     }
 
     @Override
     public Element toXml() {
         Element e = new Element("OncomigecPresets");
         e.addContent(new Element("version").setText(VERSION));
+        e.addContent(new Element("platform").setText(platform.toString()));
+        e.addContent(new Element("libraryType").setText(libraryType.toString()));
         e.addContent(demultiplexParameters.toXml());
         e.addContent(preprocessorParameters.toXml());
         e.addContent(assemblerParameters.toXml());
@@ -171,13 +236,17 @@ public class Presets implements ParameterSet {
 
     public static Presets fromXml(Element e) {
         //Extracting format information
-        String format = e.getChildTextTrim("version");
+        String format = e.getChildTextTrim("version"),
+                platform = e.getChildTextTrim("platform"),
+                libraryType = e.getChildTextTrim("libraryType");
 
         //Checking for compatibility
         if (!TEST_VERSION && !format.equals(VERSION))
             throw new RuntimeException("Unsupported parameters format version.");
 
         return new Presets(
+                Platform.valueOf(platform),
+                LibraryType.valueOf(libraryType),
                 DemultiplexParameters.fromXml(e),
                 PreprocessorParameters.fromXml(e),
                 AssemblerParameters.fromXml(e),
@@ -195,9 +264,11 @@ public class Presets implements ParameterSet {
 
         if (!assemblerParameters.equals(presets.assemblerParameters)) return false;
         if (!consensusAlignerParameters.equals(presets.consensusAlignerParameters)) return false;
-        if (!variantCallerParameters.equals(presets.variantCallerParameters)) return false;
         if (!demultiplexParameters.equals(presets.demultiplexParameters)) return false;
+        if (libraryType != presets.libraryType) return false;
+        if (platform != presets.platform) return false;
         if (!preprocessorParameters.equals(presets.preprocessorParameters)) return false;
+        if (!variantCallerParameters.equals(presets.variantCallerParameters)) return false;
 
         return true;
     }
@@ -209,6 +280,8 @@ public class Presets implements ParameterSet {
         result = 31 * result + consensusAlignerParameters.hashCode();
         result = 31 * result + variantCallerParameters.hashCode();
         result = 31 * result + demultiplexParameters.hashCode();
+        result = 31 * result + platform.hashCode();
+        result = 31 * result + libraryType.hashCode();
         return result;
     }
 }

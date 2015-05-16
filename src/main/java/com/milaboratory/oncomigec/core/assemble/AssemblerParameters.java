@@ -106,6 +106,66 @@ public final class AssemblerParameters implements ParameterSet {
         return greedyExtend;
     }
 
+    public AssemblerParameters withQualityWeightedMode(boolean qualityWeightedMode) {
+        return new AssemblerParameters(offsetRange, anchorRegion, maxMMs, maxConsequentMMs,
+                qualityWeightedMode, maxDroppedReadsRatio,
+                cqsRescue, qualityTrimming, greedyExtend);
+    }
+
+    public AssemblerParameters withOffsetRange(int offsetRange) {
+        return new AssemblerParameters(offsetRange, anchorRegion, maxMMs, maxConsequentMMs,
+                qualityWeightedMode, maxDroppedReadsRatio,
+                cqsRescue, qualityTrimming, greedyExtend);
+    }
+
+    public AssemblerParameters withAnchorRegion(int anchorRegion) {
+        return new AssemblerParameters(offsetRange, anchorRegion, maxMMs, maxConsequentMMs,
+                qualityWeightedMode, maxDroppedReadsRatio,
+                cqsRescue, qualityTrimming, greedyExtend);
+    }
+
+    public AssemblerParameters withMaxMMs(int maxMMs) {
+        return new AssemblerParameters(offsetRange, anchorRegion, maxMMs, maxConsequentMMs,
+                qualityWeightedMode, maxDroppedReadsRatio,
+                cqsRescue, qualityTrimming, greedyExtend);
+    }
+
+    public AssemblerParameters withMaxConsequentMMs(int maxConsequentMMs) {
+        return new AssemblerParameters(offsetRange, anchorRegion, maxMMs, maxConsequentMMs,
+                qualityWeightedMode, maxDroppedReadsRatio,
+                cqsRescue, qualityTrimming, greedyExtend);
+    }
+
+    public AssemblerParameters withMinReadSize(int minReadSize) {
+        return new AssemblerParameters(offsetRange, anchorRegion, maxMMs, maxConsequentMMs,
+                qualityWeightedMode, maxDroppedReadsRatio,
+                cqsRescue, qualityTrimming, greedyExtend);
+    }
+
+    public AssemblerParameters withMaxDroppedReadsRatio(double maxDroppedReadsRatio) {
+        return new AssemblerParameters(offsetRange, anchorRegion, maxMMs, maxConsequentMMs,
+                qualityWeightedMode, maxDroppedReadsRatio,
+                cqsRescue, qualityTrimming, greedyExtend);
+    }
+
+    public AssemblerParameters withCqsRescue(boolean cqsRescue) {
+        return new AssemblerParameters(offsetRange, anchorRegion, maxMMs, maxConsequentMMs,
+                qualityWeightedMode, maxDroppedReadsRatio,
+                cqsRescue, qualityTrimming, greedyExtend);
+    }
+
+    public AssemblerParameters withQualityTrimming(boolean qualityTrimming) {
+        return new AssemblerParameters(offsetRange, anchorRegion, maxMMs, maxConsequentMMs,
+                qualityWeightedMode, maxDroppedReadsRatio,
+                cqsRescue, qualityTrimming, greedyExtend);
+    }
+
+    public AssemblerParameters withGreedyExtend(boolean greedyExtend) {
+        return new AssemblerParameters(offsetRange, anchorRegion, maxMMs, maxConsequentMMs,
+                qualityWeightedMode, maxDroppedReadsRatio,
+                cqsRescue, qualityTrimming, greedyExtend);
+    }
+
     @Override
     public Element toXml() {
         Element e = new Element("AssemblerParameters");

@@ -35,6 +35,7 @@ import com.milaboratory.oncomigec.core.variant.VariantCaller;
 import com.milaboratory.oncomigec.core.variant.filter.VariantFilter;
 import com.milaboratory.oncomigec.misc.RecordWriter;
 import com.milaboratory.oncomigec.pipeline.Oncomigec;
+import com.milaboratory.oncomigec.pipeline.Platform;
 import com.milaboratory.oncomigec.pipeline.analysis.Sample;
 
 import java.io.IOException;
@@ -42,8 +43,9 @@ import java.io.OutputStream;
 import java.util.Date;
 
 public class VcfWriter extends RecordWriter<VcfRecord, VariantCaller> {
-    public VcfWriter(Sample sample, OutputStream outputStream, VariantCaller variantCaller) throws IOException {
-        super(sample, outputStream, variantCaller.getReferenceLibrary(), variantCaller);
+    public VcfWriter(Sample sample, OutputStream outputStream, 
+                     VariantCaller variantCaller, Platform platform) throws IOException {
+        super(sample, outputStream, variantCaller.getReferenceLibrary(), variantCaller, platform);
     }
 
     @Override

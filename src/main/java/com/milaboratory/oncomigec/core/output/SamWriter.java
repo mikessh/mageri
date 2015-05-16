@@ -36,15 +36,16 @@ import com.milaboratory.oncomigec.core.mapping.PAlignedConsensus;
 import com.milaboratory.oncomigec.core.mapping.SAlignedConsensus;
 import com.milaboratory.oncomigec.misc.RecordWriter;
 import com.milaboratory.oncomigec.pipeline.Oncomigec;
+import com.milaboratory.oncomigec.pipeline.Platform;
 import com.milaboratory.oncomigec.pipeline.analysis.Sample;
 
 import java.io.IOException;
 import java.io.OutputStream;
 
 public class SamWriter extends RecordWriter<SamRecord, ConsensusAligner> {
-
-    public SamWriter(Sample sample, OutputStream outputStream, ConsensusAligner consensusAligner) throws IOException {
-        super(sample, outputStream, consensusAligner.getReferenceLibrary(), consensusAligner);
+    public SamWriter(Sample sample, OutputStream outputStream,
+                     ConsensusAligner consensusAligner, Platform platform) throws IOException {
+        super(sample, outputStream, consensusAligner.getReferenceLibrary(), consensusAligner, platform);
     }
 
     @Override
@@ -58,13 +59,12 @@ public class SamWriter extends RecordWriter<SamRecord, ConsensusAligner> {
                     append("\tAS:").append(contig.getAssembly());
         }
 
-        // TODO: instrument (platform)
         stringBuilder.append("\n@RG").
                 append("\tID:").append(sample.getId()).
                 append("\tSM:").append(groomString(sample.getName())).
                 append("\tPU:").append(groomString(sample.getGroupName())).
                 append("\tLB:").append(groomString(sample.getProjectName())).
-                append("\tPL:").append("ILLUMINA");
+                append("\tPL:").append(platform.toString());
 
         stringBuilder.append("\n@PG").
                 append("\tID:").append(Oncomigec.MY_NAME).

@@ -104,7 +104,8 @@ public class PipelineTest {
         File file = new File("target/test." + sampleAnalysis.getSample().getName() + ".sam");
 
         SamWriter samWriter = new SamWriter(sampleAnalysis.getSample(),
-                new FileOutputStream(file), sampleAnalysis.getConsensusAligner());
+                new FileOutputStream(file), sampleAnalysis.getConsensusAligner(),
+                Platform.ILLUMINA);
 
         for (AlignedConsensus alignedConsensus : sampleAnalysis.getAlignmentDataList()) {
             samWriter.write(alignedConsensus);
@@ -124,7 +125,8 @@ public class PipelineTest {
         File file = new File("target/test." + sampleAnalysis.getSample().getName() + ".vcf");
 
         VcfWriter vcfWriter = new VcfWriter(sampleAnalysis.getSample(),
-                new FileOutputStream(file), sampleAnalysis.getVariantCaller());
+                new FileOutputStream(file), sampleAnalysis.getVariantCaller(),
+                Platform.ILLUMINA);
 
         for (Variant variant : sampleAnalysis.getVariantCaller().getVariants()) {
             vcfWriter.write(variant);

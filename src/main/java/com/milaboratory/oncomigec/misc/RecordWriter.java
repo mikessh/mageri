@@ -31,6 +31,7 @@ package com.milaboratory.oncomigec.misc;
 
 import com.milaboratory.oncomigec.core.PipelineBlock;
 import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
+import com.milaboratory.oncomigec.pipeline.Platform;
 import com.milaboratory.oncomigec.pipeline.analysis.Sample;
 
 import java.io.IOException;
@@ -41,15 +42,18 @@ public abstract class RecordWriter<RecordType extends Record, BlockType extends 
     protected final ReferenceLibrary referenceLibrary;
     protected final Sample sample;
     protected final PrintWriter writer;
+    protected final Platform platform;
     protected final BlockType pipelineBlock;
 
     public RecordWriter(Sample sample, OutputStream outputStream,
                         ReferenceLibrary referenceLibrary,
-                        BlockType pipelineBlock) throws IOException {
+                        BlockType pipelineBlock,
+                        Platform platform) throws IOException {
         this.sample = sample;
         this.writer = new PrintWriter(outputStream);
         this.referenceLibrary = referenceLibrary;
         this.pipelineBlock = pipelineBlock;
+        this.platform = platform;
 
         writer.println(getHeader());
     }

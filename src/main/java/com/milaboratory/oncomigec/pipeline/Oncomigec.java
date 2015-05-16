@@ -134,11 +134,9 @@ public final class Oncomigec {
 
     public static Presets parsePresets(CommandLine commandLine) throws JDOMException, IOException {
         Presets presets;
-        String instrument = "illumina";
-        if (commandLine.hasOption(OPT_INSTRUMENT)) {
-            instrument = commandLine.getOptionValue(OPT_INSTRUMENT);
-        }
-        presets = Presets.create(instrument, "multiplex"); // todo: implement library type
+        String platform = commandLine.getOptionValue(OPT_PLATFORM, "illumina"),
+                libraryType = commandLine.getOptionValue(OPT_LIBRARY_TYPE, "ss");
+        presets = Presets.create(platform, libraryType);
 
         if (commandLine.hasOption(OPT_IMPORT_PRESET)) {
             presets = Presets.loadFromFile(
@@ -276,7 +274,8 @@ public final class Oncomigec {
     private static final String
             OPT_HELP_SHORT = "h", OPT_HELP_LONG = "help", OPT_VERSION_SHORT = "v", OPT_VERSION_LONG = "version",
             OPT_VERBOSITY = "verbosity", OPT_THREADS = "threads", OPT_LIMIT = "limit",
-            OPT_INSTRUMENT = "instrument", OPT_IMPORT_PRESET = "import-preset", OPT_EXPORT_PRESET = "export-preset",
+            OPT_PLATFORM = "platform", OPT_LIBRARY_TYPE = "library-type",
+            OPT_IMPORT_PRESET = "import-preset", OPT_EXPORT_PRESET = "export-preset",
             OPT_INPUT_LONG = "input", OPT_INPUT_SHORT = "I",
             OPT_OUTPUT_LONG = "output-path", OPT_OUTPUT_SHORT = "O",
             OPT_BINARY_OUTPUT = "write-binary";
@@ -348,12 +347,23 @@ public final class Oncomigec {
                     OptionBuilder
                             .withArgName("name")
                             .hasArg(true)
-                            .withDescription("Sequencer type: " +
+                            .withDescription("Sequencing platform: " +
                                     "Illumina, " +
                                     "IonTorrent " +
-                                    "or 454. " +
+                                    "or Roche454. " +
                                     "[default = Illumina]")
-                            .withLongOpt(OPT_INSTRUMENT)
+                            .withLongOpt(OPT_PLATFORM)
+                            .create()
+            )
+            .addOption(
+                    OptionBuilder
+                            .withArgName("name")
+                            .hasArg(true)
+                            .withDescription("Library type: " +
+                                    "SS (single-stranded start, RT-PCR or linear PCR) " +
+                                    "or DS (double stranded start)" +
+                                    "[default = SS]")
+                            .withLongOpt(OPT_LIBRARY_TYPE)
                             .create()
             )
             .addOption(

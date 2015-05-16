@@ -86,6 +86,36 @@ public final class VariantCallerParameters implements ParameterSet {
         return coverageThreshold;
     }
 
+    public VariantCallerParameters withOrder(double order) {
+        return new VariantCallerParameters(order, modelCycles, modelEfficiency,
+                qualityThreshold, singletonFrequencyThreshold, coverageThreshold);
+    }
+
+    public VariantCallerParameters withModelCycles(double modelCycles) {
+        return new VariantCallerParameters(order, modelCycles, modelEfficiency,
+                qualityThreshold, singletonFrequencyThreshold, coverageThreshold);
+    }
+
+    public VariantCallerParameters withModelEfficiency(double modelEfficiency) {
+        return new VariantCallerParameters(order, modelCycles, modelEfficiency,
+                qualityThreshold, singletonFrequencyThreshold, coverageThreshold);
+    }
+
+    public VariantCallerParameters withQualityThreshold(int qualityThreshold) {
+        return new VariantCallerParameters(order, modelCycles, modelEfficiency,
+                qualityThreshold, singletonFrequencyThreshold, coverageThreshold);
+    }
+
+    public VariantCallerParameters withSingletonFrequencyThreshold(int singletonFrequencyThreshold) {
+        return new VariantCallerParameters(order, modelCycles, modelEfficiency,
+                qualityThreshold, singletonFrequencyThreshold, coverageThreshold);
+    }
+
+    public VariantCallerParameters withCoverageThreshold(int coverageThreshold) {
+        return new VariantCallerParameters(order, modelCycles, modelEfficiency,
+                qualityThreshold, singletonFrequencyThreshold, coverageThreshold);
+    }
+
     @Override
     public Element toXml() {
         Element e = new Element("VariantCallerParameters");

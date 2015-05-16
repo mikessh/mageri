@@ -75,6 +75,36 @@ public class DemultiplexParameters implements ParameterSet {
         return lowQualityThreshold;
     }
 
+    public DemultiplexParameters withOrientedReads(boolean orientedReads) {
+        return new DemultiplexParameters(orientedReads,
+                maxTruncations, maxGoodQualMMRatio, maxLowQualityMMRatio,
+                lowQualityThreshold);
+    }
+
+    public DemultiplexParameters withMaxTruncations(int maxTruncations) {
+        return new DemultiplexParameters(orientedReads,
+                maxTruncations, maxGoodQualMMRatio, maxLowQualityMMRatio,
+                lowQualityThreshold);
+    }
+
+    public DemultiplexParameters withMaxGoodQualMMRatio(double maxGoodQualMMRatio) {
+        return new DemultiplexParameters(orientedReads,
+                maxTruncations, maxGoodQualMMRatio, maxLowQualityMMRatio,
+                lowQualityThreshold);
+    }
+
+    public DemultiplexParameters withMaxLowQualityMMRatio(double maxLowQualityMMRatio) {
+        return new DemultiplexParameters(orientedReads,
+                maxTruncations, maxGoodQualMMRatio, maxLowQualityMMRatio,
+                lowQualityThreshold);
+    }
+
+    public DemultiplexParameters withLowQualityThreshold(byte lowQualityThreshold) {
+        return new DemultiplexParameters(orientedReads,
+                maxTruncations, maxGoodQualMMRatio, maxLowQualityMMRatio,
+                lowQualityThreshold);
+    }
+
     @Override
     public Element toXml() {
         Element e = new Element("DemultiplexParameters");

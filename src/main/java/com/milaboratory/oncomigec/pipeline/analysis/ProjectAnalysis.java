@@ -146,7 +146,8 @@ public class ProjectAnalysis implements Serializable {
 
                     // Write SAM file
                     SamWriter samWriter = new SamWriter(sample,
-                            new FileOutputStream(prefix + ".sam"), sampleAnalysis.getConsensusAligner());
+                            new FileOutputStream(prefix + ".sam"), sampleAnalysis.getConsensusAligner(),
+                            presets.getPlatform());
 
                     for (AlignedConsensus alignedConsensus : sampleAnalysis.getAlignmentDataList()) {
                         samWriter.write(alignedConsensus);
@@ -157,7 +158,8 @@ public class ProjectAnalysis implements Serializable {
                     // Write VCF file
                     VariantCaller variantCaller = sampleAnalysis.getVariantCaller();
                     VcfWriter vcfWriter = new VcfWriter(sample,
-                            new FileOutputStream(prefix + ".vcf"), variantCaller);
+                            new FileOutputStream(prefix + ".vcf"), variantCaller,
+                            presets.getPlatform());
 
                     for (Variant variant : variantCaller.getVariants()) {
                         vcfWriter.write(variant);
