@@ -49,7 +49,7 @@ public class ProjectTest {
     }
 
     private void test(String json) throws IOException {
-        InputParser inputParser = new InputParser(new ResourceIOProvider());
+        InputParser inputParser = new InputParser(ResourceIOProvider.INSTANCE);
 
         Project project = Project.fromInput(inputParser.parseJson(json));
 

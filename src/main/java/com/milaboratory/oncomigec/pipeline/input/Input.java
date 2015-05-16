@@ -41,7 +41,7 @@ import java.util.Map;
 public class Input implements Serializable {
     protected final String projectName;
     protected final InputStreamWrapper references, bedFile, contigFile;
-    protected final Map<String, InputChunk> inputChunksByIndex;
+    protected final Map<String, InputChunk> inputChunksByIndex = new HashMap<>();
 
     public Input(String projectName,
                  InputStreamWrapper references, InputStreamWrapper bedFile, InputStreamWrapper contigFile,
@@ -50,7 +50,18 @@ public class Input implements Serializable {
         this.references = references;
         this.bedFile = bedFile;
         this.contigFile = contigFile;
-        this.inputChunksByIndex = new HashMap<>();
+        for (InputChunk inputChunk : inputChunks) {
+            inputChunksByIndex.put(inputChunk.getName(), inputChunk);
+        }
+    }
+
+    public Input(String projectName,
+                 InputStreamWrapper references, InputStreamWrapper bedFile, InputStreamWrapper contigFile,
+                 InputChunk... inputChunks) {
+        this.projectName = projectName;
+        this.references = references;
+        this.bedFile = bedFile;
+        this.contigFile = contigFile;
         for (InputChunk inputChunk : inputChunks) {
             inputChunksByIndex.put(inputChunk.getName(), inputChunk);
         }

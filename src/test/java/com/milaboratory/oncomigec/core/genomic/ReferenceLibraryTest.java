@@ -44,7 +44,7 @@ public class ReferenceLibraryTest {
     public void basicTest() throws IOException {
 
         ReferenceLibrary referenceLibrary = ReferenceLibrary.fromInput(
-                new ResourceIOProvider().getWrappedStream("pipeline/refs.fa"),
+                ResourceIOProvider.INSTANCE.getWrappedStream("pipeline/refs.fa"),
                 new BasicGenomicInfoProvider());
 
         Assert.assertTrue(!referenceLibrary.getReferences().isEmpty());
@@ -57,10 +57,10 @@ public class ReferenceLibraryTest {
     public void genomicTest() throws IOException {
 
         ReferenceLibrary referenceLibrary = ReferenceLibrary.fromInput(
-                new ResourceIOProvider().getWrappedStream("pipeline/refs.fa"),
+                ResourceIOProvider.INSTANCE.getWrappedStream("pipeline/refs.fa"),
                 new BedGenomicInfoProvider(
-                        new ResourceIOProvider().getWrappedStream("pipeline/refs.bed"),
-                        new ResourceIOProvider().getWrappedStream("pipeline/contigs.txt")
+                        ResourceIOProvider.INSTANCE.getWrappedStream("pipeline/refs.bed"),
+                        ResourceIOProvider.INSTANCE.getWrappedStream("pipeline/contigs.txt")
                 ));
 
         Assert.assertTrue(!referenceLibrary.getReferences().isEmpty());

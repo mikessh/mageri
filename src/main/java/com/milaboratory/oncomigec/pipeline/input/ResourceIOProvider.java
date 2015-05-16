@@ -34,9 +34,10 @@ import java.io.InputStream;
 import java.util.zip.GZIPInputStream;
 
 public class ResourceIOProvider extends IOProvider {
+    public static final ResourceIOProvider INSTANCE = new ResourceIOProvider();
 
-    public ResourceIOProvider() {
-        super("resources://");
+    private ResourceIOProvider() {
+        super("resources");
     }
 
     @Override

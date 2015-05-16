@@ -59,7 +59,7 @@ import java.util.Set;
 
 public class PipelineTest {
 
-    public static final InputParser INPUT_PARSER = new InputParser(new ResourceIOProvider());
+    public static final InputParser INPUT_PARSER = new InputParser(ResourceIOProvider.INSTANCE);
 
     @Test
     @Category(FastTests.class)

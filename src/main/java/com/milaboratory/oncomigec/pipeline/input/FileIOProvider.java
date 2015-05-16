@@ -36,16 +36,20 @@ import java.io.InputStream;
 import java.util.zip.GZIPInputStream;
 
 public class FileIOProvider extends IOProvider {
-    public FileIOProvider() {
-        super("file://");
+    public static final FileIOProvider INSTANCE = new FileIOProvider();
+
+    private FileIOProvider() {
+        super("file");
     }
 
     @Override
     public InputStream getStream(String path) throws IOException {
         InputStream inputStream = new FileInputStream(path);
+
         // Take care for gzipped input
         if (path.endsWith(".gz"))
             inputStream = new GZIPInputStream(inputStream);
+
         return inputStream;
     }
 

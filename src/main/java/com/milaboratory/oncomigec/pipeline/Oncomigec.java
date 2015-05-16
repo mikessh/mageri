@@ -30,14 +30,16 @@
 package com.milaboratory.oncomigec.pipeline;
 
 import com.milaboratory.oncomigec.pipeline.analysis.ProjectAnalysis;
-import com.milaboratory.oncomigec.pipeline.input.Input;
-import com.milaboratory.oncomigec.pipeline.input.InputParser;
+import com.milaboratory.oncomigec.pipeline.input.*;
 import org.apache.commons.cli.*;
 import org.apache.commons.io.FileUtils;
+import org.jdom.JDOMException;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Paths;
+import java.util.List;
 
 @SuppressWarnings("static-access")
 public final class Oncomigec {
@@ -59,7 +61,7 @@ public final class Oncomigec {
         Presets presets = null;
         Input input = null;
         String outputFolder = null;
-        boolean writeBinary = false, writeVariantDetails = false;
+        boolean writeBinary = false;
 
         try {
             // parse the command line arguments
@@ -86,49 +88,15 @@ public final class Oncomigec {
 
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // Runtime
-            int numberOfThreads = Runtime.getRuntime().availableProcessors();
-            long readLimit = -1;
-            byte verbosity = 2;
-
-            if (commandLine.hasOption(OPT_THREADS)) {
-                numberOfThreads = Integer.parseInt(commandLine.getOptionValue(OPT_THREADS));
-            }
-            if (commandLine.hasOption(OPT_LIMIT)) {
-                readLimit = Long.parseLong(commandLine.getOptionValue(OPT_LIMIT));
-            }
-            if (commandLine.hasOption(OPT_VERBOSITY)) {
-                verbosity = Byte.parseByte(commandLine.getOptionValue(OPT_VERBOSITY));
-            }
-
-            runtimeParameters = new RuntimeParameters(numberOfThreads, readLimit, verbosity);
+            runtimeParameters = parseRuntimeParameters(commandLine);
 
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // Presets
-            String instrument = "illumina";
-            if (commandLine.hasOption(OPT_INSTRUMENT)) {
-                instrument = commandLine.getOptionValue(OPT_INSTRUMENT);
-            }
-            presets = Presets.create(instrument, "multiplex"); // todo: implement library type
-
-            if (commandLine.hasOption(OPT_IMPORT_PRESET)) {
-                presets = Presets.loadFromFile(
-                        new File(commandLine.getOptionValue(OPT_IMPORT_PRESET)));
-            }
-
-            if (commandLine.hasOption(OPT_EXPORT_PRESET)) {
-                File exportPresetFile = new File(commandLine.getOptionValue(OPT_EXPORT_PRESET));
-                presets.writeToFile(exportPresetFile);
-                System.out.println("Saved current preset to " + exportPresetFile.getAbsolutePath());
-                System.exit(0);
-            }
+            presets = parsePresets(commandLine);
 
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // Input
-            if (commandLine.hasOption(OPT_INPUT_SHORT)) {
-                input = new InputParser().parseJson(commandLine.getOptionValue(OPT_INPUT_SHORT));
-            } else {
-                throw new ParseException("Path to project json file should be provided.");
-            }
+            input = parseInput(commandLine);
 
             ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // Output
@@ -164,6 +132,146 @@ public final class Oncomigec {
         projectAnalysis.run();
     }
 
+    public static Presets parsePresets(CommandLine commandLine) throws JDOMException, IOException {
+        Presets presets;
+        String instrument = "illumina";
+        if (commandLine.hasOption(OPT_INSTRUMENT)) {
+            instrument = commandLine.getOptionValue(OPT_INSTRUMENT);
+        }
+        presets = Presets.create(instrument, "multiplex"); // todo: implement library type
+
+        if (commandLine.hasOption(OPT_IMPORT_PRESET)) {
+            presets = Presets.loadFromFile(
+                    new File(commandLine.getOptionValue(OPT_IMPORT_PRESET)));
+        }
+
+        if (commandLine.hasOption(OPT_EXPORT_PRESET)) {
+            File exportPresetFile = new File(commandLine.getOptionValue(OPT_EXPORT_PRESET));
+            presets.writeToFile(exportPresetFile);
+            System.out.println("Saved current preset to " + exportPresetFile.getAbsolutePath());
+            System.exit(0);
+        }
+
+        return presets;
+    }
+
+    public static RuntimeParameters parseRuntimeParameters(CommandLine commandLine) {
+        int numberOfThreads = Runtime.getRuntime().availableProcessors();
+        long readLimit = -1;
+        byte verbosity = 2;
+
+        if (commandLine.hasOption(OPT_THREADS)) {
+            numberOfThreads = Integer.parseInt(commandLine.getOptionValue(OPT_THREADS));
+        }
+        if (commandLine.hasOption(OPT_LIMIT)) {
+            readLimit = Long.parseLong(commandLine.getOptionValue(OPT_LIMIT));
+        }
+        if (commandLine.hasOption(OPT_VERBOSITY)) {
+            verbosity = Byte.parseByte(commandLine.getOptionValue(OPT_VERBOSITY));
+        }
+
+        return new RuntimeParameters(numberOfThreads, readLimit, verbosity);
+    }
+
+    public static Input parseInput(CommandLine commandLine) throws ParseException, IOException {
+        Input input;
+        if (commandLine.hasOption(OPT_INPUT_SHORT)) {
+            input = new InputParser().parseJson(commandLine.getOptionValue(OPT_INPUT_SHORT));
+        } else {
+            if (!commandLine.hasOption(OPT_R1)) {
+                throw new ParseException("Neither input FASTQ file (-" + OPT_R1 +
+                        ") or project JSON file (-" + OPT_INPUT_SHORT + ") was specified.");
+            }
+            if (!commandLine.hasOption(OPT_META_REFS)) {
+                throw new ParseException("Should provide reference FASTA file (--" + OPT_META_REFS + ") " +
+                        " when input files are specified manually (-" + OPT_R1 + ").");
+            }
+
+            String projectName = commandLine.getOptionValue(OPT_NAME_PROJECT, "my_project");
+
+            InputChunk inputChunk = parseInputChunk(commandLine);
+
+            String referenceFileName = commandLine.getOptionValue(OPT_META_REFS),
+                    bedFileName = getOptionValue(commandLine, OPT_META_BED),
+                    contigsFileName = getOptionValue(commandLine, OPT_META_CONTIGS);
+
+            input = new Input(projectName,
+                    FileIOProvider.INSTANCE.getWrappedStream(referenceFileName),
+                    bedFileName == null ? null : FileIOProvider.INSTANCE.getWrappedStream(bedFileName),
+                    contigsFileName == null ? null : FileIOProvider.INSTANCE.getWrappedStream(contigsFileName),
+                    inputChunk
+            );
+        }
+
+        return input;
+    }
+
+    private static String getOptionValue(CommandLine commandLine, String optionName) {
+        return commandLine.hasOption(optionName) ? commandLine.getOptionValue(optionName) : null;
+    }
+
+    public static InputChunk parseInputChunk(CommandLine commandLine) throws IOException, ParseException {
+        String sampleName = commandLine.getOptionValue(OPT_NAME_SAMPLE, "my_sample"),
+                groupName = commandLine.getOptionValue(OPT_NAME_GROUP, "my_group");
+
+        boolean paired = commandLine.hasOption(OPT_R2);
+
+        String fastq1Name = commandLine.getOptionValue(OPT_R1),
+                fastq2Name = getOptionValue(commandLine, OPT_R2);
+
+        InputStream fastq1Stream = FileIOProvider.INSTANCE.getStream(fastq1Name),
+                fastq2Stream = paired ? FileIOProvider.INSTANCE.getStream(fastq2Name) : null;
+
+        return new InputChunk(fastq1Stream, fastq2Stream, groupName,
+                parseCheckoutRule(commandLine, sampleName, paired));
+    }
+
+    public static CheckoutRule parseCheckoutRule(CommandLine commandLine,
+                                                 String sampleName,
+                                                 boolean paired) throws IOException, ParseException {
+        CheckoutRule checkoutRule = null;
+
+        if (commandLine.hasOption(OPT_MODE_MULTIPLEX_SHORT)) {
+            String barcodesFileName = commandLine.getOptionValue(OPT_MODE_MULTIPLEX_SHORT);
+            List<String> barcodes = FileUtils.readLines(new File(barcodesFileName));
+            checkoutRule = new SubMultiplexRule(sampleName, barcodes, paired);
+        }
+        if (commandLine.hasOption(OPT_MODE_PRIMER_SHORT)) {
+            if (checkoutRule != null) {
+                throw new ParseException("Only one checkout rule is allowed.");
+            }
+
+            String barcodesFileName = commandLine.getOptionValue(OPT_MODE_PRIMER_SHORT);
+            List<String> barcodes = FileUtils.readLines(new File(barcodesFileName));
+            checkoutRule = new PrimerRule(sampleName, barcodes, paired);
+        }
+        if (commandLine.hasOption(OPT_MODE_POSITIONAL_SHORT)) {
+            if (checkoutRule != null) {
+                throw new ParseException("Only one checkout rule is allowed.");
+            }
+
+            String maskString = commandLine.getOptionValue(OPT_MODE_POSITIONAL_SHORT);
+
+            String[] masks = maskString.split(":");
+
+            String mask1 = masks[0], mask2 = masks.length > 1 ? masks[1] : null;
+            checkoutRule = new PositionalRule(sampleName, mask1, mask2, paired);
+        }
+        if (commandLine.hasOption(OPT_MODE_HEADER_SHORT)) {
+            if (checkoutRule != null) {
+                throw new ParseException("Only one checkout rule is allowed.");
+            }
+
+            checkoutRule = new PreprocessedRule(sampleName);
+        }
+
+        if (checkoutRule == null) {
+            throw new ParseException("No checkout rule was specified for manual input  (-" + OPT_R1 + ").");
+        }
+
+        return checkoutRule;
+    }
+
     // General options, batch analysis
     private static final String
             OPT_HELP_SHORT = "h", OPT_HELP_LONG = "help", OPT_VERSION_SHORT = "v", OPT_VERSION_LONG = "version",
@@ -186,7 +294,6 @@ public final class Oncomigec {
             OPT_META_BED = "bed",
             OPT_META_CONTIGS = "contigs",
             OPT_R1 = "R1", OPT_R2 = "R2";
-
 
     private static final Options CLI = new Options()
             //
@@ -274,6 +381,98 @@ public final class Oncomigec {
                             .withDescription("Path to a file that specifies the input project structure and data. [required]")
                             .withLongOpt(OPT_INPUT_LONG)
                             .create(OPT_INPUT_SHORT)
+            )
+                    //
+                    // Manual
+            .addOption(
+                    OptionBuilder
+                            .withArgName("fastq[.gz]")
+                            .hasArg(true)
+                            .withDescription("(manual input) First read file.")
+                            .create(OPT_R1)
+            )
+            .addOption(
+                    OptionBuilder
+                            .withArgName("fastq[.gz]")
+                            .hasArg(true)
+                            .withDescription("(manual input) Second read file. [optional]")
+                            .create(OPT_R1)
+            )
+            .addOption(
+                    OptionBuilder
+                            .withArgName("fasta")
+                            .hasArg(true)
+                            .withDescription("(manual input) File with reference sequences.")
+                            .withLongOpt(OPT_META_REFS)
+                            .create()
+            )
+            .addOption(
+                    OptionBuilder
+                            .withArgName("bed")
+                            .hasArg(true)
+                            .withDescription("(manual input) " +
+                                    "BED file with genomic info for references. " +
+                                    "0-based. " +
+                                    "Should contain 6 columns, including strand and name. " +
+                                    "See https://genome.ucsc.edu/FAQ/FAQformat.html#format1 for details. " +
+                                    "Name column should match names in reference FASTA file, " +
+                                    "unmatched references will be skipped." +
+                                    "[optional]")
+                            .withLongOpt(OPT_META_BED)
+                            .create()
+            )
+            .addOption(
+                    OptionBuilder
+                            .withArgName("file")
+                            .hasArg(true)
+                            .withDescription("(manual input) " +
+                                    "Contig information file, " +
+                                    "should contain three columns: " +
+                                    "contig name, assembly name and contig length. " +
+                                    "Required if using BED file for genomic info, " +
+                                    "contig names should match names specified in BED file." +
+                                    "[optional]")
+                            .withLongOpt(OPT_META_CONTIGS)
+                            .create()
+            )
+            .addOption(
+                    OptionBuilder
+                            .withArgName("file")
+                            .hasArg(true)
+                            .withDescription("(manual input) " +
+                                    "Specifies sub-multiplexing rule and a path to barcodes file. " +
+                                    "[one of M1-4 options should be specified]")
+                            .withLongOpt(OPT_MODE_MULTIPLEX_LONG)
+                            .create(OPT_MODE_MULTIPLEX_SHORT)
+            )
+            .addOption(
+                    OptionBuilder
+                            .withArgName("file")
+                            .hasArg(true)
+                            .withDescription("(manual input) " +
+                                    "Specifies primer set. " +
+                                    "[one of M1-4 options should be specified]")
+                            .withLongOpt(OPT_MODE_PRIMER_LONG)
+                            .create(OPT_MODE_PRIMER_SHORT)
+            )
+            .addOption(
+                    OptionBuilder
+                            .withArgName("mask1[:mask2]")
+                            .hasArg(true)
+                            .withDescription("(manual input) " +
+                                    "Specifies positional UMI matching rule. " +
+                                    "[one of M1-4 options should be specified]")
+                            .withLongOpt(OPT_MODE_POSITIONAL_LONG)
+                            .create(OPT_MODE_POSITIONAL_SHORT)
+            )
+            .addOption(
+                    OptionBuilder
+                            .withDescription("(manual input) " +
+                                    "Tells that the sample is pre-processed and UMI " +
+                                    "information is stored in the read header. " +
+                                    "[one of M1-4 options should be specified]")
+                            .withLongOpt(OPT_MODE_HEADER_LONG)
+                            .create(OPT_MODE_HEADER_SHORT)
             )
                     //
                     // output

@@ -47,7 +47,7 @@ public class InputParser {
     }
 
     public InputParser() {
-        this(new FileIOProvider());
+        this(FileIOProvider.INSTANCE);
     }
 
     public Input parseJson(String jsonFilePath) throws IOException {
