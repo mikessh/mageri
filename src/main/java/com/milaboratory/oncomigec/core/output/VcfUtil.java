@@ -56,7 +56,7 @@ public final class VcfUtil {
                 genomicInfo.getFrom() + mutation.getStart() + 1,
                 BLANK_FIELD,
                 variant.hasReference() ? mutation.getRef().toString() : BLANK_FIELD, mutation.getAlt().toString(),
-                (int) variant.getQual(), variant.getFilterSummary().toString(),
+                (int) Math.min(variant.getQual(), 9999), variant.getFilterSummary().toString(),
                 getInfo(variant),
                 FORMAT_KEY, getSampleInfo(variant)
         );
