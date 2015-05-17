@@ -63,4 +63,24 @@ public class Contig implements Comparable<Contig>, Serializable {
     public int compareTo(Contig o) {
         return ID.compareTo(o.ID);
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Contig contig = (Contig) o;
+
+        if (!ID.equals(contig.ID)) return false;
+        if (!assembly.equals(contig.assembly)) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = ID.hashCode();
+        result = 31 * result + assembly.hashCode();
+        return result;
+    }
 }

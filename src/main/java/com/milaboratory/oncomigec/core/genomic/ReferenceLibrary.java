@@ -38,7 +38,8 @@ import java.io.Serializable;
 import java.util.*;
 
 public class ReferenceLibrary implements Serializable {
-    private final Map<Contig, Contig> contigs = new HashMap<>();
+    private final static String EMPTY_PATH = "NA";
+    private final Set<Contig> contigs = new HashSet<>();
     private final List<Reference> references = new ArrayList<>();
     private final Map<String, Integer> nameToId = new HashMap<>();
     private final GenomicInfoProvider genomicInfoProvider;
@@ -62,11 +63,11 @@ public class ReferenceLibrary implements Serializable {
 
     public ReferenceLibrary(GenomicInfoProvider genomicInfoProvider) {
         this.genomicInfoProvider = genomicInfoProvider;
-        this.path = "NA";
+        this.path = EMPTY_PATH;
     }
 
     public ReferenceLibrary(Collection<SSequencingRead> fastaRecords) {
-        this(fastaRecords, new BasicGenomicInfoProvider(), "NA");
+        this(fastaRecords, new BasicGenomicInfoProvider(), EMPTY_PATH);
     }
 
     public ReferenceLibrary(Collection<SSequencingRead> fastaRecords,
@@ -96,6 +97,8 @@ public class ReferenceLibrary implements Serializable {
                     ", skipping reference.");
             return;
         }
+
+        contigs.add(genomicInfo.getContig());
 
         if (!genomicInfo.positiveStrand()) {
             // Only work with + strand
@@ -128,6 +131,10 @@ public class ReferenceLibrary implements Serializable {
 
     public int size() {
         return references.size();
+    }
+
+    public Set<Contig> getContigs() {
+        return Collections.unmodifiableSet(contigs);
     }
 
     public String getPath() {

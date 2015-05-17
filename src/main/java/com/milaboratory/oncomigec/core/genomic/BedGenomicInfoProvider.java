@@ -40,6 +40,8 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 public class BedGenomicInfoProvider implements GenomicInfoProvider {
+    private static final String UNUSED_IN_SAM_BAM = "PRIVATE";
+    
     private final static Pattern correctBedLine = Pattern.compile("^\\S+[\t ]+\\d+[\t ]+\\d+[\t ]+\\S+[\t ]+\\d+[\t ]+[+-]");
     private final Map<String, GenomicInfo> records = new HashMap<>();
     private final List<Contig> contigs;
@@ -56,7 +58,7 @@ public class BedGenomicInfoProvider implements GenomicInfoProvider {
             if (!line.startsWith("#")) {
                 splitLine = line.split("[\t ]+");
                 Contig contig = new Contig(splitLine[0], splitLine[1], Integer.parseInt(splitLine[2]),
-                        splitLine[1].toUpperCase().equals("UNUSED")); // todo: as enum
+                        splitLine[1].toUpperCase().equals(UNUSED_IN_SAM_BAM));
                 contigByName.put(contig.getID(), contig);
             }
         }
