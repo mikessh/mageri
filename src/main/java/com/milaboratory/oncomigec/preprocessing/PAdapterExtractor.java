@@ -169,7 +169,7 @@ public final class PAdapterExtractor extends CheckoutProcessor<PSequencingRead, 
             slaveFoundTotal += getSlaveCounter(sampleName);
         }
 
-        return 1 - slaveFoundTotal / total;
+        return slaveFoundTotal / total;
     }
 
     @Override

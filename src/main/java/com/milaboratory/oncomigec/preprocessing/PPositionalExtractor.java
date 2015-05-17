@@ -101,9 +101,7 @@ public class PPositionalExtractor extends CheckoutProcessor<PSequencingRead, PCh
 
     @Override
     public double extractionRatio() {
-        double total = totalCounter.get(),
-                notFoundSlave = slaveCounter.get();
-        return 1 - notFoundSlave / total;
+        return totalCounter.get() / (double) slaveCounter.get();
     }
 
     @Override
