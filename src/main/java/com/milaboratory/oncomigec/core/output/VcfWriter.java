@@ -59,7 +59,9 @@ public class VcfWriter extends RecordWriter<VcfRecord, VariantCaller> {
         for (Contig contig : referenceLibrary.getGenomicInfoProvider().getContigs()) {
             if (!contig.skipInSamAndVcf()) {
                 stringBuilder.append("##contig=<ID=").append(contig.getID()).
-                        append(",assembly=").append(contig.getAssembly()).append(">\n");
+                        append(",assembly=").append(contig.getAssembly()).
+                        append(",length=").append(contig.getLength()).
+                        append(">\n");
             }
         }
         stringBuilder.append("##phasing=none\n");
