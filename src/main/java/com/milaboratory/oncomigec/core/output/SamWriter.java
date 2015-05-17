@@ -53,10 +53,12 @@ public class SamWriter extends RecordWriter<SamRecord, ConsensusAligner> {
         StringBuilder stringBuilder = new StringBuilder("@HD\tVN:1.0\tSO:unsorted\tGO:query");
 
         for (Contig contig : referenceLibrary.getGenomicInfoProvider().getContigs()) {
-            stringBuilder.append("\n@SQ").
-                    append("\tSN:").append(contig.getID()).
-                    append("\tLN:").append(contig.getLength()).
-                    append("\tAS:").append(contig.getAssembly());
+            if (!contig.skipInSamAndVcf()) {
+                stringBuilder.append("\n@SQ").
+                        append("\tSN:").append(contig.getID()).
+                        append("\tLN:").append(contig.getLength()).
+                        append("\tAS:").append(contig.getAssembly());
+            }
         }
 
         stringBuilder.append("\n@RG").
@@ -89,6 +91,9 @@ public class SamWriter extends RecordWriter<SamRecord, ConsensusAligner> {
         SamRecord samRecord = alignedConsensus.isPairedEnd() ?
                 SamUtil.create((PAlignedConsensus) alignedConsensus) :
                 SamUtil.create((SAlignedConsensus) alignedConsensus);
-        write(samRecord);
+
+        if (samRecord != null) {
+            write(samRecord);
+        }
     }
 }

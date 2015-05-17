@@ -43,7 +43,7 @@ import java.io.OutputStream;
 import java.util.Date;
 
 public class VcfWriter extends RecordWriter<VcfRecord, VariantCaller> {
-    public VcfWriter(Sample sample, OutputStream outputStream, 
+    public VcfWriter(Sample sample, OutputStream outputStream,
                      VariantCaller variantCaller, Platform platform) throws IOException {
         super(sample, outputStream, variantCaller.getReferenceLibrary(), variantCaller, platform);
     }
@@ -57,8 +57,10 @@ public class VcfWriter extends RecordWriter<VcfRecord, VariantCaller> {
                 append("##source=").append(Oncomigec.MY_NAME).append(Oncomigec.MY_VERSION).append("\n").
                 append("##reference=").append(referenceLibrary.getPath()).append("\n");
         for (Contig contig : referenceLibrary.getGenomicInfoProvider().getContigs()) {
-            stringBuilder.append("##contig=<ID=").append(contig.getID()).
-                    append(",assembly=").append(contig.getAssembly()).append(">\n");
+            if (!contig.skipInSamAndVcf()) {
+                stringBuilder.append("##contig=<ID=").append(contig.getID()).
+                        append(",assembly=").append(contig.getAssembly()).append(">\n");
+            }
         }
         stringBuilder.append("##phasing=none\n");
 
@@ -88,6 +90,10 @@ public class VcfWriter extends RecordWriter<VcfRecord, VariantCaller> {
     }
 
     public void write(Variant variant) throws IOException {
+        if (variant.getReference().getGenomicInfo().getContig().skipInSamAndVcf()) {
+            return;
+        }
+
         VcfRecord vcfRecord = VcfUtil.create(variant);
         write(vcfRecord);
     }

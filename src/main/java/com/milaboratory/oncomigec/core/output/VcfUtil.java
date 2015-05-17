@@ -35,7 +35,6 @@ import com.milaboratory.oncomigec.core.variant.Variant;
 
 public final class VcfUtil {
     private VcfUtil() {
-
     }
 
     public static String

@@ -39,7 +39,8 @@ public class BasicGenomicInfoProvider implements GenomicInfoProvider {
     @Override
     public GenomicInfo get(String name, NucleotideSequence sequence) {
         Contig contig = new Contig(name,
-                "user", sequence.size());
+                "user", sequence.size(),
+                false);
 
         Contig existing = contigs.get(contig);
         if (existing == null) {

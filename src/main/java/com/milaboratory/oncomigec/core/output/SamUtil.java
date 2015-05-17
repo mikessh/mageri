@@ -123,6 +123,11 @@ public final class SamUtil {
             return new SamSegmentRecord(name, sequence, quality);
         } else {
             GenomicInfo genomicInfo = alignmentResult.getReference().getGenomicInfo();
+
+            if (genomicInfo.getContig().skipInSamAndVcf()) {
+                return null;
+            }
+
             String chrom = genomicInfo.getChrom();
             int pos = genomicInfo.getFrom() + // move BED (0b) to SAM (1b)
                     alignmentResult.getAlignment().getSequence1Range().getFrom() + 1;
@@ -140,20 +145,32 @@ public final class SamUtil {
     }
 
     public static SamRecord create(SAlignedConsensus alignedConsensus) {
-        return new SamRecord(create(alignedConsensus.getUmi(),
+        SamSegmentRecord samSegmentRecord = create(alignedConsensus.getUmi(),
                 alignedConsensus.getConsensusSQPair(),
                 alignedConsensus.getAlignmentResult(),
-                alignedConsensus.getMutations()));
+                alignedConsensus.getMutations());
+
+        if (samSegmentRecord == null) {
+            return null;
+        }
+
+        return new SamRecord(samSegmentRecord);
     }
 
     public static SamRecord create(PAlignedConsensus alignedConsensus) {
-        return new SamRecord(create(alignedConsensus.getUmi(),
+        SamSegmentRecord samSegmentRecord1 = create(alignedConsensus.getUmi(),
                 alignedConsensus.getConsensusSQPair1(),
                 alignedConsensus.getAlignmentResult1(),
                 alignedConsensus.getMutations1()),
-                create(alignedConsensus.getUmi(),
+                samSegmentRecord2 = create(alignedConsensus.getUmi(),
                         alignedConsensus.getConsensusSQPair2(),
                         alignedConsensus.getAlignmentResult2(),
-                        alignedConsensus.getMutations2()));
+                        alignedConsensus.getMutations2());
+
+        if (samSegmentRecord1 == null || samSegmentRecord2 == null) {
+            return null;
+        }
+
+        return new SamRecord(samSegmentRecord1, samSegmentRecord2);
     }
 }

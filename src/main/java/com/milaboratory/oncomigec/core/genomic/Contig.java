@@ -33,12 +33,14 @@ import java.io.Serializable;
 
 public class Contig implements Comparable<Contig>, Serializable {
     private final String ID, assembly;
+    private final boolean skipInSamAndVcf;
     private final int length;
 
-    public Contig(String ID, String assembly, int length) {
+    public Contig(String ID, String assembly, int length, boolean skipInSamAndVcf) {
         this.ID = ID;
         this.assembly = assembly;
         this.length = length;
+        this.skipInSamAndVcf = skipInSamAndVcf;
     }
 
     public String getID() {
@@ -51,6 +53,10 @@ public class Contig implements Comparable<Contig>, Serializable {
 
     public int getLength() {
         return length;
+    }
+
+    public boolean skipInSamAndVcf() {
+        return skipInSamAndVcf;
     }
 
     @Override

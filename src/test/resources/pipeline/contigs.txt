@@ -1,3 +1,4 @@
+#chrom  assembly    length
 chr1	hg19	249250621
 chr2	hg19	243199373
 chr3	hg19	198022430
@@ -22,3 +23,4 @@ chrY	hg19	59373566
 chr19	hg19	59128983
 chr22	hg19	51304566
 chr21	hg19	48129895
+spike   unused    92

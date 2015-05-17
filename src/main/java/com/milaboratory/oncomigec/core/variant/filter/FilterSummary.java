@@ -66,8 +66,9 @@ public class FilterSummary implements Serializable {
 
     @Override
     public String toString() {
-        if (passed)
-            return "PASSED";
+        if (passed) {
+            return ".";
+        }
 
         String result = "";
 
