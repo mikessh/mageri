@@ -53,10 +53,12 @@ public class BedGenomicInfoProvider implements GenomicInfoProvider {
         Map<String, Contig> contigByName = new HashMap<>();
 
         while ((line = reader.readLine()) != null) {
-            splitLine = line.split("\t");
-            Contig contig = new Contig(splitLine[0], splitLine[1], Integer.parseInt(splitLine[2]),
-                    splitLine[1].toUpperCase().equals("UNUSED")); // todo: as enum
-            contigByName.put(contig.getID(), contig);
+            if (!line.startsWith("#")) {
+                splitLine = line.split("[\t +]");
+                Contig contig = new Contig(splitLine[0], splitLine[1], Integer.parseInt(splitLine[2]),
+                        splitLine[1].toUpperCase().equals("UNUSED")); // todo: as enum
+                contigByName.put(contig.getID(), contig);
+            }
         }
 
         this.contigs = new ArrayList<>(contigByName.values());
