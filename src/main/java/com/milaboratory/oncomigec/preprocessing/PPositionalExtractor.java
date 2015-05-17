@@ -37,7 +37,7 @@ import com.milaboratory.oncomigec.preprocessing.barcode.SlidingBarcodeSearcher;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class PPositionalExtractor extends CheckoutProcessor<PSequencingRead, PCheckoutResult> {
-    private final AtomicLong slaveNotFoundCounter = new AtomicLong();
+    private final AtomicLong slaveCounter = new AtomicLong();
     private final String sampleName;
     private final SlidingBarcodeSearcher masterBarcode, slaveBarcode;
 
@@ -85,8 +85,8 @@ public class PPositionalExtractor extends CheckoutProcessor<PSequencingRead, PCh
 
         slaveResult = slaveBarcode.search(sequencingRead.getData(1));
 
-        if (slaveResult == null) {
-            slaveNotFoundCounter.incrementAndGet();
+        if (slaveResult != null) {
+            slaveCounter.incrementAndGet();
         }
 
         return new PCheckoutResult(0, sampleName, true, true,
@@ -96,15 +96,14 @@ public class PPositionalExtractor extends CheckoutProcessor<PSequencingRead, PCh
     public long getSlaveCounter(String sampleName) throws Exception {
         if (!this.sampleName.equals(sampleName))
             throw new Exception("Sample " + sampleName + " doesn't exist");
-        return totalCounter.get() - masterNotFoundCounter.get() - slaveNotFoundCounter.get();
+        return slaveCounter.get();
     }
 
     @Override
     public double extractionRatio() {
         double total = totalCounter.get(),
-                notFoundMaster = masterNotFoundCounter.get(),
-                notFoundSlave = slaveNotFoundCounter.get();
-        return 1 - (notFoundMaster + notFoundSlave) / total;
+                notFoundSlave = slaveCounter.get();
+        return 1 - notFoundSlave / total;
     }
 
     @Override

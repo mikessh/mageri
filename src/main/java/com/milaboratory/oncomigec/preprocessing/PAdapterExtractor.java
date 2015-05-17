@@ -41,7 +41,7 @@ import java.util.concurrent.atomic.AtomicLongArray;
 
 public final class PAdapterExtractor extends CheckoutProcessor<PSequencingRead, PCheckoutResult> {
     private final AtomicLongArray slaveCounters;
-    private final AtomicLong slaveNotFoundCounter, masterFirstCounter;
+    private final AtomicLong masterFirstCounter;
     private final BarcodeSearcher[] slaveBarcodes;
     private final boolean[] masterFirst;
     private final boolean orientedReads;
@@ -77,7 +77,6 @@ public final class PAdapterExtractor extends CheckoutProcessor<PSequencingRead, 
         }
         this.orientedReads = orientedReads;
         this.masterFirst = masterFirst;
-        this.slaveNotFoundCounter = new AtomicLong();
         this.masterFirstCounter = new AtomicLong();
         this.slaveCounters = new AtomicLongArray(masterBarcodes.length);
     }
@@ -139,7 +138,6 @@ public final class PAdapterExtractor extends CheckoutProcessor<PSequencingRead, 
                     return new PCheckoutResult(i, sampleNames[i], orientation, masterFirst[i],
                             masterResult, slaveResult);
                 } else {
-                    slaveNotFoundCounter.incrementAndGet();
                     return null;
                 }
             }
@@ -165,10 +163,13 @@ public final class PAdapterExtractor extends CheckoutProcessor<PSequencingRead, 
 
     @Override
     public double extractionRatio() {
-        double total = totalCounter.get(),
-                notFoundMaster = masterNotFoundCounter.get(),
-                notFoundSlave = slaveNotFoundCounter.get();
-        return 1 - (notFoundMaster + notFoundSlave) / total;
+        double total = totalCounter.get(), slaveFoundTotal = 0;
+
+        for (String sampleName : sampleNames) {
+            slaveFoundTotal += getSlaveCounter(sampleName);
+        }
+
+        return 1 - slaveFoundTotal / total;
     }
 
     @Override
@@ -180,8 +181,6 @@ public final class PAdapterExtractor extends CheckoutProcessor<PSequencingRead, 
             sb.append("\t");
             sb.append(slaveCounters.get(i));
         }
-        sb.append("\t");
-        sb.append(slaveNotFoundCounter.get());
         sb.append("\t");
         sb.append(totalCounter.get());
         return sb.toString();
