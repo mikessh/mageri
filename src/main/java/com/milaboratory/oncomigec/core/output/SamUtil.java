@@ -116,10 +116,10 @@ public final class SamUtil {
                                           NucleotideSQPair consensusSQPair,
                                           AlignmentResult alignmentResult,
                                           MutationArray mutations) {
-        String name = umi.toString(),
-                sequence = consensusSQPair.getSequence().toString(),
-                quality = consensusSQPair.getQuality().toString();
+        String name = umi.toString();
         if (alignmentResult == null) {
+            String sequence = consensusSQPair.getSequence().toString(),
+                    quality = consensusSQPair.getQuality().toString();
             return new SamSegmentRecord(name, sequence, quality);
         } else {
             GenomicInfo genomicInfo = alignmentResult.getReference().getGenomicInfo();
@@ -133,6 +133,13 @@ public final class SamUtil {
                     alignmentResult.getAlignment().getSequence1Range().getFrom() + 1;
 
             String cigar = createCigarString(alignmentResult, mutations);
+
+            if (alignmentResult.isReverseComplement()) {
+                consensusSQPair = consensusSQPair.getRC();
+            }
+
+            String sequence = consensusSQPair.getSequence().toString(),
+                    quality = consensusSQPair.getQuality().toString();
 
             return new SamSegmentRecord(name,
                     (alignmentResult.isReverseComplement() ? RC_FLAG : BLANK_FLAG) |
