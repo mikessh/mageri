@@ -54,7 +54,7 @@ public class BedGenomicInfoProvider implements GenomicInfoProvider {
 
         while ((line = reader.readLine()) != null) {
             if (!line.startsWith("#")) {
-                splitLine = line.split("[\t +]");
+                splitLine = line.split("[\t ]+");
                 Contig contig = new Contig(splitLine[0], splitLine[1], Integer.parseInt(splitLine[2]),
                         splitLine[1].toUpperCase().equals("UNUSED")); // todo: as enum
                 contigByName.put(contig.getID(), contig);
