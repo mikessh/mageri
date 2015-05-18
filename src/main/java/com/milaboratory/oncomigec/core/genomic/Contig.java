@@ -110,4 +110,11 @@ public class Contig implements Comparable<Contig>, Serializable {
         result = 31 * result + assembly.hashCode();
         return result;
     }
+
+    public static final String HEADER = "assembly\tid";
+
+    @Override
+    public String toString() {
+        return assembly + "\t" + ID;
+    }
 }

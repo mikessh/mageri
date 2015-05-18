@@ -33,13 +33,13 @@ import java.io.Serializable;
 
 public class GenomicInfo implements Serializable, Comparable<GenomicInfo> {
     private final Contig contig;
-    private final int from, to;
+    private final int start, end;
     private final boolean strand;
 
-    public GenomicInfo(Contig contig, int from, int to, boolean strand) {
+    public GenomicInfo(Contig contig, int start, int end, boolean strand) {
         this.contig = contig;
-        this.from = from;
-        this.to = to;
+        this.start = start;
+        this.end = end;
         this.strand = strand;
     }
 
@@ -51,12 +51,12 @@ public class GenomicInfo implements Serializable, Comparable<GenomicInfo> {
         return contig;
     }
 
-    public int getFrom() {
-        return from;
+    public int getStart() {
+        return start;
     }
 
-    public int getTo() {
-        return to;
+    public int getEnd() {
+        return end;
     }
 
     protected boolean positiveStrand() {
@@ -68,9 +68,16 @@ public class GenomicInfo implements Serializable, Comparable<GenomicInfo> {
         int result = getContig().compareTo(o.getContig());
 
         if (result == 0) {
-            return Integer.compare(getFrom(), o.getFrom());
+            return Integer.compare(getStart(), o.getStart());
         }
 
         return result;
+    }
+
+    public static final String HEADER = Contig.HEADER + "\tstart\tend\tstrand";
+
+    @Override
+    public String toString() {
+        return contig.toString() + "\t" + start + "\t" + end + "\t" + (strand ? "+" : "-");
     }
 }

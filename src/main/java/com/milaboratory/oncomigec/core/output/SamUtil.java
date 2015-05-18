@@ -129,7 +129,7 @@ public final class SamUtil {
             }
 
             String chrom = genomicInfo.getChrom();
-            int pos = genomicInfo.getFrom() + // move BED (0b) to SAM (1b)
+            int pos = genomicInfo.getStart() + // move BED (0b) to SAM (1b)
                     alignmentResult.getAlignment().getSequence1Range().getFrom() + 1;
 
             String cigar = createCigarString(alignmentResult, mutations);

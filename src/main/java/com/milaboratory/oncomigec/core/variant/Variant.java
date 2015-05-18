@@ -69,7 +69,7 @@ public class Variant implements Serializable, Comparable<Variant> {
     }
 
     public int getGenomicPosition() {
-        return reference.getGenomicInfo().getFrom() + mutation.getStart() + 1;
+        return reference.getGenomicInfo().getStart() + mutation.getStart() + 1;
     }
 
     private Contig getContig() {

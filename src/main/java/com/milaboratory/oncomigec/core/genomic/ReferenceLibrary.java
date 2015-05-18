@@ -140,4 +140,13 @@ public class ReferenceLibrary implements Serializable {
     public String getPath() {
         return path;
     }
+
+    @Override
+    public String toString() {
+        StringBuilder stringBuilder = new StringBuilder(Reference.HEADER);
+        for (Reference reference : references) {
+            stringBuilder.append("\n").append(reference.toString());
+        }
+        return stringBuilder.toString();
+    }
 }

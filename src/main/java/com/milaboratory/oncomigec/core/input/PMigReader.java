@@ -127,7 +127,7 @@ public final class PMigReader extends MigReader<PMig> {
                                     slaveResult = result.getSlaveResult();
 
                             if (masterResult.hasAdapterMatch()) {
-                                read1 = read1.trim5Prime(masterResult.getTo()); // getTo() is exclusive to
+                                read1 = read1.trim5Prime(masterResult.getTo()); // getEnd() is exclusive to
                             }
 
                             if (result.slaveFound() && slaveResult.hasAdapterMatch()) {

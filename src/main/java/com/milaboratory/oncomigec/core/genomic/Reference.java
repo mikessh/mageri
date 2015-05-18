@@ -85,8 +85,10 @@ public class Reference implements Serializable {
         return index;
     }
 
+    public static final String HEADER = GenomicInfo.HEADER + "\tname\tsequence";
+
     @Override
     public String toString() {
-        return ">" + name + "\n" + sequence.toString();
+        return genomicInfo.toString() + "\t" + name + "\t" + sequence.toString();
     }
 }

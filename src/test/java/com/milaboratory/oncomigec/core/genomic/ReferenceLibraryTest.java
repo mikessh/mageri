@@ -47,7 +47,18 @@ public class ReferenceLibraryTest {
                 ResourceIOProvider.INSTANCE.getWrappedStream("pipeline/refs.fa"),
                 new BasicGenomicInfoProvider());
 
+        System.out.println(referenceLibrary);
+
         Assert.assertTrue(!referenceLibrary.getReferences().isEmpty());
+
+        for (Reference reference : referenceLibrary.getReferences()) {
+            Assert.assertEquals(reference.getSequence().size(),
+                    reference.getGenomicInfo().getContig().getLength());
+            Assert.assertEquals(0,
+                    reference.getGenomicInfo().getStart());
+            Assert.assertEquals(reference.getSequence().size(),
+                    reference.getGenomicInfo().getEnd() + 1);
+        }
 
         TestUtil.serializationCheck(referenceLibrary);
     }
@@ -63,7 +74,15 @@ public class ReferenceLibraryTest {
                         ResourceIOProvider.INSTANCE.getWrappedStream("pipeline/contigs.txt")
                 ));
 
+        System.out.println(referenceLibrary);
+
         Assert.assertTrue(!referenceLibrary.getReferences().isEmpty());
+
+        Reference braf = referenceLibrary.getByName("BRAF_E15");
+        Assert.assertNotNull(braf);
+        Assert.assertEquals("chr7", braf.getGenomicInfo().getChrom());
+        Assert.assertEquals(140453124, braf.getGenomicInfo().getStart());
+        Assert.assertEquals(140453232, braf.getGenomicInfo().getEnd());
 
         TestUtil.serializationCheck(referenceLibrary);
     }
