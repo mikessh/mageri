@@ -30,6 +30,7 @@
 package com.milaboratory.oncomigec.core.genomic;
 
 import java.io.Serializable;
+import java.util.regex.Pattern;
 
 public class Contig implements Comparable<Contig>, Serializable {
     private final String ID, assembly;
@@ -59,9 +60,31 @@ public class Contig implements Comparable<Contig>, Serializable {
         return skipInSamAndVcf;
     }
 
+    private static final Pattern A = Pattern.compile("^\\D+$"),
+            N = Pattern.compile("^\\d+$");
+
+    private static String[] getTokens(String str) {
+        return str.split("(?<=\\D)(?=\\d)|(?<=\\d)(?=\\D)");
+    }
+
+    private static int compare(String o1, String o2) {
+        // Check if contig name is in form of chr##
+        String[] t1 = getTokens(o1), t2 = getTokens(o2);
+        if (A.matcher(t1[0]).matches() && N.matcher(t1[1]).matches() &&
+                A.matcher(t2[0]).matches() && N.matcher(t2[1]).matches()) {
+            int result = t1[0].compareTo(t2[0]);
+            if (result == 0) {
+                return Integer.compare(Integer.parseInt(t1[1]), Integer.parseInt(t2[1]));
+            }
+            return result;
+        } else {
+            return o1.compareTo(o2);
+        }
+    }
+
     @Override
     public int compareTo(Contig o) {
-        return ID.compareTo(o.ID);
+        return compare(ID, o.ID);
     }
 
     @Override

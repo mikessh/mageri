@@ -30,13 +30,14 @@
 package com.milaboratory.oncomigec.core.variant;
 
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
+import com.milaboratory.oncomigec.core.genomic.Contig;
 import com.milaboratory.oncomigec.core.genomic.Reference;
 import com.milaboratory.oncomigec.core.mutations.Mutation;
 import com.milaboratory.oncomigec.core.variant.filter.FilterSummary;
 
 import java.io.Serializable;
 
-public class Variant implements Serializable {
+public class Variant implements Serializable, Comparable<Variant> {
     private final Reference reference;
     private final Mutation mutation;
     private final int count, depth, minorCount;
@@ -61,6 +62,18 @@ public class Variant implements Serializable {
 
     public Reference getReference() {
         return reference;
+    }
+
+    public String getChrom() {
+        return reference.getGenomicInfo().getChrom();
+    }
+
+    public int getGenomicPosition() {
+        return reference.getGenomicInfo().getFrom() + mutation.getStart() + 1;
+    }
+
+    private Contig getContig() {
+        return reference.getGenomicInfo().getContig();
     }
 
     public Mutation getMutation() {
@@ -113,5 +126,16 @@ public class Variant implements Serializable {
                 count + "\t" + minorCount + "\t" + depth + "\t" +
                 qual + "\t" +
                 (hasReference ? "TRUE" : "FALSE") + "\t" + ancestralAllele.toString();
+    }
+
+    @Override
+    public int compareTo(Variant o) {
+        int result = getContig().compareTo(o.getContig());
+
+        if (result == 0) {
+            return Integer.compare(getGenomicPosition(), o.getGenomicPosition());
+        }
+
+        return result;
     }
 }

@@ -31,7 +31,7 @@ package com.milaboratory.oncomigec.core.genomic;
 
 import java.io.Serializable;
 
-public class GenomicInfo implements Serializable {
+public class GenomicInfo implements Serializable, Comparable<GenomicInfo> {
     private final Contig contig;
     private final int from, to;
     private final boolean strand;
@@ -61,5 +61,16 @@ public class GenomicInfo implements Serializable {
 
     protected boolean positiveStrand() {
         return strand;
+    }
+
+    @Override
+    public int compareTo(GenomicInfo o) {
+        int result = getContig().compareTo(o.getContig());
+
+        if (result == 0) {
+            return Integer.compare(getFrom(), o.getFrom());
+        }
+
+        return result;
     }
 }

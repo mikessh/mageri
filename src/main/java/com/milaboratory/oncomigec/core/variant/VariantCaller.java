@@ -117,6 +117,9 @@ public class VariantCaller extends PipelineBlock {
         // Variant caller data is needed to merge variant tables from different samples
         // Consensus consensusAligner is the only thing we can and should get rid from here
         consensusAligner.clear();
+
+        // Variants should be sorted for GATK compatibility
+        Collections.sort(variants);
     }
 
     public ReferenceLibrary getReferenceLibrary() {

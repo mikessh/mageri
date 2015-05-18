@@ -31,6 +31,7 @@ package com.milaboratory.oncomigec.core.genomic;
 
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.oncomigec.pipeline.input.InputStreamWrapper;
+import org.apache.commons.collections.ListUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -64,6 +65,8 @@ public class BedGenomicInfoProvider implements GenomicInfoProvider {
         }
 
         this.contigs = new ArrayList<>(contigByName.values());
+        
+        Collections.sort(contigs);
 
         inputStream = bedRecords.getInputStream();
         reader = new BufferedReader(new InputStreamReader(inputStream));
