@@ -37,11 +37,28 @@ public class Contig implements Comparable<Contig>, Serializable {
     private final boolean skipInSamAndVcf;
     private final int length;
 
+    // Contig comparison
+    private final boolean canonicalId;
+    private final String[] idTokens;
+
+    private static final Pattern A = Pattern.compile("^\\D+$"),
+            N = Pattern.compile("^\\d+$");
+
+    private static String[] getTokens(String str) {
+        return str.split("(?<=\\D)(?=\\d)|(?<=\\d)(?=\\D)");
+    }
+
     public Contig(String ID, String assembly, int length, boolean skipInSamAndVcf) {
         this.ID = ID;
         this.assembly = assembly;
         this.length = length;
         this.skipInSamAndVcf = skipInSamAndVcf;
+
+        // for comparison
+        this.idTokens = getTokens(ID);
+        this.canonicalId = idTokens.length > 1 &&
+                A.matcher(idTokens[0]).matches() &&
+                N.matcher(idTokens[1]).matches();
     }
 
     public String getID() {
@@ -60,31 +77,18 @@ public class Contig implements Comparable<Contig>, Serializable {
         return skipInSamAndVcf;
     }
 
-    private static final Pattern A = Pattern.compile("^\\D+$"),
-            N = Pattern.compile("^\\d+$");
-
-    private static String[] getTokens(String str) {
-        return str.split("(?<=\\D)(?=\\d)|(?<=\\d)(?=\\D)");
-    }
-
-    private static int compare(String o1, String o2) {
-        // Check if contig name is in form of chr##
-        String[] t1 = getTokens(o1), t2 = getTokens(o2);
-        if (A.matcher(t1[0]).matches() && N.matcher(t1[1]).matches() &&
-                A.matcher(t2[0]).matches() && N.matcher(t2[1]).matches()) {
-            int result = t1[0].compareTo(t2[0]);
+    @Override
+    public int compareTo(Contig o) {
+        if (canonicalId && o.canonicalId) {
+            int result = idTokens[0].compareTo(o.idTokens[0]);
             if (result == 0) {
-                return Integer.compare(Integer.parseInt(t1[1]), Integer.parseInt(t2[1]));
+                return Integer.compare(Integer.parseInt(idTokens[1]),
+                        Integer.parseInt(o.idTokens[1]));
             }
             return result;
         } else {
-            return o1.compareTo(o2);
+            return ID.compareTo(o.ID);
         }
-    }
-
-    @Override
-    public int compareTo(Contig o) {
-        return compare(ID, o.ID);
     }
 
     @Override
