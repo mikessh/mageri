@@ -79,6 +79,7 @@ public class PPositionalExtractor extends CheckoutProcessor<PSequencingRead, PCh
         }
 
         if (slaveBarcode == null) {
+            slaveCounter.incrementAndGet();
             return new PCheckoutResult(0, sampleName, true, true,
                     masterResult, BarcodeSearcherResult.BLANK_RESULT);
         }
@@ -101,7 +102,7 @@ public class PPositionalExtractor extends CheckoutProcessor<PSequencingRead, PCh
 
     @Override
     public double extractionRatio() {
-        return totalCounter.get() / (double) slaveCounter.get();
+        return slaveCounter.get() / (double) totalCounter.get();
     }
 
     @Override
