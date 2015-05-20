@@ -54,7 +54,7 @@ public final class VcfUtil {
         return new VcfRecord(genomicInfo.getChrom(),
                 genomicInfo.getStart() + mutation.getStart() + 1,
                 BLANK_FIELD,
-                variant.hasReference() ? mutation.getRef().toString() : BLANK_FIELD, mutation.getAlt().toString(),
+                mutation.getRef().toString(), mutation.getAlt().toString(),
                 (int) Math.min(variant.getQual(), 9999), variant.getFilterSummary().toString(),
                 getInfo(variant),
                 FORMAT_KEY, getSampleInfo(variant)
