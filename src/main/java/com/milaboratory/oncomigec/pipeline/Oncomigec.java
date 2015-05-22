@@ -209,8 +209,7 @@ public final class Oncomigec {
     }
 
     public static InputChunk parseInputChunk(CommandLine commandLine) throws IOException, ParseException {
-        String sampleName = commandLine.getOptionValue(OPT_NAME_SAMPLE, "my_sample"),
-                groupName = commandLine.getOptionValue(OPT_NAME_GROUP, "my_group");
+        String sampleName = commandLine.getOptionValue(OPT_NAME_SAMPLE, "my_sample");
 
         boolean paired = commandLine.hasOption(OPT_R2);
 
@@ -220,7 +219,7 @@ public final class Oncomigec {
         InputStream fastq1Stream = FileIOProvider.INSTANCE.getStream(fastq1Name),
                 fastq2Stream = paired ? FileIOProvider.INSTANCE.getStream(fastq2Name) : null;
 
-        return new InputChunk(fastq1Stream, fastq2Stream, groupName,
+        return new InputChunk(fastq1Stream, fastq2Stream, sampleName,
                 parseCheckoutRule(commandLine, sampleName, paired));
     }
 
@@ -287,7 +286,6 @@ public final class Oncomigec {
             OPT_MODE_POSITIONAL_LONG = "positional", OPT_MODE_POSITIONAL_SHORT = "M3",
             OPT_MODE_HEADER_LONG = "header", OPT_MODE_HEADER_SHORT = "M4",
             OPT_NAME_PROJECT = "project-name",
-            OPT_NAME_GROUP = "group-name",
             OPT_NAME_SAMPLE = "sample-name",
             OPT_META_REFS = "references",
             OPT_META_BED = "bed",
@@ -406,7 +404,7 @@ public final class Oncomigec {
                             .withArgName("fastq[.gz]")
                             .hasArg(true)
                             .withDescription("(manual input) Second read file. [optional]")
-                            .create(OPT_R1)
+                            .create(OPT_R2)
             )
             .addOption(
                     OptionBuilder
@@ -483,6 +481,24 @@ public final class Oncomigec {
                                     "[one of M1-4 options should be specified]")
                             .withLongOpt(OPT_MODE_HEADER_LONG)
                             .create(OPT_MODE_HEADER_SHORT)
+            )
+            .addOption(
+                    OptionBuilder
+                            .withArgName("string")
+                            .hasArg(true)
+                            .withDescription("(manual input) " +
+                                    "Project name [optional]")
+                            .withLongOpt(OPT_NAME_PROJECT)
+                            .create()
+            )
+            .addOption(
+                    OptionBuilder
+                            .withArgName("string")
+                            .hasArg(true)
+                            .withDescription("(manual input) " +
+                                    "Sample name [optional]")
+                            .withLongOpt(OPT_NAME_SAMPLE)
+                            .create()
             )
                     //
                     // output
