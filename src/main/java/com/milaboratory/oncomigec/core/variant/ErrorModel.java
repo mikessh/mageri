@@ -104,6 +104,6 @@ public class ErrorModel implements Serializable {
     }
 
     private void calcPropagateProb() {
-        this.propagateProb = lambda * Math.pow(1.0 - lambda, order);
+        this.propagateProb = Math.pow((1.0 - lambda), order) * Math.pow(lambda, order + 1);
     }
 }
