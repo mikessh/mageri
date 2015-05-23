@@ -42,7 +42,8 @@ public final class VcfUtil {
             INFO_HEADER =
                     "##INFO=<ID=DP,Number=1,Type=Integer,Description=\"Total Depth\">\n" +
                             "##INFO=<ID=AF,Number=.,Type=Float,Description=\"Allele Frequency\">\n" +
-                            "##INFO=<ID=AA,Number=1,Type=String,Description=\"Ancestral Allele\">",
+                            "##INFO=<ID=AA,Number=1,Type=String,Description=\"Ancestral Allele\">\n" +
+                            "##INFO=<ID=CQ,Number=1,Type=Integer,Description=\"Assembly quality\">",
             FORMAT_HEADER =
                     "##FORMAT=<ID=GT,Number=1,Type=String,Description=\"Genotype\">\n" +
                             "##INFO=<ID=DP,Number=1,Type=Integer,Description=\"MIG Depth\">",
@@ -64,7 +65,8 @@ public final class VcfUtil {
     public static String getInfo(Variant variant) {
         return "DP=" + variant.getDepth() +
                 ";AF=" + (float) variant.getAlleleFrequency() +
-                ";AA=" + variant.getAncestralAllele().toString();
+                ";AA=" + variant.getAncestralAllele().toString() +
+                ";CQ=" + (float) variant.getCqs();
     }
 
     public static String getSampleInfo(Variant variant) {

@@ -172,16 +172,17 @@ public abstract class ConsensusAligner<ConsensusType extends Consensus> extends 
 
     @Override
     public String getHeader() {
-        String header = "reference\tpos\tcoverage\tcqs.sum",
-                major = "", minor = "";
+        String header = "reference\tpos\tcoverage",
+                major = "", minor = "", cqs = "";
 
         for (byte i = 0; i < 4; i++) {
             char symbol = NucleotideAlphabet.INSTANCE.symbolFromCode(i);
             major += "\t" + symbol + ".major";
             minor += "\t" + symbol + ".minor";
+            cqs += "\t" + symbol + ".cqs";
         }
 
-        return header + major + minor;
+        return header + major + minor + cqs;
     }
 
     @Override
@@ -200,17 +201,18 @@ public abstract class ConsensusAligner<ConsensusType extends Consensus> extends 
                 for (int i = 0; i < reference.getSequence().size(); i++) {
                     stringBuilder.append(reference.getName()).append("\t").
                             append(i + 1).append("\t").
-                            append(mutationsTable.getMigCoverage(i)).append("\t").
-                            append(mutationsTable.getCqsSumCoverage(i));
+                            append(mutationsTable.getMigCoverage(i));
 
-                    StringBuilder major = new StringBuilder(), minor = new StringBuilder();
+                    StringBuilder major = new StringBuilder(), minor = new StringBuilder(),
+                            cqs = new StringBuilder();
 
                     for (byte j = 0; j < 4; j++) {
                         major.append("\t").append(mutationsTable.getMajorMigCount(i, j));
                         minor.append("\t").append(mutationsTable.getMinorMigCount(i, j));
+                        cqs.append("\t").append(mutationsTable.getMeanCqs(i, j));
                     }
 
-                    stringBuilder.append(major).append(minor).append("\n");
+                    stringBuilder.append(major).append(minor).append(cqs).append("\n");
                 }
             }
         }

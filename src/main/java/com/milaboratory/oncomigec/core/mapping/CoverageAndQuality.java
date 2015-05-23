@@ -30,11 +30,13 @@ package com.milaboratory.oncomigec.core.mapping;
 
 import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicIntegerArray;
+import java.util.concurrent.atomic.AtomicLongArray;
 
 /**
  * Singapore-style atomic coverage container.
  */
-public final class NucleotideCoverage implements Serializable {
+public final class CoverageAndQuality implements Serializable {
+    final AtomicLongArray qualitySum;
     final AtomicIntegerArray coverage;
     final int size;
 
@@ -43,9 +45,10 @@ public final class NucleotideCoverage implements Serializable {
      *
      * @param size size of container
      */
-    public NucleotideCoverage(int size) {
+    public CoverageAndQuality(int size) {
         this.size = size;
-        this.coverage = new AtomicIntegerArray(size * 4);
+        this.qualitySum = new AtomicLongArray(size * 4);
+        this.coverage = new AtomicIntegerArray(size);
     }
 
     /**
@@ -53,14 +56,11 @@ public final class NucleotideCoverage implements Serializable {
      *
      * @param position position in sequence
      * @param letter   letter
-     * @return value after increment
+     * @param by       quality value
      */
-    public int incrementCoverage(int position, int letter) {
-        return coverage.incrementAndGet(4 * position + letter);
-    }
-
-    public int incrementCoverage(int position, int letter, int count) {
-        return coverage.addAndGet(4 * position + letter, count);
+    public void increaseQualityAndCoverage(int position, int letter, byte by) {
+        coverage.incrementAndGet(position);
+        qualitySum.addAndGet(4 * position + letter, by);
     }
 
     /**
@@ -68,70 +68,32 @@ public final class NucleotideCoverage implements Serializable {
      *
      * @param position position in sequence
      * @param letter   letter
-     * @return value after decrement
+     * @param by       quality value
      */
-    public int decrementCoverage(int position, int letter) {
-        return coverage.decrementAndGet(4 * position + letter);
-    }
-
-    public int decrementCoverage(int position, int letter, int count) {
-        return coverage.addAndGet(4 * position + letter, -count);
+    public void decreaseQualityAndCoverage(int position, int letter, byte by) {
+        coverage.decrementAndGet(position);
+        qualitySum.addAndGet(4 * position + letter, -by);
     }
 
 
     /**
-     * Adds given delta to a given letter in a given position.
+     * Returns the coverage value
      *
-     * @param position position in sequence
-     * @param letter   letter
-     * @param delta    delta value
-     * @return value after addition
+     * @param position
+     * @return
      */
-    public int addCoverage(int position, int letter, int delta) {
-        return coverage.addAndGet(4 * position + letter, delta);
+    public int getCoverage(int position) {
+        return coverage.get(position);
     }
 
     /**
      * Returns the coverage value
      *
      * @param position
-     * @param letter
      * @return
      */
-    public int getCoverage(int position, int letter) {
-        return coverage.get(4 * position + letter);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof NucleotideCoverage)) return false;
-
-        NucleotideCoverage that = (NucleotideCoverage) o;
-
-        if (size != that.size) return false;
-        if (!coverage.equals(that.coverage)) return false;
-
-        return true;
-    }
-
-    @Override
-    public int hashCode() {
-        int result = coverage.hashCode();
-        result = 31 * result + size;
-        return result;
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder().append("NucleotideCoverage\n");
-        for (int l = 0; l < 4; ++l) {
-            for (int i = 0; i < size; ++i)
-                sb.append(getCoverage(i, l)).append("\t");
-            sb.deleteCharAt(sb.length() - 1); //Removing last "\t"
-            sb.append("\n");
-        }
-        sb.deleteCharAt(sb.length() - 1); //Removing last "\n"
-        return sb.toString();
+    public double getAverageQuality(int position, int letter) {
+        double qualSum = qualitySum.get(4 * position + letter);
+        return qualSum / coverage.get(position);
     }
 }

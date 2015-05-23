@@ -48,16 +48,18 @@ import java.util.concurrent.atomic.AtomicLongArray;
 public final class MutationsTable implements Serializable {
     private final Reference reference;
     private final AtomicInteger migCount;
-    private final NucleotideCoverage majorMigs, minorMigs;
+    private final NucleotideMatrix majorMigs, minorMigs;
     private final AtomicIntegerArray migCoverage;
     private final AtomicLongArray cqsSumCoverage;
+    private final CoverageAndQuality coverageAndQuality;
     private final Set<Mutation> mutations;
 
     public MutationsTable(Reference reference) {
         this.reference = reference;
         int l = reference.getSequence().size();
-        this.majorMigs = new NucleotideCoverage(l);
-        this.minorMigs = new NucleotideCoverage(l);
+        this.majorMigs = new NucleotideMatrix(l);
+        this.minorMigs = new NucleotideMatrix(l);
+        this.coverageAndQuality = new CoverageAndQuality(l);
         this.migCoverage = new AtomicIntegerArray(l);
         this.cqsSumCoverage = new AtomicLongArray(l);
         this.migCount = new AtomicInteger();
@@ -73,18 +75,20 @@ public final class MutationsTable implements Serializable {
         Range coveredRange = alignment.getSequence1Range();
 
         // Virtual reference coverage
-        for (int i = coveredRange.getFrom(); i < coveredRange.getTo(); i++) {
-            migCoverage.incrementAndGet(i);
+        for (int pos = coveredRange.getFrom(); pos < coveredRange.getTo(); pos++) {
+            byte nt = reference.getSequence().codeAt(pos);
+            //migCoverage.incrementAndGet(i);
 
-            int posInCons = alignment.convertPosition(i);
+            int posInCons = alignment.convertPosition(pos);
             if (posInCons >= 0) {
                 // MIG coverage
-                cqsSumCoverage.addAndGet(i, qual.value(posInCons));
+                //cqsSumCoverage.addAndGet(i, qual.value(posInCons));
+                coverageAndQuality.increaseQualityAndCoverage(pos,
+                        nt, qual.value(posInCons));
             }
 
             // Counters
-            byte nt = reference.getSequence().codeAt(i);
-            majorMigs.incrementCoverage(i, nt);
+            majorMigs.incrementCount(pos, nt);
         }
 
         // Update with real reference (a set of major mutations)
@@ -93,13 +97,18 @@ public final class MutationsTable implements Serializable {
                 int code = ((Substitution) mutation).getCode();
                 int pos = Mutations.getPosition(code),
                         to = Mutations.getTo(code),
-                        from = Mutations.getFrom(code);
+                        from = Mutations.getFrom(code),
+                        posInCons = alignment.convertPosition(pos);
 
                 // Increment major counters and read accumulation
-                majorMigs.incrementCoverage(pos, to);
+                majorMigs.incrementCount(pos, to);
+                coverageAndQuality.increaseQualityAndCoverage(pos,
+                        to, qual.value(posInCons));
 
                 // Balance the reference
-                majorMigs.decrementCoverage(pos, from);
+                majorMigs.decrementCount(pos, from);
+                coverageAndQuality.decreaseQualityAndCoverage(pos,
+                        from, qual.value(posInCons));
 
                 mutations.add(mutation);
             } else {
@@ -110,7 +119,7 @@ public final class MutationsTable implements Serializable {
         // Update minor counters
         for (int code : minorMutations) {
             int pos = Mutations.getPosition(code), to = Mutations.getTo(code);
-            minorMigs.incrementCoverage(pos, to);
+            minorMigs.incrementCount(pos, to);
         }
     }
 
@@ -122,7 +131,7 @@ public final class MutationsTable implements Serializable {
         byte maxBase = 0;
         int maxCount = 0;
         for (byte base = 0; base < 4; base++) {
-            int count = majorMigs.getCoverage(pos, base);
+            int count = majorMigs.getCount(pos, base);
             if (count > maxCount) {
                 maxCount = count;
                 maxBase = base;
@@ -132,11 +141,13 @@ public final class MutationsTable implements Serializable {
     }
 
     public int getMigCoverage(int pos) {
-        return migCoverage.get(pos);
+        //return migCoverage.get(pos);
+        return coverageAndQuality.getCoverage(pos);
     }
 
-    public long getCqsSumCoverage(int pos) {
-        return cqsSumCoverage.get(pos);
+    public double getMeanCqs(int pos, int letterCode) {
+        //return cqsSumCoverage.get(pos);
+        return coverageAndQuality.getAverageQuality(pos, letterCode);
     }
 
     public boolean hasReferenceBase(int pos) {
@@ -144,11 +155,11 @@ public final class MutationsTable implements Serializable {
     }
 
     public int getMajorMigCount(int position, int letterCode) {
-        return majorMigs.getCoverage(position, letterCode);
+        return majorMigs.getCount(position, letterCode);
     }
 
     public int getMinorMigCount(int position, int letterCode) {
-        return minorMigs.getCoverage(position, letterCode);
+        return minorMigs.getCount(position, letterCode);
     }
 
     public int getMigCount() {

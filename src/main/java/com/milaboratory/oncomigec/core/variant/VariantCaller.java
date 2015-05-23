@@ -97,7 +97,8 @@ public class VariantCaller extends PipelineBlock {
                         Variant variant = new Variant(reference,
                                 mutation, majorCount, minorCount,
                                 mutationsTable.getMigCoverage(pos),
-                                majorCount / (double) coverage, score,
+                                majorCount / (double) coverage,
+                                score, mutationsTable.getMeanCqs(pos, base),
                                 nsb.create(), mutationsTable.hasReferenceBase(pos));
 
                         variant.filter(this);
