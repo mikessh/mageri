@@ -29,11 +29,13 @@
 
 package com.milaboratory.oncomigec.core.assemble;
 
+import com.milaboratory.oncomigec.core.input.PreprocessorParameters;
 import com.milaboratory.oncomigec.core.input.SMig;
 
 public final class SAssemblerFactory extends AssemblerFactory<SConsensus, SMig> {
-    public SAssemblerFactory(AssemblerParameters parameters) {
-        super(parameters);
+    public SAssemblerFactory(PreprocessorParameters preprocessorParameters,
+                             AssemblerParameters parameters) {
+        super(preprocessorParameters, parameters);
     }
 
     public SAssemblerFactory() {
@@ -41,7 +43,7 @@ public final class SAssemblerFactory extends AssemblerFactory<SConsensus, SMig> 
 
     @Override
     public SAssembler create() {
-        return new SAssembler(parameters);
+        return new SAssembler(preprocessorParameters, parameters);
     }
 
     @Override

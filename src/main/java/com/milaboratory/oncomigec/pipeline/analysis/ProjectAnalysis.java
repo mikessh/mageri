@@ -89,7 +89,8 @@ public class ProjectAnalysis implements Serializable {
         this.preprocessorFactory = new PreprocessorFactory(presets.getDemultiplexParameters(),
                 presets.getPreprocessorParameters());
 
-        this.pipelineAssemblerFactory = new PipelineAssemblerFactory(presets.getAssemblerParameters());
+        this.pipelineAssemblerFactory = new PipelineAssemblerFactory(presets.getPreprocessorParameters(),
+                presets.getAssemblerParameters());
 
         ExtendedKmerAlignerFactory alignerFactory = new ExtendedKmerAlignerFactory(referenceLibrary);
 

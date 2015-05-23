@@ -30,6 +30,7 @@
 package com.milaboratory.oncomigec.core.assemble;
 
 import com.milaboratory.oncomigec.core.input.PMig;
+import com.milaboratory.oncomigec.core.input.PreprocessorParameters;
 
 public final class PAssembler extends Assembler<PConsensus, PMig> {
     private final SAssembler assembler1, assembler2;
@@ -38,9 +39,10 @@ public final class PAssembler extends Assembler<PConsensus, PMig> {
         this(new SAssembler(), new SAssembler());
     }
 
-    public PAssembler(AssemblerParameters assemblerParameters) {
-        this.assembler1 = new SAssembler(assemblerParameters);
-        this.assembler2 = new SAssembler(assemblerParameters);
+    public PAssembler(PreprocessorParameters preprocessorParameters,
+                      AssemblerParameters assemblerParameters) {
+        this.assembler1 = new SAssembler(preprocessorParameters, assemblerParameters);
+        this.assembler2 = new SAssembler(preprocessorParameters, assemblerParameters);
         assembler1.storeConsensuses = false;
         assembler2.storeConsensuses = false;
     }

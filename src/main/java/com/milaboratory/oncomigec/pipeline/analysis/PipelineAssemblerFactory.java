@@ -34,6 +34,7 @@ import com.milaboratory.oncomigec.core.assemble.AssemblerParameters;
 import com.milaboratory.oncomigec.core.assemble.PAssemblerFactory;
 import com.milaboratory.oncomigec.core.assemble.SAssemblerFactory;
 import com.milaboratory.oncomigec.core.assemble.Assembler;
+import com.milaboratory.oncomigec.core.input.PreprocessorParameters;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -43,10 +44,11 @@ public class PipelineAssemblerFactory extends PipelineBlock {
     private final PAssemblerFactory pairedFactory;
     private final SAssemblerFactory singleFactory;
 
-    public PipelineAssemblerFactory(AssemblerParameters assemblerParameters) {
+    public PipelineAssemblerFactory(PreprocessorParameters preprocessorParameters,
+                                    AssemblerParameters assemblerParameters) {
         super("assemble");
-        this.pairedFactory = new PAssemblerFactory(assemblerParameters);
-        this.singleFactory = new SAssemblerFactory(assemblerParameters);
+        this.pairedFactory = new PAssemblerFactory(preprocessorParameters, assemblerParameters);
+        this.singleFactory = new SAssemblerFactory(preprocessorParameters, assemblerParameters);
     }
 
     public Assembler create(Sample sample) {

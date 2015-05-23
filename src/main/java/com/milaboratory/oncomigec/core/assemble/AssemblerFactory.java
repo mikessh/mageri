@@ -31,19 +31,28 @@ package com.milaboratory.oncomigec.core.assemble;
 
 import com.milaboratory.oncomigec.core.Mig;
 import com.milaboratory.oncomigec.core.ReadSpecific;
+import com.milaboratory.oncomigec.core.input.PreprocessorParameters;
 
 public abstract class AssemblerFactory<T extends Consensus, V extends Mig> implements ReadSpecific {
     protected final AssemblerParameters parameters;
+    protected final PreprocessorParameters preprocessorParameters;
 
-    protected AssemblerFactory(AssemblerParameters parameters) {
+    protected AssemblerFactory(PreprocessorParameters preprocessorParameters,
+                               AssemblerParameters parameters) {
+        this.preprocessorParameters = preprocessorParameters;
         this.parameters = parameters;
     }
 
     protected AssemblerFactory() {
-        this(AssemblerParameters.DEFAULT);
+        this(PreprocessorParameters.DEFAULT,
+                AssemblerParameters.DEFAULT);
     }
 
     public abstract Assembler<T, V> create();
+
+    public PreprocessorParameters getPreprocessorParameters() {
+        return preprocessorParameters;
+    }
 
     public AssemblerParameters getParameters() {
         return parameters;

@@ -34,23 +34,30 @@ import com.milaboratory.core.sequence.mutations.Mutations;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequenceBuilder;
 import com.milaboratory.core.sequence.quality.SequenceQualityPhred;
+import com.milaboratory.oncomigec.core.input.PreprocessorParameters;
 import com.milaboratory.oncomigec.core.input.SMig;
 import com.milaboratory.oncomigec.core.input.index.Read;
+import org.apache.commons.math.MathException;
+import org.apache.commons.math.distribution.BinomialDistribution;
+import org.apache.commons.math.distribution.BinomialDistributionImpl;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static com.milaboratory.oncomigec.misc.QualityDefaults.*;
 
-public final class SAssembler extends Assembler<SConsensus, SMig> {
-    private final AssemblerParameters parameters;
+public class SAssembler extends Assembler<SConsensus, SMig> {
+    protected final PreprocessorParameters preprocessorParameters;
+    protected final AssemblerParameters parameters;
     private final AtomicLong readsDroppedShort = new AtomicLong(), readsDroppedErrors = new AtomicLong();
 
     public SAssembler() {
-        this.parameters = AssemblerParameters.DEFAULT;
+        this(PreprocessorParameters.DEFAULT, AssemblerParameters.DEFAULT);
     }
 
-    public SAssembler(AssemblerParameters parameters) {
+    public SAssembler(PreprocessorParameters preprocessorParameters,
+                      AssemblerParameters parameters) {
+        this.preprocessorParameters = preprocessorParameters;
         this.parameters = parameters;
     }
 
@@ -242,11 +249,12 @@ public final class SAssembler extends Assembler<SConsensus, SMig> {
         }
 
         // Search for minors
+        MinorEvaluator minorEvaluator = new MinorEvaluator(mig.size());
         Set<Integer> minors = new HashSet<>();
         for (int k = goodSeqStart; k < goodSeqEnd; k++) {
             byte from = consensusSQPair.getSequence().codeAt(k - goodSeqStart);
             for (byte l = 0; l < 4; l++) {
-                if (l != from && exactPwm[k][l] > 0) {
+                if (l != from && minorEvaluator.isGood(exactPwm[k][l])) {
                     minors.add(Mutations.createSubstitution(k - goodSeqStart, from, l));
                 }
             }
@@ -357,5 +365,25 @@ public final class SAssembler extends Assembler<SConsensus, SMig> {
     @Override
     public boolean isPairedEnd() {
         return false;
+    }
+
+    protected class MinorEvaluator {
+        private static final double P_VALUE = 0.05;
+        private final int threshold;
+
+        public MinorEvaluator(int migSize) {
+            BinomialDistribution binomialDistribution = new BinomialDistributionImpl(migSize,
+                    Math.pow(10, -(double) preprocessorParameters.getGoodQualityThreshold() / 10.0));
+
+            try {
+                this.threshold = Math.max(0, binomialDistribution.inverseCumulativeProbability(1.0 - P_VALUE));
+            } catch (MathException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        public boolean isGood(int count) {
+            return count > threshold;
+        }
     }
 }

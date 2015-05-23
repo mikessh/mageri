@@ -33,9 +33,10 @@ import com.milaboratory.core.sequence.NucleotideSQPair;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.oncomigec.DoubleRangeAssertion;
 import com.milaboratory.oncomigec.FastTests;
+import com.milaboratory.oncomigec.core.input.PreprocessorParameters;
 import com.milaboratory.oncomigec.core.input.SMig;
-import com.milaboratory.oncomigec.generators.MutationGenerator;
 import com.milaboratory.oncomigec.generators.MigWithMutations;
+import com.milaboratory.oncomigec.generators.MutationGenerator;
 import com.milaboratory.oncomigec.generators.RandomMigGenerator;
 import com.milaboratory.oncomigec.generators.RandomReferenceGenerator;
 import org.junit.Test;
@@ -77,7 +78,8 @@ public class AssemblerModeTest {
                                           DoubleRangeAssertion meanUmiCoverageRange) throws Exception {
         int nRepetitions = 1000;
         RandomReferenceGenerator referenceGenerator = new RandomReferenceGenerator();
-        SAssembler assembler = new SAssembler(parameters);
+        SAssembler assembler = new SAssembler(PreprocessorParameters.IGNORE_QUAL,
+                parameters);
         SConsensus consensus;
 
         int migsAssembled = 0;

@@ -30,10 +30,12 @@
 package com.milaboratory.oncomigec.core.assemble;
 
 import com.milaboratory.oncomigec.core.input.PMig;
+import com.milaboratory.oncomigec.core.input.PreprocessorParameters;
 
 public final class PAssemblerFactory extends AssemblerFactory<PConsensus, PMig> {
-    public PAssemblerFactory(AssemblerParameters parameters) {
-        super(parameters);
+    public PAssemblerFactory(PreprocessorParameters preprocessorParameters,
+                             AssemblerParameters parameters) {
+        super(preprocessorParameters, parameters);
     }
 
     public PAssemblerFactory() {
@@ -41,7 +43,8 @@ public final class PAssemblerFactory extends AssemblerFactory<PConsensus, PMig> 
 
     @Override
     public PAssembler create() {
-        return new PAssembler(new SAssembler(parameters), new SAssembler(parameters));
+        return new PAssembler(new SAssembler(preprocessorParameters, parameters),
+                new SAssembler(preprocessorParameters, parameters));
     }
 
     @Override
