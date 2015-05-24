@@ -78,7 +78,7 @@ public class AssemblerModeTest {
                                           DoubleRangeAssertion meanUmiCoverageRange) throws Exception {
         int nRepetitions = 1000;
         RandomReferenceGenerator referenceGenerator = new RandomReferenceGenerator();
-        SAssembler assembler = new SAssembler(PreprocessorParameters.IGNORE_QUAL,
+        SAssembler assembler = new SAssembler(PreprocessorParameters.IGNORE_QUAL, // don't care abt minors here
                 parameters);
         SConsensus consensus;
 

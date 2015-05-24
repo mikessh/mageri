@@ -47,7 +47,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import static com.milaboratory.oncomigec.misc.QualityDefaults.*;
 
 public class SAssembler extends Assembler<SConsensus, SMig> {
-    protected final PreprocessorParameters preprocessorParameters;
+    protected final double minorFreqThreshold;
     protected final AssemblerParameters parameters;
     private final AtomicLong readsDroppedShort = new AtomicLong(), readsDroppedErrors = new AtomicLong();
 
@@ -57,7 +57,7 @@ public class SAssembler extends Assembler<SConsensus, SMig> {
 
     public SAssembler(PreprocessorParameters preprocessorParameters,
                       AssemblerParameters parameters) {
-        this.preprocessorParameters = preprocessorParameters;
+        this.minorFreqThreshold = Math.pow(10.0, -(double) preprocessorParameters.getGoodQualityThreshold() / 10.0);
         this.parameters = parameters;
     }
 
@@ -254,7 +254,7 @@ public class SAssembler extends Assembler<SConsensus, SMig> {
         for (int k = goodSeqStart; k < goodSeqEnd; k++) {
             byte from = consensusSQPair.getSequence().codeAt(k - goodSeqStart);
             for (byte l = 0; l < 4; l++) {
-                if (l != from && minorEvaluator.isGood(exactPwm[k][l])) {
+                if (l != from && exactPwm[k][l] > minorFreqThreshold * n) {
                     minors.add(Mutations.createSubstitution(k - goodSeqStart, from, l));
                 }
             }
@@ -373,7 +373,7 @@ public class SAssembler extends Assembler<SConsensus, SMig> {
 
         public MinorEvaluator(int migSize) {
             BinomialDistribution binomialDistribution = new BinomialDistributionImpl(migSize,
-                    Math.pow(10, -(double) preprocessorParameters.getGoodQualityThreshold() / 10.0));
+                    minorFreqThreshold);
 
             try {
                 this.threshold = Math.max(0, binomialDistribution.inverseCumulativeProbability(1.0 - P_VALUE));
