@@ -29,15 +29,13 @@
 package com.milaboratory.oncomigec.core.mapping;
 
 import java.io.Serializable;
-import java.util.concurrent.atomic.AtomicIntegerArray;
 import java.util.concurrent.atomic.AtomicLongArray;
 
 /**
  * Singapore-style atomic coverage container.
  */
-public final class CoverageAndQuality implements Serializable {
+public final class QualitySumMatrix implements Serializable {
     final AtomicLongArray qualitySum;
-    final AtomicIntegerArray coverage;
     final int size;
 
     /**
@@ -45,10 +43,9 @@ public final class CoverageAndQuality implements Serializable {
      *
      * @param size size of container
      */
-    public CoverageAndQuality(int size) {
+    public QualitySumMatrix(int size) {
         this.size = size;
         this.qualitySum = new AtomicLongArray(size * 4);
-        this.coverage = new AtomicIntegerArray(size);
     }
 
     /**
@@ -58,8 +55,7 @@ public final class CoverageAndQuality implements Serializable {
      * @param letter   letter
      * @param by       quality value
      */
-    public void increaseQualityAndCoverage(int position, int letter, byte by) {
-        coverage.incrementAndGet(position);
+    public void increaseAt(int position, int letter, byte by) {
         qualitySum.addAndGet(4 * position + letter, by);
     }
 
@@ -70,30 +66,21 @@ public final class CoverageAndQuality implements Serializable {
      * @param letter   letter
      * @param by       quality value
      */
-    public void decreaseQualityAndCoverage(int position, int letter, byte by) {
-        coverage.decrementAndGet(position);
+    public void decreaseAt(int position, int letter, byte by) {
         qualitySum.addAndGet(4 * position + letter, -by);
     }
 
-
     /**
      * Returns the coverage value
      *
      * @param position
      * @return
      */
-    public int getCoverage(int position) {
-        return coverage.get(position);
+    public long getAt(int position, int letter) {
+        return qualitySum.get(4 * position + letter);
     }
 
-    /**
-     * Returns the coverage value
-     *
-     * @param position
-     * @return
-     */
-    public double getAverageQuality(int position, int letter) {
-        double qualSum = qualitySum.get(4 * position + letter);
-        return qualSum / coverage.get(position);
+    public int size() {
+        return size;
     }
 }

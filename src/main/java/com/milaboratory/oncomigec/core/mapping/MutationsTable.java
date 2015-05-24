@@ -42,16 +42,12 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicIntegerArray;
-import java.util.concurrent.atomic.AtomicLongArray;
 
 public final class MutationsTable implements Serializable {
     private final Reference reference;
     private final AtomicInteger migCount;
     private final NucleotideMatrix majorMigs, minorMigs;
-    private final AtomicIntegerArray migCoverage;
-    private final AtomicLongArray cqsSumCoverage;
-    private final CoverageAndQuality coverageAndQuality;
+    private final QualitySumMatrix qualitySum;
     private final Set<Mutation> mutations;
 
     public MutationsTable(Reference reference) {
@@ -59,9 +55,7 @@ public final class MutationsTable implements Serializable {
         int l = reference.getSequence().size();
         this.majorMigs = new NucleotideMatrix(l);
         this.minorMigs = new NucleotideMatrix(l);
-        this.coverageAndQuality = new CoverageAndQuality(l);
-        this.migCoverage = new AtomicIntegerArray(l);
-        this.cqsSumCoverage = new AtomicLongArray(l);
+        this.qualitySum = new QualitySumMatrix(l);
         this.migCount = new AtomicInteger();
         this.mutations = new HashSet<>();
     }
@@ -83,12 +77,12 @@ public final class MutationsTable implements Serializable {
             if (posInCons >= 0) {
                 // MIG coverage
                 //cqsSumCoverage.addAndGet(i, qual.value(posInCons));
-                coverageAndQuality.increaseQualityAndCoverage(pos,
+                qualitySum.increaseAt(pos,
                         nt, qual.value(posInCons));
             }
 
             // Counters
-            majorMigs.incrementCount(pos, nt);
+            majorMigs.incrementAt(pos, nt);
         }
 
         // Update with real reference (a set of major mutations)
@@ -101,13 +95,13 @@ public final class MutationsTable implements Serializable {
                         posInCons = alignment.convertPosition(pos);
 
                 // Increment major counters and read accumulation
-                majorMigs.incrementCount(pos, to);
-                coverageAndQuality.increaseQualityAndCoverage(pos,
+                majorMigs.incrementAt(pos, to);
+                qualitySum.increaseAt(pos,
                         to, qual.value(posInCons));
 
                 // Balance the reference
-                majorMigs.decrementCount(pos, from);
-                coverageAndQuality.decreaseQualityAndCoverage(pos,
+                majorMigs.decrementAt(pos, from);
+                qualitySum.decreaseAt(pos,
                         from, qual.value(posInCons));
 
                 mutations.add(mutation);
@@ -119,7 +113,7 @@ public final class MutationsTable implements Serializable {
         // Update minor counters
         for (int code : minorMutations) {
             int pos = Mutations.getPosition(code), to = Mutations.getTo(code);
-            minorMigs.incrementCount(pos, to);
+            minorMigs.incrementAt(pos, to);
         }
     }
 
@@ -131,7 +125,7 @@ public final class MutationsTable implements Serializable {
         byte maxBase = 0;
         int maxCount = 0;
         for (byte base = 0; base < 4; base++) {
-            int count = majorMigs.getCount(pos, base);
+            int count = majorMigs.getAt(pos, base);
             if (count > maxCount) {
                 maxCount = count;
                 maxBase = base;
@@ -141,13 +135,17 @@ public final class MutationsTable implements Serializable {
     }
 
     public int getMigCoverage(int pos) {
-        //return migCoverage.get(pos);
-        return coverageAndQuality.getCoverage(pos);
+        int coverage = 0;
+
+        for (int i = 0; i < 4; i++) {
+            coverage += getMajorMigCount(pos, i);
+        }
+
+        return coverage;
     }
 
-    public double getMeanCqs(int pos, int letterCode) {
-        //return cqsSumCoverage.get(pos);
-        return coverageAndQuality.getAverageQuality(pos, letterCode);
+    public float getMeanCqs(int pos, int letterCode) {
+        return (float) qualitySum.getAt(pos, letterCode) / getMigCoverage(pos);
     }
 
     public boolean hasReferenceBase(int pos) {
@@ -155,11 +153,11 @@ public final class MutationsTable implements Serializable {
     }
 
     public int getMajorMigCount(int position, int letterCode) {
-        return majorMigs.getCount(position, letterCode);
+        return majorMigs.getAt(position, letterCode);
     }
 
     public int getMinorMigCount(int position, int letterCode) {
-        return minorMigs.getCount(position, letterCode);
+        return minorMigs.getAt(position, letterCode);
     }
 
     public int getMigCount() {

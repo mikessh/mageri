@@ -55,7 +55,7 @@ public final class NucleotideMatrix implements Serializable {
      * @param letter   letter
      * @return value after increment
      */
-    public int incrementCount(int position, int letter) {
+    public int incrementAt(int position, int letter) {
         return matrixArray.incrementAndGet(4 * position + letter);
     }
 
@@ -66,7 +66,7 @@ public final class NucleotideMatrix implements Serializable {
      * @param letter   letter
      * @return value after decrement
      */
-    public int decrementCount(int position, int letter) {
+    public int decrementAt(int position, int letter) {
         return matrixArray.decrementAndGet(4 * position + letter);
     }
 
@@ -77,8 +77,12 @@ public final class NucleotideMatrix implements Serializable {
      * @param letter
      * @return
      */
-    public int getCount(int position, int letter) {
+    public int getAt(int position, int letter) {
         return matrixArray.get(4 * position + letter);
+    }
+
+    int getSize() {
+        return size;
     }
 
     @Override
@@ -106,7 +110,7 @@ public final class NucleotideMatrix implements Serializable {
         StringBuilder sb = new StringBuilder().append("NucleotideMatrix\n");
         for (int l = 0; l < 4; ++l) {
             for (int i = 0; i < size; ++i)
-                sb.append(getCount(i, l)).append("\t");
+                sb.append(getAt(i, l)).append("\t");
             sb.deleteCharAt(sb.length() - 1); //Removing last "\t"
             sb.append("\n");
         }
