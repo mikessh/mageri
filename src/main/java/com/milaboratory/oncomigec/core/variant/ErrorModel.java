@@ -36,6 +36,8 @@ import org.apache.commons.math.distribution.BinomialDistributionImpl;
 import java.io.Serializable;
 
 public class ErrorModel implements Serializable {
+    public static final int COVERAGE_THRESHOLD = 100;
+
     private double order;
     private double cycles, lambda;
     private double propagateProb;
@@ -58,9 +60,9 @@ public class ErrorModel implements Serializable {
             return 0;
         }
 
-        minorCount = minorCount == 0 ? 1 : minorCount;
+        minorCount = minorCount > 0 ? minorCount : 1;
 
-        double rate = Math.max(minorCount / (double) total,
+        double rate = Math.max(total < COVERAGE_THRESHOLD ? 0 : (minorCount / (double) total),
                 minorMatrix.getRate(from, to));
 
         double errorRateBase = Math.pow(1.0 - rate, 1.0 / cycles),
