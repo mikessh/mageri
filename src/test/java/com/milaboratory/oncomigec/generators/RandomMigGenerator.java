@@ -32,6 +32,7 @@ package com.milaboratory.oncomigec.generators;
 import com.milaboratory.core.sequence.mutations.Mutations;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.oncomigec.core.genomic.Reference;
+import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
 import com.milaboratory.oncomigec.core.input.SMig;
 import com.milaboratory.oncomigec.core.input.index.Read;
 import com.milaboratory.oncomigec.pipeline.analysis.Sample;
@@ -55,6 +56,10 @@ public class RandomMigGenerator {
 
     public MigWithMutations nextMig(RandomReferenceGenerator referenceGenerator) {
         return nextMig(referenceGenerator.nextSequence());
+    }
+
+    public MigWithMutations nextMig(RandomReferenceGenerator referenceGenerator, ReferenceLibrary referenceLibrary) {
+        return nextMig(referenceGenerator.nextReference(referenceLibrary));
     }
 
     public MigWithMutations nextMigWithMajorMutations(Reference reference) {

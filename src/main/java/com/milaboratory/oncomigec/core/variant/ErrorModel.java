@@ -36,6 +36,8 @@ import org.apache.commons.math.distribution.BinomialDistributionImpl;
 import java.io.Serializable;
 
 public class ErrorModel implements Serializable {
+    public static final int COVERAGE_THRESHOLD = 100;
+
     private double order;
     private double cycles, lambda;
     private double propagateProb;
@@ -51,25 +53,30 @@ public class ErrorModel implements Serializable {
         calcPropagateProb();
     }
 
-    public double getLog10PValue(int majorCount, int minorCount, int total) {
+    public double getLog10PValue(int majorCount, int minorCount, int total,
+                                 int from, int to,
+                                 MinorMatrix minorMatrix) {
         if (majorCount == 0) {
             return 0;
         }
 
-        minorCount = minorCount == 0 ? 1 : minorCount;
+        minorCount = minorCount > 0 ? minorCount : 1;
 
-        double errorRateBase = Math.pow(1.0 - minorCount / (double) total, 1.0 / cycles),
+        double rate = Math.max(total < COVERAGE_THRESHOLD ? 0 : (minorCount / (double) total),
+                minorMatrix.getRate(from, to));
+
+        double errorRateBase = Math.pow(1.0 - rate, 1.0 / cycles),
                 errorRate = Math.log(lambda) - Math.log((1.0 + lambda) * errorRateBase - 1);
 
         BinomialDistribution binomialDistribution = new BinomialDistributionImpl(total,
                 errorRate * propagateProb);
 
         try {
-            return -Math.log10(1.0 - binomialDistribution.cumulativeProbability(majorCount) +
+            return Math.log10(1.0 - binomialDistribution.cumulativeProbability(majorCount) +
                     0.5 * binomialDistribution.probability(majorCount));
         } catch (MathException e) {
             e.printStackTrace();
-            return -Math.log10(binomialDistribution.probability(majorCount));
+            return Math.log10(binomialDistribution.probability(majorCount));
         }
     }
 

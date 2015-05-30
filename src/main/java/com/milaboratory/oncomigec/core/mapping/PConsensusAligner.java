@@ -31,10 +31,12 @@ package com.milaboratory.oncomigec.core.mapping;
 
 import com.milaboratory.core.sequence.NucleotideSQPair;
 import com.milaboratory.core.sequence.mutations.Mutations;
-import com.milaboratory.oncomigec.core.mapping.alignment.Aligner;
-import com.milaboratory.oncomigec.core.mapping.alignment.AlignmentResult;
 import com.milaboratory.oncomigec.core.assemble.PConsensus;
 import com.milaboratory.oncomigec.core.assemble.SConsensus;
+import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
+import com.milaboratory.oncomigec.core.mapping.alignment.Aligner;
+import com.milaboratory.oncomigec.core.mapping.alignment.AlignmentResult;
+import com.milaboratory.oncomigec.core.mapping.alignment.ExtendedKmerAligner;
 import com.milaboratory.oncomigec.core.mutations.MutationArray;
 import com.milaboratory.oncomigec.misc.Overlapper;
 
@@ -50,6 +52,10 @@ public final class PConsensusAligner extends ConsensusAligner<PConsensus> {
 
     public PConsensusAligner(Aligner aligner) {
         super(aligner, ConsensusAlignerParameters.DEFAULT);
+    }
+
+    public PConsensusAligner(ReferenceLibrary referenceLibrary) {
+        super(new ExtendedKmerAligner(referenceLibrary), ConsensusAlignerParameters.DEFAULT);
     }
 
     @Override

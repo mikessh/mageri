@@ -94,7 +94,7 @@ public class VariantCallerTest {
                 PercentRangeAssertion.createUpperBound("Erroneous unique variants", setting, 1),
                 DoubleRangeAssertion.createUpperBound("Average variant count difference", setting, 0.01),
                 PercentRangeAssertion.createLowerBound("Specificity", setting, 95),
-                PercentRangeAssertion.createLowerBound("Sensitivity", setting, 80));
+                PercentRangeAssertion.createLowerBound("Sensitivity", setting, 90));
     }
 
     @SuppressWarnings("unchecked")
