@@ -71,12 +71,10 @@ public final class MutationsTable implements Serializable {
         // Virtual reference coverage
         for (int pos = coveredRange.getFrom(); pos < coveredRange.getTo(); pos++) {
             byte nt = reference.getSequence().codeAt(pos);
-            //migCoverage.incrementAndGet(i);
 
             int posInCons = alignment.convertPosition(pos);
             if (posInCons >= 0) {
                 // MIG coverage
-                //cqsSumCoverage.addAndGet(i, qual.value(posInCons));
                 qualitySum.increaseAt(pos,
                         nt, qual.value(posInCons));
             }
@@ -145,7 +143,7 @@ public final class MutationsTable implements Serializable {
     }
 
     public float getMeanCqs(int pos, int letterCode) {
-        return (float) qualitySum.getAt(pos, letterCode) / getMigCoverage(pos);
+        return (float) qualitySum.getAt(pos, letterCode) / getMajorMigCount(pos, letterCode);
     }
 
     public boolean hasReferenceBase(int pos) {

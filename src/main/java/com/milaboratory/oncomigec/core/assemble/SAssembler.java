@@ -249,12 +249,12 @@ public class SAssembler extends Assembler<SConsensus, SMig> {
         }
 
         // Search for minors
-        MinorEvaluator minorEvaluator = new MinorEvaluator(mig.size());
+        int minorCountThreshold = (int) (minorFreqThreshold * n);
         Set<Integer> minors = new HashSet<>();
         for (int k = goodSeqStart; k < goodSeqEnd; k++) {
             byte from = consensusSQPair.getSequence().codeAt(k - goodSeqStart);
             for (byte l = 0; l < 4; l++) {
-                if (l != from && exactPwm[k][l] > minorFreqThreshold * n) {
+                if (l != from && exactPwm[k][l] > minorCountThreshold) {
                     minors.add(Mutations.createSubstitution(k - goodSeqStart, from, l));
                 }
             }
