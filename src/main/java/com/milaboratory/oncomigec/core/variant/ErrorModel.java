@@ -53,7 +53,7 @@ public class ErrorModel implements Serializable {
 
     public double getLog10PValue(int majorCount, int minorCount, int total,
                                  int from, int to,
-                                 SubstitutionMatrix substitutionMatrix) {
+                                 MinorMatrix minorMatrix) {
         if (majorCount == 0) {
             return 0;
         }
@@ -61,7 +61,7 @@ public class ErrorModel implements Serializable {
         minorCount = minorCount == 0 ? 1 : minorCount;
 
         double rate = Math.max(minorCount / (double) total,
-                substitutionMatrix.getRate(from, to));
+                minorMatrix.getRate(from, to));
 
         double errorRateBase = Math.pow(1.0 - rate, 1.0 / cycles),
                 errorRate = Math.log(lambda) - Math.log((1.0 + lambda) * errorRateBase - 1);

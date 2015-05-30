@@ -72,7 +72,7 @@ public class VariantCaller extends PipelineBlock {
 
         for (Reference reference : referenceLibrary.getReferences()) {
             final MutationsTable mutationsTable = consensusAligner.getAlignerTable(reference);
-            final SubstitutionMatrix substitutionMatrix = SubstitutionMatrix.fromMutationsTable(mutationsTable);
+            final MinorMatrix minorMatrix = MinorMatrix.fromMutationsTable(mutationsTable);
             if (mutationsTable.wasUpdated()) {
                 for (Mutation mutation : mutationsTable.getMutations()) {
                     if (mutation instanceof Substitution) {
@@ -89,7 +89,7 @@ public class VariantCaller extends PipelineBlock {
 
                         double score = -10 * errorModel.getLog10PValue(majorCount, minorCount, coverage,
                                 from, to,
-                                substitutionMatrix);
+                                minorMatrix);
 
                         NucleotideSequenceBuilder nsb = new NucleotideSequenceBuilder(1);
                         nsb.setCode(0, mutationsTable.getAncestralBase(pos));

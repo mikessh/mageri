@@ -31,18 +31,49 @@ package com.milaboratory.oncomigec.core.variant;
 
 import com.milaboratory.oncomigec.core.mapping.MutationsTable;
 
-public class SubstitutionMatrix {
-    private final double[][] rateMatrix;
+public class MinorMatrix {
+    private final double[][] innerMatrix;
 
-    public static final SubstitutionMatrix DEFAULT = new SubstitutionMatrix(new double[4][4]);
+    public static final MinorMatrix DEFAULT = new MinorMatrix(new double[][]{
+            //  A        G        C        T
+            {0.00000, 0.08551, 0.00427, 0.00005},
+            {0.05339, 0.00000, 0.00005, 0.01960},
+            {0.00635, 0.07048, 0.00000, 0.06102},
+            {0.00005, 0.00005, 0.07926, 0.00000}
+    });
 
-    public static SubstitutionMatrix fromMutationsTable(MutationsTable mutationsTable) {
-        return new SubstitutionMatrix(new double[4][4]);
+    public static MinorMatrix fromMutationsTable(MutationsTable mutationsTable) {
+        double[][] innerMatrix = new double[4][4];
+        double[] fromCounters = new double[4];
+
+        for (int pos = 0; pos < mutationsTable.length(); pos++) {
+            int total = mutationsTable.getMigCoverage(pos);
+
+            for (int from = 0; from < 4; from++) {
+                int count = mutationsTable.getMajorMigCount(pos, from);
+                if (count > 0) {
+                    double factor = count / (double) total;
+                    fromCounters[from] += count;
+                    for (int to = 0; to < 4; to++) {
+                        if (from != to) {
+                            innerMatrix[from][to] += mutationsTable.getMinorMigCount(pos, to) * factor;
+                        }
+                    }
+                }
+            }
+        }
+
+        for (int from = 0; from < 4; from++) {
+            for (int to = 0; to < 4; to++) {
+                innerMatrix[from][to] /= fromCounters[from];
+            }
+        }
+
+        return new MinorMatrix(innerMatrix);
     }
 
-    private SubstitutionMatrix(double[][] rateMatrix) {
-        this.rateMatrix = rateMatrix;
-
+    private MinorMatrix(double[][] innerMatrix) {
+        this.innerMatrix = innerMatrix;
     }
 
     public double getRate(int from, int to) {
@@ -50,6 +81,6 @@ public class SubstitutionMatrix {
     }
 
     public double getRate(int from, int to, boolean symmetric) {
-        return symmetric ? 0.5 * (rateMatrix[from][to] + rateMatrix[to][from]) : rateMatrix[from][to];
+        return symmetric ? 0.5 * (innerMatrix[from][to] + innerMatrix[to][from]) : innerMatrix[from][to];
     }
 }

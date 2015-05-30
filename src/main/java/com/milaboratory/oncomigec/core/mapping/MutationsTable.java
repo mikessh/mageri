@@ -169,4 +169,8 @@ public final class MutationsTable implements Serializable {
     public Set<Mutation> getMutations() {
         return Collections.unmodifiableSet(mutations);
     }
+
+    public int length() {
+        return reference.getSequence().size();
+    }
 }
