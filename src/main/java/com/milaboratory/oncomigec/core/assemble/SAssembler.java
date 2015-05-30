@@ -366,24 +366,4 @@ public class SAssembler extends Assembler<SConsensus, SMig> {
     public boolean isPairedEnd() {
         return false;
     }
-
-    protected class MinorEvaluator {
-        private static final double P_VALUE = 0.05;
-        private final int threshold;
-
-        public MinorEvaluator(int migSize) {
-            BinomialDistribution binomialDistribution = new BinomialDistributionImpl(migSize,
-                    minorFreqThreshold);
-
-            try {
-                this.threshold = Math.max(0, binomialDistribution.inverseCumulativeProbability(1.0 - P_VALUE));
-            } catch (MathException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        public boolean isGood(int count) {
-            return count > threshold;
-        }
-    }
 }
