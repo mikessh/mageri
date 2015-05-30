@@ -31,8 +31,10 @@ package com.milaboratory.oncomigec.core.mapping;
 
 import com.milaboratory.core.sequence.NucleotideSQPair;
 import com.milaboratory.oncomigec.core.assemble.SConsensus;
+import com.milaboratory.oncomigec.core.genomic.ReferenceLibrary;
 import com.milaboratory.oncomigec.core.mapping.alignment.Aligner;
 import com.milaboratory.oncomigec.core.mapping.alignment.AlignmentResult;
+import com.milaboratory.oncomigec.core.mapping.alignment.ExtendedKmerAligner;
 import com.milaboratory.oncomigec.core.mutations.MutationArray;
 
 public final class SConsensusAligner extends ConsensusAligner<SConsensus> {
@@ -43,6 +45,10 @@ public final class SConsensusAligner extends ConsensusAligner<SConsensus> {
 
     public SConsensusAligner(Aligner aligner) {
         super(aligner, ConsensusAlignerParameters.DEFAULT);
+    }
+
+    public SConsensusAligner(ReferenceLibrary referenceLibrary) {
+        super(new ExtendedKmerAligner(referenceLibrary), ConsensusAlignerParameters.DEFAULT);
     }
 
     @Override
