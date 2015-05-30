@@ -69,7 +69,7 @@ public class VariantCallerTest {
                 PercentRangeAssertion.createUpperBound("Erroneous unique variants", setting, 5),
                 DoubleRangeAssertion.createUpperBound("Average variant count difference", setting, 0.05),
                 PercentRangeAssertion.createLowerBound("Specificity", setting, 95),
-                PercentRangeAssertion.createLowerBound("Sensitivity", setting, 90));
+                PercentRangeAssertion.createLowerBound("Sensitivity", setting, 85));
 
         qualThreshold = 25;
         setting = "Uniform position, Q" + qualThreshold;
@@ -82,7 +82,7 @@ public class VariantCallerTest {
                 PercentRangeAssertion.createUpperBound("Erroneous unique variants", setting, 1),
                 DoubleRangeAssertion.createUpperBound("Average variant count difference", setting, 0.05),
                 PercentRangeAssertion.createLowerBound("Specificity", setting, 95),
-                PercentRangeAssertion.createLowerBound("Sensitivity", setting, 85));
+                PercentRangeAssertion.createLowerBound("Sensitivity", setting, 80));
 
         qualThreshold = 25;
         setting = "Uniform position and pattern, Q" + qualThreshold;
@@ -94,7 +94,7 @@ public class VariantCallerTest {
                 PercentRangeAssertion.createUpperBound("Erroneous unique variants", setting, 1),
                 DoubleRangeAssertion.createUpperBound("Average variant count difference", setting, 0.01),
                 PercentRangeAssertion.createLowerBound("Specificity", setting, 95),
-                PercentRangeAssertion.createLowerBound("Sensitivity", setting, 80));
+                PercentRangeAssertion.createLowerBound("Sensitivity", setting, 75));
     }
 
     @SuppressWarnings("unchecked")
