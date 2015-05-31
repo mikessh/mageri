@@ -39,13 +39,19 @@ if (opt == null) {
 }
 
 def variants = new HashSet<>(new File((String) opt.f).readLines().collect { it.split("[\t ]+")[0..3].join("\t") })
-def negative = (boolean) opt.n, extendedOutput = (boolean) opt.e
+def negative = (boolean) opt.i, extendedOutput = (boolean) opt.e
 def fields = [0, 1, 3, 4]
+
+def skipHeader = false
 
 System.in.readLines().each {
     if (it.startsWith("#") && !extendedOutput) {
-        System.out.println(it)
+        if (!skipHeader) {
+            System.out.println(it)
+        }
     } else {
+        it = it.split("##fileformat")[0] // resolve problem with missing newline
+        skipHeader = true
         if (negative != variants.contains(it.split("[\t ]+")[fields].join("\t"))) {
             System.out.println(extendedOutput ? "+\t" + it : it)
         } else if (extendedOutput) {
