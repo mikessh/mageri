@@ -38,7 +38,7 @@ if (opt == null) {
     System.exit(-1)
 }
 
-def variants = new HashSet<>(new File((String) opt.f).readLines())
+def variants = new HashSet<>(new File((String) opt.f).readLines().collect { it.split("[\t ]+")[0..3].join("\t") })
 def negative = (boolean) opt.n, extendedOutput = (boolean) opt.e
 def fields = [0, 1, 3, 4]
 
