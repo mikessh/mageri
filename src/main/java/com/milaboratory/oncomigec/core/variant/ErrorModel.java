@@ -60,9 +60,7 @@ public class ErrorModel implements Serializable {
             return 0;
         }
 
-        minorCount = minorCount > 0 ? minorCount : 1;
-
-        double rate = Math.max(total < COVERAGE_THRESHOLD ? 0 : (minorCount / (double) total),
+        double rate = Math.max(total < COVERAGE_THRESHOLD ? 1.0 / (double) total : (minorCount / (double) total),
                 minorMatrix.getRate(from, to));
 
         double errorRateBase = Math.pow(1.0 - rate, 1.0 / cycles),
