@@ -67,9 +67,9 @@ public class KMerFinderTest {
                 DoubleRangeAssertion.createLowerBound(range2Name, model, 25));
 
         model = "KmerFinder: Non-homologous references, more errors";
-        hitTest(500, 100.0, 3.0,
+        hitTest(500, 100.0, 10.0,
                 PercentRangeAssertion.createLowerBound(range1Name, model, 99),
-                DoubleRangeAssertion.createLowerBound(range2Name, model, 35));
+                DoubleRangeAssertion.createLowerBound(range2Name, model, 15));
 
         model = "KmerFinder: Single reference, extreme errors";
         hitTest(1, 1.0, 10.0,

@@ -42,6 +42,9 @@ import com.milaboratory.oncomigec.core.variant.filter.CoverageFilter;
 import com.milaboratory.oncomigec.core.variant.filter.QualFilter;
 import com.milaboratory.oncomigec.core.variant.filter.SingletonFilter;
 import com.milaboratory.oncomigec.core.variant.filter.VariantFilter;
+import org.apache.commons.math.MathException;
+import org.apache.commons.math.distribution.BinomialDistribution;
+import org.apache.commons.math.distribution.BinomialDistributionImpl;
 
 import java.util.Collections;
 import java.util.LinkedList;
@@ -87,9 +90,10 @@ public class VariantCaller extends PipelineBlock {
                         int coverage = mutationsTable.getMigCoverage(pos),
                                 minorCount = mutationsTable.getMinorMigCount(pos, to);
 
-                        double score = -10 * errorModel.getLog10PValue(majorCount, minorCount, coverage,
+                        double errorRate = errorModel.getErrorRate(minorCount, coverage,
                                 from, to,
-                                minorMatrix);
+                                minorMatrix),
+                                score = -10 * getLog10PValue(majorCount, coverage, errorRate);
 
                         NucleotideSequenceBuilder nsb = new NucleotideSequenceBuilder(1);
                         nsb.setCode(0, mutationsTable.getAncestralBase(pos));
@@ -98,7 +102,7 @@ public class VariantCaller extends PipelineBlock {
                                 mutation, majorCount, minorCount,
                                 mutationsTable.getMigCoverage(pos),
                                 majorCount / (double) coverage,
-                                score, mutationsTable.getMeanCqs(pos, to),
+                                score, mutationsTable.getMeanCqs(pos, to), errorRate,
                                 nsb.create(), mutationsTable.hasReferenceBase(pos));
 
                         variant.filter(this);
@@ -121,6 +125,23 @@ public class VariantCaller extends PipelineBlock {
 
         // Variants should be sorted for GATK compatibility
         Collections.sort(variants);
+    }
+
+    private static double getLog10PValue(int majorCount, int total, double errorRate) {
+        if (majorCount == 0) {
+            return 0;
+        }
+
+        BinomialDistribution binomialDistribution = new BinomialDistributionImpl(total,
+                errorRate);
+
+        try {
+            return Math.log10(1.0 - binomialDistribution.cumulativeProbability(majorCount) +
+                    0.5 * binomialDistribution.probability(majorCount));
+        } catch (MathException e) {
+            e.printStackTrace();
+            return Math.log10(binomialDistribution.probability(majorCount));
+        }
     }
 
     public ReferenceLibrary getReferenceLibrary() {

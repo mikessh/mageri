@@ -29,10 +29,6 @@
 
 package com.milaboratory.oncomigec.core.variant;
 
-import org.apache.commons.math.MathException;
-import org.apache.commons.math.distribution.BinomialDistribution;
-import org.apache.commons.math.distribution.BinomialDistributionImpl;
-
 import java.io.Serializable;
 
 public class ErrorModel implements Serializable {
@@ -53,29 +49,17 @@ public class ErrorModel implements Serializable {
         calcPropagateProb();
     }
 
-    public double getLog10PValue(int majorCount, int minorCount, int total,
-                                 int from, int to,
-                                 MinorMatrix minorMatrix) {
-        if (majorCount == 0) {
-            return 0;
-        }
+    public double getErrorRate(int minorCount, int total,
+                               int from, int to,
+                               MinorMatrix minorMatrix) {
+        minorCount = minorCount > 0 ? minorCount : 1;
 
         double rate = Math.max(total < COVERAGE_THRESHOLD ? 1.0 / (double) total : (minorCount / (double) total),
                 minorMatrix.getRate(from, to));
 
-        double errorRateBase = Math.pow(1.0 - rate, 1.0 / cycles),
-                errorRate = Math.log(lambda) - Math.log((1.0 + lambda) * errorRateBase - 1);
+        double errorRateBase = Math.pow(1.0 - rate, 1.0 / cycles);
 
-        BinomialDistribution binomialDistribution = new BinomialDistributionImpl(total,
-                errorRate * propagateProb);
-
-        try {
-            return Math.log10(1.0 - binomialDistribution.cumulativeProbability(majorCount) +
-                    0.5 * binomialDistribution.probability(majorCount));
-        } catch (MathException e) {
-            e.printStackTrace();
-            return Math.log10(binomialDistribution.probability(majorCount));
-        }
+        return (Math.log(lambda) - Math.log((1.0 + lambda) * errorRateBase - 1)) * propagateProb;
     }
 
     public double getCycles() {
