@@ -41,14 +41,14 @@ public class Variant implements Serializable, Comparable<Variant> {
     private final Reference reference;
     private final Mutation mutation;
     private final int count, depth, minorCount;
-    private final double alleleFrequency, qual, cqs;
+    private final double alleleFrequency, qual, cqs, errorRate;
     private final NucleotideSequence ancestralAllele;
     private final boolean hasReference;
     private FilterSummary filterSummary = FilterSummary.DUMMY;
 
     public Variant(Reference reference, Mutation mutation,
                    int count, int minorCount, int depth, double alleleFrequency,
-                   double qual, double cqs,
+                   double qual, double cqs, double errorRate,
                    NucleotideSequence ancestralAllele, boolean hasReference) {
         this.reference = reference;
         this.mutation = mutation;
@@ -58,6 +58,7 @@ public class Variant implements Serializable, Comparable<Variant> {
         this.alleleFrequency = alleleFrequency;
         this.qual = qual;
         this.cqs = cqs;
+        this.errorRate = errorRate;
         this.ancestralAllele = ancestralAllele;
         this.hasReference = hasReference;
     }
@@ -98,6 +99,10 @@ public class Variant implements Serializable, Comparable<Variant> {
         return alleleFrequency;
     }
 
+    public double getErrorRate() {
+        return errorRate;
+    }
+
     public double getQual() {
         return qual;
     }
@@ -123,14 +128,17 @@ public class Variant implements Serializable, Comparable<Variant> {
     }
 
     public static String getHeader() {
-        return "reference\tmutation\tcount.major\tcount.minor\tcoverage\tscore\tcqs\thas.reference\tancestral.allele";
+        return "reference\tmutation\t" +
+                "count.major\tcount.minor\tcoverage\t" +
+                "score\tcqs\terror.rate\t" +
+                "has.reference\tancestral.allele";
     }
 
     @Override
     public String toString() {
         return reference.getName() + "\t" + mutation.toString() + "\t" +
                 count + "\t" + minorCount + "\t" + depth + "\t" +
-                qual + "\t" + cqs + "\t" +
+                qual + "\t" + cqs + "\t" + errorRate + "\t" +
                 (hasReference ? "TRUE" : "FALSE") + "\t" + ancestralAllele.toString();
     }
 
