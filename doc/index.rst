@@ -20,6 +20,9 @@ Terminology
 - Major variant (aka dominant variant, supermutant) - a sequence variant that is present in MIG consensus sequence
 - Minor variant - a sequence variant that is present in reads within an MIG, but doesn’t get to the final MIG consensus sequence
 
+Table of contents
+-----------------
+
 .. toctree::
    :maxdepth: 2
    
