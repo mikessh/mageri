@@ -446,4 +446,4 @@ The default XML config file is given below
    </MageriPresets>
 
 .. toctree::
-   :maxdepth: 0
+   :maxdepth: 2
