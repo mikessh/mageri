@@ -344,16 +344,15 @@ while VCF files can be annotated with `SnpEff <http://snpeff.sourceforge.net/>`_
 Example
 -------
 
-A test dataset can be downloaded from `here <_static/example.zip>`__.
-
-To run example, execute 
+The test dataset can be downloaded from `here <_static/example.zip>`__. 
+Unpack it and run the following command
 
 .. code-block:: bash
 
    java -jar mageri.jar -M2 primers.txt --references refs.fa -R1 example_R1.fastq.gz -R2 example_R2.fastq.gz out/
    
-The resulting VCF file should contain ``31:T>C``, ``88:T>C`` and ``89:T>C`` variants. Manual inspection of SAM suggests
-that mutations at position 31 and 88 are linked:
+If everything works fine, the resulting VCF file should contain ``31:T>C``, ``88:T>C`` and ``89:T>C`` variants. 
+Manual inspection of SAM should reveal that mutations at positions 31 and 88 are linked:
 
 .. figure:: _static/images/example_igv.png
     :align: center
@@ -421,8 +420,3 @@ The default XML config file is given below
        <coverageThreshold>100</coverageThreshold>
      </VariantCallerParameters>
    </MageriPresets>
-
-.. toctree::
-   :maxdepth: 2
-   
-   body
