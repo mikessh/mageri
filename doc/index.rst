@@ -321,7 +321,7 @@ Example VCF output:
 
    ##fileformat=VCFv4.0
    ##fileDate=Tue Jun 02 05:30:36 GMT+03:00 2015
-   ##source=oncomigec0.9
+   ##source=mageri-1.0.0
    ##reference=file:///data/misha/P126/meta/refs.fa
    ##contig=<ID=chr1,assembly=hg19,length=249250621>
    ##contig=<ID=chr2,assembly=hg19,length=243199373>
