@@ -6,7 +6,7 @@ MAGERI
 
 Molecular tagging approach has revolutionized the field of ultra-deep genome re-sequencing. 
 
-[!umi](http://www.pnas.org/content/108/23/9530/F1.large.jpg)
+![umi](http://www.pnas.org/content/108/23/9530/F1.large.jpg)
 
 This pipeline aim at filling the gap in software for analysis of UMI-tagged data. 
 MAGERI implements consensus assembly, alignment and variant calling and allows to process 
