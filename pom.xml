@@ -8,19 +8,17 @@
     <packaging>jar</packaging>
     <name>MAGERI</name>
 
+    <parent>
+        <groupId>org.sonatype.oss</groupId>
+        <artifactId>oss-parent</artifactId>
+        <version>7</version>
+    </parent>
+
     <repositories>
         <repository>
             <id>in-project</id>
             <name>In Project Repo</name>
             <url>file://${project.basedir}/lib</url>
-        </repository>
-        <repository>
-            <id>codehaus-mule-repo</id>
-            <name>codehaus-mule-repo</name>
-            <url>
-                https://repository-master.mulesoft.org/nexus/content/groups/public/
-            </url>
-            <layout>default</layout>
         </repository>
     </repositories>
 
