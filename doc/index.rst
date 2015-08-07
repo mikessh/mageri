@@ -8,6 +8,18 @@ MAGERI: Molecular tAgged GEnome Re-sequencing pIpeline
 
 .. figure:: _static/images/pipeline.png
     :align: center
+    
+Terminology
+-----------
+
+- UMI - unique molecular identifier, a short (typically 6-20nt) degenerate nucleotide sequence, that is attach to cDNA/DNA molecules in order to trace them throughout the entire experiment.
+- Sample barcode - a short specific nucleotide sequence used to mark cDNA/DNA molecules that correspond to a given sample in a pooled sequencing library
+- MIG - molecular identifier group, a set of reads or read pairs that have an identical UMI sequence
+- MIG consensus - the consensus sequence of MIG, calculated from MIG position-weight matrix by taking the letter with highest frequency at each position
+- CQS - consensus quality score, calculated as the maximal relative nucleotide frequency at a given PWM position. Usually scaled to [2, 40] range to fit Phred33 string representation. Indicates our confidence in the consensus sequence at a given position.
+- Major variant (aka dominant variant, supermutant) - a sequence variant that is present in MIG consensus sequence
+- Minor variant - a sequence variant that is present in reads within an MIG, but doesn’t get to the final MIG consensus sequence
+- Hot-spot error - an error that is frequent enough to be able to reach a frequency within MIG higher than the current CQS threshold
 
 Installation and running
 ------------------------
@@ -142,7 +154,7 @@ This is a variant of ``-M1`` mode that extracts UMIs and removes primer sequence
 all reads together as if they were coming from the same sample, e.g.
 
 +---------------+--------------+--------------------------------------+--------------------------------------+
-| primer_name   | master_first |    left_primer                       | right_primer                         |
+| region_name   | master_first |    left_primer                       | right_primer                         |
 +===============+==============+======================================+======================================+
 | ARAF_E7_F     |   1          | NNNNNNNNNNNNNNactgtGACCCGGAgcact     | cacaGGGCAGAGggtagag                  |
 +---------------+--------------+--------------------------------------+--------------------------------------+
@@ -258,13 +270,122 @@ with assembly metadata file.
 Output
 ------
 
-The following output files are generated
+MAGERI generates multiple internal output files summarizing each pipeline step
 
-Run example
------------
+1. ``*.checkout.txt`` - de-multiplexing and UMI extraction yield
+2. ``*.umi.histogram.txt`` - MIG size distribution
+3. ``*.assemble.txt`` - MIG consensus assembly efficiency; ``*.assemble.R1/2.fastq.gz`` - assembled consensus sequences in FASTQ format with CQS quality scores
+4. ``*.mapper.txt`` - MIG consensus mapping statistics for each reference
+5. ``*.variant.caller.txt`` - tab-delimited file with variant calls (in original reference coordinates, not genomic ones)
+
+Additionally, mapping and variant calling results are provided in `SAM <https://samtools.github.io/hts-specs/SAMv1.pdf>`__ and
+`VCF <http://www.1000genomes.org/wiki/analysis/variant%20call%20format/vcf-variant-call-format-version-41>`__ formats
+
+Example SAM output:
+
+::
+
+   @HD     VN:1.0  SO:unsorted     GO:query
+   @SQ     SN:chr1 LN:249250621    AS:hg19
+   @SQ     SN:chr2 LN:243199373    AS:hg19
+   @SQ     SN:chr3 LN:198022430    AS:hg19
+   @SQ     SN:chr4 LN:191154276    AS:hg19
+   @SQ     SN:chr5 LN:180915260    AS:hg19
+   @SQ     SN:chr6 LN:171115067    AS:hg19
+   @SQ     SN:chr7 LN:159138663    AS:hg19
+   @SQ     SN:chr8 LN:146364022    AS:hg19
+   @SQ     SN:chr9 LN:141213431    AS:hg19
+   @SQ     SN:chr10        LN:135534747    AS:hg19
+   @SQ     SN:chr11        LN:135006516    AS:hg19
+   @SQ     SN:chr12        LN:133851895    AS:hg19
+   @SQ     SN:chr13        LN:115169878    AS:hg19
+   @SQ     SN:chr14        LN:107349540    AS:hg19
+   @SQ     SN:chr15        LN:102531392    AS:hg19
+   @SQ     SN:chr16        LN:90354753     AS:hg19
+   @SQ     SN:chr17        LN:81195210     AS:hg19
+   @SQ     SN:chr18        LN:78077248     AS:hg19
+   @SQ     SN:chr19        LN:59128983     AS:hg19
+   @SQ     SN:chr20        LN:63025520     AS:hg19
+   @SQ     SN:chr21        LN:48129895     AS:hg19
+   @SQ     SN:chr22        LN:51304566     AS:hg19
+   @SQ     SN:chrX LN:155270560    AS:hg19
+   @SQ     SN:chrY LN:59373566     AS:hg19
+   @RG     ID:3    SM:h1-1 PU:h1-1 LB:p126-1       PL:ILLUMINA
+   @PG     ID:mageri    VN:1.0.0  CL:mageri-1.0.0.jar -I project-1.json -O output/
+   TGTATATCCCCTGA  16      chr1    115258663       30      20S131M22S      *       0       0       AGGTCAGCGGGCTACCACTGGGCCTCACCTCTATGGTGGGATCATATTCATCTACAAAGTGGTTCTGGATTAGCTGGATTGTCAGTGCGCTTTTCCCAACACCACCTGCTCCAACCACCACCAGTTTGTACTCAGTCATTTCACACCAGCAAGAACCTGTTGGAAACCAGTAA       GHGGHHHHHHHHHHHHHHHHHHHHHHHHIHIHHHHHHHHHHHHHIHHHHHIHIHIHHIHHHHHIIIIHHIHHHHIHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHIHHHHHIHHHHHHHHHHHHHHHHHHHHHHHHHHHHHIHHIIHHHIHHIHHHHHHHHHIIHIHHHHIH       RG:Z:3
+   GTGTAATTAAATGA  0       chr2    209113093       28      22S103M21S      *       0       0       CATTATTGCCAACATGACTTACTTGATCCCCATAAGCATGACGACCTATGATGATAGGTTTTACCCATCCACTCACAAGCCGGGGGATATTTTTGCAGATAATGGCTTCTCTGAAGACCGTGCCACCCAGAATATTTCGTATGGTG  HHHIHHHHHIHIHIIHHHIIHIIHIHIIHHHGIIIHIHHHHIHHHHHHHHHHHHHHIHHIIIHHHHHIHHHHHHHIHHHHHHHHHHHIIIHIIHHIHHHHHHHHHHHHHHHHHIHHHIHHHHHIHIHHHHHHHHHHHHHHHHHHHH      RG:Z:3
+
+Example VCF output:
+
+::
+
+   ##fileformat=VCFv4.0
+   ##fileDate=Tue Jun 02 05:30:36 GMT+03:00 2015
+   ##source=oncomigec0.9
+   ##reference=file:///data/misha/P126/meta/refs.fa
+   ##contig=<ID=chr1,assembly=hg19,length=249250621>
+   ##contig=<ID=chr2,assembly=hg19,length=243199373>
+   ##contig=<ID=chr3,assembly=hg19,length=198022430>
+   ##contig=<ID=chr4,assembly=hg19,length=191154276>
+   ##contig=<ID=chr5,assembly=hg19,length=180915260>
+   ##contig=<ID=chr6,assembly=hg19,length=171115067>
+   ##contig=<ID=chr7,assembly=hg19,length=159138663>
+   ##contig=<ID=chr8,assembly=hg19,length=146364022>
+   ##contig=<ID=chr9,assembly=hg19,length=141213431>
+   ##contig=<ID=chr10,assembly=hg19,length=135534747>
+   ##contig=<ID=chr11,assembly=hg19,length=135006516>
+   ##contig=<ID=chr12,assembly=hg19,length=133851895>
+   ##contig=<ID=chr13,assembly=hg19,length=115169878>
+   ##contig=<ID=chr14,assembly=hg19,length=107349540>
+   ##contig=<ID=chr15,assembly=hg19,length=102531392>
+   ##contig=<ID=chr16,assembly=hg19,length=90354753>
+   ##contig=<ID=chr17,assembly=hg19,length=81195210>
+   ##contig=<ID=chr18,assembly=hg19,length=78077248>
+   ##contig=<ID=chr19,assembly=hg19,length=59128983>
+   ##contig=<ID=chr20,assembly=hg19,length=63025520>
+   ##contig=<ID=chr21,assembly=hg19,length=48129895>
+   ##contig=<ID=chr22,assembly=hg19,length=51304566>
+   ##contig=<ID=chrX,assembly=hg19,length=155270560>
+   ##contig=<ID=chrY,assembly=hg19,length=59373566>
+   ##phasing=none
+   ##INFO=<ID=DP,Number=1,Type=Integer,Description="Total Depth">
+   ##INFO=<ID=AF,Number=.,Type=Float,Description="Allele Frequency">
+   ##INFO=<ID=AA,Number=1,Type=String,Description="Ancestral Allele">
+   ##INFO=<ID=CQ,Number=1,Type=Integer,Description="Assembly quality">
+   ##FILTER=<ID=q20,Description="Quality below 20">
+   ##FILTER=<ID=si10000,Description="Singleton, frequency below 10000">
+   ##FILTER=<ID=c100,Description="Coverage below 100">
+   ##FORMAT=<ID=GT,Number=1,Type=String,Description="Genotype">
+   ##INFO=<ID=DP,Number=1,Type=Integer,Description="MIG Depth">
+   #CHROM  POS     ID      REF     ALT     QUAL    FILTER  INFO    FORMAT  p126-1.h1-1
+   chr1    115252206       .       G       A       16      q20     DP=307;AF=0.0032573289;AA=G;CQ=39.0     GT:DP   0/1:307
+   chr1    115258758       .       C       T       383     .       DP=542;AF=0.040590405;AA=C;CQ=39.0      GT:DP   0/1:542
+   
+Those files can be further used in downstream analysis. For example, SAM files can be viewed in `IGV <https://www.broadinstitute.org/igv/>`__ browser, 
+while VCF files can be annotated with `SnpEff <http://snpeff.sourceforge.net/>`__.
+
+Example
+-------
+
+A test dataset can be downloaded from `here <_static/example.zip>`__.
+
+To run example, execute 
+
+.. code-block:: bash
+
+   java -jar mageri.jar -M2 primers.txt --references refs.fa -R1 example_R1.fastq.gz -R2 example_R2.fastq.gz out/
+   
+The resulting VCF file should contain ``31:T>C``, ``88:T>C`` and ``89:T>C`` variants. Manual inspection of SAM suggests
+that mutations at position 31 and 88 are linked:
+
+.. figure:: _static/images/example_igv.png
+    :align: center
 
 Advanced
 --------
+
+Presets
+^^^^^^^
 
 MAGERI parameter preset can be changed by exporting, modifying 
 and re-importing XML configuration file
@@ -276,7 +397,7 @@ and re-importing XML configuration file
    ...
    java -Xmx64G -jar mageri.jar --import-preset my_preset.xml [arguments]
    
-The default content of XML config file is given below
+The default XML config file is given below
 
 .. code-block:: xml
 
@@ -323,8 +444,6 @@ The default content of XML config file is given below
        <coverageThreshold>100</coverageThreshold>
      </VariantCallerParameters>
    </MageriPresets>
-
-Description
 
 .. toctree::
    :maxdepth: 0
