@@ -8,12 +8,6 @@
     <packaging>jar</packaging>
     <name>MAGERI</name>
 
-    <parent>
-        <groupId>org.sonatype.oss</groupId>
-        <artifactId>oss-parent</artifactId>
-        <version>7</version>
-    </parent>
-
     <repositories>
         <repository>
             <id>in-project</id>
