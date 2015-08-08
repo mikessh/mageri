@@ -71,7 +71,7 @@ during mapping and VCF/SAM file generation.
 
    Genomic information bundle for genes from `Cancer Gene Census <https://cancer.sanger.ac.uk/census>`__
    (`GRCh38` genome assembly) is available `here <https://github.com/mikessh/mageri/tree/master/src/test/resources/genomic>`__. 
-   To create your own metadata, using `Ensembl BioMArt <http://www.ensembl.org/biomart>`__ is recommended:
+   To create your own metadata, using `Ensembl BioMart <http://www.ensembl.org/biomart>`__ is recommended:
     
    - Input your gene IDs and in `Filters` section
    - Select `Sequences` in `Attributes` menu
@@ -243,14 +243,14 @@ Contigs
 ~~~~~~~
 
 Genome assembly metadata file is required to create SAM and VCF file headers, here is 
-an example tab-delimited table for ``hg19`` genome assembly
+an example tab-delimited table for `hg19` genome assembly
 
 ::
 
    #chrom	assembly	length
    chr12	hg19	133851895
 
-Again, contig names (``chr12``,...) and coordinates in BED file should be concordant 
+Again, contig names (`chr12`,...) and coordinates in BED file should be concordant 
 with assembly metadata file.
 
 .. note::
