@@ -69,8 +69,17 @@ during mapping and VCF/SAM file generation.
 
 .. note::
 
-   Genomic information bundle for genes from Cancer Gene Census (``hg38`` genome assembly) 
-   is available `here <https://github.com/mikessh/mageri>`__
+   Genomic information bundle for genes from `Cancer Gene Census <https://cancer.sanger.ac.uk/census>`__
+   (`GRCh38` genome assembly) is available `here <https://github.com/mikessh/mageri/tree/master/src/test/resources/genomic>`__. 
+   To create your own metadata, using `Ensembl BioMArt <http://www.ensembl.org/biomart>`__ is recommended:
+    
+   - Input your gene IDs and in `Filters` section
+   - Select `Sequences` in `Attributes` menu
+   - Select `Exon sequences` and specify some upstream and downstream flank (say, 50bp)
+   - Add `Chromosome Name`, `Exon Chr Start (bp)`, `Exon Chr End (bp)` and `Strand`, 
+     so you can parse out your BED file from downloaded FASTA file
+     
+   For more details see below.
 
 Pre-processing
 ^^^^^^^^^^^^^^
@@ -226,7 +235,7 @@ containing genomic coordinates of references should be included. For the example
 .. note::
 
    FASTA entries that do not have corresponding BED rows will be skipped from 
-   SAM and VCF output (but not from internal MAGERI output files).
+   SAM and VCF output.
 
 .. _asm:
 
@@ -243,6 +252,12 @@ an example tab-delimited table for ``hg19`` genome assembly
 
 Again, contig names (``chr12``,...) and coordinates in BED file should be concordant 
 with assembly metadata file.
+
+.. note::
+
+   If assembly for a given contig is named `PRIVATE`, corresponding
+   results will be skipped SAM and VCF output 
+   (but not from internal MAGERI output files).
 
 Output
 ------
