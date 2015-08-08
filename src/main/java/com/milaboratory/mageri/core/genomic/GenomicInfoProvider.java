@@ -38,4 +38,6 @@ public interface GenomicInfoProvider extends Serializable{
     public GenomicInfo get(String name, NucleotideSequence sequence);
 
     public List<Contig> getContigs();
+    
+    public int size();
 }

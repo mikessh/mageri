@@ -86,4 +86,23 @@ public class ReferenceLibraryTest {
 
         TestUtil.serializationCheck(referenceLibrary);
     }
+
+    @Test
+    @Category(FastTests.class)
+    public void cgcGenomicTest() throws IOException {
+        
+        GenomicInfoProvider giProvider = new BedGenomicInfoProvider(
+                ResourceIOProvider.INSTANCE.getWrappedStream("genomic/cgc_exons_flank50.bed"),
+                ResourceIOProvider.INSTANCE.getWrappedStream("genomic/contigs_grch38.txt")
+        );
+
+        ReferenceLibrary referenceLibrary = ReferenceLibrary.fromInput(
+                ResourceIOProvider.INSTANCE.getWrappedStream("genomic/cgc_exons_flank50.fa"),
+                giProvider);
+
+        Assert.assertTrue(!referenceLibrary.getReferences().isEmpty());
+        Assert.assertEquals(referenceLibrary.size(), giProvider.size());
+
+        TestUtil.serializationCheck(referenceLibrary);
+    }
 }

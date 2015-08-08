@@ -41,7 +41,7 @@ import java.util.regex.Pattern;
 
 public class BedGenomicInfoProvider implements GenomicInfoProvider {
     private static final String UNUSED_IN_SAM_BAM = "PRIVATE";
-    
+
     private final static Pattern correctBedLine = Pattern.compile("^\\S+[\t ]+\\d+[\t ]+\\d+[\t ]+\\S+[\t ]+\\d+[\t ]+[+-]");
     private final Map<String, GenomicInfo> records = new HashMap<>();
     private final List<Contig> contigs;
@@ -64,21 +64,25 @@ public class BedGenomicInfoProvider implements GenomicInfoProvider {
         }
 
         this.contigs = new ArrayList<>(contigByName.values());
-        
+
         Collections.sort(contigs);
 
         inputStream = bedRecords.getInputStream();
         reader = new BufferedReader(new InputStreamReader(inputStream));
 
         while ((line = reader.readLine()) != null) {
-            if (correctBedLine.matcher(line).find()) {
-                splitLine = line.split("[\t ]+");
-                GenomicInfo genomicInfo = new GenomicInfo(
-                        contigByName.get(splitLine[0]),
-                        Integer.parseInt(splitLine[1]),
-                        Integer.parseInt(splitLine[2]),
-                        splitLine[5].equals("+"));
-                records.put(splitLine[3], genomicInfo);
+            if (!line.startsWith("#")) {
+                if (correctBedLine.matcher(line).find()) {
+                    splitLine = line.split("[\t ]+");
+                    GenomicInfo genomicInfo = new GenomicInfo(
+                            contigByName.get(splitLine[0]),
+                            Integer.parseInt(splitLine[1]),
+                            Integer.parseInt(splitLine[2]),
+                            splitLine[5].equals("+"));
+                    records.put(splitLine[3], genomicInfo);
+                } else {
+                    System.out.println("[WARNING] Bad line in BED file:\n" + line);
+                }
             }
         }
     }
@@ -91,5 +95,10 @@ public class BedGenomicInfoProvider implements GenomicInfoProvider {
     @Override
     public List<Contig> getContigs() {
         return Collections.unmodifiableList(contigs);
+    }
+
+    @Override
+    public int size() {
+        return records.size();
     }
 }

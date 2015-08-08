@@ -59,4 +59,9 @@ public class BasicGenomicInfoProvider implements GenomicInfoProvider {
         Collections.sort(contigs);
         return contigs;
     }
+
+    @Override
+    public int size() {
+        return contigs.size();
+    }
 }
