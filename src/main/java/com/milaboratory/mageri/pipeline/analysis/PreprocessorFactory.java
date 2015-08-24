@@ -33,9 +33,9 @@ import com.milaboratory.mageri.core.PipelineBlock;
 import com.milaboratory.mageri.core.input.PreprocessorParameters;
 import com.milaboratory.mageri.pipeline.RuntimeParameters;
 import com.milaboratory.mageri.pipeline.input.Input;
-import com.milaboratory.mageri.preprocessing.DemultiplexParameters;
 import com.milaboratory.mageri.preprocessing.CheckoutProcessor;
-import com.milaboratory.mageri.preprocessing.PAdapterExtractor;
+import com.milaboratory.mageri.preprocessing.DemultiplexParameters;
+import com.milaboratory.mageri.preprocessing.PCheckoutProcessor;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -66,8 +66,8 @@ public class PreprocessorFactory extends PipelineBlock {
 
         return preprocessor;
     }
-    
-    public Preprocessor getPreprocessor(SampleGroup sampleGroup){
+
+    public Preprocessor getPreprocessor(SampleGroup sampleGroup) {
         return preprocessorBySampleGroup.get(sampleGroup);
     }
 
@@ -83,12 +83,16 @@ public class PreprocessorFactory extends PipelineBlock {
             for (Sample sample : preprocessor.getSampleGroup().getSamples()) {
                 CheckoutProcessor checkoutProcessor = preprocessor.getCheckoutProcessor();
                 String sampleName = sample.getName();
+                boolean paired = checkoutProcessor instanceof PCheckoutProcessor;
                 stringBuilder.append(preprocessor.getSampleGroup().getName()).append("\t").
                         append(sampleName).append("\t").
                         append(checkoutProcessor.getMasterCounter(sampleName)).append("\t").
-                        append(checkoutProcessor instanceof PAdapterExtractor ?
-                                ((PAdapterExtractor) checkoutProcessor).getSlaveCounter(sampleName) : "0").append("\t").
-                        append(checkoutProcessor.getMasterFirstRatio()).append("\t").
+                        append(paired ?
+                                ((PCheckoutProcessor) checkoutProcessor).getSlaveCounter(sampleName) :
+                                checkoutProcessor.getMasterCounter(sampleName)).append("\t").
+                        append(paired ?
+                                ((PCheckoutProcessor) checkoutProcessor).getMasterFirstRatio() :
+                                "1").append("\t").
                         append(preprocessor.getOverSeq(sampleName)).append("\n");
             }
         }
