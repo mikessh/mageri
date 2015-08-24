@@ -30,18 +30,13 @@
 package com.milaboratory.mageri.preprocessing;
 
 import com.milaboratory.core.sequencing.read.SSequencingRead;
-import com.milaboratory.mageri.preprocessing.barcode.BarcodeSearcher;
 import com.milaboratory.mageri.preprocessing.barcode.BarcodeSearcherResult;
 import com.milaboratory.mageri.preprocessing.barcode.SlidingBarcodeSearcher;
 
-public class SPositionalExtractor extends CheckoutProcessor<SSequencingRead, SCheckoutResult> {
-    private final String sampleName;
-    private final SlidingBarcodeSearcher masterBarcode;
+public class SPositionalExtractor extends SCheckoutProcessor {
 
     public SPositionalExtractor(String sampleName, SlidingBarcodeSearcher masterBarcode) {
-        super(new String[]{sampleName}, new BarcodeSearcher[]{masterBarcode});
-        this.sampleName = sampleName;
-        this.masterBarcode = masterBarcode;
+        super(sampleName, masterBarcode);
     }
 
     public SPositionalExtractor(String sampleName, String mask) {
@@ -50,16 +45,12 @@ public class SPositionalExtractor extends CheckoutProcessor<SSequencingRead, SCh
 
     @Override
     public SCheckoutResult checkoutImpl(SSequencingRead sequencingRead) {
-        BarcodeSearcherResult result = masterBarcode.search(sequencingRead.getData());
+        BarcodeSearcherResult result = masterBarcodes[0].search(sequencingRead.getData());
 
         if (result == null) {
             return null;
-        } else
-            return new SCheckoutResult(0, sampleName, result);
-    }
-
-    @Override
-    public boolean isPairedEnd() {
-        return false;
+        } else {
+            return new SCheckoutResult(0, sampleNames[0], result);
+        }
     }
 }

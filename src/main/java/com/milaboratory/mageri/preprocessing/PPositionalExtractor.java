@@ -30,23 +30,13 @@
 package com.milaboratory.mageri.preprocessing;
 
 import com.milaboratory.core.sequencing.read.PSequencingRead;
-import com.milaboratory.mageri.preprocessing.barcode.BarcodeSearcher;
 import com.milaboratory.mageri.preprocessing.barcode.BarcodeSearcherResult;
 import com.milaboratory.mageri.preprocessing.barcode.SlidingBarcodeSearcher;
 
-import java.util.concurrent.atomic.AtomicLong;
-
-public class PPositionalExtractor extends CheckoutProcessor<PSequencingRead, PCheckoutResult> {
-    private final AtomicLong slaveCounter = new AtomicLong();
-    private final String sampleName;
-    private final SlidingBarcodeSearcher masterBarcode, slaveBarcode;
-
+public class PPositionalExtractor extends PCheckoutProcessor {
     public PPositionalExtractor(String sampleName,
                                 SlidingBarcodeSearcher masterBarcode) {
-        super(new String[]{sampleName}, new BarcodeSearcher[]{masterBarcode});
-        this.sampleName = sampleName;
-        this.masterBarcode = masterBarcode;
-        this.slaveBarcode = null;
+        super(sampleName, masterBarcode);
     }
 
     public PPositionalExtractor(String sampleName,
@@ -57,10 +47,10 @@ public class PPositionalExtractor extends CheckoutProcessor<PSequencingRead, PCh
     public PPositionalExtractor(String sampleName,
                                 SlidingBarcodeSearcher masterBarcode,
                                 SlidingBarcodeSearcher slaveBarcode) {
-        super(new String[]{sampleName}, new BarcodeSearcher[]{masterBarcode});
-        this.sampleName = sampleName;
-        this.masterBarcode = masterBarcode;
-        this.slaveBarcode = slaveBarcode.getForSlave();
+        super(sampleName, masterBarcode,
+                // crucial optimization here, we create a wrapper to be used internally
+                // with no need to do reverse complement on second read:
+                slaveBarcode.getForSlave());
     }
 
     public PPositionalExtractor(String sampleName,
@@ -71,42 +61,17 @@ public class PPositionalExtractor extends CheckoutProcessor<PSequencingRead, PCh
 
     @Override
     public PCheckoutResult checkoutImpl(PSequencingRead sequencingRead) {
-        BarcodeSearcherResult masterResult = masterBarcode.search(sequencingRead.getData(0)),
-                slaveResult;
+        BarcodeSearcherResult masterResult = masterBarcodes[0].search(sequencingRead.getData(0));
 
         if (masterResult == null) {
             return null;
         }
 
-        if (slaveBarcode == null) {
-            slaveCounter.incrementAndGet();
-            return new PCheckoutResult(0, sampleName, true, true,
-                    masterResult, BarcodeSearcherResult.BLANK_RESULT);
-        }
-
-        slaveResult = slaveBarcode.search(sequencingRead.getData(1));
-
-        if (slaveResult != null) {
-            slaveCounter.incrementAndGet();
-        }
-
-        return new PCheckoutResult(0, sampleName, true, true,
-                masterResult, slaveResult);
-    }
-
-    public long getSlaveCounter(String sampleName) throws Exception {
-        if (!this.sampleName.equals(sampleName))
-            throw new Exception("Sample " + sampleName + " doesn't exist");
-        return slaveCounter.get();
-    }
-
-    @Override
-    public double extractionRatio() {
-        return slaveCounter.get() / (double) totalCounter.get();
-    }
-
-    @Override
-    public boolean isPairedEnd() {
-        return true;
+        return new PCheckoutResult(0, sampleNames[0], true, true,
+                masterResult,
+                slaveBarcodes[0] != null ?
+                        // should be run only with *.getForSlave() SlidingBarcodeSearcher
+                        slaveBarcodes[0].search(sequencingRead.getData(1)) :
+                        BarcodeSearcherResult.BLANK_RESULT);
     }
 }

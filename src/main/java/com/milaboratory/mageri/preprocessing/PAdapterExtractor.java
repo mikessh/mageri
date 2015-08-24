@@ -35,13 +35,7 @@ import com.milaboratory.mageri.preprocessing.barcode.BarcodeSearcherResult;
 import com.milaboratory.mageri.preprocessing.barcode.SeedAndExtendBarcodeSearcher;
 import com.milaboratory.mageri.preprocessing.barcode.SlidingBarcodeSearcher;
 
-import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicLongArray;
-
-public final class PAdapterExtractor extends CheckoutProcessor<PSequencingRead, PCheckoutResult> {
-    private final AtomicLongArray slaveCounters;
-    private final AtomicLong masterFirstCounter;
+public final class PAdapterExtractor extends PCheckoutProcessor {
     private final BarcodeSearcher[] slaveBarcodes;
     private final boolean[] masterFirst;
     private final boolean orientedReads;
@@ -55,7 +49,7 @@ public final class PAdapterExtractor extends CheckoutProcessor<PSequencingRead, 
     public PAdapterExtractor(String[] sampleNames,
                              SeedAndExtendBarcodeSearcher[] masterBarcodes, BarcodeSearcher[] slaveBarcodes,
                              boolean[] masterFirst, boolean orientedReads) {
-        super(sampleNames, masterBarcodes);
+        super(sampleNames, masterBarcodes, slaveBarcodes);
         if (masterBarcodes.length != slaveBarcodes.length)
             throw new RuntimeException("Number of master and slave barcodes provided doesn't agree");
 
@@ -77,15 +71,13 @@ public final class PAdapterExtractor extends CheckoutProcessor<PSequencingRead, 
         }
         this.orientedReads = orientedReads;
         this.masterFirst = masterFirst;
-        this.masterFirstCounter = new AtomicLong();
-        this.slaveCounters = new AtomicLongArray(masterBarcodes.length);
     }
 
     @Override
     public PCheckoutResult checkoutImpl(PSequencingRead read) {
         boolean orientation;
 
-        BarcodeSearcherResult masterResult, slaveResult;
+        BarcodeSearcherResult masterResult;
 
         // Illumina convention (FR), orientation #1
         NucleotideSQPair read1o1 = read.getData(0),
@@ -105,8 +97,6 @@ public final class PAdapterExtractor extends CheckoutProcessor<PSequencingRead, 
                     masterResult = masterBarcodes[i].search(read1o2);
                     orientation = false;
                 }
-            } else {
-                masterFirstCounter.incrementAndGet();
             }
 
             // If master is found check for slave
@@ -115,7 +105,6 @@ public final class PAdapterExtractor extends CheckoutProcessor<PSequencingRead, 
 
                 // No search is performed when slave barcode is blank
                 if (slaveBarcodes[i] == null) {
-                    slaveCounters.incrementAndGet(i);
                     return new PCheckoutResult(i, sampleNames[i], orientation, masterFirst[i],
                             masterResult, BarcodeSearcherResult.BLANK_RESULT);
                 }
@@ -133,61 +122,11 @@ public final class PAdapterExtractor extends CheckoutProcessor<PSequencingRead, 
                 // Get slave for correct orientation
                 NucleotideSQPair slaveRead = orientation ? read2o1 : read2o2;
 
-                if ((slaveResult = slaveBarcodes[i].search(slaveRead)) != null) {
-                    slaveCounters.incrementAndGet(i);
-                    return new PCheckoutResult(i, sampleNames[i], orientation, masterFirst[i],
-                            masterResult, slaveResult);
-                } else {
-                    return null;
-                }
+                return new PCheckoutResult(i, sampleNames[i], orientation, masterFirst[i],
+                        masterResult, slaveBarcodes[i].search(slaveRead));
             }
         }
 
         return null;
-    }
-
-    public long getSlaveCounter(String sampleName) {
-        List<Integer> sampleIds = sampleNameToId.get(sampleName);
-        if (sampleIds == null)
-            throw new RuntimeException("Sample " + sampleName + " doesn't exist");
-        long count = 0;
-        for (int id : sampleIds)
-            count += slaveCounters.get(id);
-        return count;
-    }
-
-    @Override
-    public double getMasterFirstRatio() {
-        return masterFirstCounter.get() / (double) totalCounter.get();
-    }
-
-    @Override
-    public double extractionRatio() {
-        double total = totalCounter.get(), slaveFoundTotal = 0;
-
-        for (String sampleName : sampleNames) {
-            slaveFoundTotal += getSlaveCounter(sampleName);
-        }
-
-        return slaveFoundTotal / total;
-    }
-
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder(super.toString());
-        sb.append("\n");
-        sb.append("Slave");
-        for (int i = 0; i < sampleNames.length; i++) {
-            sb.append("\t");
-            sb.append(slaveCounters.get(i));
-        }
-        sb.append("\t");
-        sb.append(totalCounter.get());
-        return sb.toString();
-    }
-
-    @Override
-    public boolean isPairedEnd() {
-        return true;
     }
 }

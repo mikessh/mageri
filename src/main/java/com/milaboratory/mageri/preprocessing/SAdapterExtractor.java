@@ -32,7 +32,7 @@ import com.milaboratory.core.sequencing.read.SSequencingRead;
 import com.milaboratory.mageri.preprocessing.barcode.BarcodeSearcherResult;
 import com.milaboratory.mageri.preprocessing.barcode.SeedAndExtendBarcodeSearcher;
 
-public final class SAdapterExtractor extends CheckoutProcessor<SSequencingRead, SCheckoutResult> {
+public final class SAdapterExtractor extends SCheckoutProcessor {
     public SAdapterExtractor(String[] sampleNames, SeedAndExtendBarcodeSearcher[] masterBarcodes) {
         super(sampleNames, masterBarcodes);
     }
@@ -47,10 +47,5 @@ public final class SAdapterExtractor extends CheckoutProcessor<SSequencingRead, 
         }
 
         return null;
-    }
-
-    @Override
-    public boolean isPairedEnd() {
-        return false;
     }
 }
