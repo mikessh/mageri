@@ -43,16 +43,17 @@ import java.util.concurrent.atomic.AtomicLongArray;
 public abstract class CheckoutProcessor<ReadType extends SequencingRead, ResultType extends CheckoutResult>
         implements ReadSpecific, Serializable {
     protected final AtomicLongArray masterCounters;
-    protected final AtomicLong masterNotFoundCounter, totalCounter;
+    protected final AtomicLong goodCounter, totalCounter;
     protected final String[] sampleNames;
     protected final List<String> sampleNameList = new ArrayList<>();
     protected final BarcodeSearcher[] masterBarcodes;
     protected final HashMap<String, List<Integer>> sampleNameToId = new HashMap<>();
 
-    protected CheckoutProcessor(String[] sampleNames, BarcodeSearcher[] masterBarcodes) {
+    protected CheckoutProcessor(String[] sampleNames,
+                                BarcodeSearcher[] masterBarcodes) {
         this.sampleNames = sampleNames;
         this.masterBarcodes = masterBarcodes;
-        this.masterNotFoundCounter = new AtomicLong();
+        this.goodCounter = new AtomicLong();
         this.totalCounter = new AtomicLong();
         this.masterCounters = new AtomicLongArray(masterBarcodes.length);
 
@@ -66,16 +67,20 @@ public abstract class CheckoutProcessor<ReadType extends SequencingRead, ResultT
         }
     }
 
-    public long getMasterCounter(String sampleName) {
+    protected List<Integer> getSampleIds(String sampleName) {
         List<Integer> sampleIds = sampleNameToId.get(sampleName);
-        if (sampleIds == null)
+        if (sampleIds == null) {
             throw new RuntimeException("Sample " + sampleName + " doesn't exist");
+        }
+        return sampleIds;
+    }
+
+    public long getMasterCounter(String sampleName) {
         long count = 0;
-        for (int id : sampleIds)
+        for (int id : getSampleIds(sampleName))
             count += masterCounters.get(id);
         return count;
     }
-
 
     public abstract ResultType checkoutImpl(ReadType read);
 
@@ -83,8 +88,10 @@ public abstract class CheckoutProcessor<ReadType extends SequencingRead, ResultT
         totalCounter.incrementAndGet();
         ResultType result = checkoutImpl(read);
 
-        if (result == null)
-            masterNotFoundCounter.incrementAndGet();
+        if (result != null) {
+            goodCounter.incrementAndGet();
+            masterCounters.incrementAndGet(result.getSampleId());
+        }
 
         return result;
     }
@@ -93,13 +100,8 @@ public abstract class CheckoutProcessor<ReadType extends SequencingRead, ResultT
         return Collections.unmodifiableList(sampleNameList);
     }
 
-    public double getMasterFirstRatio() {
-        return 1.0;
-    }
-
     public double extractionRatio() {
-        double total = totalCounter.get(), notFound = masterNotFoundCounter.get();
-        return 1.0 - notFound / total;
+        return (double) goodCounter.get() / totalCounter.get();
     }
 
     public long getTotal() {
@@ -119,7 +121,7 @@ public abstract class CheckoutProcessor<ReadType extends SequencingRead, ResultT
             sb.append(masterCounters.get(i));
         }
         sb.append("\t");
-        sb.append(masterNotFoundCounter.get());
+        sb.append(goodCounter.get());
         sb.append("\t");
         sb.append(totalCounter.get());
         return sb.toString();

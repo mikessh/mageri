@@ -97,6 +97,15 @@ public class BarcodeSearcherResult {
         return to - from;
     }
 
+    /**
+     * Reports whether the adapter sequence was matched.
+     * Used at adapter trimming stage. Note that there can be
+     * a situation when barcode search is considered successful
+     * ({@code this != null}) yet there is no adapter sequence,
+     * e.g. for dummy barcodes and simple header matching.
+     *
+     * @return
+     */
     public boolean hasAdapterMatch() {
         return to > from;
     }

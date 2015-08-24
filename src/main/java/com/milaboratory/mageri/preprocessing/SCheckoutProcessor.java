@@ -26,53 +26,24 @@
  * PARTICULAR PURPOSE, OR THAT THE USE OF THE SOFTWARE WILL NOT INFRINGE ANY
  * PATENT, TRADEMARK OR OTHER RIGHTS.
  */
+
 package com.milaboratory.mageri.preprocessing;
 
-import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
-import com.milaboratory.mageri.preprocessing.barcode.BarcodeSearcherResult;
+import com.milaboratory.core.sequencing.read.SSequencingRead;
+import com.milaboratory.mageri.preprocessing.barcode.BarcodeSearcher;
 
-public final class PCheckoutResult extends CheckoutResult {
-    private final boolean orientation, masterFirst;
-    private final BarcodeSearcherResult slaveResult;
+public abstract class SCheckoutProcessor extends CheckoutProcessor<SSequencingRead, SCheckoutResult> {
+    protected SCheckoutProcessor(String sampleName,
+                                 BarcodeSearcher masterBarcode) {
+        this(new String[]{sampleName}, new BarcodeSearcher[]{masterBarcode});
+    }
 
-    public PCheckoutResult(int sampleId, String sampleName, boolean orientation, boolean masterFirst,
-                           BarcodeSearcherResult masterResult, BarcodeSearcherResult slaveResult) {
-        super(sampleId, sampleName, masterResult);
-        this.slaveResult = slaveResult;
-        this.orientation = orientation;
-        this.masterFirst = masterFirst;
+    protected SCheckoutProcessor(String[] sampleNames, BarcodeSearcher[] masterBarcodes) {
+        super(sampleNames, masterBarcodes);
     }
 
     @Override
-    public boolean getOrientation() {
-        return orientation;
-    }
-
-    @Override
-    public boolean getMasterFirst() {
-        return masterFirst;
-    }
-
-    public boolean slaveFound() {
-        return slaveResult != null;
-    }
-
-    @Override
-    public NucleotideSequence getUmi() {
-        if (slaveFound()) {
-            return masterResult.getUmi().concatenate(slaveResult.getUmi());
-        } else {
-            return masterResult.getUmi();
-        }
-    }
-
-    @Override
-    public boolean isGood(byte umiQualThreshold) {
-        return slaveFound() &&
-                (byte) Math.min(masterResult.getUmiWorstQual(), slaveResult.getUmiWorstQual()) >= umiQualThreshold;
-    }
-
-    public BarcodeSearcherResult getSlaveResult() {
-        return slaveResult;
+    public boolean isPairedEnd() {
+        return false;
     }
 }
