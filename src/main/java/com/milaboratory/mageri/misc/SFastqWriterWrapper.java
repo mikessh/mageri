@@ -29,22 +29,22 @@
 
 package com.milaboratory.mageri.misc;
 
-import com.milaboratory.core.sequencing.io.fastq.PFastqWriter;
-import com.milaboratory.core.sequencing.read.PSequencingRead;
+import com.milaboratory.core.sequencing.io.fastq.SFastqWriter;
+import com.milaboratory.core.sequencing.read.SSequencingRead;
 
 import java.io.IOException;
 
-public class PFastqFastqWriterWrapper implements FastqWriter<PSequencingRead> {
-    private final PFastqWriter writer;
+public class SFastqWriterWrapper implements FastqWriter<SSequencingRead> {
+    private final SFastqWriter writer;
 
 
-    public PFastqFastqWriterWrapper(PFastqWriter writer) {
+    public SFastqWriterWrapper(SFastqWriter writer) {
         this.writer = writer;
     }
 
 
     @Override
-    public void write(PSequencingRead read) throws IOException {
+    public void write(SSequencingRead read) throws IOException {
         writer.write(read);
     }
 
