@@ -90,10 +90,10 @@ public class ReferenceLibraryTest {
     @Test
     @Category(FastTests.class)
     public void cgcGenomicTest() throws IOException {
-        
+
         GenomicInfoProvider giProvider = new BedGenomicInfoProvider(
                 ResourceIOProvider.INSTANCE.getWrappedStream("genomic/cgc_exons_flank50.bed"),
-                ResourceIOProvider.INSTANCE.getWrappedStream("genomic/contigs_grch38.txt")
+                ResourceIOProvider.INSTANCE.getWrappedStream("genomic/contigs_hg38.txt")
         );
 
         ReferenceLibrary referenceLibrary = ReferenceLibrary.fromInput(
@@ -104,5 +104,19 @@ public class ReferenceLibraryTest {
         Assert.assertEquals(referenceLibrary.size(), giProvider.size());
 
         TestUtil.serializationCheck(referenceLibrary);
+    }
+
+    @Test(expected = RuntimeException.class)
+    @Category(FastTests.class)
+    public void cgcGenomicBadContigsTest() throws IOException {
+
+        GenomicInfoProvider giProvider = new BedGenomicInfoProvider(
+                ResourceIOProvider.INSTANCE.getWrappedStream("genomic/cgc_exons_flank50.bed"),
+                ResourceIOProvider.INSTANCE.getWrappedStream("genomic/contigs_grch38.txt")
+        );
+
+        ReferenceLibrary.fromInput(
+                ResourceIOProvider.INSTANCE.getWrappedStream("genomic/cgc_exons_flank50.fa"),
+                giProvider);
     }
 }
