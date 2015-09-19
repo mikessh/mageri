@@ -37,9 +37,9 @@ import com.milaboratory.mageri.core.Mig;
 import com.milaboratory.mageri.core.PipelineBlock;
 import com.milaboratory.mageri.core.ReadSpecific;
 import com.milaboratory.mageri.misc.FastqWriter;
-import com.milaboratory.mageri.misc.PFastqFastqWriterWrapper;
+import com.milaboratory.mageri.misc.PFastqWriterWrapper;
 import com.milaboratory.mageri.misc.ProcessorResultWrapper;
-import com.milaboratory.mageri.misc.SFastqFastqWriterWrapper;
+import com.milaboratory.mageri.misc.SFastqWriterWrapper;
 import com.milaboratory.mageri.pipeline.Speaker;
 import com.milaboratory.util.CompressionType;
 
@@ -132,11 +132,11 @@ public abstract class Assembler<ConsensusType extends Consensus, MigType extends
         }
 
         FastqWriter writer = isPairedEnd() ?
-                new PFastqFastqWriterWrapper(
+                new PFastqWriterWrapper(
                         new PFastqWriter(pathPrefix + ".assemble.R1.fastq.gz", pathPrefix + ".assemble.R2.fastq.gz",
                                 QualityFormat.Phred33, CompressionType.GZIP)
                 ) :
-                new SFastqFastqWriterWrapper(
+                new SFastqWriterWrapper(
                         new SFastqWriter(pathPrefix + ".assemble.R1.fastq.gz", QualityFormat.Phred33, CompressionType.GZIP)
                 );
         for (Consensus consensus : consensusList) {
