@@ -81,6 +81,9 @@ public class ReferenceLibrary implements Serializable {
             addReference(descriptionFields[0],
                     sequence);
         }
+        if (references.isEmpty()){
+            throw new RuntimeException("No references were loaded from provided FASTA records.");
+        }
     }
 
     public synchronized void addReference(String name, NucleotideSequence sequence) {
@@ -98,6 +101,12 @@ public class ReferenceLibrary implements Serializable {
             return;
         }
 
+        if (genomicInfo.getContig() == null) {
+            System.out.println("[WARNING] No contig found for " + name +
+                    ", skipping reference.");
+            return;
+        }
+        
         contigs.add(genomicInfo.getContig());
 
         if (!genomicInfo.positiveStrand()) {
