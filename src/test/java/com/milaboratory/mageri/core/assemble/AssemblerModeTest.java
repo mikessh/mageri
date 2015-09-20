@@ -39,6 +39,7 @@ import com.milaboratory.mageri.generators.MigWithMutations;
 import com.milaboratory.mageri.generators.MutationGenerator;
 import com.milaboratory.mageri.generators.RandomMigGenerator;
 import com.milaboratory.mageri.generators.RandomReferenceGenerator;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -46,7 +47,7 @@ import org.junit.experimental.categories.Category;
 public class AssemblerModeTest {
     @Test
     @Category(FastTests.class)
-    public void assemblerDiagnosticsTest() throws Exception {
+    public void assemblerDiagnosticsIndelDefaultTest() throws Exception {
         String condition;
 
         RandomMigGenerator randomMigGenerator = new RandomMigGenerator();
@@ -56,13 +57,29 @@ public class AssemblerModeTest {
                 AssemblerParameters.DEFAULT,
                 DoubleRangeAssertion.createDummy("MeanCQS", condition),
                 DoubleRangeAssertion.createDummy("MeanUMICoverage", condition));
+    }
 
-        System.out.println("[Indel-compatible assembler not implemented yet: No read recovery mode!]");
+    @Test
+    @Ignore("Indel-compatible assembler not implemented yet: No read recovery mode!")
+    @Category(FastTests.class)
+    public void assemblerDiagnosticsIndelT454Test() throws Exception {
+        String condition;
+
+        RandomMigGenerator randomMigGenerator = new RandomMigGenerator();
+
         condition = "Reads with indels, TORRENT454 assembler";
         assemblerDiagnosticsTest(randomMigGenerator,
                 AssemblerParameters.TORRENT454,
                 DoubleRangeAssertion.createDummy("MeanCQS", condition),
                 DoubleRangeAssertion.createDummy("MeanUMICoverage", condition));
+    }
+
+    @Test
+    @Category(FastTests.class)
+    public void assemblerDiagnosticsNoIndelTest() throws Exception {
+        String condition;
+
+        RandomMigGenerator randomMigGenerator = new RandomMigGenerator();
 
         condition = "Reads without indels, default assembler";
         randomMigGenerator.setMutationGenerator(MutationGenerator.NO_INDEL);

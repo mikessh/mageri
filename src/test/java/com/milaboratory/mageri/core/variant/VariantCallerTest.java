@@ -56,7 +56,7 @@ import org.junit.experimental.categories.Category;
 public class VariantCallerTest {
     @Test
     @Category(ComplexRandomTests.class)
-    public void test() {
+    public void skewedDistributionTest() {
         System.out.println("Testing identification of somatic mutations and hot-spot errors " +
                 "for various hot spot models");
 
@@ -66,34 +66,53 @@ public class VariantCallerTest {
 
         test(modelMigGeneratorFactory,
                 qualThreshold,
-                PercentRangeAssertion.createLowerBound("Matching unique variants", setting, 85),
+                PercentRangeAssertion.createLowerBound("Matching unique variants", setting, 80),
                 PercentRangeAssertion.createUpperBound("Erroneous unique variants", setting, 1),
                 DoubleRangeAssertion.createUpperBound("Average variant count difference", setting, 0.05),
-                PercentRangeAssertion.createLowerBound("Specificity", setting, 95),
-                PercentRangeAssertion.createLowerBound("Sensitivity", setting, 90));
+                PercentRangeAssertion.createLowerBound("Specificity", setting, 90),
+                PercentRangeAssertion.createLowerBound("Sensitivity", setting, 85));
+    }
 
-        setting = "Uniform position, Q" + qualThreshold;
+    @Test
+    @Category(ComplexRandomTests.class)
+    public void uniformPositionTest() {
+        System.out.println("Testing identification of somatic mutations and hot-spot errors " +
+                "for various hot spot models");
+
+        ModelMigGeneratorFactory modelMigGeneratorFactory = new ModelMigGeneratorFactory();
+        int qualThreshold = 20;
+        String setting = "Uniform position, Q" + qualThreshold;
         modelMigGeneratorFactory.setHotSpotPositionRatio(1.0);
         modelMigGeneratorFactory.setPcrPositionRatio(1.0);
 
         test(modelMigGeneratorFactory,
                 qualThreshold,
-                PercentRangeAssertion.createLowerBound("Matching unique variants", setting, 85),
+                PercentRangeAssertion.createLowerBound("Matching unique variants", setting, 80),
                 PercentRangeAssertion.createUpperBound("Erroneous unique variants", setting, 1),
                 DoubleRangeAssertion.createUpperBound("Average variant count difference", setting, 0.05),
-                PercentRangeAssertion.createLowerBound("Specificity", setting, 95),
-                PercentRangeAssertion.createLowerBound("Sensitivity", setting, 90));
+                PercentRangeAssertion.createLowerBound("Specificity", setting, 90),
+                PercentRangeAssertion.createLowerBound("Sensitivity", setting, 85));
+    }
 
-        setting = "Uniform position and pattern, Q" + qualThreshold;
+    @Test
+    @Category(ComplexRandomTests.class)
+    public void uniformPositionPatternTest() {
+        System.out.println("Testing identification of somatic mutations and hot-spot errors " +
+                "for various hot spot models");
+
+        ModelMigGeneratorFactory modelMigGeneratorFactory = new ModelMigGeneratorFactory();
+        int qualThreshold = 20;
+        
+        String setting = "Uniform position and pattern, Q" + qualThreshold;
         modelMigGeneratorFactory.setPcrErrorGenerator(MutationGenerator.NO_INDEL);
 
         test(modelMigGeneratorFactory,
                 qualThreshold,
-                PercentRangeAssertion.createLowerBound("Matching unique variants", setting, 85),
+                PercentRangeAssertion.createLowerBound("Matching unique variants", setting, 80),
                 PercentRangeAssertion.createUpperBound("Erroneous unique variants", setting, 1),
                 DoubleRangeAssertion.createUpperBound("Average variant count difference", setting, 0.05),
-                PercentRangeAssertion.createLowerBound("Specificity", setting, 95),
-                PercentRangeAssertion.createLowerBound("Sensitivity", setting, 90));
+                PercentRangeAssertion.createLowerBound("Specificity", setting, 90),
+                PercentRangeAssertion.createLowerBound("Sensitivity", setting, 85));
     }
 
     @SuppressWarnings("unchecked")

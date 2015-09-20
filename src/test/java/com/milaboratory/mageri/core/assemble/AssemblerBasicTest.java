@@ -56,10 +56,10 @@ public class AssemblerBasicTest {
     @Ignore("TODO")
     public void parallelTest() {
     }
-    
+
     @Test
     @Category(FastTests.class)
-    public void randomMutationsTest() {
+    public void randomMutationsSingleIndelTest() {
         RandomMigGenerator migGenerator = new RandomMigGenerator();
 
         migGenerator.setMaxRandomFlankSize(5);
@@ -74,9 +74,16 @@ public class AssemblerBasicTest {
                 // todo: note indel-proof assembler not implemented yet
                 PercentRangeAssertion.createUpperBound("Incorrect consensus", mode, 40),
                 false);
+    }
 
+    @Test
+    @Category(FastTests.class)
+    public void randomMutationsSingleNoIndelTest() {
+        RandomMigGenerator migGenerator = new RandomMigGenerator();
+
+        migGenerator.setMaxRandomFlankSize(5);
         migGenerator.setMutationGenerator(MutationGenerator.NO_INDEL);
-        mode = "Single, No indels";
+        String mode = "Single, No indels";
 
         randomMutationsTest(migGenerator,
                 PercentRangeAssertion.createLowerBound("Reads assembled", mode, 95),
@@ -85,9 +92,16 @@ public class AssemblerBasicTest {
                 PercentRangeAssertion.createUpperBound("MIGs dropped", mode, 1),
                 PercentRangeAssertion.createUpperBound("Incorrect consensus", mode, 1),
                 false);
+    }
 
+    @Test
+    @Category(FastTests.class)
+    public void randomMutationsPairedIndelsTest() {
+        RandomMigGenerator migGenerator = new RandomMigGenerator();
+
+        migGenerator.setMaxRandomFlankSize(5);
         migGenerator.setMutationGenerator(MutationGenerator.DEFAULT);
-        mode = "Paired, With indels";
+        String mode = "Paired, With indels";
 
         randomMutationsTest(migGenerator,
                 PercentRangeAssertion.createLowerBound("Reads assembled", mode, 80),
@@ -100,6 +114,24 @@ public class AssemblerBasicTest {
 
         migGenerator.setMutationGenerator(MutationGenerator.NO_INDEL);
         mode = "Paired, No indels";
+
+        randomMutationsTest(migGenerator,
+                PercentRangeAssertion.createLowerBound("Reads assembled", mode, 85),
+                PercentRangeAssertion.createUpperBound("Reads dropped", mode, 10),
+                PercentRangeAssertion.createLowerBound("MIGs assembled", mode, 95),
+                PercentRangeAssertion.createUpperBound("MIGs dropped", mode, 1),
+                PercentRangeAssertion.createUpperBound("Incorrect consensus", mode, 10),
+                true);
+    }
+
+    @Test
+    @Category(FastTests.class)
+    public void randomMutationsPairedNoIndelsTest() {
+        RandomMigGenerator migGenerator = new RandomMigGenerator();
+
+        migGenerator.setMaxRandomFlankSize(5);
+        migGenerator.setMutationGenerator(MutationGenerator.NO_INDEL);
+        String mode = "Paired, No indels";
 
         randomMutationsTest(migGenerator,
                 PercentRangeAssertion.createLowerBound("Reads assembled", mode, 85),
