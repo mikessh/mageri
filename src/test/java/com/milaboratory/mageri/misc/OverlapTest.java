@@ -46,26 +46,27 @@ import static com.milaboratory.mageri.generators.RandomUtil.randomSequence;
 
 
 public class OverlapTest {
-    private final int totalOverlapSize = 15, seqSize = 75, totalRuns = 10000;
+    private final int seqSize = 75;
+    private final int totalRuns = 10000;
 
     @Test
     @Category(FastTests.class)
-    public void positiveTest() {
-        positiveTest(MutationGenerator.DEFAULT,
-                PercentRangeAssertion.createLowerBound("Correct overlap rate", "Overlap with indels", 70),
-                PercentRangeAssertion.createUpperBound("Incorrect overlap rate", "Overlap with indels", 30));
-        positiveTest(MutationGenerator.NO_INDEL,
+    public void positiveTestWithErrors() {
+        positiveTestWithErrors(MutationGenerator.DEFAULT,
+                PercentRangeAssertion.createLowerBound("Correct overlap rate", "Overlap with indels", 75),
+                PercentRangeAssertion.createUpperBound("Incorrect overlap rate", "Overlap with indels", 5));
+        positiveTestWithErrors(MutationGenerator.NO_INDEL,
                 PercentRangeAssertion.createLowerBound("Correct overlap rate", "Overlap without indels", 90),
-                PercentRangeAssertion.createUpperBound("Incorrect overlap rate", "Overlap without indels", 10));
+                PercentRangeAssertion.createUpperBound("Incorrect overlap rate", "Overlap without indels", 5));
     }
 
-    public void positiveTest(MutationGenerator mutationModel,
-                             PercentRangeAssertion correctOverlapRate,
-                             PercentRangeAssertion incorrectOverlapRate) {
-        Overlapper ro = new Overlapper();
-
+    public void positiveTestWithErrors(MutationGenerator mutationModel,
+                                       PercentRangeAssertion correctOverlapRate,
+                                       PercentRangeAssertion incorrectOverlapRate) {
+        Overlapper readOverlapper = new Overlapper();
         int overlapped = 0, overlappedCorrectly = 0, total = totalRuns;
         for (int i = 0; i < total; i++) {
+            int totalOverlapSize = 10;
             NucleotideSequence s1orig = randomSequence(seqSize - totalOverlapSize),
                     s2 = randomSequence(seqSize);
 
@@ -89,7 +90,7 @@ public class OverlapTest {
             NucleotideSQPair r1 = new NucleotideSQPair(s1, SequenceQualityPhred.create(QualityFormat.Phred33, q1, true)),
                     r2 = new NucleotideSQPair(s2, SequenceQualityPhred.create(QualityFormat.Phred33, q2, true));
 
-            Overlapper.OverlapResult result = ro.overlap(r1, r2);
+            Overlapper.OverlapResult result = readOverlapper.overlap(r1, r2);
 
             if (result.overlapped()) {
                 overlapped++;
@@ -107,50 +108,63 @@ public class OverlapTest {
     @Test
     @Category(FastTests.class)
     public void readThroughTest() {
-        Overlapper ro = new Overlapper();
-
-        int correctOverlap = 0, correctOffset = 0,
-                readThroughIdentified = 0,
+        Overlapper readOverlapper = new Overlapper(), readOverlapper2 = new Overlapper();
+        int correctOverlap = 0, correctOverlapSwap = 0, correctOffset = 0,
+                readThroughIdentified = 0, overlappedCount = 0,
                 total = totalRuns;
-        int barcodeOffset = (int) (0.1 * seqSize), overhangSize = (int) (0.05 * seqSize);
+        int overhangSize = (int) (0.5 * seqSize);
 
         for (int i = 0; i < total; i++) {
             NucleotideSequence fragment = randomSequence(2 * seqSize),
-                    barcode = randomSequence(barcodeOffset),
-                    overhang = randomSequence(overhangSize);
+                    overhang5 = randomSequence(1, overhangSize), overhang3 = randomSequence(1, overhangSize);
 
-            NucleotideSequence s1 = fragment.concatenate(overhang),
-                    s2 = barcode.concatenate(fragment), s12 = barcode.concatenate(fragment).concatenate(overhang);
+            NucleotideSequence fullSeq = overhang5.concatenate(fragment).concatenate(overhang3);
 
-            NucleotideSQPair r1 = new NucleotideSQPair(s1),
-                    r2 = new NucleotideSQPair(s2);
+            NucleotideSQPair r1 = new NucleotideSQPair(fragment),
+                    r2 = new NucleotideSQPair(fullSeq);
 
-            Overlapper.OverlapResult result = ro.overlap(r1, r2);
+            Overlapper.OverlapResult result = readOverlapper.overlap(r1, r2);
 
             if (result.overlapped()) {
+                overlappedCount++;
+                
                 if (result.readThrough())
                     readThroughIdentified++;
 
-                if (result.getSQPair().getSequence().equals(s12))
+                if (result.getSQPair().getSequence().equals(fullSeq))
                     correctOverlap++;
 
-                if (result.getOffset1() == barcodeOffset)
+                if (result.getOffset1() == overhang5.size())
                     correctOffset++;
+            }
+
+            result = readOverlapper2.overlap(r2, r1);
+
+            if (result.overlapped()) {
+                if (result.getSQPair().getSequence().equals(fullSeq))
+                    correctOverlapSwap++;
             }
         }
 
         PercentRangeAssertion.createLowerBound("Correct overlap", "Read-through", 95).
                 assertInRange(correctOverlap, total);
 
+        PercentRangeAssertion.createLowerBound("Correct overlap swapped", "Read-through", 95).
+                assertInRange(correctOverlapSwap, total);
+
         Assert.assertEquals("Correct offset identified", correctOverlap, correctOffset);
         Assert.assertEquals("Read-through identified", correctOverlap, readThroughIdentified);
+
+        // check stats
+        Assert.assertEquals(readThroughIdentified, readOverlapper.getReadThroughCount());
+        Assert.assertEquals(total, readOverlapper.getTotalCount());
+        Assert.assertEquals(overlappedCount, readOverlapper.getOverlappedCount());
     }
 
     @Test
     @Category(FastTests.class)
     public void negativeTest() throws Exception {
-        Overlapper ro = new Overlapper();
-
+        Overlapper readOverlapper = new Overlapper();
         int overlapped = totalRuns, total = overlapped;
         for (int i = 0; i < total; i++) {
             NucleotideSequence s1 = randomSequence(seqSize), s2 = randomSequence(seqSize);
@@ -162,7 +176,7 @@ public class OverlapTest {
             NucleotideSQPair r1 = new NucleotideSQPair(s1, SequenceQualityPhred.create(QualityFormat.Phred33, q1, true)),
                     r2 = new NucleotideSQPair(s2, SequenceQualityPhred.create(QualityFormat.Phred33, q2, true));
 
-            Overlapper.OverlapResult result = ro.overlap(r1, r2);
+            Overlapper.OverlapResult result = readOverlapper.overlap(r1, r2);
 
             if (!result.overlapped()) {
                 overlapped--;

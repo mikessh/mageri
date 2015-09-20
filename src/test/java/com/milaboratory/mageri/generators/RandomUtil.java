@@ -53,4 +53,9 @@ public class RandomUtil {
         }
         return builder.create();
     }
+
+    public static NucleotideSequence randomSequence(int lengthMin, int lengthMax) {
+        int length = nextFromRange(lengthMin, lengthMax);
+        return randomSequence(length);
+    }
 }
