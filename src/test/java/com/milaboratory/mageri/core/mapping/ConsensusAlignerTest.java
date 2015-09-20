@@ -40,8 +40,8 @@ import com.milaboratory.mageri.core.genomic.Reference;
 import com.milaboratory.mageri.core.genomic.ReferenceLibrary;
 import com.milaboratory.mageri.core.mapping.alignment.Aligner;
 import com.milaboratory.mageri.core.mapping.alignment.ExtendedKmerAligner;
-import com.milaboratory.mageri.generators.MutationGenerator;
 import com.milaboratory.mageri.generators.MigWithMutations;
+import com.milaboratory.mageri.generators.MutationGenerator;
 import com.milaboratory.mageri.generators.RandomMigGenerator;
 import com.milaboratory.mageri.generators.RandomReferenceGenerator;
 import org.junit.Ignore;
@@ -65,36 +65,61 @@ public class ConsensusAlignerTest {
 
     @Test
     @Category(FastTests.class)
-    public void test() {
+    public void singleEndTest() {
         int nReferences = 500;
 
         RandomReferenceGenerator randomReferenceGenerator = new RandomReferenceGenerator();
         ReferenceLibrary referenceLibrary;
         StatsByRef statsByRef;
         String setting;
+        ConsensusAligner consensusAligner;
 
         setting = "Single-end";
         randomReferenceGenerator.setReferenceSizeMin(100);
         randomReferenceGenerator.setReferenceSizeMax(150);
         referenceLibrary = randomReferenceGenerator.nextReferenceLibrary(nReferences);
         statsByRef = new StatsByRef(referenceLibrary);
-        ConsensusAligner consensusAligner = alignerTest(randomReferenceGenerator,
-                statsByRef, setting);
+        consensusAligner = alignerTest(randomReferenceGenerator, statsByRef, setting);
         checkMutationsTable(statsByRef, consensusAligner, setting);
+    }
+
+    @Test
+    @Category(FastTests.class)
+    public void pairedEndOverlappingTest() {
+        int nReferences = 500;
+
+        RandomReferenceGenerator randomReferenceGenerator = new RandomReferenceGenerator();
+        ReferenceLibrary referenceLibrary;
+        StatsByRef statsByRef;
+        String setting;
+        ConsensusAligner consensusAligner;
 
         setting = "Paired-end, overlapping";
         randomReferenceGenerator.setReferenceSizeMin(200);
         randomReferenceGenerator.setReferenceSizeMax(300);
         referenceLibrary = randomReferenceGenerator.nextReferenceLibrary(nReferences);
         statsByRef = new StatsByRef(referenceLibrary);
-        consensusAligner = alignerTest(randomReferenceGenerator,
-                statsByRef, setting, -10, 10);
+        consensusAligner = alignerTest(randomReferenceGenerator, statsByRef, setting, -10, 10);
         checkMutationsTable(statsByRef, consensusAligner, setting);
+    }
+
+    @Test
+    @Category(FastTests.class)
+    public void pairedEndNonOverlappingTest() {
+        int nReferences = 500;
+
+        RandomReferenceGenerator randomReferenceGenerator = new RandomReferenceGenerator();
+        ReferenceLibrary referenceLibrary;
+        StatsByRef statsByRef;
+        String setting;
+        ConsensusAligner consensusAligner;
 
         setting = "Paired-end, non-overlapping";
+        randomReferenceGenerator.setReferenceSizeMin(200);
+        randomReferenceGenerator.setReferenceSizeMax(300);
+        referenceLibrary = randomReferenceGenerator.nextReferenceLibrary(nReferences);
         statsByRef = new StatsByRef(referenceLibrary);
-        consensusAligner = alignerTest(randomReferenceGenerator,
-                statsByRef, setting, -20, 10);
+        consensusAligner = alignerTest(randomReferenceGenerator, statsByRef, setting, -20, 10);
         checkMutationsTable(statsByRef, consensusAligner, setting);
     }
 
