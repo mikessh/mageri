@@ -43,8 +43,8 @@ public final class VcfUtil {
                     "##INFO=<ID=DP,Number=1,Type=Integer,Description=\"Total Depth\">\n" +
                             "##INFO=<ID=AF,Number=.,Type=Float,Description=\"Allele Frequency\">\n" +
                             "##INFO=<ID=AA,Number=1,Type=String,Description=\"Ancestral Allele\">\n" +
-                            "##INFO=<ID=CQ,Number=1,Type=Integer,Description=\"Assembly quality\">" +
-                            "##INFO=<ID=ER,Number=.,Type=Float,Description=\"Error rate\">" +
+                            "##INFO=<ID=CQ,Number=1,Type=Integer,Description=\"Assembly quality\">\n" +
+                            "##INFO=<ID=ER,Number=.,Type=Float,Description=\"Error rate\">\n" +
                             "##INFO=<ID=RI,Number=1,Type=String,Description=\"Reference id\">",
             FORMAT_HEADER =
                     "##FORMAT=<ID=GT,Number=1,Type=String,Description=\"Genotype\">\n" +
