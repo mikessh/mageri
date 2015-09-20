@@ -33,34 +33,56 @@ import com.milaboratory.core.sequence.mutations.Mutations;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.mageri.FastTests;
 import com.milaboratory.mageri.PercentRangeAssertion;
+import com.milaboratory.mageri.core.genomic.BasicGenomicInfoProvider;
 import com.milaboratory.mageri.core.genomic.ReferenceLibrary;
-import com.milaboratory.mageri.generators.MutationGenerator;
-import com.milaboratory.mageri.generators.RandomReferenceGenerator;
-import com.milaboratory.mageri.generators.ReferenceParentChildPair;
+import com.milaboratory.mageri.generators.*;
+import com.milaboratory.mageri.pipeline.input.ResourceIOProvider;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+
+import java.io.IOException;
 
 public class AlignerTest {
     private final int mapqThreshold = 20;
 
     @Test
     @Category(FastTests.class)
-    public void falsePositiveTest() {
-        int nReferences = 1000, nRepetitions = 10000;
+    public void falsePositiveRandomTest() {
+        int nReferences = 1000;
+
         RandomReferenceGenerator randomReferenceGenerator = new RandomReferenceGenerator();
         randomReferenceGenerator.setReferenceSizeMin(75);
         randomReferenceGenerator.setReferenceSizeMax(75);
 
         ReferenceLibrary referenceLibrary = randomReferenceGenerator.nextReferenceLibrary(nReferences);
 
+        falsePositiveTest(referenceLibrary, randomReferenceGenerator, 10000, 85);
+    }
+
+    @Test
+    @Category(FastTests.class)
+    public void falsePositivePseudogeneTest() throws IOException {
+        ReferenceLibrary referenceLibrary = ReferenceLibrary.fromInput(
+                ResourceIOProvider.INSTANCE.getWrappedStream("genomic/cgc_exons_flank50.fa"),
+                new BasicGenomicInfoProvider()),
+                pseudogeneReferenceLibrary = ReferenceLibrary.fromInput(
+                        ResourceIOProvider.INSTANCE.getWrappedStream("genomic/pseudogene.fa"),
+                        new BasicGenomicInfoProvider());
+
+        falsePositiveTest(referenceLibrary, new ReferenceLibrarySampler(pseudogeneReferenceLibrary), 1000, 100);
+    }
+
+    public void falsePositiveTest(ReferenceLibrary referenceLibrary, 
+                                  RandomSequenceGenerator randomSequenceGenerator,
+                                  int nRepetitions,
+                                  int kMerFPBound) {
         AlignerFactory alignerFactory = new ExtendedKmerAlignerFactory(referenceLibrary);
         Aligner aligner = alignerFactory.create();
-
 
         int nAligned = 0, nMapqFitlered = 0, nEvaluatorFiltered = 0;
 
         for (int i = 0; i < nRepetitions; i++) {
-            NucleotideSequence query = randomReferenceGenerator.nextReferenceSequence();
+            NucleotideSequence query = randomSequenceGenerator.nextSequence();
 
             AlignmentResult alignmentResult = aligner.align(query);
 
@@ -76,7 +98,7 @@ public class AlignerTest {
             }
         }
 
-        PercentRangeAssertion.createUpperBound("Kmer alignment", "Aligner false positive test", 85).assertInRange(nAligned, nRepetitions);
+        PercentRangeAssertion.createUpperBound("Kmer alignment", "Aligner false positive test", kMerFPBound).assertInRange(nAligned, nRepetitions);
         PercentRangeAssertion.createLowerBound("MAPQ threshold filtered filtering", "Aligner false positive test", 95).assertInRange(nMapqFitlered, nAligned);
         PercentRangeAssertion.createLowerBound("Alignment evaluator filtering", "Aligner false positive test", 95).assertInRange(nEvaluatorFiltered, nAligned);
     }

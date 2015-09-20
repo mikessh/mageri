@@ -45,7 +45,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.milaboratory.mageri.generators.RandomUtil.randomSequence;
 
-public class RandomReferenceGenerator {
+public class RandomReferenceGenerator implements RandomSequenceGenerator {
     protected int referenceSizeMin = 75, referenceSizeMax = 300;
     protected MutationGenerator mutationGenerator = MutationGenerator.DEFAULT;
     protected final AtomicInteger referenceIndex = new AtomicInteger();

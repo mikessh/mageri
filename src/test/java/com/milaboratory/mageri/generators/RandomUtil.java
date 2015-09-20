@@ -39,7 +39,7 @@ public class RandomUtil {
     private static final Random random = new Random(480011L);
 
     public static int nextFromRange(int min, int max) {
-        return min + random.nextInt(max - min + 1);
+        return max > min ? min + random.nextInt(max - min + 1) : max;
     }
 
     public static int nextIndex(int n) {
