@@ -32,13 +32,18 @@ package com.milaboratory.mageri.core.mapping.alignment;
 import com.milaboratory.core.sequence.alignment.AffineGapAlignmentScoring;
 import com.milaboratory.core.sequence.alignment.LocalAligner;
 import com.milaboratory.core.sequence.alignment.LocalAlignment;
+import com.milaboratory.core.sequence.nucleotide.NucleotideAlphabet;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
-import com.milaboratory.mageri.core.mapping.kmer.KMerFinder;
-import com.milaboratory.mageri.core.mapping.kmer.KMerFinderResult;
 import com.milaboratory.mageri.core.genomic.Reference;
 import com.milaboratory.mageri.core.genomic.ReferenceLibrary;
+import com.milaboratory.mageri.core.mapping.kmer.KMerFinder;
+import com.milaboratory.mageri.core.mapping.kmer.KMerFinderResult;
+
+import static com.milaboratory.core.sequence.alignment.ScoringUtils.getSymmetricMatrix;
 
 public class ExtendedKmerAligner extends Aligner {
+    private static final AffineGapAlignmentScoring bwaMemScoring = new AffineGapAlignmentScoring<>(NucleotideAlphabet.INSTANCE,
+            getSymmetricMatrix(1, -4, 4), -6, -1);
     private final KMerFinder kMerFinder;
     private LocalAlignmentEvaluator localAlignmentEvaluator;
 
@@ -76,7 +81,7 @@ public class ExtendedKmerAligner extends Aligner {
             sequence = sequence.getReverseComplement();
         }
 
-        LocalAlignment alignment = LocalAligner.align(AffineGapAlignmentScoring.getNucleotideBLASTScoring(),
+        LocalAlignment alignment = LocalAligner.align(bwaMemScoring,
                 reference.getSequence(), sequence);
 
         if (alignment == null) {

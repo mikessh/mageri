@@ -34,17 +34,14 @@ import com.milaboratory.core.sequence.mutations.Mutations;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 
 public class LocalAlignmentEvaluator implements AlignmentEvaluator<LocalAlignment> {
-    private int maxConsequentMismatches;
     private double minIdentityRatio, minAlignedQueryRelativeSpan;
 
     public LocalAlignmentEvaluator() {
-        this(5, 0.7, 0.3);
+        this(0.9, 0.7);
     }
 
-    public LocalAlignmentEvaluator(int maxConsequentMismatches,
-                                   double minIdentityRatio,
+    public LocalAlignmentEvaluator(double minIdentityRatio,
                                    double minAlignedQueryRelativeSpan) {
-        this.maxConsequentMismatches = maxConsequentMismatches;
         this.minIdentityRatio = minIdentityRatio;
         this.minAlignedQueryRelativeSpan = minAlignedQueryRelativeSpan;
     }
@@ -53,38 +50,21 @@ public class LocalAlignmentEvaluator implements AlignmentEvaluator<LocalAlignmen
     public boolean isGood(LocalAlignment alignment, NucleotideSequence reference, NucleotideSequence query) {
         int[] mutations = alignment.getMutations();
 
+        int nSubstitutions = 0;
+        for (int mutation : mutations) {
+            if (Mutations.isSubstitution(mutation)) {
+                nSubstitutions++;
+            }
+        }
+
         int alignedRefLength = alignment.getSequence1Range().length(),
                 alignedQueryLength = alignment.getSequence2Range().length();
-        double identity = (alignedRefLength - mutations.length) / (double) alignedRefLength,
-                alignedQueryRelativeSpan = alignedQueryLength / (double) query.size();
+        double identity = (alignedRefLength - nSubstitutions) / (double) alignedRefLength,
+                alignedQueryRelativeSpan = alignedQueryLength / (double) query.size(),
+                alignedReferenceRelativeSpan = alignedRefLength / (double) reference.size();
 
-        if (identity < minIdentityRatio || alignedQueryRelativeSpan < minAlignedQueryRelativeSpan) {
-            return false;
-        }
-
-        int consequentMutations = 1, previousSubstitutionPos = -2;
-        for (int mutation : mutations) {
-            int pos = Mutations.getPosition(mutation);
-            if (Mutations.isSubstitution(mutation)) {
-                if (pos - 1 == previousSubstitutionPos)
-                    consequentMutations++;
-                else
-                    consequentMutations = 1;
-                previousSubstitutionPos = pos;
-            } else {
-                consequentMutations = 1;
-            }
-
-            if (consequentMutations > maxConsequentMismatches) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    public int getMaxConsequentMismatches() {
-        return maxConsequentMismatches;
+        return identity >= minIdentityRatio &&
+                Math.max(alignedReferenceRelativeSpan, alignedQueryRelativeSpan) >= minAlignedQueryRelativeSpan;
     }
 
     public double getMinIdentityRatio() {
@@ -93,10 +73,6 @@ public class LocalAlignmentEvaluator implements AlignmentEvaluator<LocalAlignmen
 
     public double getMinAlignedQueryRelativeSpan() {
         return minAlignedQueryRelativeSpan;
-    }
-
-    public void setMaxConsequentMismatches(int maxConsequentMismatches) {
-        this.maxConsequentMismatches = maxConsequentMismatches;
     }
 
     public void setMinIdentityRatio(double minIdentityRatio) {
