@@ -63,12 +63,12 @@ public class KMerFinderTest {
 
         model = "KmerFinder: Less-homologous references";
         hitTest(100, 10.0, 1.0,
-                PercentRangeAssertion.createLowerBound(range1Name, model, 99),
+                PercentRangeAssertion.createLowerBound(range1Name, model, 95),
                 DoubleRangeAssertion.createLowerBound(range2Name, model, 25));
 
         model = "KmerFinder: Non-homologous references, more errors";
         hitTest(500, 100.0, 10.0,
-                PercentRangeAssertion.createLowerBound(range1Name, model, 99),
+                PercentRangeAssertion.createLowerBound(range1Name, model, 95),
                 DoubleRangeAssertion.createLowerBound(range2Name, model, 15));
 
         model = "KmerFinder: Single reference, extreme errors";
@@ -81,7 +81,8 @@ public class KMerFinderTest {
                          double nonHomologyMultiplier, double errorMultiplier,
                          PercentRangeAssertion correctRateRange,
                          DoubleRangeAssertion mapqRange) {
-        RandomReferenceGenerator randomReferenceGenerator = new RandomReferenceGenerator(), randomReferenceGenerator1 = new RandomReferenceGenerator();
+        RandomReferenceGenerator randomReferenceGenerator = new RandomReferenceGenerator(),
+                randomReferenceGenerator1 = new RandomReferenceGenerator();
 
         randomReferenceGenerator.setMutationGenerator(MutationGenerator.DEFAULT.multiply(nonHomologyMultiplier));
         randomReferenceGenerator1.setMutationGenerator(MutationGenerator.DEFAULT.multiply(errorMultiplier));

@@ -43,6 +43,7 @@ import com.milaboratory.mageri.core.mapping.ConsensusAligner;
 import com.milaboratory.mageri.core.mapping.SConsensusAligner;
 import com.milaboratory.mageri.core.mapping.alignment.Aligner;
 import com.milaboratory.mageri.core.mapping.alignment.ExtendedKmerAligner;
+import com.milaboratory.mageri.core.mapping.alignment.LocalAlignmentEvaluator;
 import com.milaboratory.mageri.core.mutations.Mutation;
 import com.milaboratory.mageri.core.mutations.Substitution;
 import com.milaboratory.mageri.generators.ModelMigGenerator;
@@ -60,39 +61,37 @@ public class VariantCallerTest {
                 "for various hot spot models");
 
         ModelMigGeneratorFactory modelMigGeneratorFactory = new ModelMigGeneratorFactory();
-        int qualThreshold = 25;
+        int qualThreshold = 20;
         String setting = "Skewed, Q" + qualThreshold;
 
         test(modelMigGeneratorFactory,
                 qualThreshold,
-                PercentRangeAssertion.createLowerBound("Matching unique variants", setting, 95),
-                PercentRangeAssertion.createUpperBound("Erroneous unique variants", setting, 5),
+                PercentRangeAssertion.createLowerBound("Matching unique variants", setting, 85),
+                PercentRangeAssertion.createUpperBound("Erroneous unique variants", setting, 1),
                 DoubleRangeAssertion.createUpperBound("Average variant count difference", setting, 0.05),
                 PercentRangeAssertion.createLowerBound("Specificity", setting, 95),
                 PercentRangeAssertion.createLowerBound("Sensitivity", setting, 90));
 
-        qualThreshold = 25;
         setting = "Uniform position, Q" + qualThreshold;
         modelMigGeneratorFactory.setHotSpotPositionRatio(1.0);
         modelMigGeneratorFactory.setPcrPositionRatio(1.0);
 
         test(modelMigGeneratorFactory,
                 qualThreshold,
-                PercentRangeAssertion.createLowerBound("Matching unique variants", setting, 90),
+                PercentRangeAssertion.createLowerBound("Matching unique variants", setting, 85),
                 PercentRangeAssertion.createUpperBound("Erroneous unique variants", setting, 1),
                 DoubleRangeAssertion.createUpperBound("Average variant count difference", setting, 0.05),
                 PercentRangeAssertion.createLowerBound("Specificity", setting, 95),
-                PercentRangeAssertion.createLowerBound("Sensitivity", setting, 85));
+                PercentRangeAssertion.createLowerBound("Sensitivity", setting, 90));
 
-        qualThreshold = 25;
         setting = "Uniform position and pattern, Q" + qualThreshold;
         modelMigGeneratorFactory.setPcrErrorGenerator(MutationGenerator.NO_INDEL);
 
         test(modelMigGeneratorFactory,
                 qualThreshold,
-                PercentRangeAssertion.createLowerBound("Matching unique variants", setting, 90),
+                PercentRangeAssertion.createLowerBound("Matching unique variants", setting, 85),
                 PercentRangeAssertion.createUpperBound("Erroneous unique variants", setting, 1),
-                DoubleRangeAssertion.createUpperBound("Average variant count difference", setting, 0.01),
+                DoubleRangeAssertion.createUpperBound("Average variant count difference", setting, 0.05),
                 PercentRangeAssertion.createLowerBound("Specificity", setting, 95),
                 PercentRangeAssertion.createLowerBound("Sensitivity", setting, 90));
     }
@@ -109,7 +108,7 @@ public class VariantCallerTest {
 
         RandomReferenceGenerator randomReferenceGenerator = new RandomReferenceGenerator();
         randomReferenceGenerator.setReferenceSizeMin(50);
-        randomReferenceGenerator.setReferenceSizeMax(50);
+        randomReferenceGenerator.setReferenceSizeMax(100);
 
         int finalMigs = 0;
         int expectedVariants = 0, expectedSomatic = 0, expectedHotSpot = 0,
@@ -121,7 +120,8 @@ public class VariantCallerTest {
             final ReferenceLibrary referenceLibrary = randomReferenceGenerator.nextReferenceLibrary(1);
             final Reference reference = referenceLibrary.getAt(0);
             final Assembler assembler = new SAssembler();
-            final Aligner aligner = new ExtendedKmerAligner(referenceLibrary);
+            final Aligner aligner = new ExtendedKmerAligner(referenceLibrary, 11,
+                    new LocalAlignmentEvaluator(0.7, 0.5)); // we do relax local alignment evaluator as error rates are high
             final ConsensusAligner consensusAligner = new SConsensusAligner(aligner);
             final ModelMigGenerator modelMigGenerator = modelMigGeneratorFactory.create(reference.getSequence());
 
@@ -162,11 +162,11 @@ public class VariantCallerTest {
                                 hotSpotCount = modelMigGenerator.getHotSpotCount(code);
 
                         if (somaticCount > 0) {
-                            meanSomaticQ += qual;
+                            meanSomaticQ += Math.log10(qual);
                             expectedSomatic++;
                         }
                         if (hotSpotCount > 0) {
-                            meanHotSpotQ += qual;
+                            meanHotSpotQ += Math.log10(qual);
                             expectedHotSpot++;
                         }
 
@@ -192,10 +192,12 @@ public class VariantCallerTest {
 
         meanSomaticQ /= expectedSomatic;
         meanHotSpotQ /= expectedHotSpot;
+        meanSomaticQ = Math.pow(10, meanSomaticQ);
+        meanHotSpotQ = Math.pow(10, meanHotSpotQ);
 
         System.out.println("Processed " + finalMigs + " migs.");
         System.out.println("Generated " + expectedSomatic + " somatic and " + expectedHotSpot + " hot-spot variants.");
-        System.out.println("Mean quality is " + meanSomaticQ + " and " + meanHotSpotQ + " for somatic and hot-spot variants.");
+        System.out.println("Geom. mean quality is " + meanSomaticQ + " and " + meanHotSpotQ + " for somatic and hot-spot variants.");
         System.out.println("Found " + observedVariants + " variants.");
 
         matchingVariantsRange.assertInRange(matchingVariants, expectedVariants);

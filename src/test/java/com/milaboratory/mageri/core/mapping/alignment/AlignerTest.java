@@ -76,9 +76,9 @@ public class AlignerTest {
             }
         }
 
-        PercentRangeAssertion.createUpperBound("Kmer alignment", "Aligner false positive test", 90).assertInRange(nAligned, nRepetitions);
+        PercentRangeAssertion.createUpperBound("Kmer alignment", "Aligner false positive test", 85).assertInRange(nAligned, nRepetitions);
         PercentRangeAssertion.createLowerBound("MAPQ threshold filtered filtering", "Aligner false positive test", 95).assertInRange(nMapqFitlered, nAligned);
-        PercentRangeAssertion.createLowerBound("Alignment evaluator filtering", "Aligner false positive test", 90).assertInRange(nEvaluatorFiltered, nAligned);
+        PercentRangeAssertion.createLowerBound("Alignment evaluator filtering", "Aligner false positive test", 95).assertInRange(nEvaluatorFiltered, nAligned);
     }
 
     @Test
