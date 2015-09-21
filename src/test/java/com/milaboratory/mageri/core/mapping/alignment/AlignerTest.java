@@ -166,6 +166,6 @@ public class AlignerTest {
 
         PercentRangeAssertion.createLowerBound("Alignment rate", "Full aligner test", 95).assertInRange(nAligned, nAligned + nFailed);
         PercentRangeAssertion.createLowerBound("Specificity", "Full aligner test", 95).assertInRange(TN, FP + TN);
-        PercentRangeAssertion.createLowerBound("Sensitivity", "Full aligner test", 95).assertInRange(TP, TP + FN);
+        PercentRangeAssertion.createLowerBound("Sensitivity", "Full aligner test", 90).assertInRange(TP, TP + FN);
     }
 }

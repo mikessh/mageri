@@ -101,7 +101,6 @@ public final class PAdapterExtractor extends PCheckoutProcessor {
 
             // If master is found check for slave
             if (masterResult != null) {
-                masterCounters.incrementAndGet(i);
 
                 // No search is performed when slave barcode is blank
                 if (slaveBarcodes[i] == null) {

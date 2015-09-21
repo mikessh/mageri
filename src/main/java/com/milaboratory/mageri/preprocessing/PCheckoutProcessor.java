@@ -112,8 +112,8 @@ public abstract class PCheckoutProcessor extends CheckoutProcessor<PSequencingRe
     public double extractionRatio() {
         double total = totalCounter.get(), slaveFoundTotal = 0;
 
-        for (String sampleName : sampleNames) {
-            slaveFoundTotal += getSlaveCounter(sampleName);
+        for (int i = 0; i < slaveCounters.length(); i++) {
+            slaveFoundTotal += slaveCounters.get(i);
         }
 
         return slaveFoundTotal / total;
