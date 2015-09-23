@@ -28,26 +28,34 @@
  */
 package com.milaboratory.mageri.core.mapping;
 
+import com.milaboratory.core.sequence.NucleotideSQPair;
+import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.mageri.DoubleRangeAssertion;
 import com.milaboratory.mageri.FastTests;
 import com.milaboratory.mageri.PercentRangeAssertion;
 import com.milaboratory.mageri.core.Mig;
-import com.milaboratory.mageri.core.assemble.Assembler;
-import com.milaboratory.mageri.core.assemble.Consensus;
-import com.milaboratory.mageri.core.assemble.PAssembler;
-import com.milaboratory.mageri.core.assemble.SAssembler;
+import com.milaboratory.mageri.core.assemble.*;
+import com.milaboratory.mageri.core.genomic.BedGenomicInfoProvider;
 import com.milaboratory.mageri.core.genomic.Reference;
 import com.milaboratory.mageri.core.genomic.ReferenceLibrary;
 import com.milaboratory.mageri.core.mapping.alignment.Aligner;
 import com.milaboratory.mageri.core.mapping.alignment.ExtendedKmerAligner;
+import com.milaboratory.mageri.core.mutations.MutationArray;
 import com.milaboratory.mageri.generators.MigWithMutations;
 import com.milaboratory.mageri.generators.MutationGenerator;
 import com.milaboratory.mageri.generators.RandomMigGenerator;
 import com.milaboratory.mageri.generators.RandomReferenceGenerator;
+import com.milaboratory.mageri.pipeline.analysis.Project;
+import com.milaboratory.mageri.pipeline.analysis.Sample;
+import com.milaboratory.mageri.pipeline.analysis.SampleGroup;
+import com.milaboratory.mageri.pipeline.input.ResourceIOProvider;
+import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
+import java.io.IOException;
+import java.util.HashSet;
 import java.util.Random;
 
 public class ConsensusAlignerTest {
@@ -61,6 +69,36 @@ public class ConsensusAlignerTest {
     @Test
     @Ignore("TODO")
     public void majorMutationsTest() {
+    }
+
+    @Test
+    @Category(FastTests.class)
+    public void krasTest() throws IOException {
+        NucleotideSQPair nucleotideSQPair = new NucleotideSQPair(
+                // ACCAGTAATATGCATATTAAAACAAGATTTACCTCTATTGTTGGATCATATTCGTCCACAAAATGATTCTGAATTAGCTGTATCGTCAAGGCACTCTTGCCTACGCCACcAGCT
+                "ACCAGTAATATGCATATTAAAACAAGATTTACCTCTATTGTTGGATCATATTCGTCCACAAAATGATTCTGAATTAGCTGTATCGTCAAGGCACTCTTGCCTACGCCACAAGCT",
+                "IIIIIIIIIIIIIIIIIIIIIIIIIGIIIIIIIIIIIIIIIIIIIIIIKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKIIIIIIIIIIIIIIIIIIIIIHIIIIIIIIIIII");
+
+        SConsensus consensus = new SConsensus(
+                new Sample("test", new SampleGroup("test", false, new Project("test"))),
+                new NucleotideSequence("GGGAGTTGAGAGTT"),
+                nucleotideSQPair, new HashSet<Integer>(),
+                103, 103
+        );
+
+        ReferenceLibrary referenceLibrary = ReferenceLibrary.fromInput(
+                ResourceIOProvider.INSTANCE.getWrappedStream("genomic/panel_refs.fa"),
+                new BedGenomicInfoProvider(
+                        ResourceIOProvider.INSTANCE.getWrappedStream("genomic/panel_refs.bed"),
+                        ResourceIOProvider.INSTANCE.getWrappedStream("pipeline/contigs.txt")));
+
+        SConsensusAligner consensusAligner = new SConsensusAligner(referenceLibrary);
+
+        SAlignedConsensus alignedConsensus = consensusAligner.align(consensus);
+
+        MutationArray mutationArray = alignedConsensus.getMutations();
+        Assert.assertEquals(1, mutationArray.getLength());
+        Assert.assertEquals("S109:C>A", mutationArray.getMutations().get(0).toString());
     }
 
     @Test

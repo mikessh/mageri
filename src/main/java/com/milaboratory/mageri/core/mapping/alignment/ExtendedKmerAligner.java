@@ -43,7 +43,7 @@ import static com.milaboratory.core.sequence.alignment.ScoringUtils.getSymmetric
 
 public class ExtendedKmerAligner extends Aligner {
     private static final AffineGapAlignmentScoring bwaMemScoring = new AffineGapAlignmentScoring<>(NucleotideAlphabet.INSTANCE,
-            getSymmetricMatrix(1, -4, 4), -6, -1);
+            getSymmetricMatrix(1, -3, 4), -6, -1);
     private final KMerFinder kMerFinder;
     private LocalAlignmentEvaluator localAlignmentEvaluator;
 
