@@ -44,7 +44,7 @@ public class ReferenceLibraryTest {
     public void basicTest() throws IOException {
 
         ReferenceLibrary referenceLibrary = ReferenceLibrary.fromInput(
-                ResourceIOProvider.INSTANCE.getWrappedStream("pipeline/refs.fa"),
+                ResourceIOProvider.INSTANCE.getWrappedStream("genomic/panel_refs.fa"),
                 new BasicGenomicInfoProvider());
 
         System.out.println(referenceLibrary);
@@ -68,9 +68,9 @@ public class ReferenceLibraryTest {
     public void genomicTest() throws IOException {
 
         ReferenceLibrary referenceLibrary = ReferenceLibrary.fromInput(
-                ResourceIOProvider.INSTANCE.getWrappedStream("pipeline/refs.fa"),
+                ResourceIOProvider.INSTANCE.getWrappedStream("genomic/panel_refs.fa"),
                 new BedGenomicInfoProvider(
-                        ResourceIOProvider.INSTANCE.getWrappedStream("pipeline/refs.bed"),
+                        ResourceIOProvider.INSTANCE.getWrappedStream("genomic/panel_refs.bed"),
                         ResourceIOProvider.INSTANCE.getWrappedStream("pipeline/contigs.txt")
                 ));
 

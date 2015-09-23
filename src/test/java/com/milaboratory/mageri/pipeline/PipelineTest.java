@@ -58,7 +58,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class PipelineTest {
-
     public static final InputParser INPUT_PARSER = new InputParser(ResourceIOProvider.INSTANCE);
 
     @Test
@@ -92,7 +91,7 @@ public class PipelineTest {
             }
 
             samOutputTest(sampleAnalysis);
-            
+
             vcfOutputTest(sampleAnalysis);
         }
 
