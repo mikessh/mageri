@@ -73,7 +73,7 @@ public class PreprocessorFactory extends PipelineBlock {
 
     @Override
     public String getHeader() {
-        return "sample.group\tsample.name\tmaster.found\tslave.found\tmaster.first\tmig.size.threshold";
+        return "sample.group\tsample.name\ttotal\tmaster.found\tslave.found\tmaster.first\tmig.size.threshold";
     }
 
     @Override
@@ -86,6 +86,7 @@ public class PreprocessorFactory extends PipelineBlock {
                 boolean paired = checkoutProcessor instanceof PCheckoutProcessor;
                 stringBuilder.append(preprocessor.getSampleGroup().getName()).append("\t").
                         append(sampleName).append("\t").
+                        append(checkoutProcessor.getTotal()).append("\t").
                         append(checkoutProcessor.getMasterCounter(sampleName)).append("\t").
                         append(paired ?
                                 ((PCheckoutProcessor) checkoutProcessor).getSlaveCounter(sampleName) :
