@@ -33,7 +33,7 @@ import com.milaboratory.mageri.core.ReadSpecific;
 import com.milaboratory.mageri.core.assemble.Consensus;
 import com.milaboratory.mageri.core.mapping.alignment.AlignerFactory;
 
-public abstract class ConsensusAlignerFactory<T extends Consensus> implements ReadSpecific {
+public abstract class ConsensusAlignerFactory<T extends Consensus, Y extends AlignedConsensus> implements ReadSpecific {
     protected final AlignerFactory alignerFactory;
     protected final ConsensusAlignerParameters parameters;
 
@@ -42,7 +42,7 @@ public abstract class ConsensusAlignerFactory<T extends Consensus> implements Re
         this.parameters = parameters;
     }
 
-    public abstract ConsensusAligner<T> create();
+    public abstract ConsensusAligner<T, Y> create();
 
     public ConsensusAlignerParameters getParameters() {
         return parameters;

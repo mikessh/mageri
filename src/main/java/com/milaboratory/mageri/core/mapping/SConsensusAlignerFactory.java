@@ -32,7 +32,7 @@ package com.milaboratory.mageri.core.mapping;
 import com.milaboratory.mageri.core.assemble.SConsensus;
 import com.milaboratory.mageri.core.mapping.alignment.AlignerFactory;
 
-public final class SConsensusAlignerFactory extends ConsensusAlignerFactory<SConsensus> {
+public final class SConsensusAlignerFactory extends ConsensusAlignerFactory<SConsensus, SAlignedConsensus> {
 
     public SConsensusAlignerFactory(AlignerFactory alignerFactory, ConsensusAlignerParameters parameters) {
         super(alignerFactory, parameters);

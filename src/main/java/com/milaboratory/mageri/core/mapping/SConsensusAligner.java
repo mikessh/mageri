@@ -37,7 +37,7 @@ import com.milaboratory.mageri.core.mapping.alignment.AlignmentResult;
 import com.milaboratory.mageri.core.mapping.alignment.ExtendedKmerAligner;
 import com.milaboratory.mageri.core.mutations.MutationArray;
 
-public final class SConsensusAligner extends ConsensusAligner<SConsensus> {
+public final class SConsensusAligner extends ConsensusAligner<SConsensus, SAlignedConsensus> {
 
     public SConsensusAligner(Aligner aligner, ConsensusAlignerParameters parameters) {
         super(aligner, parameters);
@@ -52,7 +52,7 @@ public final class SConsensusAligner extends ConsensusAligner<SConsensus> {
     }
 
     @Override
-    public AlignedConsensus align(SConsensus consensus) {
+    public SAlignedConsensus align(SConsensus consensus) {
         NucleotideSQPair consensusSQPair = consensus.getConsensusSQPair();
         AlignmentResult alignmentResult = aligner.align(consensusSQPair.getSequence());
 

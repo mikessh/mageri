@@ -43,7 +43,7 @@ import com.milaboratory.mageri.misc.Overlapper;
 import java.util.HashSet;
 import java.util.Set;
 
-public final class PConsensusAligner extends ConsensusAligner<PConsensus> {
+public final class PConsensusAligner extends ConsensusAligner<PConsensus, AlignedConsensus> {
     private final Overlapper overlapper = new Overlapper();
 
     public PConsensusAligner(Aligner aligner, ConsensusAlignerParameters parameters) {

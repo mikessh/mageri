@@ -50,7 +50,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public abstract class ConsensusAligner<ConsensusType extends Consensus> extends PipelineBlock
+public abstract class ConsensusAligner<ConsensusType extends Consensus, AlignedConsensusType extends AlignedConsensus> extends PipelineBlock
         implements Processor<ProcessorResultWrapper<ConsensusType>, ProcessorResultWrapper<AlignedConsensus>>,
         ReadSpecific {
     protected final Map<Reference, MutationsTable> alignerTableByReference = new HashMap<>();
@@ -131,7 +131,7 @@ public abstract class ConsensusAligner<ConsensusType extends Consensus> extends 
         return majorMutations;
     }
 
-    public abstract AlignedConsensus align(ConsensusType consensus);
+    public abstract AlignedConsensusType align(ConsensusType consensus);
 
     public int getAlignedMigs() {
         return alignedMigs.get();
