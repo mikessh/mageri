@@ -42,7 +42,7 @@ import com.milaboratory.mageri.core.mapping.kmer.KMerFinderResult;
 import static com.milaboratory.core.sequence.alignment.ScoringUtils.getSymmetricMatrix;
 
 public class ExtendedKmerAligner extends Aligner {
-    private static final AffineGapAlignmentScoring bwaMemScoring = new AffineGapAlignmentScoring<>(NucleotideAlphabet.INSTANCE,
+    private static final AffineGapAlignmentScoring bwaSwScoring = new AffineGapAlignmentScoring<>(NucleotideAlphabet.INSTANCE,
             getSymmetricMatrix(1, -3, 4), -6, -1);
     private final KMerFinder kMerFinder;
     private LocalAlignmentEvaluator localAlignmentEvaluator;
@@ -81,7 +81,7 @@ public class ExtendedKmerAligner extends Aligner {
             sequence = sequence.getReverseComplement();
         }
 
-        LocalAlignment alignment = LocalAligner.align(bwaMemScoring,
+        LocalAlignment alignment = LocalAligner.align(bwaSwScoring,
                 reference.getSequence(), sequence);
 
         if (alignment == null) {
