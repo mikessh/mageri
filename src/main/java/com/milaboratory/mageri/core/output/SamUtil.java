@@ -43,6 +43,7 @@ import com.milaboratory.mageri.core.mutations.MutationArray;
 
 public final class SamUtil {
     public static final int DUMMY_INT = 0;
+    public static final byte DUMMY_BYTE = (byte) 0;
     public static final String DUMMY_STRING = "*";
 
     private SamUtil() {
@@ -145,7 +146,7 @@ public final class SamUtil {
                     (alignmentResult.isReverseComplement() ? RC_FLAG : BLANK_FLAG) |
                             (alignmentResult.isGood() ? BLANK_FLAG : BAD_MAPPING_FLAG),
                     chrom, pos,
-                    (int) alignmentResult.getScore(), cigar,
+                    alignmentResult.getScore(), cigar,
                     sequence, quality
             );
         }

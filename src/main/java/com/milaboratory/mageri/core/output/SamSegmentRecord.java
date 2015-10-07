@@ -37,7 +37,8 @@ public final class SamSegmentRecord implements Comparable<SamSegmentRecord>, Ser
     private final String queryName, referenceName,
             cigarString, sequence, quality;
     private String nextReferenceName;
-    private final int position, mapqScore;
+    private final int position;
+    private final byte mapqScore;
     private int flag, nextPosition, templateLength;
 
     public SamSegmentRecord(String queryName,
@@ -45,14 +46,14 @@ public final class SamSegmentRecord implements Comparable<SamSegmentRecord>, Ser
         this(queryName,
                 UNMAPPED_FLAG,
                 DUMMY_STRING, DUMMY_INT,
-                DUMMY_INT, DUMMY_STRING,
+                DUMMY_BYTE, DUMMY_STRING,
                 sequence, quality);
     }
 
     public SamSegmentRecord(String queryName,
                             Integer flag,
                             String referenceName, Integer position,
-                            Integer mapqScore, String cigarString,
+                            Byte mapqScore, String cigarString,
                             String sequence, String quality) {
         this(queryName,
                 flag,
@@ -66,7 +67,7 @@ public final class SamSegmentRecord implements Comparable<SamSegmentRecord>, Ser
     public SamSegmentRecord(String queryName,
                             Integer flag,
                             String referenceName, Integer position,
-                            Integer mapqScore, String cigarString,
+                            Byte mapqScore, String cigarString,
                             String nextReferenceName, int nextPosition,
                             int templateLength,
                             String sequence, String quality) {
@@ -111,7 +112,7 @@ public final class SamSegmentRecord implements Comparable<SamSegmentRecord>, Ser
         return position;
     }
 
-    public int getMapqScore() {
+    public byte getMapqScore() {
         return mapqScore;
     }
 

@@ -107,7 +107,7 @@ public class KMerFinder {
         boolean rc = maxInformationId < 0; // RC reference sequences are stored as -(index+1)
 
         return new KMerFinderResult(maxInformationValue,
-                10 * (maxInformationValue - Math.max(0, nextMaxInformationValue)) / Math.log(10),
+                (byte) Math.min(10 * (maxInformationValue - Math.max(0, nextMaxInformationValue)) / Math.log(10), Byte.MAX_VALUE),
                 referenceLibrary.getAt((rc ? -maxInformationId : maxInformationId) - 1), // hash index is 1-based
                 rc);
     }

@@ -32,11 +32,12 @@ package com.milaboratory.mageri.core.mapping.kmer;
 import com.milaboratory.mageri.core.genomic.Reference;
 
 public class KMerFinderResult {
-    private final double information, score;
+    private final double information;
+    private final byte score;
     private final boolean reverseComplement;
     private final Reference hit;
 
-    public KMerFinderResult(double information, double score,
+    public KMerFinderResult(double information, byte score,
                             Reference hit, boolean reverseComplement) {
         this.information = information;
         this.score = score;
@@ -48,7 +49,7 @@ public class KMerFinderResult {
         return information;
     }
 
-    public double getScore() {
+    public byte getScore() {
         return score;
     }
 

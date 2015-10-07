@@ -39,13 +39,13 @@ public class AlignmentResult implements Serializable {
     private final LocalAlignment alignment;
     private final Reference reference;
     private final boolean reverseComplement, good;
-    private final double score;
+    private final byte score;
 
     public AlignmentResult(NucleotideSequence query,
                            Reference reference,
                            LocalAlignment alignment,
                            boolean reverseComplement,
-                           double score,
+                           byte score,
                            boolean good) {
         this.query = query;
         this.alignment = alignment;
@@ -67,7 +67,7 @@ public class AlignmentResult implements Serializable {
         return alignment;
     }
 
-    public double getScore() {
+    public byte getScore() {
         return score;
     }
 

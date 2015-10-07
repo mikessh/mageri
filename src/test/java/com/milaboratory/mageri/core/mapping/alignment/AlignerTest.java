@@ -43,7 +43,7 @@ import org.junit.experimental.categories.Category;
 import java.io.IOException;
 
 public class AlignerTest {
-    private final int mapqThreshold = 20;
+    private final byte mapqThreshold = 20;
 
     @Test
     @Category(FastTests.class)
