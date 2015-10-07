@@ -253,7 +253,7 @@ containing genomic coordinates of references should be included. For the example
    to use `ENSEMBL Biomart <http://www.ensembl.org/biomart/martview/>`__. Specify your 
    gene identifiers in the ``Filters`` section and choose ``Sequences`` as output mode. 
    Tick chromosome name, exon id, exon start, exon end and exon strand in output, those can 
-   be then manually parsed from FASTA output to form a BED file 
+   be then manually parsed from FASTA output to form a BED file.
    Don't forget to manually add flanking bases count (in case you specify them) to BED file 
    as they're not accounted for in Biomart output. Importantly, ENSEMBL coordinates are 1-based, 
    while BED format is 0-based, so adjust appropriately by subtracting 1 from start coordinate in 
@@ -393,6 +393,8 @@ Manual inspection of SAM should reveal that mutations at positions 31 and 88 are
 
 .. figure:: _static/images/example_igv.png
     :align: center
+    
+More examples can be found in the `mageri-paper repository <https://github.com/mikessh/mageri-paper>`__.
 
 Advanced
 --------
