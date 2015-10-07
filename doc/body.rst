@@ -166,7 +166,7 @@ characters are used to specify offset. For example
 
 .. warning::
 
-   This mode should be used with caution for non-oriented reads, as 
+   This mode should be used with care for non-oriented reads, as 
    only one read pair orientation will be scanned.
 
 .. _m4:
@@ -178,6 +178,16 @@ If this mode is specified, it is assumed that FASTQ files contain `UMI:NNN:QQQ` 
 in read headers, separated by tab or space from other header entries.
 Here `NNN` are UMI nucleotides and `QQQ` are corresponding quality Phred scores.
 
+.. note::
+
+   In case working with a large set of primers/adapters, it is common to misspecify several of them. 
+   It is advised to first manually check for primer extraction efficiency and troubleshoot incorrect ones. 
+   To do so for both ``M1`` and ``M2`` cases, run MAGERI in ``M1`` mode and tell it to 
+   take only a fraction of reads, say 10000, with ``--limit 10000`` and inspect resulting ``*.checkout.txt`` 
+   output file to see if any of the primer sequences were not extracted. To figure out real primer sequences 
+   one can run in the ``M3`` mode specifying only UMI positions and then check resulting SAM files in IGV to 
+   get sequences of corresponding regions. Those sequences can then be manually checked against the primer set 
+   to correct errors in primer sequences.
 
 Genomic information
 ^^^^^^^^^^^^^^^^^^^
@@ -236,6 +246,18 @@ containing genomic coordinates of references should be included. For the example
 
    FASTA entries that do not have corresponding BED rows will be skipped from 
    SAM and VCF output.
+   
+.. note::
+
+   The most straightforward way (in my experience) to generate FASTA and BED files is 
+   to use `ENSEMBL Biomart <http://www.ensembl.org/biomart/martview/>`__. Specify your 
+   gene identifiers in the ``Filters`` section and choose ``Sequences`` as output mode. 
+   Tick chromosome name, exon id, exon start, exon end and exon strand in output, those can 
+   be then manually parsed from FASTA output to form a BED file 
+   Don't forget to manually add flanking bases count (in case you specify them) to BED file 
+   as they're not accounted for in Biomart output. Importantly, ENSEMBL coordinates are 1-based, 
+   while BED format is 0-based, so adjust appropriately by subtracting 1 from start coordinate in 
+   BED.
 
 .. _asm:
 
