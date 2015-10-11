@@ -31,25 +31,24 @@ package com.milaboratory.mageri.core.mapping.kmer;
 
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.mageri.core.genomic.ReferenceLibrary;
+import com.milaboratory.mageri.core.mapping.ConsensusAlignerParameters;
 import com.milaboratory.util.IntArrayList;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class KMerFinder {
-    public static final int DEFAULT_K = 11;
-
     private final KmerUtils kmerUtils;
     private final KmerMap kmerMap;
     private final ReferenceLibrary referenceLibrary;
     private final double N;
 
     public KMerFinder(ReferenceLibrary referenceLibrary) {
-        this(referenceLibrary, DEFAULT_K);
+        this(referenceLibrary, ConsensusAlignerParameters.DEFAULT);
     }
 
-    public KMerFinder(ReferenceLibrary referenceLibrary, int k) {
-        this.kmerUtils = new KmerUtils(k);
+    public KMerFinder(ReferenceLibrary referenceLibrary, ConsensusAlignerParameters alignerParameters) {
+        this.kmerUtils = new KmerUtils(alignerParameters.getK());
         this.kmerMap = kmerUtils.buildKmerMap(referenceLibrary);
         this.referenceLibrary = referenceLibrary;
         this.N = (double) kmerMap.getTotal();

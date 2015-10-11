@@ -32,18 +32,23 @@ package com.milaboratory.mageri.core.mapping.alignment;
 import com.milaboratory.core.sequence.alignment.LocalAlignment;
 import com.milaboratory.core.sequence.mutations.Mutations;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
+import com.milaboratory.mageri.core.mapping.ConsensusAlignerParameters;
 
 public class LocalAlignmentEvaluator implements AlignmentEvaluator<LocalAlignment> {
     private double minIdentityRatio, minAlignedQueryRelativeSpan;
 
     public LocalAlignmentEvaluator() {
-        this(0.9, 0.7);
+        this(ConsensusAlignerParameters.DEFAULT);
     }
 
     public LocalAlignmentEvaluator(double minIdentityRatio,
                                    double minAlignedQueryRelativeSpan) {
         this.minIdentityRatio = minIdentityRatio;
         this.minAlignedQueryRelativeSpan = minAlignedQueryRelativeSpan;
+    }
+
+    public LocalAlignmentEvaluator(ConsensusAlignerParameters alignerParameters) {
+        this(alignerParameters.getMinIdentityRatio(), alignerParameters.getMinAlignedQueryRelativeSpan());
     }
 
     @Override

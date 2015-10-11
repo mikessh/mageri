@@ -115,7 +115,7 @@ public abstract class ConsensusAligner<ConsensusType extends Consensus, AlignedC
         MutationsExtractor mutationsExtractor = new MutationsExtractor(
                 alignment, reference, consensus,
                 minors,
-                parameters.getConsensusQualityThreshold(),
+                parameters.getMuationCqsThreshold(),
                 rc);
 
         MutationArray majorMutations = mutationsExtractor.computeMajorMutations();

@@ -31,35 +31,9 @@ package com.milaboratory.mageri.core.mapping.alignment;
 
 import com.milaboratory.mageri.core.genomic.ReferenceLibrary;
 
-public abstract class AlignerFactory<AlignerType extends Aligner> {
-    protected ReferenceLibrary referenceLibrary;
-    protected LocalAlignmentEvaluator localAlignmentEvaluator;
+public interface AlignerFactory<AlignerType extends Aligner> {
 
-    protected AlignerFactory(ReferenceLibrary referenceLibrary) {
-        this(referenceLibrary, new LocalAlignmentEvaluator());
-    }
+    public ReferenceLibrary getReferenceLibrary();
 
-    protected AlignerFactory(ReferenceLibrary referenceLibrary,
-                             LocalAlignmentEvaluator localAlignmentEvaluator) {
-        this.referenceLibrary = referenceLibrary;
-        this.localAlignmentEvaluator = localAlignmentEvaluator;
-    }
-
-    public ReferenceLibrary getReferenceLibrary() {
-        return referenceLibrary;
-    }
-
-    public void setReferenceLibrary(ReferenceLibrary referenceLibrary) {
-        this.referenceLibrary = referenceLibrary;
-    }
-
-    public LocalAlignmentEvaluator getLocalAlignmentEvaluator() {
-        return localAlignmentEvaluator;
-    }
-
-    public void setLocalAlignmentEvaluator(LocalAlignmentEvaluator localAlignmentEvaluator) {
-        this.localAlignmentEvaluator = localAlignmentEvaluator;
-    }
-
-    public abstract AlignerType create();
+    public AlignerType create();
 }

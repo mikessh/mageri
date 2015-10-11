@@ -40,10 +40,10 @@ import com.milaboratory.mageri.core.genomic.Reference;
 import com.milaboratory.mageri.core.genomic.ReferenceLibrary;
 import com.milaboratory.mageri.core.mapping.AlignedConsensus;
 import com.milaboratory.mageri.core.mapping.ConsensusAligner;
+import com.milaboratory.mageri.core.mapping.ConsensusAlignerParameters;
 import com.milaboratory.mageri.core.mapping.SConsensusAligner;
 import com.milaboratory.mageri.core.mapping.alignment.Aligner;
 import com.milaboratory.mageri.core.mapping.alignment.ExtendedKmerAligner;
-import com.milaboratory.mageri.core.mapping.alignment.LocalAlignmentEvaluator;
 import com.milaboratory.mageri.core.mutations.Mutation;
 import com.milaboratory.mageri.core.mutations.Substitution;
 import com.milaboratory.mageri.generators.ModelMigGenerator;
@@ -102,7 +102,7 @@ public class VariantCallerTest {
 
         ModelMigGeneratorFactory modelMigGeneratorFactory = new ModelMigGeneratorFactory();
         int qualThreshold = 20;
-        
+
         String setting = "Uniform position and pattern, Q" + qualThreshold;
         modelMigGeneratorFactory.setPcrErrorGenerator(MutationGenerator.NO_INDEL);
 
@@ -139,8 +139,12 @@ public class VariantCallerTest {
             final ReferenceLibrary referenceLibrary = randomReferenceGenerator.nextReferenceLibrary(1);
             final Reference reference = referenceLibrary.getAt(0);
             final Assembler assembler = new SAssembler();
-            final Aligner aligner = new ExtendedKmerAligner(referenceLibrary, 11,
-                    new LocalAlignmentEvaluator(0.7, 0.5)); // we do relax local alignment evaluator as error rates are high
+            final Aligner aligner = new ExtendedKmerAligner(referenceLibrary,
+                    // we do relax local alignment evaluator as error rates are high:
+                    ConsensusAlignerParameters.DEFAULT
+                            .withMinIdentityRatio(0.7)
+                            .withMinAlignedQueryRelativeSpan(0.5));
+
             final ConsensusAligner consensusAligner = new SConsensusAligner(aligner);
             final ModelMigGenerator modelMigGenerator = modelMigGeneratorFactory.create(reference.getSequence());
 

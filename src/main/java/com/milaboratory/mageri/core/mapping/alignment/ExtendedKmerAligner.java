@@ -29,38 +29,32 @@
 
 package com.milaboratory.mageri.core.mapping.alignment;
 
-import com.milaboratory.core.sequence.alignment.AffineGapAlignmentScoring;
 import com.milaboratory.core.sequence.alignment.LocalAligner;
 import com.milaboratory.core.sequence.alignment.LocalAlignment;
-import com.milaboratory.core.sequence.nucleotide.NucleotideAlphabet;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.mageri.core.genomic.Reference;
 import com.milaboratory.mageri.core.genomic.ReferenceLibrary;
+import com.milaboratory.mageri.core.mapping.ConsensusAlignerParameters;
 import com.milaboratory.mageri.core.mapping.kmer.KMerFinder;
 import com.milaboratory.mageri.core.mapping.kmer.KMerFinderResult;
 
-import static com.milaboratory.core.sequence.alignment.ScoringUtils.getSymmetricMatrix;
-
-public class ExtendedKmerAligner extends Aligner {
-    private static final AffineGapAlignmentScoring bwaSwScoring = new AffineGapAlignmentScoring<>(NucleotideAlphabet.INSTANCE,
-            getSymmetricMatrix(1, -3, 4), -6, -1);
+public class ExtendedKmerAligner implements Aligner {
+    private final AlignmentScoring alignmentScoring;
     private final KMerFinder kMerFinder;
-    private LocalAlignmentEvaluator localAlignmentEvaluator;
+    private final LocalAlignmentEvaluator localAlignmentEvaluator;
 
     public ExtendedKmerAligner(ReferenceLibrary referenceLibrary) {
-        this(referenceLibrary, 11, new LocalAlignmentEvaluator());
+        this(referenceLibrary, ConsensusAlignerParameters.DEFAULT);
     }
 
-    public ExtendedKmerAligner(ReferenceLibrary referenceLibrary, int k,
-                               LocalAlignmentEvaluator localAlignmentEvaluator) {
-        this(new KMerFinder(referenceLibrary, k), localAlignmentEvaluator);
+    public ExtendedKmerAligner(ReferenceLibrary referenceLibrary, ConsensusAlignerParameters alignerParameters) {
+        this(new KMerFinder(referenceLibrary, alignerParameters), alignerParameters);
     }
 
-    public ExtendedKmerAligner(KMerFinder kMerFinder,
-                               LocalAlignmentEvaluator localAlignmentEvaluator) {
-        super(kMerFinder.getReferenceLibrary());
+    public ExtendedKmerAligner(KMerFinder kMerFinder, ConsensusAlignerParameters alignerParameters) {
         this.kMerFinder = kMerFinder;
-        this.localAlignmentEvaluator = localAlignmentEvaluator;
+        this.alignmentScoring = new AlignmentScoring(alignerParameters);
+        this.localAlignmentEvaluator = new LocalAlignmentEvaluator(alignerParameters);
     }
 
     @Override
@@ -81,7 +75,7 @@ public class ExtendedKmerAligner extends Aligner {
             sequence = sequence.getReverseComplement();
         }
 
-        LocalAlignment alignment = LocalAligner.align(bwaSwScoring,
+        LocalAlignment alignment = LocalAligner.align(alignmentScoring.asInternalScoring(),
                 reference.getSequence(), sequence);
 
         if (alignment == null) {
@@ -94,15 +88,8 @@ public class ExtendedKmerAligner extends Aligner {
         return new AlignmentResult(sequence, reference, alignment, rc, result.getScore(), good);
     }
 
-    public KMerFinder getkMerFinder() {
-        return kMerFinder;
-    }
-
-    public LocalAlignmentEvaluator getLocalAlignmentEvaluator() {
-        return localAlignmentEvaluator;
-    }
-
-    public void setLocalAlignmentEvaluator(LocalAlignmentEvaluator localAlignmentEvaluator) {
-        this.localAlignmentEvaluator = localAlignmentEvaluator;
+    @Override
+    public ReferenceLibrary getReferenceLibrary() {
+        return kMerFinder.getReferenceLibrary();
     }
 }

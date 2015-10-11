@@ -31,27 +31,8 @@ package com.milaboratory.mageri.core.mapping.alignment;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.mageri.core.genomic.ReferenceLibrary;
 
-public abstract class Aligner {
-    protected final ReferenceLibrary referenceLibrary;
+public interface Aligner {
+    public AlignmentResult align(NucleotideSequence sequence);
 
-    protected Aligner(ReferenceLibrary referenceLibrary) {
-        this.referenceLibrary = referenceLibrary;
-    }
-
-    /**
-     * This thread-safe method should perform an alignment and return a set of LocalAlignment blocks.
-     *
-     * @param sequence nucleotide sequence to align
-     * @return alignment result (blocks of local alignments)
-     */
-    public abstract AlignmentResult align(NucleotideSequence sequence);
-
-    /**
-     * Gets reference library
-     *
-     * @return returns a map of references built in the consensusAligner with corresponding IDs
-     */
-    public ReferenceLibrary getReferenceLibrary() {
-        return referenceLibrary;
-    }
+    public ReferenceLibrary getReferenceLibrary();
 }

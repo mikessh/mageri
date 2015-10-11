@@ -29,55 +29,34 @@
 
 package com.milaboratory.mageri.core.mapping.alignment;
 
-import com.milaboratory.mageri.core.mapping.kmer.KMerFinder;
 import com.milaboratory.mageri.core.genomic.ReferenceLibrary;
+import com.milaboratory.mageri.core.mapping.ConsensusAlignerParameters;
+import com.milaboratory.mageri.core.mapping.kmer.KMerFinder;
 
-public class ExtendedKmerAlignerFactory extends AlignerFactory<ExtendedKmerAligner> {
-    private int k = KMerFinder.DEFAULT_K;
-    private KMerFinder kMerFinder = new KMerFinder(new ReferenceLibrary(), k);
+public class ExtendedKmerAlignerFactory implements AlignerFactory<ExtendedKmerAligner> {
+    private final ConsensusAlignerParameters alignerParameters;
+    private final KMerFinder kMerFinder;
 
     public ExtendedKmerAlignerFactory(ReferenceLibrary referenceLibrary) {
-        super(referenceLibrary);
-        setReferenceLibrary(referenceLibrary);
+        this(referenceLibrary, ConsensusAlignerParameters.DEFAULT);
     }
 
-    public ExtendedKmerAlignerFactory(ReferenceLibrary referenceLibrary,
-                                      LocalAlignmentEvaluator localAlignmentEvaluator) {
-        super(referenceLibrary, localAlignmentEvaluator);
-        setReferenceLibrary(referenceLibrary);
+    public ExtendedKmerAlignerFactory(ReferenceLibrary referenceLibrary, ConsensusAlignerParameters alignerParameters) {
+        this.kMerFinder = new KMerFinder(referenceLibrary, alignerParameters);
+        this.alignerParameters = alignerParameters;
     }
 
-    public ExtendedKmerAlignerFactory(ReferenceLibrary referenceLibrary,
-                                      LocalAlignmentEvaluator localAlignmentEvaluator, int k) {
-        super(referenceLibrary, localAlignmentEvaluator);
-        setK(k);
+    @Override
+    public ReferenceLibrary getReferenceLibrary() {
+        return kMerFinder.getReferenceLibrary();
     }
 
     @Override
     public ExtendedKmerAligner create() {
-        return new ExtendedKmerAligner(kMerFinder, localAlignmentEvaluator);
+        return new ExtendedKmerAligner(kMerFinder, alignerParameters);
     }
 
-    public int getK() {
-        return k;
-    }
-
-    public void setK(int k) {
-        this.k = k;
-        this.kMerFinder = new KMerFinder(referenceLibrary, k);
-    }
-
-    @Override
-    public void setReferenceLibrary(ReferenceLibrary referenceLibrary) {
-        this.referenceLibrary = referenceLibrary;
-        this.kMerFinder = new KMerFinder(referenceLibrary, k);
-    }
-
-    public LocalAlignmentEvaluator getLocalAlignmentEvaluator() {
-        return localAlignmentEvaluator;
-    }
-
-    public void setLocalAlignmentEvaluator(LocalAlignmentEvaluator localAlignmentEvaluator) {
-        this.localAlignmentEvaluator = localAlignmentEvaluator;
+    public ConsensusAlignerParameters getAlignerParameters() {
+        return alignerParameters;
     }
 }
