@@ -16,37 +16,37 @@ The ``-Xmx64G`` option sets the memory usage limit that should be enough
 for most situations. The list of arguments is given by ``-h`` option 
 and described below as well.
 
-+--------------------+----------------+-------------------------------------------------------------------------------------------------------+
-| option             | argument       | description                                                                                           |
-+====================+================+=======================================================================================================+
-| ``-R1``            | fastq[.gz]     | First read file.                                                                                      |
-+--------------------+----------------+-------------------------------------------------------------------------------------------------------+
-| ``-R2``            | fastq[.gz]     | Second read file [optional].                                                                          |
-+--------------------+----------------+-------------------------------------------------------------------------------------------------------+
-| ``--platform``     | string         | Platform: Illumina, IonTorrent or Roche454 [default = Illumina].                                      |
-+--------------------+----------------+-------------------------------------------------------------------------------------------------------+
-| ``--library-type`` | string         | Library prep start, SS (single-stranded, linear PCR) or DS (double-stranded) [default=SS].            |
-+--------------------+----------------+-------------------------------------------------------------------------------------------------------+
-| ``--project-name`` | string         | Project name [optional].                                                                              |
-+--------------------+----------------+-------------------------------------------------------------------------------------------------------+
-| ``--sample-name``  | string         | Sample name [optional].                                                                               |
-+--------------------+----------------+-------------------------------------------------------------------------------------------------------+
-| ``-O``             | path           | Path to output folder [default = current folder].                                                     |
-+--------------------+----------------+-------------------------------------------------------------------------------------------------------+
-| ``-M1``            | metadata file  | De-multiplexing, primer trimming and barcode extraction using specified metadata file. See :ref:`m1`  |
-+--------------------+----------------+-------------------------------------------------------------------------------------------------------+
-| ``-M2``            | metadata file  | Primer trimming and barcode extraction using specified metadata file. See :ref:`m2`                   |
-+--------------------+----------------+-------------------------------------------------------------------------------------------------------+
-| ``-M3``            | mask1[:mask2]  | Positional UMI extraction. See :ref:`m3`                                                              |
-+--------------------+----------------+-------------------------------------------------------------------------------------------------------+
-| ``-M4``            |                | Preprocessed data, UMI information is stored in header. See :ref:`m4`                                 |
-+--------------------+----------------+-------------------------------------------------------------------------------------------------------+
-| ``--references``   | FASTA file     | File with reference sequences. See :ref:`fa`                                                          |
-+--------------------+----------------+-------------------------------------------------------------------------------------------------------+
-| ``--bed``          | BED file       | Genomic coordinates of reference sequences [optional]. See :ref:`bed`                                 |
-+--------------------+----------------+-------------------------------------------------------------------------------------------------------+
-| ``--contigs``      | metadata file  | File with contig names, lengths, and assembly id [optional]. See :ref:`asm`                           |
-+--------------------+----------------+-------------------------------------------------------------------------------------------------------+
++--------------------+---------------+------------------------------------------------------------------------------------------------------+
+| option             | argument      | description                                                                                          |
++====================+===============+======================================================================================================+
+| ``-R1``            | fastq[.gz]    | First read file.                                                                                     |
++--------------------+---------------+------------------------------------------------------------------------------------------------------+
+| ``-R2``            | fastq[.gz]    | Second read file [optional].                                                                         |
++--------------------+---------------+------------------------------------------------------------------------------------------------------+
+| ``--platform``     | string        | Platform: Illumina, IonTorrent or Roche454 [default = Illumina].                                     |
++--------------------+---------------+------------------------------------------------------------------------------------------------------+
+| ``--library-type`` | string        | Library prep start, SS (single-stranded, linear PCR) or DS (double-stranded) [default=SS].           |
++--------------------+---------------+------------------------------------------------------------------------------------------------------+
+| ``--project-name`` | string        | Project name [optional].                                                                             |
++--------------------+---------------+------------------------------------------------------------------------------------------------------+
+| ``--sample-name``  | string        | Sample name [optional].                                                                              |
++--------------------+---------------+------------------------------------------------------------------------------------------------------+
+| ``-O``             | path          | Path to output folder [default = current folder].                                                    |
++--------------------+---------------+------------------------------------------------------------------------------------------------------+
+| ``-M1``            | metadata file | De-multiplexing, primer trimming and barcode extraction using specified metadata file. See :ref:`m1` |
++--------------------+---------------+------------------------------------------------------------------------------------------------------+
+| ``-M2``            | metadata file | Primer trimming and barcode extraction using specified metadata file. See :ref:`m2`                  |
++--------------------+---------------+------------------------------------------------------------------------------------------------------+
+| ``-M3``            | mask1[:mask2] | Positional UMI extraction. See :ref:`m3`                                                             |
++--------------------+---------------+------------------------------------------------------------------------------------------------------+
+| ``-M4``            |               | Preprocessed data, UMI information is stored in header. See :ref:`m4`                                |
++--------------------+---------------+------------------------------------------------------------------------------------------------------+
+| ``--references``   | FASTA file    | File with reference sequences. See :ref:`fa`                                                         |
++--------------------+---------------+------------------------------------------------------------------------------------------------------+
+| ``--bed``          | BED file      | Genomic coordinates of reference sequences [optional]. See :ref:`bed`                                |
++--------------------+---------------+------------------------------------------------------------------------------------------------------+
+| ``--contigs``      | metadata file | File with contig names, lengths, and assembly id [optional]. See :ref:`asm`                          |
++--------------------+---------------+------------------------------------------------------------------------------------------------------+
 
 .. warning::
 
@@ -284,13 +284,17 @@ with assembly metadata file.
 Output
 ------
 
-MAGERI generates multiple internal output files summarizing each pipeline step
+MAGERI generates multiple internal output files summarizing the results of each pipeline step:
 
 1. ``*.checkout.txt`` - de-multiplexing and UMI extraction yield
 2. ``*.umi.histogram.txt`` - MIG size distribution
 3. ``*.assemble.txt`` - MIG consensus assembly efficiency; ``*.assemble.R1/2.fastq.gz`` - assembled consensus sequences in FASTQ format with CQS quality scores
 4. ``*.mapper.txt`` - MIG consensus mapping statistics for each reference
 5. ``*.variant.caller.txt`` - tab-delimited file with variant calls (in original reference coordinates, not genomic ones)
+   
+Those files are useful for analysis quality control, for example, ``*.checkout.txt`` should be monitored to 
+ensure correct primer specificaiton and ``*.umi.histogram.txt`` should contain a clear peak that can be 
+thresholded with ``5+`` reads per UMI to check if library prep yields optimal starting molecule coverage.
 
 Additionally, mapping and variant calling results are provided in `SAM <https://samtools.github.io/hts-specs/SAMv1.pdf>`__ and
 `VCF <http://www.1000genomes.org/wiki/analysis/variant%20call%20format/vcf-variant-call-format-version-41>`__ formats
@@ -376,25 +380,31 @@ Example VCF output:
    chr1    115258758       .       C       T       383     .       DP=542;AF=0.040590405;AA=C;CQ=39.0      GT:DP   0/1:542
    
 Those files can be further used in downstream analysis. For example, SAM files can be viewed in `IGV <https://www.broadinstitute.org/igv/>`__ browser, 
-while VCF files can be annotated with `SnpEff <http://snpeff.sourceforge.net/>`__.
+while VCF files can be annotated with `SnpEff <http://snpeff.sourceforge.net/>`__. It is always recommended to inspect variant calls and 
+alignment data in IGV to ensure there are no alignment artefacts.
 
 Example
 -------
 
-The test dataset can be downloaded from `here <_static/example.zip>`__. 
-Unpack it and run the following command
+A toy example dataset can be downloaded from `here <_static/example.zip>`__. 
+Unpack it and run the following command:
 
 .. code-block:: bash
 
    java -jar mageri.jar -M2 primers.txt --references refs.fa -R1 example_R1.fastq.gz -R2 example_R2.fastq.gz out/
    
-If everything works fine, the resulting VCF file should contain ``31:T>C``, ``88:T>C`` and ``89:T>C`` variants. 
-Manual inspection of SAM should reveal that mutations at positions 31 and 88 are linked:
+The resulting VCF file should contain ``31:T>C``, ``88:T>C`` and ``89:T>C`` variants. Next, SAM files 
+can be converted to `BAM <https://www.broadinstitute.org/igv/BAM>`__ format, sorted and indexed using 
+`samtools <http://www.htslib.org/>`__. Indexed BAM files can be browsed in Integrative Genome Viewer 
+using ``refs.fa`` as user-provided genome. Manual inspection of alignments should reveal that mutations 
+at positions 31 and 88 are linked:
 
 .. figure:: _static/images/example_igv.png
     :align: center
     
-More examples can be found in the `mageri-paper repository <https://github.com/mikessh/mageri-paper>`__.
+To better understand the software and learn its capabilities check out the 
+`mageri-paper repository <https://github.com/mikessh/mageri-paper>`__ that contains 
+real-world datasets and shell scripts to run MAGERI analysis.
 
 Advanced
 --------
@@ -402,8 +412,9 @@ Advanced
 Presets
 ^^^^^^^
 
-MAGERI parameter preset can be changed by exporting, modifying 
-and re-importing XML configuration file
+By default MAGERI runs with pre-configured and optimized parameters, so change them 
+only if you know what you are doing. The parameter config can be changed by exporting, 
+modifying and re-importing corresponding XML file:
 
 .. code-block:: bash
 
@@ -412,13 +423,13 @@ and re-importing XML configuration file
    ...
    java -Xmx64G -jar mageri.jar --import-preset my_preset.xml [arguments]
    
-The default XML config file is given below
+The content of the default XML config file is given below:
 
 .. code-block:: xml
 
    <?xml version="1.0" encoding="UTF-8"?>
    <MageriPresets>
-     <version>1.0.0</version>
+     <version>1.0.1</version>
      <platform>ILLUMINA</platform>
      <libraryType>SS</libraryType>
      <DemultiplexParameters>
@@ -448,7 +459,14 @@ The default XML config file is given below
        <greedyExtend>true</greedyExtend>
      </AssemblerParameters>
      <ConsensusAlignerParameters>
-       <consensusQualityThreshold>30</consensusQualityThreshold>
+       <k>11</k>
+       <matchReward>1</matchReward>
+       <mismatchPenalty>-3</mismatchPenalty>
+       <gapOpenPenalty>-6</gapOpenPenalty>
+       <gapExtendPenalty>-1</gapExtendPenalty>
+       <minIdentityRatio>0.9</minIdentityRatio>
+       <minAlignedQueryRelativeSpan>0.7</minAlignedQueryRelativeSpan>
+       <muationCqsThreshold>30</muationCqsThreshold>
      </ConsensusAlignerParameters>
      <VariantCallerParameters>
        <order>1.0</order>
@@ -459,3 +477,62 @@ The default XML config file is given below
        <coverageThreshold>100</coverageThreshold>
      </VariantCallerParameters>
    </MageriPresets>
+
+Parameter descriptions
+~~~~~~~~~~~~~~~~~~~~~~
+
+*De-multiplexing*
+
+-  ``orientedReads`` if set to ``false`` will search both read orientations for UMI in ``M1`` and ``M2`` cases, otherwise will search only the original read
+-  ``maxTruncations`` maximum number of non-seed nucleotides that fall out the read boundaries (``M1`` and ``M2`` mode)
+-  ``maxGoodQualMMRatio`` maximum number of allowd non-seed mismatches with quality greater or equal to ``lowQualityThreshold`` (``M1`` and ``M2`` mode)
+-  ``maxLowQualityMMRatio`` maximum number of allowd non-seed mismatches with quality less than ``lowQualityThreshold`` (``M1`` and ``M2`` mode)
+-  ``lowQualityThreshold`` used in primer/adapter matching see above
+   
+*Pre-processing*
+
+-  ``umiQualThreshold`` UMIs that have at least one base with quality less than that threshold will be discarded
+-  ``goodQualityThreshold`` quality threshold used to mask nucleotides for minor-based error model (MBEM) used in variant caller
+-  ``trimAdapters`` specifies whether to trim found primer/adapter sequences
+-  ``minUmiMismatchRatio`` minimum ratio of reads associated with parent and child UMI sequences, used to filter errors in UMI sequence
+-  ``forceOverseq`` specifies whether to enforce ``defaultOverseq`` threshold or to estimate one from UMI size histogram
+-  ``defaultOverseq`` threshold for number of reads associated with UMI, used to filter unusable, erroneous and artefact UMIs
+
+*Consensus assembly*
+
+-  ``offsetRange`` read offsets (from ``-offsetRange`` to ``+offsetRange``) to try when aligning reads
+-  ``anchorRegion`` halfsize of region used to compare reads during alignemnt
+-  ``maxMMs`` maximum number of mismatches in ``anchorRegion``, reads having more that ``maxMMs`` mismatches in any offset will be dropped
+-  ``maxConsequentMMs`` maximum number of consequent mismatches between read and consensus `unused`
+-  ``qualityWeightedMode`` weight bases by quality when computing consensus position-weight matrix `unused`
+-  ``maxDroppedReadsRatio`` maximum ratio of reads dropped for a consensus to be discarded
+-  ``cqsRescue`` perform consensus quality score rescue for indel-heavy reads `unused`
+-  ``qualityTrimming`` trim consensus bases with low consensus quality score which is proportional to the ratio of major base and total base count
+-  ``greedyExtend`` specifies whether to compute initial PWM for maximal span of reads, uses average span if set to ``false``
+   
+*Consensus alignment*
+
+-  ``k`` k-mer size used by reference mapping algorithm
+-  ``matchReward`` match reward used by local alignment algorithm
+-  ``mismatchPenalty`` mismatch penalty used by local alignment algorithm
+-  ``gapOpenPenalty`` gap open penalty used by local alignment algorithm
+-  ``gapExtendPenalty`` gap extend penalty used by local alignment algorithm
+-  ``minIdentityRatio`` minimal local alignment identity (accounting for substitutions only) used for filtering
+-  ``minAlignedQueryRelativeSpan`` minimal relative span of query sequence that are aligned to reference, used for filtering
+-  ``muationCqsThreshold`` consensus quality threshold used to filter unreliable major mutations
+
+*Variant calling*
+
+-  ``order`` order of minor-based error model (MBEM), 2 for signle-stranded start and 3 for double-stranded start
+-  ``modelCycles`` effective number of PCR cycles used by MBEB
+-  ``modelEfficiency`` PCR efficiency value used by MBEB
+-  ``qualityThreshold`` MBEM quality threshold, used in FILTER field of output VCF file
+-  ``singletonFrequencyThreshold`` threshold for ratio between signleton errors and their parent molecules (filters extremely rare errors introduced during UMI attachment), used in FILTER field of output VCF file
+-  ``coverageThreshold`` threhsold for molecular coverage of variants, used in FILTER field of output VCF file
+
+The parameters you are likely to change under certain conditions:
+
+- ``goodQualityThreshold`` in case reads are of poor sequencing quality
+- ``forceOverseq`` and ``defaultOverseq`` in case UMI coverage histogram shows irregular behavior or ``5+`` reads per UMI coverage cannot be reached
+- ``mismatchPenalty``, ``minIdentityRatio`` and ``minAlignedQueryRelativeSpan`` in case of a complex library and high number of artefact alignments; you would probably like to introduce additional reference such as pseudogenes if your reference set doesn't cover everything that is amplified with your primers
+- ``order``, ``modelCycles`` and ``modelEfficiency`` in case of highly customized library preparation protocol
