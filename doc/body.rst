@@ -4,9 +4,7 @@ Installation and running
 MAGERI is distributed in a form of executable JAR file and requires 
 `Java v1.8 <http://www.oracle.com/technetwork/java/javase/downloads/jre8-downloads-2133155.html>`__ to run. 
 Source code and released binaries can be found in corresponding 
-`repository <https://github.com/mikessh/mageri>`__.
-
-To run MAGERI execute 
+`repository <https://github.com/mikessh/mageri>`__. MAGERI can be executed by running
 
 .. code-block:: bash
 
@@ -405,9 +403,9 @@ at positions 31 and 88 are linked:
 .. figure:: _static/images/example_igv.png
     :align: center
     
-To better understand the software and learn its capabilities check out the 
-`mageri-paper repository <https://github.com/mikessh/mageri-paper>`__ that contains 
-real-world datasets and shell scripts to run MAGERI analysis.
+In order to evaluate MAGERI software and learn its capabilities I recommend checking out the 
+`mageri-paper repository <https://github.com/mikessh/mageri-paper>`__ containing
+real-world datasets, metadata and shell scripts that can be used to run MAGERI analysis.
 
 Advanced
 --------
@@ -550,33 +548,33 @@ An example of metadata file is given below:
 
    {
      "project": "project_name",
-     "references": "pipeline/refs.fa",
-     "bed": "pipeline/refs.bed",
-     "contigs": "pipeline/contigs.txt",
+     "references": "metadata/refs.fa",
+     "bed": "metadata/refs.bed",
+     "contigs": "metadata/contigs.txt",
      "structure": [
        {
         "byindex": [
           {
             "index": "group_name",
-            "r1": "pipeline/R1.fastq.gz",
-            "r2": "pipeline/R2.fastq.gz",
+            "r1": "R1.fastq.gz",
+            "r2": "R2.fastq.gz",
             "submultiplex": {
-             "file": "pipeline/adapters.txt"
+             "file": "metadata/adapters.txt"
             }
           }
         ]
        },
        {
          "tabular": {
-           "file": "pipeline/index1.txt",
+           "file": "metadata/index1.txt",
            "primer": {
-             "file": "pipeline/primers.txt"
+             "file": "metadata/primers.txt"
            }
          }
        },
        {
          "tabular": {
-           "file": "pipeline/index2.txt",
+           "file": "metadata/index2.txt",
            "positional": {
              "mask1": "nnNNNNNNNNNNNN"
            }
@@ -584,7 +582,7 @@ An example of metadata file is given below:
        },
        {       
          "tabular": {
-           "file": "pipeline/index3.txt",        
+           "file": "metadata/index3.txt",        
            "preprocessed": {}
          }
        }
@@ -596,10 +594,10 @@ or index file, a tab-delimited table with ``sample_name\tfastq_R1\tfastq_R2`` st
 ``submultiplex``, ``primer``, ``positional`` and ``preprocessed`` entries correspond to ``M1-4`` demultiplexing 
 rules described above.
 
-When such file, say ``input.json``, is prepared the whole pipeline can be run as follows:
+After the ``input.json`` and ``metadata/*`` files are prepared the entire pipeline can be run as follows:
 
 .. code-block:: bash
 
    java -Xmx32G -jar mageri.jar -I input.json -O output/
 
-Example JSON files can be found `here <https://github.com/mikessh/mageri-paper/tree/master/processing>`__.
+Example JSON files and metadata can be found `here <https://github.com/mikessh/mageri-paper/tree/master/processing>`__.
