@@ -10,10 +10,10 @@ To run MAGERI execute
 
 .. code-block:: bash
 
-   java -Xmx64G -jar mageri.jar [arguments]
+   java -Xmx32G -jar mageri.jar [arguments]
    
-The ``-Xmx64G`` option sets the memory usage limit that should be enough 
-for most situations. The list of arguments is given by ``-h`` option 
+The ``-Xmx32G`` option sets the memory usage limit that should be enough 
+for most datasets. The list of arguments is given by ``-h`` option 
 and described below as well.
 
 +--------------------+---------------+------------------------------------------------------------------------------------------------------+
@@ -48,7 +48,7 @@ and described below as well.
 | ``--contigs``      | metadata file | File with contig names, lengths, and assembly id [optional]. See :ref:`asm`                          |
 +--------------------+---------------+------------------------------------------------------------------------------------------------------+
 
-.. warning::
+.. important::
 
    One of ``M1-4`` options should be specified. While 
    ``--bed`` and ``--contigs`` parameters are optional, if not specified,
@@ -83,6 +83,9 @@ during mapping and VCF/SAM file generation.
 
 Pre-processing
 ^^^^^^^^^^^^^^
+
+Four de-multiplexing modes are available in MAGERI to handle the majority of 
+possible library designs.
 
 .. _m1:
 
@@ -536,3 +539,67 @@ The parameters you are likely to change under certain conditions:
 - ``forceOverseq`` and ``defaultOverseq`` in case MIG size histogram shows irregular behavior or ``5+`` reads per UMI coverage cannot be reached
 - ``mismatchPenalty``, ``minIdentityRatio`` and ``minAlignedQueryRelativeSpan`` in case of a complex library and high number of artefact alignments; you would probably like to introduce additional reference such as pseudogenes if your reference set doesn't cover everything that is amplified with your primers
 - ``order``, ``modelCycles`` and ``modelEfficiency`` in case of highly customized library preparation protocol
+  
+Batch processing
+^^^^^^^^^^^^^^^^
+
+MAGERI can be configured to run for multiple input files using a flexible JSON metadata config.
+An example of metadata file is given below:
+
+.. code-block:: json
+
+   {
+     "project": "project_name",
+     "references": "pipeline/refs.fa",
+     "bed": "pipeline/refs.bed",
+     "contigs": "pipeline/contigs.txt",
+     "structure": [
+       {
+        "byindex": [
+          {
+            "index": "group_name",
+            "r1": "pipeline/R1.fastq.gz",
+            "r2": "pipeline/R2.fastq.gz",
+            "submultiplex": {
+             "file": "pipeline/adapters.txt"
+            }
+          }
+        ]
+       },
+       {
+         "tabular": {
+           "file": "pipeline/index1.txt",
+           "primer": {
+             "file": "pipeline/primers.txt"
+           }
+         }
+       },
+       {
+         "tabular": {
+           "file": "pipeline/index2.txt",
+           "positional": {
+             "mask1": "nnNNNNNNNNNNNN"
+           }
+         }
+       },
+       {       
+         "tabular": {
+           "file": "pipeline/index3.txt",        
+           "preprocessed": {}
+         }
+       }
+     ]
+   }
+
+Here the ``byindex`` and ``tabular`` entries specify a sample group with corresponding FASTQ files
+or index file, a tab-delimited table with ``sample_name\tfastq_R1\tfastq_R2`` structure. The 
+``submultiplex``, ``primer``, ``positional`` and ``preprocessed`` entries correspond to ``M1-4`` demultiplexing 
+rules described above.
+
+When such file, say ``input.json``, is prepared the whole pipeline can be run as follows:
+
+.. code-block:: bash
+
+   java -Xmx32G -jar mageri.jar -I input.json -O output/
+
+Example JSON files can be found `here <https://github.com/mikessh/mageri-paper/tree/master/processing>`__.
