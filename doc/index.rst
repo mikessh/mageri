@@ -8,6 +8,12 @@ MAGERI: Molecular tAgged GEnome Re-sequencing pIpeline
 
 .. figure:: _static/images/pipeline.png
     :align: center
+
+MAGERI is an all-in-one software for analysis of targeted genome re-sequencing data for libraries prepared with 
+novel unique molecular identifier tagging technology. Starting from raw sequencing reads, MAGERI extracts UMI 
+sequences, performes primer and adapter matching and trimming, assembles molecular consensuses, alignes them to 
+reference sequences and calls variants. MAGERI output is provided in conventional SAM and VCF formats, so it can 
+be browsed and post-processed by the majority of conventional bioinformatics software.
     
 Terminology
 -----------

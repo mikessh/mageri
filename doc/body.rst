@@ -495,8 +495,8 @@ Parameter descriptions
 -  ``goodQualityThreshold`` quality threshold used to mask nucleotides for minor-based error model (MBEM) used in variant caller
 -  ``trimAdapters`` specifies whether to trim found primer/adapter sequences
 -  ``minUmiMismatchRatio`` minimum ratio of reads associated with parent and child UMI sequences, used to filter errors in UMI sequence
--  ``forceOverseq`` specifies whether to enforce ``defaultOverseq`` threshold or to estimate one from UMI size histogram
--  ``defaultOverseq`` threshold for number of reads associated with UMI, used to filter unusable, erroneous and artefact UMIs
+-  ``forceOverseq`` specifies whether to enforce ``defaultOverseq`` threshold or to estimate one from MIG size histogram
+-  ``defaultOverseq`` threshold for number of reads in MIGs, used to filter unusable, erroneous and artefact UMIs
 
 *Consensus assembly*
 
@@ -533,6 +533,6 @@ Parameter descriptions
 The parameters you are likely to change under certain conditions:
 
 - ``goodQualityThreshold`` in case reads are of poor sequencing quality
-- ``forceOverseq`` and ``defaultOverseq`` in case UMI coverage histogram shows irregular behavior or ``5+`` reads per UMI coverage cannot be reached
+- ``forceOverseq`` and ``defaultOverseq`` in case MIG size histogram shows irregular behavior or ``5+`` reads per UMI coverage cannot be reached
 - ``mismatchPenalty``, ``minIdentityRatio`` and ``minAlignedQueryRelativeSpan`` in case of a complex library and high number of artefact alignments; you would probably like to introduce additional reference such as pseudogenes if your reference set doesn't cover everything that is amplified with your primers
 - ``order``, ``modelCycles`` and ``modelEfficiency`` in case of highly customized library preparation protocol
