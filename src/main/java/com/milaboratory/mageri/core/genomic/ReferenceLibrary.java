@@ -44,6 +44,8 @@ public class ReferenceLibrary implements Serializable {
     private final Map<String, Integer> nameToId = new HashMap<>();
     private final GenomicInfoProvider genomicInfoProvider;
     private final String path;
+    private int warningCount = 0;
+    private static final int MAX_WARNINGS = 10;
 
     public static ReferenceLibrary fromInput(InputStreamWrapper input,
                                              GenomicInfoProvider genomicInfoProvider) throws IOException {
@@ -81,7 +83,7 @@ public class ReferenceLibrary implements Serializable {
             addReference(descriptionFields[0],
                     sequence);
         }
-        if (references.isEmpty()){
+        if (references.isEmpty()) {
             throw new RuntimeException("No references were loaded from provided FASTA records.");
         }
     }
@@ -96,17 +98,21 @@ public class ReferenceLibrary implements Serializable {
         GenomicInfo genomicInfo = genomicInfoProvider.get(name, sequence);
 
         if (genomicInfo == null) {
-            System.out.println("[WARNING] No genomic info for " + name +
-                    ", skipping reference.");
+            if (++warningCount <= MAX_WARNINGS) {
+                System.out.println("[WARNING] No genomic info for " + name +
+                        ", skipping reference. (Showing first " + MAX_WARNINGS + " warnings)");
+            }
             return;
         }
 
         if (genomicInfo.getContig() == null) {
-            System.out.println("[WARNING] No contig found for " + name +
-                    ", skipping reference.");
+            if (++warningCount <= MAX_WARNINGS) {
+                System.out.println("[WARNING] No contig found for " + name +
+                        ", skipping reference. (Showing first " + MAX_WARNINGS + " warnings)");
+            }
             return;
         }
-        
+
         contigs.add(genomicInfo.getContig());
 
         if (!genomicInfo.positiveStrand()) {
