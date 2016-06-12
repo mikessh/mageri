@@ -22,6 +22,8 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Objects;
 
+import static com.antigenomics.mageri.core.output.SamUtil.*;
+
 public class SamRecord implements Record {
     private final SamSegmentRecord[] samSegmentRecords;
 

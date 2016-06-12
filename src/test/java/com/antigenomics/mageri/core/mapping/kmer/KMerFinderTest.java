@@ -19,7 +19,6 @@ package com.antigenomics.mageri.core.mapping.kmer;
 import com.antigenomics.mageri.*;
 import com.antigenomics.mageri.generators.MutationGenerator;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
-import com.milaboratory.mageri.*;
 import com.antigenomics.mageri.core.genomic.ReferenceLibrary;
 import com.antigenomics.mageri.generators.RandomReferenceGenerator;
 import com.antigenomics.mageri.generators.ReferenceParentChildPair;

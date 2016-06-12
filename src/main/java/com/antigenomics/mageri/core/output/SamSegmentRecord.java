@@ -18,6 +18,8 @@ package com.antigenomics.mageri.core.output;
 
 import java.io.Serializable;
 
+import static com.antigenomics.mageri.core.output.SamUtil.*;
+
 public final class SamSegmentRecord implements Comparable<SamSegmentRecord>, Serializable {
     private final String queryName, referenceName,
             cigarString, sequence, quality;
