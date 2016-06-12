@@ -68,7 +68,7 @@ during mapping and VCF/SAM file generation.
 .. note::
 
    Genomic information bundle for genes from `Cancer Gene Census <https://cancer.sanger.ac.uk/census>`__
-   (`GRCh38` genome assembly) is available `here <https://github.com/mikessh/mageri-paper/blob/master/get_refs/cgc_flank50_hg38.zip?raw=true>`__. 
+   (`hg38` genome assembly) is available `here <https://github.com/mikessh/mageri-paper/blob/master/get_refs/cgc_flank50_hg38.zip?raw=true>`__. 
    This bundle contains all exons with +/-50 base flanks.
    Additional instructions to create genomic information bundle for your own list of genes are given below.
 
@@ -255,15 +255,15 @@ A step-by-step instruction on getting your references from `Ensembl BioMart <htt
 is given below:
 
 - Go to `Martview <http://www.ensembl.org/biomart/martview>`__.
-- In the dataset section select `Ensembl genes 84` and choose `Homo sapiens genes`.
-- In the filter section and `Gene` subsection, input your gene IDs to `external references ID` textbox and select appropriate nomenclature (e.g. `HGNC symbol` when using gene symbols).
-- In attributes select `Sequences` and untick all header information features.
-- Under the `SEQUENCES` menu select `Exon sequences` and input the 5' and 3' flank base count, e.g. 50 (it should be the same for both 5'
+- In the dataset section select **Ensembl genes 84** and choose **Homo sapiens genes**.
+- In the filter section and **Gene** subsection, input your gene IDs to **external references ID** textbox and select appropriate nomenclature (e.g. **HGNC symbol** when using gene symbols).
+- In attributes section select **Sequences** and untick all header information features.
+- Under the **SEQUENCES** menu select **Exon sequences** and input the 5' and 3' flank base count, e.g. 50 (it should be the same for both 5'
  and 3' flank). This is to ensure that reads produced by exome capture techniques are fully mapped.
-- Select the following features (order matters here): `Associated Gene Name`, `Ensembl Exon ID`, `Chromosome Name`, `Exon Chr Start (bp)`, `Exon Chr End (bp)` and `Strand`.
-- Go to results, select `unique results only` and download the resulting FASTA file (save it as `biomart_refs.fa`).
-- Download and run the following `script <https://raw.githubusercontent.com/mikessh/mageri-paper/master/get_refs/ExtractBedFormBiomartRefs.groovy>`__ (requires `Groovy <http://www.groovy-lang.org/>`__ to be installed): `groovy ExtractBedFormBiomartRefs.groovy biomart_refs.fa refs.fa refs.bed 50`. The last argument specifies the flank size.
-- You can now supply resulting `refs.fa`, `refs.bed` and `this <https://raw.githubusercontent.com/mikessh/mageri-paper/master/get_refs/contigs_hg38.txt>`__ contigs file when running the pipeline.
+- Select the following features (order matters here): **Associated Gene Name**, **Ensembl Exon ID**, **Chromosome Name**, **Exon Chr Start (bp)**, **Exon Chr End (bp)** and **Strand**.
+- Go to results, select **unique results only** and download the resulting FASTA file (save it as ``biomart_refs.fa``).
+- Download and run the following `script <https://raw.githubusercontent.com/mikessh/mageri-paper/master/get_refs/ExtractBedFormBiomartRefs.groovy>`__ (requires `Groovy <http://www.groovy-lang.org/>`__ to be installed): ``groovy ExtractBedFormBiomartRefs.groovy biomart_refs.fa refs.fa refs.bed 50``. The last argument specifies the flank size.
+- You can now supply resulting ``refs.fa``, ``refs.bed`` and `this <https://raw.githubusercontent.com/mikessh/mageri-paper/master/get_refs/contigs_hg38.txt>`__ contigs file when running the pipeline.
 
 .. _asm:
 
