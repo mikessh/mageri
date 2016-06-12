@@ -131,7 +131,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.milaboratory.mageri.pipeline.Mageri</mainClass>
+                            <mainClass>com.antigenomics.mageri.pipeline.Mageri</mainClass>
                             <addDefaultImplementationEntries>
                                 true
                             </addDefaultImplementationEntries>
@@ -189,7 +189,7 @@
                                 </transformer>
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>com.milaboratory.mageri.pipeline.Mageri</mainClass>
+                                    <mainClass>com.antigenomics.mageri.pipeline.Mageri</mainClass>
                                 </transformer>
                             </transformers>
                             <shadedArtifactAttached>true</shadedArtifactAttached>

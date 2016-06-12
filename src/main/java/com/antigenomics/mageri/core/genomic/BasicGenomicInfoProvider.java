@@ -1,0 +1,54 @@
+/*
+ * Copyright 2014-2016 Mikhail Shugay
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.antigenomics.mageri.core.genomic;
+
+import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
+
+import java.util.*;
+
+public class BasicGenomicInfoProvider implements GenomicInfoProvider {
+    private final Map<Contig, Contig> contigs = new HashMap<>();
+
+    @Override
+    public GenomicInfo get(String name, NucleotideSequence sequence) {
+        Contig contig = new Contig(name,
+                "user", sequence.size(),
+                false);
+
+        Contig existing = contigs.get(contig);
+        if (existing == null) {
+            contigs.put(contig, contig);
+            existing = contig;
+        }
+
+        return new GenomicInfo(existing, 0, // make 0-based to be consistent with BED format
+                sequence.size(), true); // sequence end is exclusive
+    }
+
+    @Override
+    public List<Contig> getContigs() {
+        List<Contig> contigs = new ArrayList<>();
+        contigs.addAll(this.contigs.values());
+        Collections.sort(contigs);
+        return contigs;
+    }
+
+    @Override
+    public int size() {
+        return contigs.size();
+    }
+}
