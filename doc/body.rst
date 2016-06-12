@@ -68,16 +68,9 @@ during mapping and VCF/SAM file generation.
 .. note::
 
    Genomic information bundle for genes from `Cancer Gene Census <https://cancer.sanger.ac.uk/census>`__
-   (`GRCh38` genome assembly) is available `here <https://github.com/mikessh/mageri/tree/master/src/test/resources/genomic>`__. 
-   To create your own metadata, using `Ensembl BioMart <http://www.ensembl.org/biomart>`__ is recommended:
-    
-   - Input your gene IDs and in `Filters` section
-   - Select `Sequences` in `Attributes` menu
-   - Select `Exon sequences` and specify some upstream and downstream flank (say, 50bp)
-   - Add `Chromosome Name`, `Exon Chr Start (bp)`, `Exon Chr End (bp)` and `Strand`, 
-     so you can parse out your BED file from downloaded FASTA file
-     
-   For more details see below.
+   (`GRCh38` genome assembly) is available `here <https://github.com/mikessh/mageri-paper/blob/master/get_refs/cgc_flank50_hg38.zip?raw=true>`__. 
+   This bundle contains all exons with +/-50 base flanks.
+   Additional instructions to create genomic information bundle for your own list of genes are given below.
 
 Pre-processing
 ^^^^^^^^^^^^^^
@@ -252,13 +245,25 @@ containing genomic coordinates of references should be included. For the example
 
    The most straightforward way (in my experience) to generate FASTA and BED files is 
    to use `ENSEMBL Biomart <http://www.ensembl.org/biomart/martview/>`__. Specify your 
-   gene identifiers in the ``Filters`` section and choose ``Sequences`` as output mode. 
-   Tick chromosome name, exon id, exon start, exon end and exon strand in output, those can 
-   be then manually parsed from FASTA output to form a BED file.
+   gene identifiers in the ``Filters`` section and choose ``Sequences`` as output mode.
    Don't forget to manually add flanking bases count (in case you specify them) to BED file 
    as they're not accounted for in Biomart output. Importantly, ENSEMBL coordinates are 1-based, 
    while BED format is 0-based, so adjust appropriately by subtracting 1 from start coordinate in 
    BED.
+
+A step-by-step instruction on getting your references from `Ensembl BioMart <http://www.ensembl.org/biomart>`__
+is given below:
+
+- Go to `Martview <http://www.ensembl.org/biomart/martview>`__.
+- In the dataset section select `Ensembl genes 84` and choose `Homo sapiens genes`.
+- In the filter section and `Gene` subsection, input your gene IDs to `external references ID` textbox and select appropriate nomenclature (e.g. `HGNC symbol` when using gene symbols).
+- In attributes select `Sequences` and untick all header information features.
+- Under the `SEQUENCES` menu select `Exon sequences` and input the 5' and 3' flank base count, e.g. 50 (it should be the same for both 5'
+ and 3' flank). This is to ensure that reads produced by exome capture techniques are fully mapped.
+- Select the following features (order matters here): `Associated Gene Name`, `Ensembl Exon ID`, `Chromosome Name`, `Exon Chr Start (bp)`, `Exon Chr End (bp)` and `Strand`.
+- Go to results, select `unique results only` and download the resulting FASTA file (save it as `biomart_refs.fa`).
+- Download and run the following `script <https://raw.githubusercontent.com/mikessh/mageri-paper/master/get_refs/ExtractBedFormBiomartRefs.groovy>`__ (requires `Groovy <http://www.groovy-lang.org/>`__ to be installed): `groovy ExtractBedFormBiomartRefs.groovy biomart_refs.fa refs.fa refs.bed 50`. The last argument specifies the flank size.
+- You can now supply resulting `refs.fa`, `refs.bed` and `this <https://raw.githubusercontent.com/mikessh/mageri-paper/master/get_refs/contigs_hg38.txt>`__ contigs file when running the pipeline.
 
 .. _asm:
 
