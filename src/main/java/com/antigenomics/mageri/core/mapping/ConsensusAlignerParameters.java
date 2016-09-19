@@ -24,15 +24,16 @@ public final class ConsensusAlignerParameters implements ParameterSet {
     private final int k, matchReward, mismatchPenalty, gapOpenPenalty, gapExtendPenalty;
     private final double minIdentityRatio, minAlignedQueryRelativeSpan;
     private final byte muationCqsThreshold;
+    private final boolean useSpacedKmers;
 
     public static ConsensusAlignerParameters DEFAULT = new ConsensusAlignerParameters(11,
             1, -3, -6, -1,
-            0.9, 0.7, QualityDefaults.PH33_GOOD_QUAL);
+            0.9, 0.7, QualityDefaults.PH33_GOOD_QUAL, true);
 
     public ConsensusAlignerParameters(int k,
                                       int matchReward, int mismatchPenalty, int gapOpenPenalty, int gapExtendPenalty,
                                       double minIdentityRatio, double minAlignedQueryRelativeSpan,
-                                      byte muationCqsThreshold) {
+                                      byte muationCqsThreshold, boolean useSpacedKmers) {
         this.k = k;
         this.matchReward = matchReward;
         this.mismatchPenalty = mismatchPenalty;
@@ -41,6 +42,7 @@ public final class ConsensusAlignerParameters implements ParameterSet {
         this.minIdentityRatio = minIdentityRatio;
         this.minAlignedQueryRelativeSpan = minAlignedQueryRelativeSpan;
         this.muationCqsThreshold = muationCqsThreshold;
+        this.useSpacedKmers = useSpacedKmers;
     }
 
     public int getK() {
@@ -75,52 +77,62 @@ public final class ConsensusAlignerParameters implements ParameterSet {
         return muationCqsThreshold;
     }
 
+    public boolean getUseSpacedKmers() {
+        return useSpacedKmers;
+    }
+
     public ConsensusAlignerParameters withK(int k) {
         return new ConsensusAlignerParameters(k, matchReward, mismatchPenalty, gapOpenPenalty, gapExtendPenalty,
                 minIdentityRatio, minAlignedQueryRelativeSpan,
-                muationCqsThreshold);
+                muationCqsThreshold, useSpacedKmers);
     }
 
     public ConsensusAlignerParameters withMatchRewards(int matchRewards) {
         return new ConsensusAlignerParameters(k, matchRewards, mismatchPenalty, gapOpenPenalty, gapExtendPenalty,
                 minIdentityRatio, minAlignedQueryRelativeSpan,
-                muationCqsThreshold);
+                muationCqsThreshold, useSpacedKmers);
     }
 
     public ConsensusAlignerParameters withMismatchPenalty(int mismatchPenalty) {
         return new ConsensusAlignerParameters(k, matchReward, mismatchPenalty, gapOpenPenalty, gapExtendPenalty,
                 minIdentityRatio, minAlignedQueryRelativeSpan,
-                muationCqsThreshold);
+                muationCqsThreshold, useSpacedKmers);
     }
 
     public ConsensusAlignerParameters withGapOpenPenalty(int gapOpenPenalty) {
         return new ConsensusAlignerParameters(k, matchReward, mismatchPenalty, gapOpenPenalty, gapExtendPenalty,
                 minIdentityRatio, minAlignedQueryRelativeSpan,
-                muationCqsThreshold);
+                muationCqsThreshold, useSpacedKmers);
     }
 
     public ConsensusAlignerParameters withGapExtendPenalty(int gapExtendPenalty) {
         return new ConsensusAlignerParameters(k, matchReward, mismatchPenalty, gapOpenPenalty, gapExtendPenalty,
                 minIdentityRatio, minAlignedQueryRelativeSpan,
-                muationCqsThreshold);
+                muationCqsThreshold, useSpacedKmers);
     }
 
     public ConsensusAlignerParameters withMinIdentityRatio(double minIdentityRatio) {
         return new ConsensusAlignerParameters(k, matchReward, mismatchPenalty, gapOpenPenalty, gapExtendPenalty,
                 minIdentityRatio, minAlignedQueryRelativeSpan,
-                muationCqsThreshold);
+                muationCqsThreshold, useSpacedKmers);
     }
 
     public ConsensusAlignerParameters withMinAlignedQueryRelativeSpan(double minAlignedQueryRelativeSpan) {
         return new ConsensusAlignerParameters(k, matchReward, mismatchPenalty, gapOpenPenalty, gapExtendPenalty,
                 minIdentityRatio, minAlignedQueryRelativeSpan,
-                muationCqsThreshold);
+                muationCqsThreshold, useSpacedKmers);
     }
 
     public ConsensusAlignerParameters withMutationCqsThreshold(byte muationCqsThreshold) {
         return new ConsensusAlignerParameters(k, matchReward, mismatchPenalty, gapOpenPenalty, gapExtendPenalty,
                 minIdentityRatio, minAlignedQueryRelativeSpan,
-                muationCqsThreshold);
+                muationCqsThreshold, useSpacedKmers);
+    }
+
+    public ConsensusAlignerParameters withUseSpacedKmers(boolean useSpacedKmers) {
+        return new ConsensusAlignerParameters(k, matchReward, mismatchPenalty, gapOpenPenalty, gapExtendPenalty,
+                minIdentityRatio, minAlignedQueryRelativeSpan,
+                muationCqsThreshold, useSpacedKmers);
     }
 
     @Override
@@ -134,6 +146,7 @@ public final class ConsensusAlignerParameters implements ParameterSet {
         e.addContent(new Element("minIdentityRatio").setText(Double.toString(minIdentityRatio)));
         e.addContent(new Element("minAlignedQueryRelativeSpan").setText(Double.toString(minAlignedQueryRelativeSpan)));
         e.addContent(new Element("muationCqsThreshold").setText(Byte.toString(muationCqsThreshold)));
+        e.addContent(new Element("useSpacedKmers").setText(Boolean.toString(useSpacedKmers)));
         return e;
     }
 
@@ -147,7 +160,8 @@ public final class ConsensusAlignerParameters implements ParameterSet {
                 Integer.parseInt(e.getChildTextTrim("gapExtendPenalty")),
                 Double.parseDouble(e.getChildTextTrim("minIdentityRatio")),
                 Double.parseDouble(e.getChildTextTrim("minAlignedQueryRelativeSpan")),
-                Byte.parseByte(e.getChildTextTrim("muationCqsThreshold"))
+                Byte.parseByte(e.getChildTextTrim("muationCqsThreshold")),
+                Boolean.parseBoolean(e.getChildTextTrim("useSpacedKmers"))
         );
     }
 
@@ -158,16 +172,16 @@ public final class ConsensusAlignerParameters implements ParameterSet {
 
         ConsensusAlignerParameters that = (ConsensusAlignerParameters) o;
 
-        if (gapExtendPenalty != that.gapExtendPenalty) return false;
-        if (gapOpenPenalty != that.gapOpenPenalty) return false;
         if (k != that.k) return false;
         if (matchReward != that.matchReward) return false;
-        if (Double.compare(that.minAlignedQueryRelativeSpan, minAlignedQueryRelativeSpan) != 0) return false;
-        if (Double.compare(that.minIdentityRatio, minIdentityRatio) != 0) return false;
         if (mismatchPenalty != that.mismatchPenalty) return false;
+        if (gapOpenPenalty != that.gapOpenPenalty) return false;
+        if (gapExtendPenalty != that.gapExtendPenalty) return false;
+        if (Double.compare(that.minIdentityRatio, minIdentityRatio) != 0) return false;
+        if (Double.compare(that.minAlignedQueryRelativeSpan, minAlignedQueryRelativeSpan) != 0) return false;
         if (muationCqsThreshold != that.muationCqsThreshold) return false;
+        return useSpacedKmers == that.useSpacedKmers;
 
-        return true;
     }
 
     @Override
@@ -184,6 +198,7 @@ public final class ConsensusAlignerParameters implements ParameterSet {
         temp = Double.doubleToLongBits(minAlignedQueryRelativeSpan);
         result = 31 * result + (int) (temp ^ (temp >>> 32));
         result = 31 * result + (int) muationCqsThreshold;
+        result = 31 * result + (useSpacedKmers ? 1 : 0);
         return result;
     }
 }

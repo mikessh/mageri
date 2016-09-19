@@ -21,12 +21,15 @@ import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.antigenomics.mageri.core.genomic.ReferenceLibrary;
 
 public class KmerUtils {
-    private final int k;
+    private final int k, mid;
+    private final boolean spacedSeeds;
 
-    public KmerUtils(int k) {
-        if (k < 0 || k > 31)
-            throw new IllegalArgumentException("K-mer length should be in [0, 31] (64bit)");
+    public KmerUtils(int k, boolean spacedSeeds) {
+        if (k < 3 || k > 31)
+            throw new IllegalArgumentException("K-mer length should be in [3, 31] (64bit)");
         this.k = k;
+        this.mid = k / 2;
+        this.spacedSeeds = spacedSeeds;
     }
 
     private int nKmers(NucleotideSequence sequence) {
@@ -39,11 +42,14 @@ public class KmerUtils {
     public long[] extractKmers(NucleotideSequence sequence) {
         final int n = nKmers(sequence);
         final long[] kmers = new long[n];
-        for (int i = 0; i < n; ++i) {
-            long kmer = 0;
-            for (int j = i; j < i + k; ++j)
-                kmer = kmer << 2 | sequence.codeAt(j);
-            kmers[i] = kmer;
+        if (spacedSeeds) {
+            for (int i = 0; i < n; ++i) {
+                kmers[i] = getKmerSpaced(sequence, i);
+            }
+        } else {
+            for (int i = 0; i < n; ++i) {
+                kmers[i] = getKmer(sequence, i);
+            }
         }
         return kmers;
     }
@@ -55,13 +61,31 @@ public class KmerUtils {
         final int index = rc ?
                 -(reference.getIndex() + 1) :
                 (reference.getIndex() + 1);
-        final int n = nKmers(sequence);
-        for (int i = 0; i < n; ++i) {
-            long kmer = 0;
-            for (int j = i; j < i + k; ++j)
-                kmer = kmer << 2 | sequence.codeAt(j);
+
+        for (long kmer : extractKmers(sequence)) {
             kmerMap.increment(kmer, index);
         }
+    }
+
+    protected long getKmer(NucleotideSequence sequence, int pos) {
+        long kmer = 0;
+        for (int j = pos; j < pos + k; ++j) {
+            kmer = kmer << 2 | sequence.codeAt(j);
+        }
+        return kmer;
+    }
+
+    protected long getKmerSpaced(NucleotideSequence sequence, int pos) {
+        long kmer = 0;
+        int j = pos;
+        for (; j < pos + mid; ++j) {
+            kmer = kmer << 2 | sequence.codeAt(j);
+        }
+        ++j;
+        for (; j < pos + k; ++j) {
+            kmer = kmer << 2 | sequence.codeAt(j);
+        }
+        return kmer;
     }
 
     public KmerMap buildKmerMap(ReferenceLibrary referenceLibrary) {
@@ -71,13 +95,6 @@ public class KmerUtils {
             countKmers(reference, kmerMap, false);
         }
         return kmerMap;
-    }
-
-    public long kmerByPosition(NucleotideSequence sequence, int pos) {
-        long kmer = 0;
-        for (int i = pos; i < pos + k; ++i)
-            kmer = kmer << 2 | sequence.codeAt(i);
-        return kmer;
     }
 
     public int getK() {

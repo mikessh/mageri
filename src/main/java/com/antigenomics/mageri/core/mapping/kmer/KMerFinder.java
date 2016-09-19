@@ -35,7 +35,7 @@ public class KMerFinder {
     }
 
     public KMerFinder(ReferenceLibrary referenceLibrary, ConsensusAlignerParameters alignerParameters) {
-        this.kmerUtils = new KmerUtils(alignerParameters.getK());
+        this.kmerUtils = new KmerUtils(alignerParameters.getK(), alignerParameters.getUseSpacedKmers());
         this.kmerMap = kmerUtils.buildKmerMap(referenceLibrary);
         this.referenceLibrary = referenceLibrary;
         this.N = (double) kmerMap.getTotal();
