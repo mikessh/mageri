@@ -43,7 +43,7 @@ public class AlignerTest {
 
         ReferenceLibrary referenceLibrary = randomReferenceGenerator.nextReferenceLibrary(nReferences);
 
-        falsePositiveTest(referenceLibrary, randomReferenceGenerator, 10000, 85);
+        falsePositiveTest(referenceLibrary, randomReferenceGenerator, 10000);
     }
 
     @Test
@@ -56,13 +56,12 @@ public class AlignerTest {
                         ResourceIOProvider.INSTANCE.getWrappedStream("genomic/pseudogene.fa"),
                         new BasicGenomicInfoProvider());
 
-        falsePositiveTest(referenceLibrary, new ReferenceLibrarySampler(pseudogeneReferenceLibrary), 1000, 100);
+        falsePositiveTest(referenceLibrary, new ReferenceLibrarySampler(pseudogeneReferenceLibrary), 1000);
     }
 
     public void falsePositiveTest(ReferenceLibrary referenceLibrary, 
                                   RandomSequenceGenerator randomSequenceGenerator,
-                                  int nRepetitions,
-                                  int kMerFPBound) {
+                                  int nRepetitions) {
         AlignerFactory alignerFactory = new ExtendedKmerAlignerFactory(referenceLibrary);
         Aligner aligner = alignerFactory.create();
 
@@ -85,7 +84,6 @@ public class AlignerTest {
             }
         }
 
-        PercentRangeAssertion.createUpperBound("Kmer alignment", "Aligner false positive test", kMerFPBound).assertInRange(nAligned, nRepetitions);
         PercentRangeAssertion.createLowerBound("MAPQ threshold filtered filtering", "Aligner false positive test", 95).assertInRange(nMapqFitlered, nAligned);
         PercentRangeAssertion.createLowerBound("Alignment evaluator filtering", "Aligner false positive test", 95).assertInRange(nEvaluatorFiltered, nAligned);
     }
