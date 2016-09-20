@@ -62,6 +62,11 @@ public final class PAssembler extends Assembler<PConsensus, PMig> {
     }
 
     @Override
+    public long getReadsRescuedR1() {
+        return assembler1.getReadsRescuedR1();
+    }
+
+    @Override
     public long getReadsDroppedShortR1() {
         return assembler1.getReadsDroppedShortR1();
     }
@@ -69,6 +74,11 @@ public final class PAssembler extends Assembler<PConsensus, PMig> {
     @Override
     public long getReadsDroppedErrorR1() {
         return assembler1.getReadsDroppedErrorR1();
+    }
+
+    @Override
+    public long getReadsRescuedR2() {
+        return assembler1.getReadsRescuedR2();
     }
 
     @Override

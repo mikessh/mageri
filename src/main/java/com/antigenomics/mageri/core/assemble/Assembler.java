@@ -77,6 +77,10 @@ public abstract class Assembler<ConsensusType extends Consensus, MigType extends
         return migsAssembled.get();
     }
 
+    public abstract long getReadsRescuedR1();
+
+    public abstract long getReadsRescuedR2();
+
     public abstract long getReadsDroppedShortR1();
 
     public abstract long getReadsDroppedErrorR1();

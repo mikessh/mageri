@@ -43,22 +43,33 @@ public class AssemblerModeTest {
         assemblerDiagnosticsTest(randomMigGenerator,
                 AssemblerParameters.DEFAULT,
                 DoubleRangeAssertion.createDummy("MeanCQS", condition),
-                DoubleRangeAssertion.createDummy("MeanUMICoverage", condition));
+                DoubleRangeAssertion.createDummy("MeanUMICoverage", condition),
+                DoubleRangeAssertion.createLowerBound("MIGs assembled", condition, 0.99));
     }
 
     @Test
-    @Ignore("Indel-compatible assembler not implemented yet: No read recovery mode!")
     @Category(FastTests.class)
     public void assemblerDiagnosticsIndelT454Test() throws Exception {
         String condition;
 
         RandomMigGenerator randomMigGenerator = new RandomMigGenerator();
 
+        randomMigGenerator.setMigSizeMin(10);
+        randomMigGenerator.setMigSizeMin(30);
+
+        condition = "Reads with indels, default assembler";
+        assemblerDiagnosticsTest(randomMigGenerator,
+                AssemblerParameters.DEFAULT,
+                DoubleRangeAssertion.createDummy("MeanCQS", condition),
+                DoubleRangeAssertion.createDummy("MeanUMICoverage", condition),
+                DoubleRangeAssertion.createDummy("MIGs assembled", condition));
+
         condition = "Reads with indels, TORRENT454 assembler";
         assemblerDiagnosticsTest(randomMigGenerator,
                 AssemblerParameters.TORRENT454,
-                DoubleRangeAssertion.createDummy("MeanCQS", condition),
-                DoubleRangeAssertion.createDummy("MeanUMICoverage", condition));
+                DoubleRangeAssertion.createLowerBound("MeanCQS", condition, 30),
+                DoubleRangeAssertion.createLowerBound("MeanUMICoverage", condition, 0.80),
+                DoubleRangeAssertion.createLowerBound("MIGs assembled", condition, 0.99));
     }
 
     @Test
@@ -73,13 +84,15 @@ public class AssemblerModeTest {
         assemblerDiagnosticsTest(randomMigGenerator,
                 AssemblerParameters.DEFAULT,
                 DoubleRangeAssertion.createLowerBound("MeanCQS", condition, 35),
-                DoubleRangeAssertion.createLowerBound("MeanUMICoverage", condition, 0.99));
+                DoubleRangeAssertion.createLowerBound("MeanUMICoverage", condition, 0.99),
+                DoubleRangeAssertion.createLowerBound("MIGs assembled", condition, 0.99));
     }
 
     private void assemblerDiagnosticsTest(RandomMigGenerator migGenerator,
                                           AssemblerParameters parameters,
                                           DoubleRangeAssertion meanCqsRange,
-                                          DoubleRangeAssertion meanUmiCoverageRange) throws Exception {
+                                          DoubleRangeAssertion meanUmiCoverageRange,
+                                          DoubleRangeAssertion migsAssembledrange) throws Exception {
         int nRepetitions = 1000;
         RandomReferenceGenerator referenceGenerator = new RandomReferenceGenerator();
         SAssembler assembler = new SAssembler(PreprocessorParameters.IGNORE_QUAL, // don't care abt minors here
@@ -115,5 +128,6 @@ public class AssemblerModeTest {
 
         meanCqsRange.assertInRange(meanMinCqs / (double) migsAssembled);
         meanUmiCoverageRange.assertInRange(meanCoverage / (double) migsAssembled);
+        migsAssembledrange.assertInRange(migsAssembled / (double) nRepetitions);
     }
 }
