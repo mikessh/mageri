@@ -126,6 +126,81 @@ public class AssemblerMinorTest {
 
     @Test
     @Category(FastTests.class)
+    public void exactTestIndel() {
+        System.out.println("Exact consensus assembly test");
+
+        // Prepare reads with minors (bad and good quality), majors and N's
+        String
+                //                                                    M(C)                        M(bad qual)
+                //            N        N                              |                   N       |      N        NN
+                //                            m(A,T)       m(bad qual)m(G)                        m(bad qual)   m(C)
+                //      0000000000111111111122222222223333333333444444444455555555556666666666777777777788888888889999999999
+                //      0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789
+                seq1 = "AGCTGTCATCCACAGTTGACAGCCAGCTCTGCATTAAACTACGGCGGAGAAGCTGGTCGCGAACAGAGAGATGCCGAGTCGCAAGCCNCGCAGGCT",
+                seq2 = "AGCTGTNATCCACAGTTGACAGACAGCTCTGCATTAAATACTCTACCGCGGAGAAGCTGGTCGCGANCAGAGAGATGCCGAGTCGCAACCCTCGCAGGCT",
+                seq3 = "AGCTGTCATCCACAGTTGACAGTCAGCTCTAAATACTCTACCGCGGAGAAGCTGGTCGCGAACAGAGAGATGCCGANTCGCAAGCCTCGCAGGCT",
+                seq4 = "AGCTGTCATCCACAGNTGACAGCCAGCTCTGCATTTAATACTCTACCGCGGAGAAGCTGGTCGCGAACAGAGAGATGCCGAGTCGCAAGCCTCGCAGGCT",
+                seq5 = "AGCTGTCATCCACAGTTGACAGCCAGCTCTGCATTAAATACTCTACCGCGGAGAAGCTGGTCGCGAACAGAGAGTTGCCGAGTCGCAAGCNTCGCAGGCT",
+                qua1 = "IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII5IIIIIIIIIIIIIIII#IIIIIIII",
+                qua2 = "IIIIII#IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII#IIIIIII5IIIIIIIIIIIIIIIIIIIIIIIII",
+                qua3 = "IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII5IIIIII#IIIIIIIIIIIIIIIIII",
+                qua4 = "IIIIIIIIIIIIIII#IIIIIIIIIIIIIIIIIII5IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII5IIIIIIIIIIIIIIIIIIIIIIIII",
+                qua5 = "IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII5IIIIIIIIIIIIIII#IIIIIIIII",
+                cons = "AGCTGTCATCCACAGTTGACAGCCAGCTCTGCATTAAATACTCTACCGCGGAGAAGCTGGTCGCGAACAGAGAGATGCCGAGTCGCAAGCCTCGCAGGCT";
+
+        // Correct minors
+        Set<Integer> minors = new HashSet<>();
+
+        minors.add(Mutations.createSubstitution(22, NucleotideAlphabet.INSTANCE.codeFromSymbol(cons.charAt(22)),
+                NucleotideAlphabet.INSTANCE.codeFromSymbol('A')));
+        minors.add(Mutations.createSubstitution(22, NucleotideAlphabet.INSTANCE.codeFromSymbol(cons.charAt(22)),
+                NucleotideAlphabet.INSTANCE.codeFromSymbol('T')));
+        minors.add(Mutations.createSubstitution(46, NucleotideAlphabet.INSTANCE.codeFromSymbol(cons.charAt(46)),
+                NucleotideAlphabet.INSTANCE.codeFromSymbol('G')));
+        minors.add(Mutations.createSubstitution(88, NucleotideAlphabet.INSTANCE.codeFromSymbol(cons.charAt(88)),
+                NucleotideAlphabet.INSTANCE.codeFromSymbol('C')));
+
+
+        // Convert to reads (set quality mask)
+
+        List<Read> reads = new ArrayList<>();
+
+        reads.add(new Read(new NucleotideSQPair(seq1, qua1)));
+        reads.add(new Read(new NucleotideSQPair(seq2, qua2)));
+        reads.add(new Read(new NucleotideSQPair(seq3, qua3)));
+        reads.add(new Read(new NucleotideSQPair(seq4, qua4)));
+        reads.add(new Read(new NucleotideSQPair(seq5, qua5)));
+
+        // Assemble MIG
+
+        SMig mig = new SMig(null, new NucleotideSequence("ATGC"), reads);
+
+        SAssembler assembler = new SAssembler(PreprocessorParameters.DEFAULT, AssemblerParameters.TORRENT454.withGreedyExtend(true));
+        SConsensus consensus = assembler.assemble(mig);
+
+        Assert.assertEquals("Incorrect consensus sequence", cons, consensus.getConsensusSQPair().getSequence().toString());
+
+        System.out.println("Expected minors:");
+        for (int minor : minors) {
+            System.out.println(Mutations.toString(NucleotideAlphabet.INSTANCE, minor));
+        }
+        System.out.println("Observed minors:");
+        for (int minor : consensus.getMinors()) {
+            System.out.println(Mutations.toString(NucleotideAlphabet.INSTANCE, minor));
+        }
+
+        for (int minor : minors) {
+            Assert.assertTrue("Minor " + Mutations.toString(NucleotideAlphabet.INSTANCE, minor) + " missed",
+                    consensus.getMinors().contains(minor));
+        }
+        for (int minor : consensus.getMinors()) {
+            Assert.assertTrue("Minor " + Mutations.toString(NucleotideAlphabet.INSTANCE, minor) + " is erroneous",
+                    minors.contains(minor));
+        }
+    }
+
+    @Test
+    @Category(FastTests.class)
     public void minorTest() {
         minorTest(true,
                 PercentRangeAssertion.createLowerBound("Specificity", "No indel minor recovery", 95),
@@ -140,13 +215,16 @@ public class AssemblerMinorTest {
                           PercentRangeAssertion specificity, PercentRangeAssertion sensitivity) {
         int nRepetitions = 1000;
         RandomMigGenerator migGenerator = new RandomMigGenerator();
+        SAssembler assembler;
         if (noIndel) {
             migGenerator.setMutationGenerator(MutationGenerator.NO_INDEL);
+            migGenerator.setMaxRandomFlankSize(10);
+            assembler = new SAssembler(PreprocessorParameters.DEFAULT, AssemblerParameters.DEFAULT);
+        } else {
+            migGenerator.setMaxRandomFlankSize(0);
+            assembler = new SAssembler(PreprocessorParameters.DEFAULT, AssemblerParameters.TORRENT454);
         }
-        migGenerator.setMaxRandomFlankSize(noIndel ? 10 : 0);
         RandomReferenceGenerator referenceGenerator = new RandomReferenceGenerator();
-        SAssembler assembler = new SAssembler(PreprocessorParameters.DEFAULT,
-                noIndel ? AssemblerParameters.DEFAULT : AssemblerParameters.TORRENT454);
         SConsensus consensus;
 
         int minorsTN = 0, minorsTP = 0, minorsFP = 0, minorsFN = 0;

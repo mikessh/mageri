@@ -391,13 +391,12 @@ public class SAssembler extends Assembler<SConsensus, SMig> {
                                         Mutations.convertPosition(mutations, pos);
 
                         pwm[nt][posInConsensus]++;
+                        // Adjust back
+                        pwm[rawConsensus.codeAt(i)][posInConsensus]--;
 
                         if (droppedRead.goodQuality(posInRead)) {
                             exactPwm[nt][posInConsensus]++;
                         }
-
-                        // Adjust back
-                        pwm[rawConsensus.codeAt(i)][posInConsensus]--;
                     }
                 }
                 rescuedReads++;

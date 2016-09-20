@@ -91,12 +91,11 @@ public class AssemblerBasicTest {
         String mode = "Paired, With indels";
 
         randomMutationsTest(migGenerator,
-                PercentRangeAssertion.createLowerBound("Reads assembled", mode, 80),
-                PercentRangeAssertion.createUpperBound("Reads dropped", mode, 20),
+                PercentRangeAssertion.createLowerBound("Reads assembled", mode, 95),
+                PercentRangeAssertion.createUpperBound("Reads dropped", mode, 5),
                 PercentRangeAssertion.createLowerBound("MIGs assembled", mode, 95),
                 PercentRangeAssertion.createUpperBound("MIGs dropped", mode, 1),
-                // todo: note indel-proof assembler not implemented yet
-                PercentRangeAssertion.createUpperBound("Incorrect consensus", mode, 50),
+                PercentRangeAssertion.createUpperBound("Incorrect consensus", mode, 30),
                 true, true);
 
         migGenerator.setMutationGenerator(MutationGenerator.NO_INDEL);
@@ -218,13 +217,17 @@ public class AssemblerBasicTest {
     @Test
     @Category(FastTests.class)
     public void fixedMutationCasesTest() {
-        Assembler assembler = new SAssembler();
+        fixedMutationCasesTest("DEFAULT", new SAssembler(PreprocessorParameters.DEFAULT, AssemblerParameters.DEFAULT));
+        fixedMutationCasesTest("TORRENT454", new SAssembler(PreprocessorParameters.DEFAULT, AssemblerParameters.TORRENT454));
+    }
+
+    public void fixedMutationCasesTest(String presetName, Assembler assembler) {
         List<Read> reads;
         Mig mig;
         Consensus consensus;
 
         // No mutations
-        System.out.println("Testing Assembler. Case: no mutations");
+        System.out.println("Testing " + presetName + " Assembler. Case: no mutations");
         reads = new ArrayList<>();
         for (int i = 0; i < 30; i++) {
             reads.add(new Read(read1, qualityProvider));
@@ -235,7 +238,7 @@ public class AssemblerBasicTest {
                 ((SConsensus) consensus).getConsensusSQPair().getSequence(), read1.getSequence());
 
         // Bad qual mutation, not recorded at all, dont affect consensus
-        System.out.println("Testing Assembler. Case: frequent mutation with bad sequencing quality");
+        System.out.println("Testing " + presetName + " Assembler. Case: frequent mutation with bad sequencing quality");
         reads = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
             reads.add(new Read(read1, qualityProvider));
@@ -249,7 +252,7 @@ public class AssemblerBasicTest {
                 ((SConsensus) consensus).getConsensusSQPair().getSequence(), read1.getSequence());
 
         // Good qual mutation, rare - recorded in reads only
-        System.out.println("Testing Assembler. Case: rare mutation with good sequencing quality");
+        System.out.println("Testing " + presetName + " Assembler. Case: rare mutation with good sequencing quality");
         reads = new ArrayList<>();
         for (int i = 0; i < 20; i++) {
             reads.add(new Read(read1, qualityProvider));
@@ -263,7 +266,7 @@ public class AssemblerBasicTest {
                 ((SConsensus) consensus).getConsensusSQPair().getSequence(), read1.getSequence());
 
         // Good qual mutation, frequent - recorded both in reads and in consensus
-        System.out.println("Testing Assembler. Case: dominating mutation with good sequencing quality");
+        System.out.println("Testing " + presetName + " Assembler. Case: dominating mutation with good sequencing quality");
         reads = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
             reads.add(new Read(read1, qualityProvider));

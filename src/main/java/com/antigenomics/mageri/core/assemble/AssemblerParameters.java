@@ -37,7 +37,7 @@ public final class AssemblerParameters implements ParameterSet {
             4, 8, 4, 3,
             true,
             0.7, 0.3, 0.3, 0.5,
-            true, false, true);
+            true, true, false);
 
     public AssemblerParameters(int offsetRange, int anchorRegion, int maxMMs, int maxConsequentMMs,
                                boolean qualityWeightedMode, double maxDroppedReadsRatio,
