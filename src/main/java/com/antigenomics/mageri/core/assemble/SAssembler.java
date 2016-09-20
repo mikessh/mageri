@@ -156,7 +156,7 @@ public class SAssembler extends Assembler<SConsensus, SMig> {
 
         // Step 3.2a: try to do CQS rescue
         if (parameters.doCqsRescue()) {
-            NucleotideSequence rawConsensus = constructConsensus(pwm, false).consensusSQPair.getSequence();
+            NucleotideSequence rawConsensus = constructConsensus(pwm, n, false).consensusSQPair.getSequence();
 
             // Drop reads that have more than two consequent mismatch / > 50% mismatches
             int filteredReads = filterReadsForCqsRescue(assembledReads, droppedReads, rawConsensus, pwmBoundaries, pwm, exactPwm);
@@ -172,7 +172,7 @@ public class SAssembler extends Assembler<SConsensus, SMig> {
         }
 
         // Step 3.2: Calculate consensus sequence, CQS quality score and minors
-        ConsensusAndTrimmingInfo consensusAndTrimmingInfo = constructConsensus(pwm,
+        ConsensusAndTrimmingInfo consensusAndTrimmingInfo = constructConsensus(pwm, n,
                 parameters.performQualityTrimming());
 
         if (consensusAndTrimmingInfo.trimmedBasesRatio > parameters.getMaxTrimmedConsensusBasesRatio()) {
@@ -256,7 +256,7 @@ public class SAssembler extends Assembler<SConsensus, SMig> {
         return new PwmBoundaries(X, Y);
     }
 
-    private ConsensusAndTrimmingInfo constructConsensus(double[][] pwm,
+    private ConsensusAndTrimmingInfo constructConsensus(double[][] pwm, int n,
                                                         boolean performQualityTrimming) {
         int pwmLen = pwm[0].length;
         NucleotideSequenceBuilder consensusSequence = new NucleotideSequenceBuilder(pwmLen);
@@ -264,7 +264,6 @@ public class SAssembler extends Assembler<SConsensus, SMig> {
         int goodSeqStart = 0;
 
         for (int k = 0; k < pwmLen; k++) {
-            int n = 0;
             byte mostFreqLetter = 0;
             double maxLetterFreq = 0;
             for (byte l = 0; l < 4; l++) {
@@ -272,7 +271,6 @@ public class SAssembler extends Assembler<SConsensus, SMig> {
                 if (maxLetterFreq < freq) {
                     maxLetterFreq = freq;
                     mostFreqLetter = l;
-                    n += freq;
                 }
             }
             consensusSequence.setCode(k, mostFreqLetter);
@@ -285,7 +283,7 @@ public class SAssembler extends Assembler<SConsensus, SMig> {
             consensusQuality[k] = cqs;
 
             // Quality trimming - 5' end
-            if (cqs <= QualityDefaults.PH33_BAD_QUAL && parameters.performQualityTrimming()) {
+            if (cqs <= QualityDefaults.PH33_BAD_QUAL && performQualityTrimming) {
                 if (goodSeqStart == k) {
                     goodSeqStart++;
                 }

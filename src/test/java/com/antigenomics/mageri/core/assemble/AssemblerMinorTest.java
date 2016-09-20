@@ -17,6 +17,7 @@
 package com.antigenomics.mageri.core.assemble;
 
 import com.antigenomics.mageri.PercentRangeAssertion;
+import com.antigenomics.mageri.core.input.PreprocessorParameters;
 import com.antigenomics.mageri.core.input.SMig;
 import com.antigenomics.mageri.core.input.index.Read;
 import com.antigenomics.mageri.generators.MigWithMutations;
@@ -130,10 +131,9 @@ public class AssemblerMinorTest {
                 PercentRangeAssertion.createLowerBound("Specificity", "No indel minor recovery", 95),
                 PercentRangeAssertion.createLowerBound("Sensitivity", "No indel minor recovery", 95));
 
-        System.out.println("[Indel-compatible assembler not implemented yet: no read dropping in default assembler]");
         minorTest(false,
-                PercentRangeAssertion.createDummy("Specificity", "Minor recovery"),
-                PercentRangeAssertion.createDummy("Sensitivity", "Minor recovery"));
+                PercentRangeAssertion.createLowerBound("Specificity", "Minor recovery", 40),
+                PercentRangeAssertion.createLowerBound("Sensitivity", "Minor recovery", 80));
     }
 
     public void minorTest(boolean noIndel,
@@ -143,9 +143,10 @@ public class AssemblerMinorTest {
         if (noIndel) {
             migGenerator.setMutationGenerator(MutationGenerator.NO_INDEL);
         }
-        migGenerator.setMaxRandomFlankSize(10);
+        migGenerator.setMaxRandomFlankSize(noIndel ? 10 : 0);
         RandomReferenceGenerator referenceGenerator = new RandomReferenceGenerator();
-        SAssembler assembler = new SAssembler();
+        SAssembler assembler = new SAssembler(PreprocessorParameters.DEFAULT,
+                noIndel ? AssemblerParameters.DEFAULT : AssemblerParameters.TORRENT454);
         SConsensus consensus;
 
         int minorsTN = 0, minorsTP = 0, minorsFP = 0, minorsFN = 0;

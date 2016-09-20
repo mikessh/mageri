@@ -16,6 +16,7 @@
 package com.antigenomics.mageri.core.assemble;
 
 import com.antigenomics.mageri.PercentRangeAssertion;
+import com.antigenomics.mageri.core.input.PreprocessorParameters;
 import com.antigenomics.mageri.core.input.index.QualityProvider;
 import com.antigenomics.mageri.core.input.index.Read;
 import com.antigenomics.mageri.generators.MigWithMutations;
@@ -54,13 +55,12 @@ public class AssemblerBasicTest {
         String mode = "Single, With indels";
 
         randomMutationsTest(migGenerator,
-                PercentRangeAssertion.createLowerBound("Reads assembled", mode, 90),
+                PercentRangeAssertion.createLowerBound("Reads assembled", mode, 95),
                 PercentRangeAssertion.createUpperBound("Reads dropped", mode, 5),
                 PercentRangeAssertion.createLowerBound("MIGs assembled", mode, 95),
                 PercentRangeAssertion.createUpperBound("MIGs dropped", mode, 1),
-                // todo: note indel-proof assembler not implemented yet
-                PercentRangeAssertion.createUpperBound("Incorrect consensus", mode, 40),
-                false);
+                PercentRangeAssertion.createUpperBound("Incorrect consensus", mode, 20),
+                false, true);
     }
 
     @Test
@@ -78,7 +78,7 @@ public class AssemblerBasicTest {
                 PercentRangeAssertion.createLowerBound("MIGs assembled", mode, 95),
                 PercentRangeAssertion.createUpperBound("MIGs dropped", mode, 1),
                 PercentRangeAssertion.createUpperBound("Incorrect consensus", mode, 1),
-                false);
+                false, false);
     }
 
     @Test
@@ -97,7 +97,7 @@ public class AssemblerBasicTest {
                 PercentRangeAssertion.createUpperBound("MIGs dropped", mode, 1),
                 // todo: note indel-proof assembler not implemented yet
                 PercentRangeAssertion.createUpperBound("Incorrect consensus", mode, 50),
-                true);
+                true, true);
 
         migGenerator.setMutationGenerator(MutationGenerator.NO_INDEL);
         mode = "Paired, No indels";
@@ -108,7 +108,7 @@ public class AssemblerBasicTest {
                 PercentRangeAssertion.createLowerBound("MIGs assembled", mode, 95),
                 PercentRangeAssertion.createUpperBound("MIGs dropped", mode, 1),
                 PercentRangeAssertion.createUpperBound("Incorrect consensus", mode, 10),
-                true);
+                true, false);
     }
 
     @Test
@@ -126,7 +126,7 @@ public class AssemblerBasicTest {
                 PercentRangeAssertion.createLowerBound("MIGs assembled", mode, 95),
                 PercentRangeAssertion.createUpperBound("MIGs dropped", mode, 1),
                 PercentRangeAssertion.createUpperBound("Incorrect consensus", mode, 10),
-                true);
+                true, false);
     }
 
     public void randomMutationsTest(RandomMigGenerator migGenerator,
@@ -135,7 +135,7 @@ public class AssemblerBasicTest {
                                     PercentRangeAssertion migAssembly,
                                     PercentRangeAssertion migDropping,
                                     PercentRangeAssertion migIncorrect,
-                                    boolean paired) {
+                                    boolean paired, boolean withIndels) {
         int nRepetitions = 1000;
         RandomReferenceGenerator referenceGenerator = new RandomReferenceGenerator();
 
@@ -144,7 +144,11 @@ public class AssemblerBasicTest {
             referenceGenerator.setReferenceSizeMax(referenceGenerator.getReferenceSizeMax() * 2);
         }
 
-        Assembler assembler = paired ? new PAssembler() : new SAssembler();
+        PreprocessorParameters preprocessorParameters = PreprocessorParameters.DEFAULT;
+        AssemblerParameters assemblerParameters = withIndels ? AssemblerParameters.TORRENT454 : AssemblerParameters.DEFAULT;
+
+        Assembler assembler = paired ? new PAssembler(preprocessorParameters, assemblerParameters) :
+                new SAssembler(preprocessorParameters, assemblerParameters);
         Consensus consensus;
 
         int migsTotal = 0, migsAssembled = 0, migsDropped = 0, migsIncorrectlyAssembled = 0;
