@@ -98,21 +98,24 @@ public class AssemblerModeTest {
 
         RandomMigGenerator randomMigGenerator = new RandomMigGenerator();
 
-        randomMigGenerator.setMigSizeMin(10);
-        randomMigGenerator.setMigSizeMin(30);
+        randomMigGenerator.setMutationGenerator(MutationGenerator.NO_INDEL);
 
-        condition = "Reads with indels, default assembler";
+        condition = "Reads without indels, TORRENT454 assembler";
         assemblerDiagnosticsTest(randomMigGenerator,
                 AssemblerParameters.DEFAULT,
-                DoubleRangeAssertion.createLowerBound("MeanCQS", condition, 10),
-                DoubleRangeAssertion.createLowerBound("Mean coverage of expected consensus", condition, 0.7),
+                DoubleRangeAssertion.createLowerBound("MeanCQS", condition, 35),
+                DoubleRangeAssertion.createLowerBound("Mean coverage of expected consensus", condition, 0.99),
                 DoubleRangeAssertion.createLowerBound("MIGs assembled", condition, 0.99));
+
+        randomMigGenerator.setMutationGenerator(MutationGenerator.DEFAULT);
+        randomMigGenerator.setMigSizeMin(10);
+        randomMigGenerator.setMigSizeMin(30);
 
         condition = "Reads with indels, TORRENT454 assembler";
         assemblerDiagnosticsTest(randomMigGenerator,
                 AssemblerParameters.TORRENT454,
                 DoubleRangeAssertion.createLowerBound("Mean CQS", condition, 30),
-                DoubleRangeAssertion.createLowerBound("Mean coverage of expected consensus", condition, 0.85),
+                DoubleRangeAssertion.createLowerBound("Mean coverage of expected consensus", condition, 0.80),
                 DoubleRangeAssertion.createLowerBound("MIGs assembled", condition, 0.99));
     }
 
