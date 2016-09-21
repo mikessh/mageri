@@ -42,7 +42,7 @@ public final class VcfUtil {
         GenomicInfo genomicInfo = variant.getReference().getGenomicInfo();
         Mutation mutation = variant.getMutation();
         return new VcfRecord(genomicInfo.getChrom(),
-                genomicInfo.getStart() + mutation.getStart() + 1,
+                genomicInfo.getStart() + mutation.getStart() + 1, // BED is 0-based, while VCF is 1-based
                 BLANK_FIELD,
                 mutation.getRef().toString(), mutation.getAlt().toString(),
                 (int) Math.min(variant.getQual(), 9999), variant.getFilterSummary().toString(),

@@ -53,13 +53,12 @@ public class ReferenceLibraryTest {
     @Test
     @Category(FastTests.class)
     public void genomicTest() throws IOException {
-
         ReferenceLibrary referenceLibrary = ReferenceLibrary.fromInput(
                 ResourceIOProvider.INSTANCE.getWrappedStream("genomic/panel_refs.fa"),
                 new BedGenomicInfoProvider(
                         ResourceIOProvider.INSTANCE.getWrappedStream("genomic/panel_refs.bed"),
                         ResourceIOProvider.INSTANCE.getWrappedStream("pipeline/contigs.txt")
-                ));
+                ), ReferenceLibraryParameters.DUMMY);
 
         System.out.println(referenceLibrary);
 
@@ -69,7 +68,26 @@ public class ReferenceLibraryTest {
         Assert.assertNotNull(braf);
         Assert.assertEquals("chr7", braf.getGenomicInfo().getChrom());
         Assert.assertEquals(140453124, braf.getGenomicInfo().getStart());
-        Assert.assertEquals(140453231, braf.getGenomicInfo().getEnd());
+        Assert.assertEquals(140453233, braf.getGenomicInfo().getEnd());
+
+        TestUtil.serializationCheck(referenceLibrary);
+    }
+
+    @Test
+    @Category(FastTests.class)
+    public void genomicTestSplit() throws IOException {
+        ReferenceLibraryParameters parameters = ReferenceLibraryParameters.DEFAULT;
+
+        ReferenceLibrary referenceLibrary = ReferenceLibrary.fromInput(
+                ResourceIOProvider.INSTANCE.getWrappedStream("genomic/panel_refs.fa"),
+                new BedGenomicInfoProvider(
+                        ResourceIOProvider.INSTANCE.getWrappedStream("genomic/panel_refs.bed"),
+                        ResourceIOProvider.INSTANCE.getWrappedStream("pipeline/contigs.txt")
+                ), parameters);
+
+        System.out.println(referenceLibrary);
+
+        Assert.assertTrue(!referenceLibrary.getReferences().isEmpty());
 
         TestUtil.serializationCheck(referenceLibrary);
     }
@@ -85,7 +103,8 @@ public class ReferenceLibraryTest {
 
         ReferenceLibrary referenceLibrary = ReferenceLibrary.fromInput(
                 ResourceIOProvider.INSTANCE.getWrappedStream("genomic/cgc_exons_flank50.fa"),
-                giProvider);
+                giProvider,
+                ReferenceLibraryParameters.DUMMY);
 
         Assert.assertTrue(!referenceLibrary.getReferences().isEmpty());
         Assert.assertEquals(referenceLibrary.size(), giProvider.size());
@@ -98,12 +117,38 @@ public class ReferenceLibraryTest {
         Assert.assertEquals(108740731, ref.getGenomicInfo().getEnd());
         Assert.assertTrue(ref.getGenomicInfo().positiveStrand());
 
-        ref = referenceLibrary.getByName("CEBPA_ENSE00001973852");
+        TestUtil.serializationCheck(referenceLibrary);
+    }
+
+    @Test
+    @Category(FastTests.class)
+    public void cgcGenomicTestSplit() throws IOException {
+        ReferenceLibraryParameters parameters = ReferenceLibraryParameters.DEFAULT;
+
+        GenomicInfoProvider giProvider = new BedGenomicInfoProvider(
+                ResourceIOProvider.INSTANCE.getWrappedStream("genomic/cgc_exons_flank50.bed"),
+                ResourceIOProvider.INSTANCE.getWrappedStream("genomic/contigs_hg38.txt")
+        );
+
+        ReferenceLibrary referenceLibrary = ReferenceLibrary.fromInput(
+                ResourceIOProvider.INSTANCE.getWrappedStream("genomic/cgc_exons_flank50.fa"),
+                giProvider, parameters);
+
+        Assert.assertTrue(!referenceLibrary.getReferences().isEmpty());
+        Assert.assertNotEquals(referenceLibrary.size(), giProvider.size());
+
+        Reference ref = referenceLibrary.getByName("CEBPA_ENSE00001973852_0");
         Assert.assertNotNull(ref);
         Assert.assertEquals("chr19", ref.getGenomicInfo().getChrom());
         Assert.assertEquals(33299883, ref.getGenomicInfo().getStart());
-        Assert.assertEquals(33302614, ref.getGenomicInfo().getEnd());
+        Assert.assertEquals(33299883 + parameters.getMaxReferenceLength(), ref.getGenomicInfo().getEnd());
         Assert.assertTrue(!ref.getGenomicInfo().positiveStrand());
+
+        ref = referenceLibrary.getByName("CEBPA_ENSE00001973852_" +
+                2 * (parameters.getMaxReferenceLength() - parameters.getReadLength()));
+        Assert.assertNotNull(ref);
+        Assert.assertEquals("chr19", ref.getGenomicInfo().getChrom());
+        Assert.assertEquals(33302614, ref.getGenomicInfo().getEnd());
 
         TestUtil.serializationCheck(referenceLibrary);
     }

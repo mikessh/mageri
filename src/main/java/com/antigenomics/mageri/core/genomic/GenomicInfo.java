@@ -16,6 +16,8 @@
 
 package com.antigenomics.mageri.core.genomic;
 
+import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
+
 import java.io.Serializable;
 
 public class GenomicInfo implements Serializable, Comparable<GenomicInfo> {
@@ -44,6 +46,16 @@ public class GenomicInfo implements Serializable, Comparable<GenomicInfo> {
 
     public int getEnd() {
         return end;
+    }
+
+    public GenomicInfo shift(int offset, NucleotideSequence sequence) {
+        int newStart = start + offset,
+                newEnd = start + offset + sequence.size(); // BED is 0-based
+
+        if (newStart < start || newEnd > end) {
+            throw new IllegalArgumentException("Shift out of bounds of current region.");
+        }
+        return new GenomicInfo(contig, newStart, newEnd, strand);
     }
 
     protected boolean positiveStrand() {

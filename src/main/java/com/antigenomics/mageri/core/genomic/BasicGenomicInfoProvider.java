@@ -21,22 +21,31 @@ import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import java.util.*;
 
 public class BasicGenomicInfoProvider implements GenomicInfoProvider {
-    private final Map<Contig, Contig> contigs = new HashMap<>();
+    private final Map<String, Contig> contigs = new HashMap<>();
 
     @Override
-    public GenomicInfo get(String name, NucleotideSequence sequence) {
-        Contig contig = new Contig(name,
-                "user", sequence.size(),
-                false);
-
-        Contig existing = contigs.get(contig);
-        if (existing == null) {
-            contigs.put(contig, contig);
-            existing = contig;
+    public GenomicInfo get(String name, NucleotideSequence sequence, int offset) {
+        if (offset < 0) {
+            throw new IllegalArgumentException("Offset should be greater or equal to zero.");
         }
 
-        return new GenomicInfo(existing, 0, // make 0-based to be consistent with BED format
-                sequence.size(), true); // sequence end is exclusive
+        Contig contig = contigs.get(name);
+        if (contig == null) {
+            if (offset != 0) {
+                throw new IllegalArgumentException("Creating new contig with non-zero offset.");
+            }
+            contig = new Contig(name,
+                    "user", sequence.size(),
+                    false);
+        } else {
+            contig = new Contig(name,
+                    "user", offset + sequence.size(),
+                    false);
+        }
+        contigs.put(name, contig);
+
+        return new GenomicInfo(contig, offset, // make 0-based to be consistent with BED format
+                offset + sequence.size(), true); // sequence end is exclusive
     }
 
     @Override
