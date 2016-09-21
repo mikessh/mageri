@@ -375,6 +375,10 @@ public class SAssembler extends Assembler<SConsensus, SMig> {
                 // Add result of a perfect read alignment
                 for (int i = alignment.getSequence1Range().getFrom(); i < alignment.getSequence1Range().getTo(); i++) {
                     pwm[rawConsensus.codeAt(i)][i]++;
+
+                    // note that consensus is assembled from the PWM
+                    // while minors are extracted from exactPWM according to consensus
+                    // so we don't need to put consensus matches into exactPWM
                 }
 
                 // Adjust PWM scores according to alignment

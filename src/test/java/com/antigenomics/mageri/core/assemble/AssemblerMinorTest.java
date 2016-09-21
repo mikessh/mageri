@@ -207,8 +207,8 @@ public class AssemblerMinorTest {
                 PercentRangeAssertion.createLowerBound("Sensitivity", "No indel minor recovery", 95));
 
         minorTest(false,
-                PercentRangeAssertion.createLowerBound("Specificity", "Minor recovery", 40),
-                PercentRangeAssertion.createLowerBound("Sensitivity", "Minor recovery", 80));
+                PercentRangeAssertion.createLowerBound("Specificity", "Minor recovery", 95),
+                PercentRangeAssertion.createLowerBound("Sensitivity", "Minor recovery", 75));
     }
 
     public void minorTest(boolean noIndel,
@@ -237,17 +237,39 @@ public class AssemblerMinorTest {
             if (consensus != null) {
                 Set<Integer> minors = new HashSet<>();
 
+                String consensusStr = consensus.getConsensusSQPair().getSequence().toString(),
+                        coreStr = core.toString();
+
+                int offset = 0;
+                if (!noIndel) {
+                    // we can have certain trimming due to indels
+                    offset = coreStr.indexOf(consensusStr.substring(0, consensusStr.length() - 10));
+                    offset = offset < 0 ? 0 : offset;
+                }
+
                 for (int minor : randomMig.getMinorMutationCounts().keySet()) {
                     if (Mutations.isSubstitution(minor)) {
                         minors.add(minor);
                     }
                 }
 
+                Set<Integer> observedMinors = new HashSet<>();
+
+                for (int minor : consensus.getMinors()) {
+                    if (Mutations.isSubstitution(minor)) {
+                        int pos = Mutations.getPosition(minor) + offset;
+                        if (pos >= 0)
+                            observedMinors.add(Mutations.createSubstitution(pos,
+                                    Mutations.getFrom(minor), Mutations.getTo(minor)));
+                    }
+                }
+
                 int minorsExpectedCount = minors.size(),
-                        minorsObservedCount = consensus.getMinors().size(),
+                        minorsObservedCount = observedMinors.size(),
                         minorsPossibleCount = consensus.getConsensusSQPair().size() * 3;
 
-                minors.retainAll(consensus.getMinors());
+
+                minors.retainAll(observedMinors);
                 int overlap = minors.size();
 
                 minorsTP += overlap;
