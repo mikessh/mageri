@@ -103,9 +103,9 @@ public class AssemblerModeTest {
 
         condition = "Reads with indels, default assembler";
         assemblerDiagnosticsTest(randomMigGenerator,
-                AssemblerParameters.TORRENT454,
-                DoubleRangeAssertion.createLowerBound("MeanCQS", condition, 30),
-                DoubleRangeAssertion.createLowerBound("Mean coverage of expected consensus", condition, 0.8),
+                AssemblerParameters.DEFAULT,
+                DoubleRangeAssertion.createLowerBound("MeanCQS", condition, 10),
+                DoubleRangeAssertion.createLowerBound("Mean coverage of expected consensus", condition, 0.7),
                 DoubleRangeAssertion.createLowerBound("MIGs assembled", condition, 0.99));
 
         condition = "Reads with indels, TORRENT454 assembler";
