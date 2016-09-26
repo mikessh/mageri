@@ -50,15 +50,15 @@ public class PipelineTest {
     @Test
     @Category(FastTests.class)
     public void fullTest() throws Exception {
-        fullTest(true);
         fullTest(false);
+        fullTest(true);
     }
 
     public void fullTest(boolean rawReads) throws Exception {
         Input input = INPUT_PARSER.parseJson("pipeline/tabular.pri.json");
 
         ProjectAnalysis projectAnalysis = new ProjectAnalysis(input);
-        if (rawReads) {
+        if (!rawReads) {
             projectAnalysis.run();
         } else {
             projectAnalysis.runNoUmi();
