@@ -23,12 +23,7 @@ import com.antigenomics.mageri.core.input.index.ReadContainer;
 import com.antigenomics.mageri.misc.ProcessorResultWrapper;
 import com.antigenomics.mageri.pipeline.analysis.Sample;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
-import com.milaboratory.util.Bit2Array;
-import com.sun.xml.internal.messaging.saaj.util.ByteInputStream;
-import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream;
 
-import java.io.*;
-import java.nio.ByteBuffer;
 import java.util.HashSet;
 
 public class SomewhatRawReadProperlyWrapped extends ProcessorResultWrapper<Consensus> {
