@@ -58,7 +58,7 @@ public final class SamSegmentRecord implements Comparable<SamSegmentRecord>, Ser
                             String nextReferenceName, int nextPosition,
                             int templateLength,
                             String sequence, String quality) {
-        this.queryName = queryName;
+        this.queryName = queryName.length() > 0 ? queryName : "*"; // for raw reads
         this.flag = flag;
         this.referenceName = referenceName;
         this.position = position;

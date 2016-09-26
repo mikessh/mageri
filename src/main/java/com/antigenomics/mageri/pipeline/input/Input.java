@@ -28,7 +28,7 @@ import java.util.Map;
 public class Input implements Serializable {
     protected final String projectName;
     protected final InputStreamWrapper references, bedFile, contigFile;
-    protected final Map<String, InputChunk> inputChunksByIndex = new HashMap<>();
+    protected final Map<String, InputChunk> inputChunksByIndex;
 
     public Input(String projectName,
                  InputStreamWrapper references, InputStreamWrapper bedFile, InputStreamWrapper contigFile,
@@ -37,6 +37,7 @@ public class Input implements Serializable {
         this.references = references;
         this.bedFile = bedFile;
         this.contigFile = contigFile;
+        this.inputChunksByIndex = new HashMap<>();
         for (InputChunk inputChunk : inputChunks) {
             inputChunksByIndex.put(inputChunk.getName(), inputChunk);
         }
@@ -49,9 +50,24 @@ public class Input implements Serializable {
         this.references = references;
         this.bedFile = bedFile;
         this.contigFile = contigFile;
+        this.inputChunksByIndex = new HashMap<>();
         for (InputChunk inputChunk : inputChunks) {
             inputChunksByIndex.put(inputChunk.getName(), inputChunk);
         }
+    }
+
+    private Input(String projectName,
+                  InputStreamWrapper references, InputStreamWrapper bedFile, InputStreamWrapper contigFile,
+                  Map<String, InputChunk> inputChunksByIndex) {
+        this.projectName = projectName;
+        this.references = references;
+        this.bedFile = bedFile;
+        this.contigFile = contigFile;
+        this.inputChunksByIndex = inputChunksByIndex;
+    }
+
+    public Input rename(String newName) {
+        return new Input(newName, references, bedFile, contigFile, inputChunksByIndex);
     }
 
     public String getProjectName() {
@@ -64,7 +80,6 @@ public class Input implements Serializable {
 
     public boolean hasBedInfo() {
         return bedFile != null && contigFile != null;
-
     }
 
     public InputStreamWrapper getBedFile() {

@@ -35,10 +35,8 @@ import com.antigenomics.mageri.pipeline.input.InputChunk;
 import com.antigenomics.mageri.preprocessing.CheckoutProcessor;
 import com.antigenomics.mageri.preprocessing.DemultiplexParameters;
 import com.milaboratory.core.sequence.quality.QualityFormat;
-import com.milaboratory.core.sequencing.io.SequencingDataReader;
 import com.milaboratory.core.sequencing.io.fastq.PFastqReader;
 import com.milaboratory.core.sequencing.io.fastq.SFastqReader;
-import com.milaboratory.core.sequencing.read.PSequencingRead;
 import com.milaboratory.core.sequencing.read.SequencingRead;
 import com.milaboratory.util.CompressionType;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
@@ -72,7 +70,7 @@ public class RawReadPreprocessor<MigType extends Mig> implements Preprocessor<Mi
                                final RuntimeParameters runtimeParameters) throws IOException, InterruptedException {
         this.sampleGroup = sampleGroup;
 
-        InputChunk inputChunk = input.getByName(sampleGroup.getName());
+        final InputChunk inputChunk = input.getByName(sampleGroup.getName());
 
         CheckoutRule checkoutRule = inputChunk.getCheckoutRule();
         checkoutRule.setDemultiplexParameters(demultiplexParameters);
@@ -82,7 +80,7 @@ public class RawReadPreprocessor<MigType extends Mig> implements Preprocessor<Mi
             buffersBySample.put(sample.getName(), new LinkedBlockingQueue<ReadContainer>(524288));
         }
 
-        final Processor<SequencingRead, IndexedReadContainer> demultiplexer = checkoutProcessor.isPairedEnd() ?
+        final Processor<SequencingRead, IndexedReadContainer> demultiplexer = sampleGroup.isPairedEnd() ?
                 new PRawReadProcessor(checkoutProcessor, preprocessorParameters) :
                 new SRawReadProcessor(checkoutProcessor, preprocessorParameters);
 
@@ -92,37 +90,77 @@ public class RawReadPreprocessor<MigType extends Mig> implements Preprocessor<Mi
                 return new VoidProcessor<SequencingRead>() {
                     @Override
                     public void process(SequencingRead sequencingRead) {
-                        IndexedReadContainer result = demultiplexer.process(sequencingRead);
-                        LinkedBlockingQueue<ReadContainer> buffer = buffersBySample.get(result.getSampleName());
                         try {
-                            buffer.put(result.getRead());
-                        } catch (InterruptedException ignored) {
+                            IndexedReadContainer result = demultiplexer.process(sequencingRead);
+                            if (result.isIndexed()) {
+                                LinkedBlockingQueue<ReadContainer> buffer = buffersBySample.get(result.getSampleName());
+                                buffer.put(result.getRead());
+                            }
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
                         }
                     }
                 };
             }
         };
 
-        final OutputPort<SequencingRead> op = new CountLimitingOutputPort(inputChunk.isPairedEnd() ?
-                new PFastqReader(inputChunk.getInputStream1(), inputChunk.getInputStream2(),
-                        QualityFormat.Phred33, CompressionType.None, null, false, false) :
-                new SFastqReader(inputChunk.getInputStream1(), QualityFormat.Phred33, CompressionType.None),
-                runtimeParameters.getReadLimit());
-
         this.readerThread = new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    CUtils.processAllInParallel(op, innerProcessorFactory,
+                    OutputPort<SequencingRead> input = inputChunk.isPairedEnd() ?
+                            new PReadOutputPort(inputChunk) :
+                            new SReadOutputPort(inputChunk);
+
+                    if (runtimeParameters.getReadLimit() > -1) {
+                        input = new CountLimitingOutputPort<>(input, runtimeParameters.getReadLimit());
+                    }
+
+                    // Buffer the input - speed up and protect from parallelization problems
+                    final Merger<SequencingRead> bufferedInput = new Merger<>(524288);
+                    bufferedInput.merge(input);
+                    bufferedInput.start();
+                    input = bufferedInput;
+
+                    CUtils.processAllInParallel(input, innerProcessorFactory,
                             runtimeParameters.getNumberOfThreads());
 
                     for (LinkedBlockingQueue<ReadContainer> buffer : buffersBySample.values()) {
                         buffer.put(ReadContainer.LAST); // Redberry-pipe is null-based, but here nulls are not allowed
                     }
                 } catch (InterruptedException ignored) {
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
                 }
             }
         });
+    }
+
+    private static class SReadOutputPort implements OutputPort<SequencingRead> {
+        private final SFastqReader reader;
+
+        public SReadOutputPort(InputChunk inputChunk) throws IOException {
+            this.reader = new SFastqReader(inputChunk.getInputStream1(), QualityFormat.Phred33, CompressionType.None);
+        }
+
+        @Override
+        public SequencingRead take() {
+            return reader.take();
+        }
+    }
+
+    private static class PReadOutputPort implements OutputPort<SequencingRead> {
+        private final PFastqReader reader;
+
+        public PReadOutputPort(InputChunk inputChunk) throws IOException {
+            this.reader = new PFastqReader(inputChunk.getInputStream1(), inputChunk.getInputStream2(),
+                    QualityFormat.Phred33, CompressionType.None, null, false, false);
+        }
+
+        @Override
+        public SequencingRead take() {
+            return reader.take();
+        }
     }
 
     @Override
@@ -141,18 +179,16 @@ public class RawReadPreprocessor<MigType extends Mig> implements Preprocessor<Mi
         return new OutputPort<ProcessorResultWrapper<Consensus>>() {
             @Override
             public SomewhatRawReadProperlyWrapped take() {
-                ReadContainer readContainer;
-
                 try {
-                    readContainer = buffer.take();
-                } catch (InterruptedException e) {
-                    return null;
-                }
+                    ReadContainer readContainer = buffer.take();
 
-                if (readContainer.isLast()) {
+                    if (readContainer.isLast()) {
+                        return null;
+                    } else {
+                        return new SomewhatRawReadProperlyWrapped(sample, readContainer);
+                    }
+                } catch (InterruptedException ignored) {
                     return null;
-                } else {
-                    return new SomewhatRawReadProperlyWrapped(sample, readContainer);
                 }
             }
         };
@@ -180,7 +216,7 @@ public class RawReadPreprocessor<MigType extends Mig> implements Preprocessor<Mi
 
     @Override
     public boolean isPairedEnd() {
-        return checkoutProcessor.isPairedEnd();
+        return sampleGroup.isPairedEnd();
     }
 
     public void start() {

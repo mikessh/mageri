@@ -50,11 +50,19 @@ public class PipelineTest {
     @Test
     @Category(FastTests.class)
     public void fullTest() throws Exception {
+        fullTest(true);
+        fullTest(false);
+    }
+
+    public void fullTest(boolean rawReads) throws Exception {
         Input input = INPUT_PARSER.parseJson("pipeline/tabular.pri.json");
 
-        //System.out.println(input);
         ProjectAnalysis projectAnalysis = new ProjectAnalysis(input);
-        projectAnalysis.run();
+        if (rawReads) {
+            projectAnalysis.run();
+        } else {
+            projectAnalysis.runNoUmi();
+        }
 
         Set<String> expectedVariants = new HashSet<>();
         expectedVariants.add("S30:T>C");

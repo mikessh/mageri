@@ -23,14 +23,20 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 public class RawRead implements Read {
     private final NucleotideSQPair nucleotideSQPair;
+    private final long id;
 
     public RawRead(NucleotideSQPair nucleotideSQPair) {
+        this(nucleotideSQPair, -1);
+    }
+
+    public RawRead(NucleotideSQPair nucleotideSQPair, long id) {
         this.nucleotideSQPair = nucleotideSQPair;
+        this.id = id;
     }
 
     @Override
     public Read rc() {
-        return new RawRead(nucleotideSQPair.getRC());
+        return new RawRead(nucleotideSQPair.getRC(), id);
     }
 
     @Override
@@ -45,7 +51,7 @@ public class RawRead implements Read {
 
     @Override
     public Read region(int from, int to) {
-        return new RawRead(nucleotideSQPair.getRange(from, to));
+        return new RawRead(nucleotideSQPair.getRange(from, to), id);
     }
 
     public NucleotideSequence getSequence() {
@@ -63,5 +69,9 @@ public class RawRead implements Read {
 
     public int length() {
         return nucleotideSQPair.size();
+    }
+
+    public long getId() {
+        return id;
     }
 }

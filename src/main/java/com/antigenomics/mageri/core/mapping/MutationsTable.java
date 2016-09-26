@@ -28,6 +28,7 @@ import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public final class MutationsTable implements Serializable {
@@ -44,7 +45,7 @@ public final class MutationsTable implements Serializable {
         this.minorMigs = new NucleotideMatrix(l);
         this.qualitySum = new QualitySumMatrix(l);
         this.migCount = new AtomicInteger();
-        this.mutations = new HashSet<>();
+        this.mutations = Collections.newSetFromMap(new ConcurrentHashMap<Mutation, Boolean>());
     }
 
     public void append(LocalAlignment alignment, SequenceQualityPhred qual,

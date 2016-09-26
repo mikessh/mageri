@@ -46,7 +46,7 @@ public class SRawReadProcessor implements Processor<SequencingRead, IndexedReadC
         if (result != null) {
             String sampleName = result.getSampleName();
 
-            Read read = SMigReader.groom(new RawRead(milibRead.getData(0)),
+            Read read = SMigReader.groom(new RawRead(milibRead.getData(0), milibRead.id()),
                     result, preprocessorParameters.trimAdapters());
 
             return new IndexedReadContainer(sampleName, new SingleReadContainer(read));

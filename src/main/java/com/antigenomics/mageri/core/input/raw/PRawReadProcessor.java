@@ -48,8 +48,9 @@ public class PRawReadProcessor implements Processor<SequencingRead, IndexedReadC
             String sampleName = result.getSampleName();
 
             ReadContainer readContainer = PMigReader.groom(
-                    new PairedReadContainer(new RawRead(milibRead.getData(0)),
-                            new RawRead(milibRead.getData(1))), result, preprocessorParameters.trimAdapters());
+                    new PairedReadContainer(new RawRead(milibRead.getData(0), milibRead.id()),
+                            new RawRead(milibRead.getData(1), milibRead.id())),
+                    result, preprocessorParameters.trimAdapters());
 
             return new IndexedReadContainer(sampleName, readContainer);
         }

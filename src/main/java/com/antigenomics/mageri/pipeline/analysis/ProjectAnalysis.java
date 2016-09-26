@@ -152,7 +152,7 @@ public class ProjectAnalysis implements Serializable {
                             @Override
                             public void run() {
                                 try {
-                                    sampleAnalysis.run();
+                                    sampleAnalysis.runNoUmi();
                                 } catch (Exception e) {
                                     throw new RuntimeException(e);
                                 }
@@ -164,6 +164,8 @@ public class ProjectAnalysis implements Serializable {
 
                 analysisThreads[i].start();
             }
+
+            preprocessor.stop();
 
             for (Thread analysisThread : analysisThreads) {
                 analysisThread.join();

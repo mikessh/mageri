@@ -34,6 +34,7 @@ import com.antigenomics.mageri.pipeline.Speaker;
 import com.antigenomics.mageri.misc.ProcessorResultWrapper;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -52,7 +53,7 @@ public class SampleAnalysis implements ReadSpecific, Serializable {
 
     protected boolean ran = false;
 
-    private final List<AlignedConsensus> alignmentDataList = new LinkedList<>();
+    private final List<AlignedConsensus> alignmentDataList = new ArrayList<>();
 
     @SuppressWarnings("unchecked")
     protected SampleAnalysis(ProjectAnalysis parent,
@@ -68,7 +69,7 @@ public class SampleAnalysis implements ReadSpecific, Serializable {
         this.reader = reader;
         this.paired = isPairedEnd;
 
-        if (assembler.isPairedEnd() != paired ||
+        if ((assembler != null && assembler.isPairedEnd() != paired) ||
                 consensusAligner.isPairedEnd() != paired)
             throw new RuntimeException("All read-specific pipeline steps should have the same paired-end property.");
 
@@ -89,12 +90,9 @@ public class SampleAnalysis implements ReadSpecific, Serializable {
 
         String outputPrefix = getOutputPrefix();
 
-        OutputPort<Mig> input = reader;
-
-        final Merger<Mig> bufferedInput = new Merger<>(524288);
-        bufferedInput.merge(input);
-        bufferedInput.start();
-        input = bufferedInput;
+        final Merger<Mig> input = new Merger<>(524288);
+        input.merge(reader);
+        input.start();
 
         final CountingOutputPort<Mig> countingInput = new CountingOutputPort<>(input);
 
@@ -169,12 +167,9 @@ public class SampleAnalysis implements ReadSpecific, Serializable {
 
         String outputPrefix = getOutputPrefix();
 
-        OutputPort<ProcessorResultWrapper<Consensus>> input = reader;
-
-        final Merger<ProcessorResultWrapper<Consensus>> bufferedInput = new Merger<>(524288);
-        bufferedInput.merge(input);
-        bufferedInput.start();
-        input = bufferedInput;
+        final Merger<ProcessorResultWrapper<Consensus>> input = new Merger<>(524288);
+        input.merge(reader);
+        input.start();
 
         final CountingOutputPort<ProcessorResultWrapper<Consensus>> countingInput = new CountingOutputPort<>(input);
 

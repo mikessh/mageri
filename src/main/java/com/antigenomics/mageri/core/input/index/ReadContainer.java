@@ -17,6 +17,7 @@
 package com.antigenomics.mageri.core.input.index;
 
 import com.antigenomics.mageri.core.ReadSpecific;
+import com.antigenomics.mageri.core.input.raw.RawRead;
 
 public abstract class ReadContainer implements ReadSpecific {
     public static final ReadContainer LAST = new ReadContainer() {
@@ -43,5 +44,9 @@ public abstract class ReadContainer implements ReadSpecific {
 
     public boolean isLast() {
         return false;
+    }
+
+    public long getId() {
+        return ((RawRead) getFirst()).getId();
     }
 }
