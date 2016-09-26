@@ -17,32 +17,9 @@
 package com.antigenomics.mageri.core.input;
 
 import cc.redberry.pipe.OutputPort;
-import com.antigenomics.mageri.core.ReadSpecific;
 import com.antigenomics.mageri.core.Mig;
-import com.antigenomics.mageri.pipeline.analysis.Sample;
+import com.antigenomics.mageri.core.ReadSpecific;
 
-public class MigOutputPort<MigType extends Mig> implements OutputPort<MigType>, ReadSpecific {
-    private transient final MigReader<MigType> migReader;
-    private final Sample sample;
-    private final int sizeThreshold;
-
-    public MigOutputPort(MigReader<MigType> migReader, Sample sample, int sizeThreshold) {
-        this.migReader = migReader;
-        this.sample = sample;
-        this.sizeThreshold = sizeThreshold;
-    }
-
-    @Override
-    public MigType take() {
-        return migReader.take(sample, sizeThreshold);
-    }
-
-    @Override
-    public boolean isPairedEnd() {
-        return migReader.isPairedEnd();
-    }
-
-    public void clear() {
-        migReader.clear(sample);
-    }
+public interface MigOutputPort<MigType extends Mig> extends OutputPort<MigType>, ReadSpecific {
+    void clear();
 }

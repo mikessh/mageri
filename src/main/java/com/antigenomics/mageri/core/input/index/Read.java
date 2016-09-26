@@ -18,82 +18,23 @@ package com.antigenomics.mageri.core.input.index;
 
 import com.milaboratory.core.sequence.NucleotideSQPair;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
-import com.milaboratory.core.sequence.nucleotide.NucleotideSequenceBuilder;
-import com.milaboratory.core.sequence.quality.SequenceQualityPhred;
-import com.milaboratory.core.sequence.quality.SequenceQualityUtils;
 
 import java.io.Serializable;
-import java.util.BitSet;
-import java.util.Random;
 
-public class Read implements Serializable {
-    private static final Random rnd = new Random(511022);
-    private final NucleotideSequence sequence;
-    private final BitSet qualityMask;
+public interface Read extends Serializable {
+    Read rc();
 
-    public Read(NucleotideSequence sequence,
-                BitSet qualityMask) {
-        this.sequence = sequence;
-        this.qualityMask = qualityMask;
-    }
+    Read trim5Prime(int from);
 
-    public Read(NucleotideSQPair nucleotideSQPair) {
-        this(nucleotideSQPair, QualityProvider.DEFAULT);
-    }
+    Read trim3Prime(int to);
 
-    public Read(NucleotideSQPair nucleotideSQPair,
-                QualityProvider qualityProvider) {
-        NucleotideSequence sequence = nucleotideSQPair.getSequence();
+    Read region(int from, int to);
 
-        SequenceQualityPhred qual = nucleotideSQPair.getQuality();
+    NucleotideSequence getSequence();
 
-        // This is required as old milib reader replaces N's with A.
-        // It also sets quality to BAD_QUALITY_VALUE, so here we
-        // generate a random base at those positions
-        NucleotideSequenceBuilder nsb = new NucleotideSequenceBuilder(sequence.size());
+    NucleotideSQPair toNucleotideSQPair();
 
-        for (int i = 0; i < sequence.size(); i++) {
-            if (qual.value(i) > SequenceQualityUtils.BAD_QUALITY_VALUE) {
-                nsb.setCode(i, sequence.codeAt(i));
-            } else {
-                nsb.setCode(i, (byte) rnd.nextInt(4));
-            }
-        }
+    boolean goodQuality(int pos);
 
-        this.sequence = nsb.create();
-        this.qualityMask = qualityProvider.convert(nucleotideSQPair.getQuality());
-    }
-
-    public Read rc() {
-        BitSet qualityMask = new BitSet(length());
-        for (int i = 0; i < length(); i++) {
-            qualityMask.set(i, this.qualityMask.get(length() - i - 1));
-        }
-        return new Read(sequence.getReverseComplement(), qualityMask);
-    }
-
-    public Read trim5Prime(int from) {
-        return region(from, length());
-    }
-
-    public Read trim3Prime(int to) {
-        return region(0, to);
-    }
-
-    public Read region(int from, int to) {
-        return new Read(sequence.getRange(from, to),
-                qualityMask.get(from, to));
-    }
-
-    public NucleotideSequence getSequence() {
-        return sequence;
-    }
-
-    public boolean goodQuality(int pos) {
-        return !qualityMask.get(pos);
-    }
-
-    public int length() {
-        return sequence.size();
-    }
+    int length();
 }

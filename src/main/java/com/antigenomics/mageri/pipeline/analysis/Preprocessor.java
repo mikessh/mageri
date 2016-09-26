@@ -16,87 +16,29 @@
 
 package com.antigenomics.mageri.pipeline.analysis;
 
-import com.antigenomics.mageri.core.input.*;
-import com.antigenomics.mageri.pipeline.RuntimeParameters;
-import com.antigenomics.mageri.pipeline.input.CheckoutRule;
-import com.antigenomics.mageri.pipeline.input.Input;
-import com.antigenomics.mageri.pipeline.input.InputChunk;
-import com.antigenomics.mageri.preprocessing.CheckoutProcessor;
-import com.antigenomics.mageri.preprocessing.DemultiplexParameters;
+import cc.redberry.pipe.OutputPort;
 import com.antigenomics.mageri.core.Mig;
 import com.antigenomics.mageri.core.ReadSpecific;
+import com.antigenomics.mageri.core.assemble.Consensus;
+import com.antigenomics.mageri.core.input.MigOutputPort;
+import com.antigenomics.mageri.core.input.MigSizeDistribution;
+import com.antigenomics.mageri.misc.ProcessorResultWrapper;
+import com.antigenomics.mageri.preprocessing.CheckoutProcessor;
 
-import java.io.IOException;
 import java.io.Serializable;
 
-public class Preprocessor<MigType extends Mig> implements ReadSpecific, Serializable {
-    private final PreprocessorParameters preprocessorParameters;
-    private final SampleGroup sampleGroup;
-    private final MigReader migReader;
+public interface Preprocessor<MigType extends Mig> extends ReadSpecific, Serializable {
 
-    public Preprocessor(Input input, SampleGroup sampleGroup) throws IOException, InterruptedException {
-        this(input, sampleGroup, DemultiplexParameters.DEFAULT, PreprocessorParameters.DEFAULT);
-    }
+    MigSizeDistribution getUmiHistogram(Sample sample);
 
-    public Preprocessor(Input input, SampleGroup sampleGroup,
-                        DemultiplexParameters demultiplexParameters,
-                        PreprocessorParameters preprocessorParameters) throws IOException, InterruptedException {
-        this(input, sampleGroup, demultiplexParameters, preprocessorParameters, RuntimeParameters.DEFAULT);
-    }
+    MigOutputPort<MigType> create(Sample sample);
 
-    public Preprocessor(Input input, SampleGroup sampleGroup,
-                        DemultiplexParameters demultiplexParameters,
-                        PreprocessorParameters preprocessorParameters,
-                        RuntimeParameters runtimeParameters) throws IOException, InterruptedException {
-        this.preprocessorParameters = preprocessorParameters;
-        this.sampleGroup = sampleGroup;
-        InputChunk inputChunk = input.getByName(sampleGroup.getName());
+    OutputPort<ProcessorResultWrapper<Consensus>> createRaw(Sample sample);
 
-        CheckoutRule checkoutRule = inputChunk.getCheckoutRule();
+    int getOverSeq(String sampleName);
 
-        checkoutRule.setDemultiplexParameters(demultiplexParameters);
+    SampleGroup getSampleGroup();
 
-        this.migReader = inputChunk.isPairedEnd() ?
-                new PMigReader(inputChunk.getInputStream1(), inputChunk.getInputStream2(),
-                        checkoutRule.getProcessor(), preprocessorParameters, runtimeParameters)
-                :
-                new SMigReader(inputChunk.getInputStream1(),
-                        checkoutRule.getProcessor(), preprocessorParameters, runtimeParameters);
-    }
+    CheckoutProcessor getCheckoutProcessor();
 
-    public MigSizeDistribution getUmiHistogram(Sample sample) {
-        if (!sampleGroup.getSamples().contains(sample))
-            throw new RuntimeException("Sample " + sample + " not found in sample group " + sampleGroup);
-
-        return migReader.getUmiHistogram(sample.getName());
-    }
-
-    @SuppressWarnings("unchecked")
-    public MigOutputPort<MigType> create(Sample sample) {
-        if (!sampleGroup.getSamples().contains(sample))
-            throw new RuntimeException("Sample " + sample + " not found in sample group " + sampleGroup);
-
-        String sampleName = sample.getName();
-
-        return new MigOutputPort<>(migReader, sample, getOverSeq(sampleName));
-    }
-
-    public int getOverSeq(String sampleName) {
-        return preprocessorParameters.forceOverseq() ?
-                preprocessorParameters.getDefaultOverseq() :
-                migReader.getUmiHistogram(sampleName).getMigSizeThreshold();
-    }
-
-    public SampleGroup getSampleGroup() {
-        return sampleGroup;
-    }
-
-    public CheckoutProcessor getCheckoutProcessor() {
-        return migReader.getCheckoutProcessor();
-    }
-
-    @Override
-    public boolean isPairedEnd() {
-        return migReader.isPairedEnd();
-    }
 }

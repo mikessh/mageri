@@ -29,8 +29,8 @@ public class PairedEndReadWrappingFactory extends ReadWrappingFactory<PSequencin
         NucleotideSQPair data1 = pSequencingRead.getData(0),
                 data2 = pSequencingRead.getData(1);
         return new PairedReadContainer(
-                new Read(data1, qualityProvider),
-                new Read(data2, qualityProvider)
+                new MaskedRead(data1, qualityProvider),
+                new MaskedRead(data2, qualityProvider)
         );
     }
 }

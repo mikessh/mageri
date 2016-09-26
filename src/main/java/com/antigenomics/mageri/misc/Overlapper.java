@@ -145,14 +145,14 @@ public class Overlapper implements Serializable {
                 }
                 if (q1 > q2) {
                     sbSeq.append(c1);
-                    sbQual.append((char) (Math.max(q1 - q2, 3) + 33));
+                    sbQual.append((char) (Math.max(q1 - q2, QualityDefaults.PH33_MIN_QUAL) + 33));
                 } else {
                     sbSeq.append(c2);
-                    sbQual.append((char) (Math.max(q2 - q1, 3) + 33));
+                    sbQual.append((char) (Math.max(q2 - q1, QualityDefaults.PH33_MIN_QUAL) + 33));
                 }
             } else {
                 sbSeq.append(c1);
-                sbQual.append((char) (Math.min(q1 + q2, 42) + 33));
+                sbQual.append((char) (Math.min(q1 + q2, QualityDefaults.PH33_MAX_QUAL) + 33));
             }
         }
 

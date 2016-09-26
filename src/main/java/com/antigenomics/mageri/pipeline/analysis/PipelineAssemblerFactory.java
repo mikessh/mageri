@@ -44,6 +44,10 @@ public class PipelineAssemblerFactory extends PipelineBlock {
         return assembler;
     }
 
+    public boolean wasUsed() {
+        return !assemblersBySample.isEmpty();
+    }
+
     @Override
     public String getHeader() {
         return "sample.group\tsample\t" +

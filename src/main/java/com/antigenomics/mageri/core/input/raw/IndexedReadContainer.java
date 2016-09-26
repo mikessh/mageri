@@ -14,18 +14,28 @@
  * limitations under the License.
  */
 
-package com.antigenomics.mageri.core.input.index;
+package com.antigenomics.mageri.core.input.raw;
 
-import com.milaboratory.core.sequencing.read.SSequencingRead;
+import com.antigenomics.mageri.core.input.index.ReadContainer;
 
-public class SingleEndReadWrappingFactory extends ReadWrappingFactory<SSequencingRead> {
-    public SingleEndReadWrappingFactory(QualityProvider qualityProvider) {
-        super(qualityProvider);
+public class IndexedReadContainer {
+    private final String sampleName;
+    private final ReadContainer read;
+
+    public IndexedReadContainer(String sampleName, ReadContainer read) {
+        this.sampleName = sampleName;
+        this.read = read;
     }
 
-    @Override
-    public ReadContainer wrap(SSequencingRead read) {
-        return new SingleReadContainer(new MaskedRead(read.getData(),
-                qualityProvider));
+    public boolean isIndexed() {
+        return sampleName != null;
+    }
+
+    public String getSampleName() {
+        return sampleName;
+    }
+
+    public ReadContainer getRead() {
+        return read;
     }
 }

@@ -48,7 +48,7 @@ public final class Mageri {
         Presets presets = null;
         Input input = null;
         String outputFolder = null;
-        boolean writeBinary = false;
+        boolean writeBinary = false, noUmi = false;
 
         try {
             // parse the command line arguments
@@ -93,7 +93,10 @@ public final class Mageri {
             }
             FileUtils.forceMkdir(new File(outputFolder));
 
+            ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            // Advanced/experimental
             writeBinary = commandLine.hasOption(OPT_BINARY_OUTPUT);
+            noUmi = commandLine.hasOption(OPT_NO_UMI);
         } catch (ParseException e) {
             System.err.println("Bad arguments: " + e.getMessage());
             System.exit(-1);
@@ -116,7 +119,11 @@ public final class Mageri {
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Run
-        projectAnalysis.run();
+        if (noUmi) {
+            projectAnalysis.runNoUmi();
+        } else {
+            projectAnalysis.run();
+        }
     }
 
     public static Presets parsePresets(CommandLine commandLine) throws JDOMException, IOException {
@@ -264,7 +271,7 @@ public final class Mageri {
             OPT_IMPORT_PRESET = "import-preset", OPT_EXPORT_PRESET = "export-preset",
             OPT_INPUT_LONG = "input", OPT_INPUT_SHORT = "I",
             OPT_OUTPUT_LONG = "output-path", OPT_OUTPUT_SHORT = "O",
-            OPT_BINARY_OUTPUT = "write-binary";
+            OPT_BINARY_OUTPUT = "write-binary", OPT_NO_UMI = "no-umi";
 
     // Manual analysis options
     private static final String
@@ -294,7 +301,7 @@ public final class Mageri {
                             .withLongOpt(OPT_VERSION_LONG)
                             .create(OPT_VERSION_SHORT)
             )
-                    // Runtime
+            // Runtime
             .addOption(
                     OptionBuilder
                             .withArgName("0..3")
@@ -326,8 +333,8 @@ public final class Mageri {
                             .withLongOpt(OPT_LIMIT)
                             .create()
             )
-                    //
-                    // Preset
+            //
+            // Preset
             .addOption(
                     OptionBuilder
                             .withArgName("name")
@@ -346,7 +353,7 @@ public final class Mageri {
                             .hasArg(true)
                             .withDescription("Library type: " +
                                     "SS (single-stranded start, RT-PCR or linear PCR) " +
-                                    "or DS (double stranded start)" +
+                                    "or DS (double stranded start [currently not supported])" +
                                     "[default = SS]")
                             .withLongOpt(OPT_LIBRARY_TYPE)
                             .create()
@@ -367,8 +374,8 @@ public final class Mageri {
                             .withLongOpt(OPT_EXPORT_PRESET)
                             .create()
             )
-                    //
-                    // Input
+            //
+            // Input
             .addOption(
                     OptionBuilder
                             .withArgName("json file")
@@ -377,8 +384,8 @@ public final class Mageri {
                             .withLongOpt(OPT_INPUT_LONG)
                             .create(OPT_INPUT_SHORT)
             )
-                    //
-                    // Manual
+            //
+            // Manual
             .addOption(
                     OptionBuilder
                             .withArgName("fastq[.gz]")
@@ -487,8 +494,8 @@ public final class Mageri {
                             .withLongOpt(OPT_NAME_SAMPLE)
                             .create()
             )
-                    //
-                    // output
+            //
+            // Output
             .addOption(
                     OptionBuilder
                             .withArgName("path")
@@ -497,12 +504,19 @@ public final class Mageri {
                             .withLongOpt(OPT_OUTPUT_LONG)
                             .create(OPT_OUTPUT_SHORT)
             )
-                    //
-                    // Advanced
+            //
+            // Advanced / experimental
             .addOption(
                     OptionBuilder
-                            .withDescription("[advanced] Write an additional binary file with output.")
+                            .withDescription("[advanced/experimental] Write an additional binary file with output " +
+                                    "that can be then loaded using MAGERI Java API.")
                             .withLongOpt(OPT_BINARY_OUTPUT)
+                            .create()
+            ).addOption(
+                    OptionBuilder
+                            .withDescription("[advanced/experimental] Perform all analysis on raw reads, " +
+                                    "i.e. no UMI-based assembly and error correction.")
+                            .withLongOpt(OPT_NO_UMI)
                             .create()
             );
 }

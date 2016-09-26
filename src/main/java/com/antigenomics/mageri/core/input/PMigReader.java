@@ -16,12 +16,14 @@
 package com.antigenomics.mageri.core.input;
 
 import cc.redberry.pipe.OutputPortCloseable;
+import com.antigenomics.mageri.core.input.index.PairedReadContainer;
 import com.antigenomics.mageri.core.input.index.Read;
 import com.antigenomics.mageri.core.input.index.ReadContainer;
 import com.antigenomics.mageri.core.input.index.ReadInfo;
 import com.antigenomics.mageri.pipeline.RuntimeParameters;
 import com.antigenomics.mageri.pipeline.analysis.Sample;
 import com.antigenomics.mageri.preprocessing.CheckoutProcessor;
+import com.antigenomics.mageri.preprocessing.CheckoutResult;
 import com.antigenomics.mageri.preprocessing.PCheckoutResult;
 import com.antigenomics.mageri.preprocessing.barcode.BarcodeSearcherResult;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
@@ -87,54 +89,11 @@ public final class PMigReader extends MigReader<PMig> {
                         readList2 = new LinkedList<>();
 
                 for (ReadInfo readInfo : entry.getValue()) {
-                    ReadContainer readContainer = readInfo.getReadContainer();
+                    ReadContainer readContainer = groom(readInfo.getReadContainer(),
+                            readInfo.getCheckoutResult(),
+                            preprocessorParameters.trimAdapters());
+
                     Read read1 = readContainer.getFirst(), read2 = readContainer.getSecond();
-
-                    if (readInfo.getCheckoutResult() instanceof PCheckoutResult) {
-                        PCheckoutResult result = (PCheckoutResult) readInfo.getCheckoutResult();
-                        // Orient read so master is first and slave is on the masters strand
-                        // Master   Slave
-                        // -R1---> -R2------>
-                        if (result.getOrientation()) {
-                            read1 = readContainer.getFirst();
-                            read2 = readContainer.getSecond().rc();
-                        } else {
-                            read1 = readContainer.getSecond();
-                            read2 = readContainer.getFirst().rc();
-                        }
-
-                        // Trim reads if corresponding option is set
-                        // and UMIs were de-novo extracted using adapter search
-                        if (preprocessorParameters.trimAdapters()) {
-                            // Trim adapters if required
-                            // -M-|            |-S-
-                            // -R1|---> -R2----|-->
-
-                            BarcodeSearcherResult masterResult = result.getMasterResult(),
-                                    slaveResult = result.getSlaveResult();
-
-                            if (masterResult.hasAdapterMatch()) {
-                                read1 = read1.trim5Prime(masterResult.getTo()); // getEnd() is exclusive to
-                            }
-
-                            if (result.slaveFound() && slaveResult.hasAdapterMatch()) {
-                                read2 = read2.trim3Prime(slaveResult.getFrom());
-                            }
-                        }
-
-                        // Account for 'master first' attribute
-                        if (!result.getMasterFirst()) {
-                            Read tmp = read1;
-                            read1 = read2.rc();
-                            read2 = tmp.rc();
-                        }
-                    }
-                    // NOTE: Otherwise the checkout processor is a HeaderExtractor
-                    // For preprocessed data, we have a convention that
-                    // a) both read headers contain UMI sequence (UMI:seq:qual)
-                    // b) reads are oriented in correct direction
-                    // c) adapter/primer sequences are trimmed
-
                     readList1.add(read1);
                     readList2.add(read2);
                 }
@@ -145,6 +104,58 @@ public final class PMigReader extends MigReader<PMig> {
 
         }
         return null;
+    }
+
+    public static ReadContainer groom(ReadContainer readContainer, CheckoutResult result1, boolean trimAdaptors) {
+        if (result1 instanceof PCheckoutResult) {
+            Read read1, read2;
+            PCheckoutResult result = (PCheckoutResult) result1;
+            // Orient read so master is first and slave is on the masters strand
+            // Master   Slave
+            // -R1---> -R2------>
+            if (result.getOrientation()) {
+                read1 = readContainer.getFirst();
+                read2 = readContainer.getSecond().rc();
+            } else {
+                read1 = readContainer.getSecond();
+                read2 = readContainer.getFirst().rc();
+            }
+
+            // Trim reads if corresponding option is set
+            // and UMIs were de-novo extracted using adapter search
+            if (trimAdaptors) {
+                // Trim adapters if required
+                // -M-|            |-S-
+                // -R1|---> -R2----|-->
+
+                BarcodeSearcherResult masterResult = result.getMasterResult(),
+                        slaveResult = result.getSlaveResult();
+
+                if (masterResult.hasAdapterMatch()) {
+                    read1 = read1.trim5Prime(masterResult.getTo()); // getEnd() is exclusive to
+                }
+
+                if (result.slaveFound() && slaveResult.hasAdapterMatch()) {
+                    read2 = read2.trim3Prime(slaveResult.getFrom());
+                }
+            }
+
+            // Account for 'master first' attribute
+            if (!result.getMasterFirst()) {
+                Read tmp = read1;
+                read1 = read2.rc();
+                read2 = tmp.rc();
+            }
+
+            return new PairedReadContainer(read1, read2);
+        }
+        // NOTE: Otherwise the checkout processor is a HeaderExtractor
+        // For preprocessed data, we have a convention that
+        // a) both read headers contain UMI sequence (UMI:seq:qual)
+        // b) reads are oriented in correct direction
+        // c) adapter/primer sequences are trimmed
+
+        return readContainer;
     }
 
     @Override

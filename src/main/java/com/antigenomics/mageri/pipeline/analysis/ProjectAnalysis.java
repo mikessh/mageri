@@ -16,6 +16,8 @@
 
 package com.antigenomics.mageri.pipeline.analysis;
 
+import cc.redberry.pipe.OutputPort;
+import com.antigenomics.mageri.core.assemble.Consensus;
 import com.antigenomics.mageri.core.genomic.BedGenomicInfoProvider;
 import com.antigenomics.mageri.core.input.MigOutputPort;
 import com.antigenomics.mageri.core.mapping.AlignedConsensus;
@@ -23,6 +25,7 @@ import com.antigenomics.mageri.core.mapping.alignment.ExtendedKmerAlignerFactory
 import com.antigenomics.mageri.core.output.SamWriter;
 import com.antigenomics.mageri.core.output.VcfWriter;
 import com.antigenomics.mageri.core.variant.Variant;
+import com.antigenomics.mageri.misc.ProcessorResultWrapper;
 import com.antigenomics.mageri.pipeline.RuntimeParameters;
 import com.antigenomics.mageri.pipeline.SerializationUtils;
 import com.antigenomics.mageri.pipeline.input.Input;
@@ -95,17 +98,18 @@ public class ProjectAnalysis implements Serializable {
 
         for (SampleGroup sampleGroup : project.getSampleGroups()) {
             sout("Pre-processing sample group " + sampleGroup.getName() + ".", 1);
-            final Preprocessor preprocessor = preprocessorFactory.create(input, sampleGroup, runtimeParameters);
+            Preprocessor preprocessor = preprocessorFactory.create(input, sampleGroup, runtimeParameters);
 
             sout("Running analysis for sample group " + sampleGroup.getName() + ".", 1);
             for (Sample sample : sampleGroup.getSamples()) {
-                final MigOutputPort inputPort = preprocessor.create(sample);
+                MigOutputPort inputPort = preprocessor.create(sample);
 
                 SampleAnalysis sampleAnalysis = new SampleAnalysis(
                         this, sample, preprocessor.getUmiHistogram(sample),
                         inputPort,
                         pipelineAssemblerFactory.create(sample),
-                        pipelineConsensusAlignerFactory.create(sample)
+                        pipelineConsensusAlignerFactory.create(sample),
+                        inputPort.isPairedEnd()
                 );
 
                 sampleAnalysis.run();
@@ -114,6 +118,55 @@ public class ProjectAnalysis implements Serializable {
 
                 // don't need reads associated with current sample anymore in memory
                 inputPort.clear();
+            }
+        }
+
+        sout("Done.", 1);
+
+        write();
+    }
+
+    @SuppressWarnings("unchecked")
+    public void runNoUmi() throws Exception {
+        sout("Started analysis.", 1);
+
+        for (SampleGroup sampleGroup : project.getSampleGroups()) {
+            sout("Processing sample group " + sampleGroup.getName() + ".", 1);
+            final RawReadPreprocessor preprocessor = preprocessorFactory.createNoUmi(input, sampleGroup, runtimeParameters);
+            preprocessor.start();
+
+            Thread[] analysisThreads = new Thread[sampleGroup.getSamples().size()];
+
+            for (int i = 0; i < sampleGroup.getSamples().size(); i++) {
+                final Sample sample = sampleGroup.getSamples().get(i);
+                final OutputPort<ProcessorResultWrapper<Consensus>> inputPort = preprocessor.createRaw(sample);
+                final SampleAnalysis sampleAnalysis = new SampleAnalysis(
+                        this, sample, null,
+                        inputPort, null,
+                        pipelineConsensusAlignerFactory.create(sample),
+                        preprocessor.isPairedEnd()
+                );
+
+                analysisThreads[i] = new Thread(
+                        new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    sampleAnalysis.run();
+                                } catch (Exception e) {
+                                    throw new RuntimeException(e);
+                                }
+                            }
+                        }
+                );
+
+                analysisBySample.put(sample, sampleAnalysis);
+
+                analysisThreads[i].start();
+            }
+
+            for (Thread analysisThread : analysisThreads) {
+                analysisThread.join();
             }
         }
 
@@ -160,7 +213,9 @@ public class ProjectAnalysis implements Serializable {
             String outputPath = this.outputPath + project.getName();
 
             preprocessorFactory.writePlainText(outputPath);
-            pipelineAssemblerFactory.writePlainText(outputPath);
+            if(pipelineAssemblerFactory.wasUsed()) {
+                pipelineAssemblerFactory.writePlainText(outputPath);
+            }
             pipelineConsensusAlignerFactory.writePlainText(outputPath);
 
             if (writeBinary) {

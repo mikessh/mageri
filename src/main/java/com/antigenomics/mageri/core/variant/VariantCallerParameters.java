@@ -22,6 +22,7 @@ import org.jdom.Element;
 public final class VariantCallerParameters implements ParameterSet {
     private final double order, modelCycles, modelEfficiency;
     private final int qualityThreshold, singletonFrequencyThreshold, coverageThreshold;
+    private final boolean
 
     public static VariantCallerParameters DEFAULT = new VariantCallerParameters(1.0, 20.0, 1.95,
             20, 10000, 100);
@@ -31,8 +32,8 @@ public final class VariantCallerParameters implements ParameterSet {
         if (modelCycles < 10 || modelCycles > 40)
             throw new IllegalArgumentException("(model parameters) Number of PCR cycles should be in [10,40]");
 
-        if (modelEfficiency < 1.8d || modelEfficiency >= 2.0d)
-            throw new IllegalArgumentException("(model parameters) PCR efficiency should be set in [1.8, 2.0)");
+        if (modelEfficiency <= 1.0d || modelEfficiency >= 2.0d)
+            throw new IllegalArgumentException("(model parameters) PCR efficiency should be set in (1.0, 2.0)");
 
         if (qualityThreshold < 0)
             throw new IllegalArgumentException("(filter parameters) Quality threshold should be >= 0");

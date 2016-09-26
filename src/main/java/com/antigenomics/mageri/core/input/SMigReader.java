@@ -20,6 +20,7 @@ import com.antigenomics.mageri.core.input.index.Read;
 import com.antigenomics.mageri.core.input.index.ReadInfo;
 import com.antigenomics.mageri.pipeline.RuntimeParameters;
 import com.antigenomics.mageri.preprocessing.CheckoutProcessor;
+import com.antigenomics.mageri.preprocessing.CheckoutResult;
 import com.antigenomics.mageri.preprocessing.SCheckoutResult;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.core.sequence.quality.QualityFormat;
@@ -82,25 +83,27 @@ public final class SMigReader extends MigReader<SMig> {
                 List<Read> readList = new LinkedList<>();
 
                 for (ReadInfo readInfo : entry.getValue()) {
-                    Read read = readInfo.getReadContainer().getFirst();
-                    if (readInfo.getCheckoutResult() instanceof SCheckoutResult) {
-                        if (preprocessorParameters.trimAdapters()) {
-                            SCheckoutResult result = (SCheckoutResult) readInfo.getCheckoutResult();
-                            read = read.trim5Prime(result.getMasterResult().getTo());
-                        }
-                    }
-                    // NOTE: Otherwise the checkout processor is a HeaderExtractor
-                    // For single-end preprocessed data, we have a convention that
-                    // a) read header contains UMI sequence (UMI:seq:qual)
-                    // b) reads are oriented in correct direction
-                    // c) adapter/primer sequences are trimmed
-                    readList.add(read);
+                    readList.add(groom(readInfo.getReadContainer().getFirst(),
+                            readInfo.getCheckoutResult(),
+                            preprocessorParameters.trimAdapters()));
                 }
 
                 return new SMig(sample, entry.getKey(), readList);
             }
         }
         return null;
+    }
+
+    public static Read groom(Read read, CheckoutResult checkoutResult, boolean trimAdapters) {
+        if (trimAdapters && checkoutResult instanceof SCheckoutResult) {
+            return read.trim5Prime(checkoutResult.getMasterResult().getTo());
+        }
+        // NOTE: Otherwise the checkout processor is a HeaderExtractor
+        // For single-end preprocessed data, we have a convention that
+        // a) read header contains UMI sequence (UMI:seq:qual)
+        // b) reads are oriented in correct direction
+        // c) adapter/primer sequences are trimmed
+        return read;
     }
 
     @Override

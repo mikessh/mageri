@@ -63,7 +63,7 @@ public class KMerFinderTest {
             kMerFinder.find(sequence);
         }
         elapsed = System.nanoTime() - now;
-        IntRangeAssertion.createUpperBound("Time elpased, s", "KmerFinder: mapping", 60).
+        IntRangeAssertion.createUpperBound("Time elpased, s", "KmerFinder: mapping", 80).
                 assertInRange((int) (elapsed / 1_000_000_000L));
     }
 

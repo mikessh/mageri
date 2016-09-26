@@ -118,7 +118,7 @@ public abstract class MigReader<MigType extends Mig> implements Serializable, Re
             umiIndexBySample.put(sampleName, new HashMap<NucleotideSequence, List<ReadInfo>>());
         }
 
-        // Take results, extractMutations histogram and index (single thread)
+        // Take results, extract histogram and index (single thread)
         ProcessorResultWrapper<IndexingInfo> result;
         while ((result = indexingResults.take()) != null) {
             if (result.hasResult()) {

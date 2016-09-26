@@ -31,6 +31,7 @@ import com.antigenomics.mageri.pipeline.Speaker;
 import com.milaboratory.util.CompressionType;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -41,7 +42,7 @@ public abstract class Assembler<ConsensusType extends Consensus, MigType extends
         implements Processor<MigType, ProcessorResultWrapper<ConsensusType>>, ReadSpecific {
     protected final AtomicLong readsTotal = new AtomicLong(), readsAssembled = new AtomicLong();
     protected final AtomicInteger migsTotal = new AtomicInteger(), migsAssembled = new AtomicInteger();
-    protected final List<ConsensusType> consensusList = Collections.synchronizedList(new LinkedList<ConsensusType>());
+    protected final List<ConsensusType> consensusList = Collections.synchronizedList(new ArrayList<ConsensusType>());
     protected boolean storeConsensuses = true, cleared = false;
 
     protected Assembler() {

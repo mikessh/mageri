@@ -25,6 +25,7 @@ import com.antigenomics.mageri.core.ReadSpecific;
 import com.antigenomics.mageri.core.assemble.Assembler;
 import com.antigenomics.mageri.core.assemble.Consensus;
 import com.antigenomics.mageri.core.input.MigOutputPort;
+import com.antigenomics.mageri.core.input.MigOutputPortImpl;
 import com.antigenomics.mageri.core.input.MigSizeDistribution;
 import com.antigenomics.mageri.core.mapping.AlignedConsensus;
 import com.antigenomics.mageri.core.mapping.ConsensusAligner;
@@ -42,7 +43,7 @@ public class SampleAnalysis implements ReadSpecific, Serializable {
     protected final ProjectAnalysis parent;
     protected final Sample sample;
 
-    protected transient final MigOutputPort reader;
+    protected transient final OutputPort reader;
 
     protected final MigSizeDistribution migSizeDistribution;
     protected final Assembler assembler;
@@ -57,14 +58,15 @@ public class SampleAnalysis implements ReadSpecific, Serializable {
     protected SampleAnalysis(ProjectAnalysis parent,
                              Sample sample,
                              MigSizeDistribution migSizeDistribution,
-                             MigOutputPort reader,
+                             OutputPort reader,
                              Assembler assembler,
-                             ConsensusAligner consensusAligner) {
+                             ConsensusAligner consensusAligner,
+                             boolean isPairedEnd) {
         this.parent = parent;
         this.migSizeDistribution = migSizeDistribution;
         this.sample = sample;
         this.reader = reader;
-        this.paired = reader.isPairedEnd();
+        this.paired = isPairedEnd;
 
         if (assembler.isPairedEnd() != paired ||
                 consensusAligner.isPairedEnd() != paired)
@@ -159,6 +161,78 @@ public class SampleAnalysis implements ReadSpecific, Serializable {
         ran = true;
     }
 
+    @SuppressWarnings("unchecked")
+    public void runNoUmi() throws Exception {
+        if (ran) {
+            return;
+        }
+
+        String outputPrefix = getOutputPrefix();
+
+        OutputPort<ProcessorResultWrapper<Consensus>> input = reader;
+
+        final Merger<ProcessorResultWrapper<Consensus>> bufferedInput = new Merger<>(524288);
+        bufferedInput.merge(input);
+        bufferedInput.start();
+        input = bufferedInput;
+
+        final CountingOutputPort<ProcessorResultWrapper<Consensus>> countingInput = new CountingOutputPort<>(input);
+
+        Thread reporter = new Thread(new Runnable() {
+            long prevCount = -1;
+
+            @Override
+            public void run() {
+                try {
+                    while (!countingInput.isClosed()) {
+                        long count = countingInput.getCount();
+                        if (prevCount != count) {
+                            sout("Aligning reads, " + count + " processed so far..", 2);
+                            prevCount = count;
+                        }
+                        Thread.sleep(10000);
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        reporter.setDaemon(true);
+        reporter.start();
+
+        // Align in parallel
+        final OutputPort<ProcessorResultWrapper<AlignedConsensus>> alignerResults =
+                new ParallelProcessor<>(countingInput, consensusAligner, parent.getRuntimeParameters().getNumberOfThreads());
+
+        ProcessorResultWrapper<AlignedConsensus> alignmentDataWrapped;
+        while ((alignmentDataWrapped = alignerResults.take()) != null) {
+            if (alignmentDataWrapped.hasResult()) {
+                alignmentDataList.add(alignmentDataWrapped.getResult());
+            }
+        }
+
+        // Write consensus aligner output now, as it will be cleared upon creation of VariantCaller
+        if (outputPrefix != null) {
+            consensusAligner.writePlainText(outputPrefix);
+        }
+
+        sout("Finished, " + countingInput.getCount() + " reads processed in total.", 1);
+
+        sout("Calling variants.", 1);
+
+        this.variantCaller = new VariantCaller(consensusAligner,
+                parent.getPresets().getVariantCallerParameters());
+
+        if (outputPrefix != null) {
+            variantCaller.writePlainText(outputPrefix);
+        }
+
+        sout("Finished", 1);
+
+        ran = true;
+    }
+
     protected String getOutputPrefix() {
         String outputPath = parent.outputPath;
 
@@ -169,15 +243,19 @@ public class SampleAnalysis implements ReadSpecific, Serializable {
         }
     }
 
-    public MigOutputPort getReader() {
-        return reader;
-    }
-
     public MigSizeDistribution getMigSizeDistribution() {
+        if (migSizeDistribution == null) {
+            throw new RuntimeException("No MIG size distribution exists. Looks like this analysis was ran for raw reads..");
+        }
+
         return migSizeDistribution;
     }
 
     public Assembler getAssembler() {
+        if (assembler == null) {
+            throw new RuntimeException("No assembler exists. Looks like this analysis was ran for raw reads..");
+        }
+
         return assembler;
     }
 

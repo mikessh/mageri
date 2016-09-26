@@ -43,8 +43,23 @@ public class PreprocessorFactory extends PipelineBlock {
         return create(input, sampleGroup, RuntimeParameters.DEFAULT);
     }
 
+    public RawReadPreprocessor createNoUmi(Input input, SampleGroup sampleGroup) throws IOException, InterruptedException {
+        return createNoUmi(input, sampleGroup, RuntimeParameters.DEFAULT);
+    }
+
     public Preprocessor create(Input input, SampleGroup sampleGroup, RuntimeParameters runtimeParameters) throws IOException, InterruptedException {
-        Preprocessor preprocessor = new Preprocessor(input, sampleGroup,
+        PreprocessorImpl preprocessor = new PreprocessorImpl(input, sampleGroup,
+                demultiplexParameters,
+                preprocessorParameters,
+                runtimeParameters);
+
+        preprocessorBySampleGroup.put(sampleGroup, preprocessor);
+
+        return preprocessor;
+    }
+
+    public RawReadPreprocessor createNoUmi(Input input, SampleGroup sampleGroup, RuntimeParameters runtimeParameters) throws IOException, InterruptedException {
+        RawReadPreprocessor preprocessor = new RawReadPreprocessor(input, sampleGroup,
                 demultiplexParameters,
                 preprocessorParameters,
                 runtimeParameters);
