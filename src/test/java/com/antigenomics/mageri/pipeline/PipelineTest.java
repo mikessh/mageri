@@ -110,8 +110,11 @@ public class PipelineTest {
         samWriter.close();
 
         SamReader samReader = SamReaderFactory.makeDefault().open(file);
+        int i = 0;
         for (SAMRecord samRecord : samReader) {
-            System.out.println(samRecord);
+            if (++i <= 100) {
+                System.out.println(samRecord);
+            }
         }
     }
 
@@ -132,8 +135,11 @@ public class PipelineTest {
 
         VCFFileReader vcfFileReader = new VCFFileReader(file, false);
 
+        int i = 0;
         for (VariantContext variantContext : vcfFileReader) {
-            System.out.println(variantContext);
+            if (++i <= 100) {
+                System.out.println(variantContext);
+            }
         }
     }
 }
