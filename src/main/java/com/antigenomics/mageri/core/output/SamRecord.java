@@ -62,23 +62,28 @@ public class SamRecord implements Record {
                 currentRecord.setFlag(MULTIPLE_SEGMENTS_FLAG | (allAligned ? ALL_ALIGNED_FLAG : BLANK_FLAG));
             }
 
+            SamSegmentRecord nextRecord;
             if (i < samSegmentRecords.length - 1) {
-                SamSegmentRecord nextRecord = samSegmentRecords[i + 1];
-
-                assert Objects.equals(lastSegment.getQueryName(), nextRecord.getQueryName());
-
-                // Transfer all 'next' flags to current record
-                currentRecord.setFlag(getFlagsFromNext(nextRecord.getFlag()));
-
-                currentRecord.setNextReferenceName(nextRecord.getReferenceName());
-                currentRecord.setNextPosition(nextRecord.getPosition());
+                nextRecord = samSegmentRecords[i + 1];
 
                 if (!chimeric) {
                     int pos = currentRecord.getPosition();
                     minPos = Math.min(minPos, pos);
                     maxPos = Math.max(maxPos, pos);
                 }
+            } else if (samSegmentRecords.length > 1) {
+                nextRecord = samSegmentRecords[0]; // circular, otherwise fail to verify
+            } else {
+                break;
             }
+
+            assert Objects.equals(lastSegment.getQueryName(), nextRecord.getQueryName());
+
+            // Transfer all 'next' flags to current record
+            currentRecord.setFlag(getFlagsFromNext(nextRecord.getFlag()));
+
+            currentRecord.setNextReferenceName(nextRecord.getReferenceName());
+            currentRecord.setNextPosition(nextRecord.getPosition());
         }
 
         if (multiSegment && !chimeric) {

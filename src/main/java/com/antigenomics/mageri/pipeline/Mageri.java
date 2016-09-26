@@ -97,6 +97,10 @@ public final class Mageri {
             // Advanced/experimental
             writeBinary = commandLine.hasOption(OPT_BINARY_OUTPUT);
             noUmi = commandLine.hasOption(OPT_NO_UMI);
+
+            if (writeBinary && noUmi) {
+                throw new ParseException("Binary serialization of raw output is not supported yet.");
+            }
         } catch (ParseException e) {
             System.err.println("Bad arguments: " + e.getMessage());
             System.exit(-1);

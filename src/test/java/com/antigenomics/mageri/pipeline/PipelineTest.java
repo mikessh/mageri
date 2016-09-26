@@ -90,7 +90,9 @@ public class PipelineTest {
             vcfOutputTest(sampleAnalysis);
         }
 
-        TestUtil.serializationCheck(projectAnalysis);
+        if (!rawReads) {
+            TestUtil.serializationCheck(projectAnalysis);
+        }
     }
 
     private void samOutputTest(SampleAnalysis sampleAnalysis) throws IOException {

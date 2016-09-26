@@ -48,20 +48,15 @@ public class SomewhatRawReadProperlyWrapped extends ProcessorResultWrapper<Conse
                 consensus1;
     }
 
+    private static final String symbols = "ATGC";
+
     private static NucleotideSequence encode(long id) {
-        ByteBuffer buffer = ByteBuffer.allocate(8);
-        buffer.putLong(id);
-        byte[] bytes = buffer.array();
-
-        ByteOutputStream bos = new ByteOutputStream(bytes.length + 4);
-        DataOutput dataOutput = new DataOutputStream(bos);
-        try {
-            dataOutput.writeInt(bytes.length);
-            dataOutput.write(bytes);
-
-            return new NucleotideSequence(Bit2Array.readFrom(new DataInputStream(new ByteArrayInputStream(bos.getBytes()))));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        final int B = symbols.length();
+        StringBuilder sb = new StringBuilder(15);
+        while (id != 0) {
+            sb.append(symbols.charAt((int) (id % B)));
+            id /= B;
         }
+        return new NucleotideSequence(sb.toString());
     }
 }
