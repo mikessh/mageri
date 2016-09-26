@@ -116,7 +116,7 @@ public class RawReadPreprocessor<MigType extends Mig> implements Preprocessor<Mi
                 try {
                     CUtils.processAllInParallel(reader, innerProcessorFactory,
                             runtimeParameters.getNumberOfThreads());
-                    
+
                     for (LinkedBlockingQueue<ReadContainer> buffer : buffersBySample.values()) {
                         buffer.put(ReadContainer.LAST); // Redberry-pipe is null-based, but here nulls are not allowed
                     }
