@@ -16,6 +16,7 @@
 
 package com.antigenomics.mageri.generators;
 
+import com.antigenomics.mageri.core.input.index.MaskedRead;
 import com.milaboratory.core.sequence.mutations.Mutations;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.antigenomics.mageri.core.genomic.Reference;
@@ -103,7 +104,7 @@ public class RandomMigGenerator {
                 }
             }
 
-            reads.add(new Read(sequence3, qualMask));
+            reads.add(new MaskedRead(sequence3, qualMask));
         }
 
         SMig sMig = new SMig(Sample.create("dummy", false), randomSequence(umiSize), reads);

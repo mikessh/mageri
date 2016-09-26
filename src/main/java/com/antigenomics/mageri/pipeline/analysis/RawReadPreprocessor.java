@@ -35,8 +35,10 @@ import com.antigenomics.mageri.pipeline.input.InputChunk;
 import com.antigenomics.mageri.preprocessing.CheckoutProcessor;
 import com.antigenomics.mageri.preprocessing.DemultiplexParameters;
 import com.milaboratory.core.sequence.quality.QualityFormat;
+import com.milaboratory.core.sequencing.io.SequencingDataReader;
 import com.milaboratory.core.sequencing.io.fastq.PFastqReader;
 import com.milaboratory.core.sequencing.io.fastq.SFastqReader;
+import com.milaboratory.core.sequencing.read.PSequencingRead;
 import com.milaboratory.core.sequencing.read.SequencingRead;
 import com.milaboratory.util.CompressionType;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
@@ -48,7 +50,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class RawReadPreprocessor<MigType extends Mig> implements Preprocessor<MigType> {
     private final SampleGroup sampleGroup;
-    private final OutputPort<? extends SequencingRead> reader;
     private final Map<String, LinkedBlockingQueue<ReadContainer>> buffersBySample = new HashMap<>();
     private final CheckoutProcessor checkoutProcessor;
     private final Thread readerThread;
@@ -77,14 +78,6 @@ public class RawReadPreprocessor<MigType extends Mig> implements Preprocessor<Mi
         checkoutRule.setDemultiplexParameters(demultiplexParameters);
         this.checkoutProcessor = checkoutRule.getProcessor();
 
-        this.reader = new CountLimitingOutputPort<>(inputChunk.isPairedEnd() ?
-                new PFastqReader(inputChunk.getInputStream1(),
-                        inputChunk.getInputStream2(), QualityFormat.Phred33, CompressionType.None,
-                        null, false, false)
-                :
-                new SFastqReader(inputChunk.getInputStream1(), QualityFormat.Phred33, CompressionType.None),
-                runtimeParameters.getReadLimit());
-
         for (Sample sample : sampleGroup.getSamples()) {
             buffersBySample.put(sample.getName(), new LinkedBlockingQueue<ReadContainer>(524288));
         }
@@ -110,11 +103,17 @@ public class RawReadPreprocessor<MigType extends Mig> implements Preprocessor<Mi
             }
         };
 
+        final OutputPort<SequencingRead> op = new CountLimitingOutputPort(inputChunk.isPairedEnd() ?
+                new PFastqReader(inputChunk.getInputStream1(), inputChunk.getInputStream2(),
+                        QualityFormat.Phred33, CompressionType.None, null, false, false) :
+                new SFastqReader(inputChunk.getInputStream1(), QualityFormat.Phred33, CompressionType.None),
+                runtimeParameters.getReadLimit());
+
         this.readerThread = new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    CUtils.processAllInParallel(reader, innerProcessorFactory,
+                    CUtils.processAllInParallel(op, innerProcessorFactory,
                             runtimeParameters.getNumberOfThreads());
 
                     for (LinkedBlockingQueue<ReadContainer> buffer : buffersBySample.values()) {

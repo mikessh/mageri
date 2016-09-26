@@ -19,6 +19,7 @@ package com.antigenomics.mageri.core.assemble;
 import com.antigenomics.mageri.PercentRangeAssertion;
 import com.antigenomics.mageri.core.input.PreprocessorParameters;
 import com.antigenomics.mageri.core.input.SMig;
+import com.antigenomics.mageri.core.input.index.MaskedRead;
 import com.antigenomics.mageri.core.input.index.Read;
 import com.antigenomics.mageri.generators.MigWithMutations;
 import com.antigenomics.mageri.generators.MutationGenerator;
@@ -90,11 +91,11 @@ public class AssemblerMinorTest {
 
         List<Read> reads = new ArrayList<>();
 
-        reads.add(new Read(new NucleotideSQPair(seq1, qua1)));
-        reads.add(new Read(new NucleotideSQPair(seq2, qua2)));
-        reads.add(new Read(new NucleotideSQPair(seq3, qua3)));
-        reads.add(new Read(new NucleotideSQPair(seq4, qua4)));
-        reads.add(new Read(new NucleotideSQPair(seq5, qua5)));
+        reads.add(new MaskedRead(new NucleotideSQPair(seq1, qua1)));
+        reads.add(new MaskedRead(new NucleotideSQPair(seq2, qua2)));
+        reads.add(new MaskedRead(new NucleotideSQPair(seq3, qua3)));
+        reads.add(new MaskedRead(new NucleotideSQPair(seq4, qua4)));
+        reads.add(new MaskedRead(new NucleotideSQPair(seq5, qua5)));
 
         // Assemble MIG
 
@@ -165,11 +166,11 @@ public class AssemblerMinorTest {
 
         List<Read> reads = new ArrayList<>();
 
-        reads.add(new Read(new NucleotideSQPair(seq1, qua1)));
-        reads.add(new Read(new NucleotideSQPair(seq2, qua2)));
-        reads.add(new Read(new NucleotideSQPair(seq3, qua3)));
-        reads.add(new Read(new NucleotideSQPair(seq4, qua4)));
-        reads.add(new Read(new NucleotideSQPair(seq5, qua5)));
+        reads.add(new MaskedRead(new NucleotideSQPair(seq1, qua1)));
+        reads.add(new MaskedRead(new NucleotideSQPair(seq2, qua2)));
+        reads.add(new MaskedRead(new NucleotideSQPair(seq3, qua3)));
+        reads.add(new MaskedRead(new NucleotideSQPair(seq4, qua4)));
+        reads.add(new MaskedRead(new NucleotideSQPair(seq5, qua5)));
 
         // Assemble MIG
 

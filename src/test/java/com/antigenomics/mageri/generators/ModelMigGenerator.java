@@ -17,6 +17,7 @@
 package com.antigenomics.mageri.generators;
 
 import com.antigenomics.mageri.core.input.SMig;
+import com.antigenomics.mageri.core.input.index.MaskedRead;
 import com.antigenomics.mageri.core.input.index.Read;
 import com.milaboratory.core.sequence.NucleotideSQPair;
 import com.milaboratory.core.sequence.mutations.Mutations;
@@ -166,7 +167,7 @@ public class ModelMigGenerator {
                 quality[pos] = qual;
             }
 
-            reads.add(new Read(new NucleotideSQPair(sequence4, new SequenceQualityPhred(quality))));
+            reads.add(new MaskedRead(new NucleotideSQPair(sequence4, new SequenceQualityPhred(quality))));
         }
 
         return new SMig(Sample.create("dummy", false), randomSequence(12), reads);

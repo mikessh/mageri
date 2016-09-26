@@ -17,6 +17,7 @@ package com.antigenomics.mageri.core.assemble;
 
 import com.antigenomics.mageri.PercentRangeAssertion;
 import com.antigenomics.mageri.core.input.PreprocessorParameters;
+import com.antigenomics.mageri.core.input.index.MaskedRead;
 import com.antigenomics.mageri.core.input.index.QualityProvider;
 import com.antigenomics.mageri.core.input.index.Read;
 import com.antigenomics.mageri.generators.MigWithMutations;
@@ -230,7 +231,7 @@ public class AssemblerBasicTest {
         System.out.println("Testing " + presetName + " Assembler. Case: no mutations");
         reads = new ArrayList<>();
         for (int i = 0; i < 30; i++) {
-            reads.add(new Read(read1, qualityProvider));
+            reads.add(new MaskedRead(read1, qualityProvider));
         }
         mig = new SMig(null, randomSequence(12), reads);
         consensus = (SConsensus) assembler.process(mig).getResult();
@@ -241,10 +242,10 @@ public class AssemblerBasicTest {
         System.out.println("Testing " + presetName + " Assembler. Case: frequent mutation with bad sequencing quality");
         reads = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
-            reads.add(new Read(read1, qualityProvider));
+            reads.add(new MaskedRead(read1, qualityProvider));
         }
         for (int i = 0; i < 20; i++) {
-            reads.add(new Read(read2, qualityProvider));
+            reads.add(new MaskedRead(read2, qualityProvider));
         }
         mig = new SMig(null, randomSequence(12), reads);
         consensus = (SConsensus) assembler.process(mig).getResult();
@@ -255,10 +256,10 @@ public class AssemblerBasicTest {
         System.out.println("Testing " + presetName + " Assembler. Case: rare mutation with good sequencing quality");
         reads = new ArrayList<>();
         for (int i = 0; i < 20; i++) {
-            reads.add(new Read(read1, qualityProvider));
+            reads.add(new MaskedRead(read1, qualityProvider));
         }
         for (int i = 0; i < 10; i++) {
-            reads.add(new Read(read3, qualityProvider));
+            reads.add(new MaskedRead(read3, qualityProvider));
         }
         mig = new SMig(null, randomSequence(12), reads);
         consensus = (SConsensus) assembler.process(mig).getResult();
@@ -269,10 +270,10 @@ public class AssemblerBasicTest {
         System.out.println("Testing " + presetName + " Assembler. Case: dominating mutation with good sequencing quality");
         reads = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
-            reads.add(new Read(read1, qualityProvider));
+            reads.add(new MaskedRead(read1, qualityProvider));
         }
         for (int i = 0; i < 20; i++) {
-            reads.add(new Read(read3, qualityProvider));
+            reads.add(new MaskedRead(read3, qualityProvider));
         }
         mig = new SMig(null, randomSequence(12), reads);
         consensus = (SConsensus) assembler.process(mig).getResult();
