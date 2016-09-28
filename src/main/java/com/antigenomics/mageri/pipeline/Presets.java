@@ -17,6 +17,7 @@
 package com.antigenomics.mageri.pipeline;
 
 import com.antigenomics.mageri.core.assemble.AssemblerParameters;
+import com.antigenomics.mageri.core.genomic.ReferenceLibraryParameters;
 import com.antigenomics.mageri.core.input.PreprocessorParameters;
 import com.antigenomics.mageri.core.variant.VariantCallerParameters;
 import com.antigenomics.mageri.misc.ParameterSet;
@@ -36,6 +37,7 @@ public class Presets implements ParameterSet {
 
     private final PreprocessorParameters preprocessorParameters;
     private final AssemblerParameters assemblerParameters;
+    private final ReferenceLibraryParameters referenceLibraryParameters;
     private final ConsensusAlignerParameters consensusAlignerParameters;
     private final VariantCallerParameters variantCallerParameters;
     private final DemultiplexParameters demultiplexParameters;
@@ -56,6 +58,7 @@ public class Presets implements ParameterSet {
                 DemultiplexParameters.DEFAULT,
                 PreprocessorParameters.DEFAULT,
                 AssemblerParameters.DEFAULT,
+                ReferenceLibraryParameters.DEFAULT,
                 ConsensusAlignerParameters.DEFAULT,
                 VariantCallerParameters.DEFAULT);
     }
@@ -65,12 +68,14 @@ public class Presets implements ParameterSet {
                    DemultiplexParameters demultiplexParameters,
                    PreprocessorParameters preprocessorParameters,
                    AssemblerParameters assemblerParameters,
+                   ReferenceLibraryParameters referenceLibraryParameters,
                    ConsensusAlignerParameters consensusAlignerParameters,
                    VariantCallerParameters variantCallerParameters) {
         this.platform = platform;
         this.libraryType = libraryType;
         this.preprocessorParameters = preprocessorParameters;
         this.assemblerParameters = assemblerParameters;
+        this.referenceLibraryParameters = referenceLibraryParameters;
         this.consensusAlignerParameters = consensusAlignerParameters;
         this.variantCallerParameters = variantCallerParameters;
         this.demultiplexParameters = demultiplexParameters;
@@ -87,6 +92,10 @@ public class Presets implements ParameterSet {
 
     public AssemblerParameters getAssemblerParameters() {
         return assemblerParameters;
+    }
+
+    public ReferenceLibraryParameters getReferenceLibraryParameters() {
+        return referenceLibraryParameters;
     }
 
     public ConsensusAlignerParameters getConsensusAlignerParameters() {
@@ -130,6 +139,7 @@ public class Presets implements ParameterSet {
     public static Presets create(String platformStr, String libraryTypeStr) {
         DemultiplexParameters demultiplexParameters = DemultiplexParameters.DEFAULT;
         PreprocessorParameters preprocessorParameters = PreprocessorParameters.DEFAULT;
+        ReferenceLibraryParameters referenceLibraryParameters = ReferenceLibraryParameters.DEFAULT;
         ConsensusAlignerParameters consensusAlignerParameters = ConsensusAlignerParameters.DEFAULT;
         VariantCallerParameters variantCallerParameters;
         AssemblerParameters assemblerParameters;
@@ -162,49 +172,64 @@ public class Presets implements ParameterSet {
 
         return new Presets(platform, libraryType,
                 demultiplexParameters, preprocessorParameters, assemblerParameters,
+                referenceLibraryParameters,
                 consensusAlignerParameters, variantCallerParameters);
     }
 
     public Presets withPreprocessorParameters(PreprocessorParameters preprocessorParameters) {
         return new Presets(platform, libraryType,
                 demultiplexParameters, preprocessorParameters,
-                assemblerParameters, consensusAlignerParameters, variantCallerParameters);
+                assemblerParameters,
+                referenceLibraryParameters, consensusAlignerParameters, variantCallerParameters);
     }
 
     public Presets withAssemblerParameters(AssemblerParameters assemblerParameters) {
         return new Presets(platform, libraryType,
                 demultiplexParameters, preprocessorParameters,
-                assemblerParameters, consensusAlignerParameters, variantCallerParameters);
+                assemblerParameters,
+                referenceLibraryParameters, consensusAlignerParameters, variantCallerParameters);
     }
 
     public Presets withConsensusAlignerParameters(ConsensusAlignerParameters consensusAlignerParameters) {
         return new Presets(platform, libraryType,
                 demultiplexParameters, preprocessorParameters,
-                assemblerParameters, consensusAlignerParameters, variantCallerParameters);
+                assemblerParameters,
+                referenceLibraryParameters, consensusAlignerParameters, variantCallerParameters);
     }
 
     public Presets withVariantCallerParameters(VariantCallerParameters variantCallerParameters) {
         return new Presets(platform, libraryType,
                 demultiplexParameters, preprocessorParameters,
-                assemblerParameters, consensusAlignerParameters, variantCallerParameters);
+                assemblerParameters,
+                referenceLibraryParameters, consensusAlignerParameters, variantCallerParameters);
     }
 
     public Presets withDemultiplexParameters(DemultiplexParameters demultiplexParameters) {
         return new Presets(platform, libraryType,
                 demultiplexParameters, preprocessorParameters,
-                assemblerParameters, consensusAlignerParameters, variantCallerParameters);
+                assemblerParameters,
+                referenceLibraryParameters, consensusAlignerParameters, variantCallerParameters);
+    }
+
+    public Presets withReferenceLibraryParameters(ReferenceLibraryParameters referenceLibraryParameters) {
+        return new Presets(platform, libraryType,
+                demultiplexParameters, preprocessorParameters,
+                assemblerParameters,
+                referenceLibraryParameters, consensusAlignerParameters, variantCallerParameters);
     }
 
     public Presets withPlatform(Platform platform) {
         return new Presets(platform, libraryType,
                 demultiplexParameters, preprocessorParameters,
-                assemblerParameters, consensusAlignerParameters, variantCallerParameters);
+                assemblerParameters,
+                referenceLibraryParameters, consensusAlignerParameters, variantCallerParameters);
     }
 
     public Presets withLibraryType(LibraryType libraryType) {
         return new Presets(platform, libraryType,
                 demultiplexParameters, preprocessorParameters,
-                assemblerParameters, consensusAlignerParameters, variantCallerParameters);
+                assemblerParameters,
+                referenceLibraryParameters, consensusAlignerParameters, variantCallerParameters);
     }
 
     @Override
@@ -216,6 +241,7 @@ public class Presets implements ParameterSet {
         e.addContent(demultiplexParameters.toXml());
         e.addContent(preprocessorParameters.toXml());
         e.addContent(assemblerParameters.toXml());
+        e.addContent(referenceLibraryParameters.toXml());
         e.addContent(consensusAlignerParameters.toXml());
         e.addContent(variantCallerParameters.toXml());
         return e;
@@ -237,6 +263,7 @@ public class Presets implements ParameterSet {
                 DemultiplexParameters.fromXml(e),
                 PreprocessorParameters.fromXml(e),
                 AssemblerParameters.fromXml(e),
+                ReferenceLibraryParameters.fromXml(e),
                 ConsensusAlignerParameters.fromXml(e),
                 VariantCallerParameters.fromXml(e)
         );
@@ -249,21 +276,22 @@ public class Presets implements ParameterSet {
 
         Presets presets = (Presets) o;
 
-        if (!assemblerParameters.equals(presets.assemblerParameters)) return false;
-        if (!consensusAlignerParameters.equals(presets.consensusAlignerParameters)) return false;
-        if (!demultiplexParameters.equals(presets.demultiplexParameters)) return false;
-        if (libraryType != presets.libraryType) return false;
-        if (platform != presets.platform) return false;
         if (!preprocessorParameters.equals(presets.preprocessorParameters)) return false;
+        if (!assemblerParameters.equals(presets.assemblerParameters)) return false;
+        if (!referenceLibraryParameters.equals(presets.referenceLibraryParameters)) return false;
+        if (!consensusAlignerParameters.equals(presets.consensusAlignerParameters)) return false;
         if (!variantCallerParameters.equals(presets.variantCallerParameters)) return false;
+        if (!demultiplexParameters.equals(presets.demultiplexParameters)) return false;
+        if (platform != presets.platform) return false;
+        return libraryType == presets.libraryType;
 
-        return true;
     }
 
     @Override
     public int hashCode() {
         int result = preprocessorParameters.hashCode();
         result = 31 * result + assemblerParameters.hashCode();
+        result = 31 * result + referenceLibraryParameters.hashCode();
         result = 31 * result + consensusAlignerParameters.hashCode();
         result = 31 * result + variantCallerParameters.hashCode();
         result = 31 * result + demultiplexParameters.hashCode();

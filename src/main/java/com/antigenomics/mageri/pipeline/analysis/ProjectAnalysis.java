@@ -74,7 +74,8 @@ public class ProjectAnalysis implements Serializable {
         this.referenceLibrary =
                 ReferenceLibrary.fromInput(input.getReferences(), input.hasBedInfo() ?
                         new BedGenomicInfoProvider(input.getBedFile(), input.getContigFile()) :
-                        new BasicGenomicInfoProvider());
+                        new BasicGenomicInfoProvider(),
+                        presets.getReferenceLibraryParameters());
 
         this.preprocessorFactory = new PreprocessorFactory(presets.getDemultiplexParameters(),
                 presets.getPreprocessorParameters());
