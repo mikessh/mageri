@@ -100,12 +100,6 @@ public final class Mageri {
             writeBinary = commandLine.hasOption(OPT_BINARY_OUTPUT);
             noUmi = commandLine.hasOption(OPT_NO_UMI);
 
-            if (noUmi && presets.getVariantCallerParameters().getErrorModelType() != ErrorModelType.RawData) {
-                System.out.println("NOTE automatically switching to corresponding error model for raw data analysis.");
-                presets = presets.withVariantCallerParameters(
-                        presets.getVariantCallerParameters().withErrorModelType(ErrorModelType.RawData));
-            }
-
             if (writeBinary && noUmi) {
                 throw new ParseException("Binary serialization of raw output is not supported yet.");
             }

@@ -28,11 +28,11 @@ public class MinorBasedErrorModel implements ErrorModel {
     private final MutationsTable mutationsTable;
     private final SubstitutionErrorMatrix substitutionErrorMatrix;
 
-    public MinorBasedErrorModel(double order, double cycles, double lambda,
+    public MinorBasedErrorModel(double order, double cycles, double efficiency,
                                 MutationsTable mutationsTable) {
         this.order = order;
         this.cycles = cycles;
-        this.lambda = lambda;
+        this.lambda = efficiency - 1;
         this.propagateProb = computePropagateProb(lambda, order);
         this.mutationsTable = mutationsTable;
         this.substitutionErrorMatrix = SubstitutionErrorMatrix.fromMutationsTable(mutationsTable);
@@ -54,7 +54,8 @@ public class MinorBasedErrorModel implements ErrorModel {
         return propagateProb;
     }
 
-    public static double computePropagateProb(double lambda, double order) {
+    public static double computePropagateProb(double efficiency, double order) {
+        double lambda = efficiency - 1;
         return Math.pow((1.0 - lambda), order) * Math.pow(lambda, order + 1);
     }
 

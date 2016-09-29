@@ -60,6 +60,8 @@ public class PipelineTest {
 
         ProjectAnalysis projectAnalysis = rawReads ? new ProjectAnalysisRaw(input) : new ProjectAnalysis(input);
 
+        projectAnalysis.run();
+
         Set<String> expectedVariants = new HashSet<>();
         expectedVariants.add("S30:T>C");
         expectedVariants.add("S87:T>C");

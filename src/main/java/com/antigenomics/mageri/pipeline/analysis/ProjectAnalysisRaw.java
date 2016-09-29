@@ -18,6 +18,7 @@ package com.antigenomics.mageri.pipeline.analysis;
 
 import cc.redberry.pipe.OutputPort;
 import com.antigenomics.mageri.core.assemble.Consensus;
+import com.antigenomics.mageri.core.variant.model.ErrorModelType;
 import com.antigenomics.mageri.misc.ProcessorResultWrapper;
 import com.antigenomics.mageri.pipeline.Presets;
 import com.antigenomics.mageri.pipeline.RuntimeParameters;
@@ -33,7 +34,16 @@ public class ProjectAnalysisRaw extends ProjectAnalysis {
     public ProjectAnalysisRaw(Input input,
                            Presets presets,
                            RuntimeParameters runtimeParameters) throws IOException {
-        super(input, presets, runtimeParameters);
+        super(input, checkPresets(presets), runtimeParameters);
+    }
+
+    private static Presets checkPresets(Presets presets) {
+        if (presets.getVariantCallerParameters().getErrorModelType() != ErrorModelType.RawData) {
+            System.out.println("NOTE automatically switching to corresponding error model for raw data analysis.");
+            presets = presets.withVariantCallerParameters(
+                    presets.getVariantCallerParameters().withErrorModelType(ErrorModelType.RawData));
+        }
+        return presets;
     }
 
     @Override
