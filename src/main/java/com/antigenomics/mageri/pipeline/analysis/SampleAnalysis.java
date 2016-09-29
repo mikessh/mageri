@@ -53,7 +53,7 @@ public class SampleAnalysis implements ReadSpecific, Serializable {
 
     protected boolean ran = false;
 
-    private final List<AlignedConsensus> alignmentDataList = new ArrayList<>();
+    protected final List<AlignedConsensus> alignmentDataList = new ArrayList<>();
 
     @SuppressWarnings("unchecked")
     protected SampleAnalysis(ProjectAnalysis parent,
@@ -77,7 +77,7 @@ public class SampleAnalysis implements ReadSpecific, Serializable {
         this.consensusAligner = consensusAligner;
     }
 
-    private void sout(String message, int verbosityLevel) {
+    protected void sout(String message, int verbosityLevel) {
         Speaker.INSTANCE.sout("[" + sample.getFullName() + "] " +
                 message, verbosityLevel);
     }
@@ -144,75 +144,6 @@ public class SampleAnalysis implements ReadSpecific, Serializable {
         assembler.clear();
 
         sout("Finished, " + countingInput.getCount() + " MIGs processed in total.", 1);
-
-        sout("Calling variants.", 1);
-
-        this.variantCaller = new VariantCaller(consensusAligner,
-                parent.getPresets().getVariantCallerParameters());
-
-        if (outputPrefix != null) {
-            variantCaller.writePlainText(outputPrefix);
-        }
-
-        sout("Finished", 1);
-
-        ran = true;
-    }
-
-    @SuppressWarnings("unchecked")
-    public void runNoUmi() throws Exception {
-        if (ran) {
-            return;
-        }
-
-        String outputPrefix = getOutputPrefix();
-
-        final Merger<ProcessorResultWrapper<Consensus>> input = new Merger<>(524288);
-        input.merge(reader);
-        input.start();
-
-        final CountingOutputPort<ProcessorResultWrapper<Consensus>> countingInput = new CountingOutputPort<>(input);
-
-        Thread reporter = new Thread(new Runnable() {
-            long prevCount = -1;
-
-            @Override
-            public void run() {
-                try {
-                    while (!countingInput.isClosed()) {
-                        long count = countingInput.getCount();
-                        if (prevCount != count) {
-                            sout("Aligning reads, " + count + " processed so far..", 2);
-                            prevCount = count;
-                        }
-                        Thread.sleep(10000);
-                    }
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-
-        reporter.setDaemon(true);
-        reporter.start();
-
-        // Align in parallel
-        final OutputPort<ProcessorResultWrapper<AlignedConsensus>> alignerResults =
-                new ParallelProcessor<>(countingInput, consensusAligner, parent.getRuntimeParameters().getNumberOfThreads());
-
-        ProcessorResultWrapper<AlignedConsensus> alignmentDataWrapped;
-        while ((alignmentDataWrapped = alignerResults.take()) != null) {
-            if (alignmentDataWrapped.hasResult()) {
-                alignmentDataList.add(alignmentDataWrapped.getResult());
-            }
-        }
-
-        // Write consensus aligner output now, as it will be cleared upon creation of VariantCaller
-        if (outputPrefix != null) {
-            consensusAligner.writePlainText(outputPrefix);
-        }
-
-        sout("Finished, " + countingInput.getCount() + " reads processed in total.", 1);
 
         sout("Calling variants.", 1);
 

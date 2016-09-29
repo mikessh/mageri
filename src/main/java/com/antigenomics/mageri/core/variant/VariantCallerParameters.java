@@ -139,6 +139,22 @@ public final class VariantCallerParameters implements ParameterSet {
                 substitutionErrorRateMatrix);
     }
 
+    public VariantCallerParameters withErrorModelType(ErrorModelType errorModelType) {
+        return new VariantCallerParameters(
+                qualityThreshold, singletonFrequencyThreshold, coverageThreshold,
+                errorModelType,
+                modelOrder, modelCycles, modelEfficiency,
+                substitutionErrorRateMatrix);
+    }
+
+    public VariantCallerParameters withSubstitutionErrorRateMatrix(String substitutionErrorRateMatrix) {
+        return new VariantCallerParameters(
+                qualityThreshold, singletonFrequencyThreshold, coverageThreshold,
+                errorModelType,
+                modelOrder, modelCycles, modelEfficiency,
+                substitutionErrorRateMatrix);
+    }
+
     public VariantCallerParameters withCoverageThreshold(int coverageThreshold) {
         return new VariantCallerParameters(
                 qualityThreshold, singletonFrequencyThreshold, coverageThreshold,

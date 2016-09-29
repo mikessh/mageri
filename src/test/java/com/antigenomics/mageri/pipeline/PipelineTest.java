@@ -19,6 +19,7 @@ package com.antigenomics.mageri.pipeline;
 import com.antigenomics.mageri.TestUtil;
 import com.antigenomics.mageri.core.output.VcfWriter;
 import com.antigenomics.mageri.core.variant.Variant;
+import com.antigenomics.mageri.pipeline.analysis.ProjectAnalysisRaw;
 import com.antigenomics.mageri.pipeline.input.Input;
 import com.antigenomics.mageri.pipeline.input.InputParser;
 import com.antigenomics.mageri.FastTests;
@@ -57,12 +58,7 @@ public class PipelineTest {
     public void fullTest(boolean rawReads) throws Exception {
         Input input = INPUT_PARSER.parseJson("pipeline/tabular.pri.json");
 
-        ProjectAnalysis projectAnalysis = new ProjectAnalysis(input);
-        if (!rawReads) {
-            projectAnalysis.run();
-        } else {
-            projectAnalysis.runNoUmi();
-        }
+        ProjectAnalysis projectAnalysis = rawReads ? new ProjectAnalysisRaw(input) : new ProjectAnalysis(input);
 
         Set<String> expectedVariants = new HashSet<>();
         expectedVariants.add("S30:T>C");

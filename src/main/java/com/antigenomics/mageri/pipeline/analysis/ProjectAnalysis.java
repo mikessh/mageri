@@ -16,8 +16,6 @@
 
 package com.antigenomics.mageri.pipeline.analysis;
 
-import cc.redberry.pipe.OutputPort;
-import com.antigenomics.mageri.core.assemble.Consensus;
 import com.antigenomics.mageri.core.genomic.BedGenomicInfoProvider;
 import com.antigenomics.mageri.core.input.MigOutputPort;
 import com.antigenomics.mageri.core.mapping.AlignedConsensus;
@@ -25,7 +23,6 @@ import com.antigenomics.mageri.core.mapping.alignment.ExtendedKmerAlignerFactory
 import com.antigenomics.mageri.core.output.SamWriter;
 import com.antigenomics.mageri.core.output.VcfWriter;
 import com.antigenomics.mageri.core.variant.Variant;
-import com.antigenomics.mageri.misc.ProcessorResultWrapper;
 import com.antigenomics.mageri.pipeline.RuntimeParameters;
 import com.antigenomics.mageri.pipeline.SerializationUtils;
 import com.antigenomics.mageri.pipeline.input.Input;
@@ -52,12 +49,10 @@ public class ProjectAnalysis implements Serializable {
     protected final RuntimeParameters runtimeParameters;
     protected String outputPath = null;
     protected boolean writeBinary = false;
-
-    private final PreprocessorFactory preprocessorFactory;
-    private transient final PipelineAssemblerFactory pipelineAssemblerFactory;
-    private transient final PipelineConsensusAlignerFactory pipelineConsensusAlignerFactory;
-
-    private final Map<Sample, SampleAnalysis> analysisBySample = new TreeMap<>();
+    protected final Map<Sample, SampleAnalysis> analysisBySample = new TreeMap<>();
+    protected final PreprocessorFactory preprocessorFactory;
+    protected transient final PipelineAssemblerFactory pipelineAssemblerFactory;
+    protected transient final PipelineConsensusAlignerFactory pipelineConsensusAlignerFactory;
 
     public ProjectAnalysis(Input input) throws IOException {
         this(input, Presets.DEFAULT, RuntimeParameters.DEFAULT);
@@ -73,8 +68,8 @@ public class ProjectAnalysis implements Serializable {
 
         this.referenceLibrary =
                 ReferenceLibrary.fromInput(input.getReferences(), input.hasBedInfo() ?
-                        new BedGenomicInfoProvider(input.getBedFile(), input.getContigFile()) :
-                        new BasicGenomicInfoProvider(),
+                                new BedGenomicInfoProvider(input.getBedFile(), input.getContigFile()) :
+                                new BasicGenomicInfoProvider(),
                         presets.getReferenceLibraryParameters());
 
         this.preprocessorFactory = new PreprocessorFactory(presets.getDemultiplexParameters(),
@@ -89,7 +84,7 @@ public class ProjectAnalysis implements Serializable {
                 presets.getConsensusAlignerParameters());
     }
 
-    private void sout(String message, int verbosityLevel) {
+    protected void sout(String message, int verbosityLevel) {
         Speaker.INSTANCE.sout("[" + project.getName() + "] " +
                 message, verbosityLevel);
     }
@@ -127,58 +122,7 @@ public class ProjectAnalysis implements Serializable {
         write();
     }
 
-    @SuppressWarnings("unchecked")
-    public void runNoUmi() throws Exception {
-        sout("Started analysis.", 1);
-
-        for (SampleGroup sampleGroup : project.getSampleGroups()) {
-            sout("Processing sample group " + sampleGroup.getName() + ".", 1);
-            final RawReadPreprocessor preprocessor = preprocessorFactory.createNoUmi(input, sampleGroup, runtimeParameters);
-            preprocessor.start();
-
-            Thread[] analysisThreads = new Thread[sampleGroup.getSamples().size()];
-
-            for (int i = 0; i < sampleGroup.getSamples().size(); i++) {
-                final Sample sample = sampleGroup.getSamples().get(i);
-                final OutputPort<ProcessorResultWrapper<Consensus>> inputPort = preprocessor.createRaw(sample);
-                final SampleAnalysis sampleAnalysis = new SampleAnalysis(
-                        this, sample, null,
-                        inputPort, null,
-                        pipelineConsensusAlignerFactory.create(sample),
-                        preprocessor.isPairedEnd()
-                );
-
-                analysisThreads[i] = new Thread(
-                        new Runnable() {
-                            @Override
-                            public void run() {
-                                try {
-                                    sampleAnalysis.runNoUmi();
-                                } catch (Exception e) {
-                                    throw new RuntimeException(e);
-                                }
-                            }
-                        }
-                );
-
-                analysisBySample.put(sample, sampleAnalysis);
-
-                analysisThreads[i].start();
-            }
-
-            preprocessor.stop();
-
-            for (Thread analysisThread : analysisThreads) {
-                analysisThread.join();
-            }
-        }
-
-        sout("Done.", 1);
-
-        write();
-    }
-
-    private void write() throws IOException {
+    protected void write() throws IOException {
         if (outputPath != null) {
             sout("Writing output.", 1);
 
@@ -216,7 +160,7 @@ public class ProjectAnalysis implements Serializable {
             String outputPath = this.outputPath + project.getName();
 
             preprocessorFactory.writePlainText(outputPath);
-            if(pipelineAssemblerFactory.wasUsed()) {
+            if (pipelineAssemblerFactory.wasUsed()) {
                 pipelineAssemblerFactory.writePlainText(outputPath);
             }
             pipelineConsensusAlignerFactory.writePlainText(outputPath);
