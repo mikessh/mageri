@@ -55,14 +55,55 @@ public class VariantCaller extends PipelineBlock {
         filters[1] = new SingletonFilter(variantCallerParameters.getSingletonFrequencyThreshold());
         filters[2] = new CoverageFilter(variantCallerParameters.getCoverageThreshold());
 
-        final ErrorModel errorModel = new ErrorModel(
+        final MinorBasedErrorModel minorBasedErrorModel = new MinorBasedErrorModel(
                 variantCallerParameters.getOrder(),
                 variantCallerParameters.getModelCycles(),
                 variantCallerParameters.getModelEfficiency() - 1.0);
 
         for (Reference reference : referenceLibrary.getReferences()) {
+            MutationsTable mutationsTable = consensusAligner.getAlignerTable(reference);
+            if (mutationsTable.wasUpdated()) {
+                ErrorModel errorModel = ErrorModelProvider.create(variantCallerParameters,
+                        mutationsTable);
+
+                for (Mutation mutation : mutationsTable.getMutations()) {
+                    if (mutation instanceof Substitution) {
+                        int code = ((Substitution) mutation).getCode(),
+                                pos = Mutations.getPosition(code),
+                                to = Mutations.getTo(code);
+
+                        int majorCount = mutationsTable.getMajorMigCount(pos, to);
+
+                        assert majorCount > 0;
+
+                        int coverage = mutationsTable.getMigCoverage(pos),
+                                minorCount = mutationsTable.getMinorMigCount(pos, to);
+
+                        double errorRate = errorModel.computeErrorRate(mutation),
+                                score = -10 * getLog10PValue(majorCount, coverage, errorRate);
+
+                        NucleotideSequenceBuilder nsb = new NucleotideSequenceBuilder(1);
+                        nsb.setCode(0, mutationsTable.getAncestralBase(pos));
+
+                        Variant variant = new Variant(reference,
+                                mutation, majorCount, minorCount,
+                                mutationsTable.getMigCoverage(pos),
+                                majorCount / (double) coverage,
+                                score, mutationsTable.getMeanCqs(pos, to), errorRate,
+                                nsb.create(), mutationsTable.hasReferenceBase(pos));
+
+                        variant.filter(this);
+
+                        variants.add(variant);
+                    } else {
+                        // TODO: IMPORTANT: INDELS
+                    }
+                }
+            }
+
+            /*
             final MutationsTable mutationsTable = consensusAligner.getAlignerTable(reference);
-            final MinorMatrix minorMatrix = MinorMatrix.fromMutationsTable(mutationsTable);
+            final SubstitutionErrorMatrix minorMatrix = SubstitutionErrorMatrix.fromMutationsTable(mutationsTable);
             if (mutationsTable.wasUpdated()) {
                 for (Mutation mutation : mutationsTable.getMutations()) {
                     if (mutation instanceof Substitution) {
@@ -77,7 +118,7 @@ public class VariantCaller extends PipelineBlock {
                         int coverage = mutationsTable.getMigCoverage(pos),
                                 minorCount = mutationsTable.getMinorMigCount(pos, to);
 
-                        double errorRate = errorModel.getErrorRate(minorCount, coverage,
+                        double errorRate = minorBasedErrorModel.getErrorRate(minorCount, coverage,
                                 from, to,
                                 minorMatrix),
                                 score = -10 * getLog10PValue(majorCount, coverage, errorRate);
@@ -100,6 +141,7 @@ public class VariantCaller extends PipelineBlock {
                     }
                 }
             }
+                    */
         }
 
         // This is quite important for memory usage

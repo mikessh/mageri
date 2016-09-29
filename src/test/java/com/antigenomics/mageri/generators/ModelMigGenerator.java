@@ -23,7 +23,7 @@ import com.milaboratory.core.sequence.NucleotideSQPair;
 import com.milaboratory.core.sequence.mutations.Mutations;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.core.sequence.quality.SequenceQualityPhred;
-import com.antigenomics.mageri.core.variant.ErrorModel;
+import com.antigenomics.mageri.core.variant.MinorBasedErrorModel;
 import com.antigenomics.mageri.pipeline.analysis.Sample;
 
 import java.util.*;
@@ -33,7 +33,7 @@ import static com.antigenomics.mageri.generators.RandomUtil.randomSequence;
 public class ModelMigGenerator {
     private static final Random rnd = new Random(480011L);
     private final double somaticMutationFreq;
-    private final ErrorModel errorModel;
+    private final MinorBasedErrorModel minorBasedErrorModel;
     private final MutationGenerator readErrorGenerator, pcrErrorGenerator, pcrHotSpotErrorGenerator;
 
     private int[] somaticMutations;
@@ -47,12 +47,12 @@ public class ModelMigGenerator {
 
     public ModelMigGenerator(double hotSpotPositionRatio, double pcrPositionRatio, double somaticMutationRatio,
                              double somaticMutationFreq,
-                             ErrorModel errorModel,
+                             MinorBasedErrorModel minorBasedErrorModel,
                              MutationGenerator readErrorGenerator, MutationGenerator pcrErrorGenerator,
                              MutationGenerator pcrHotSpotErrorGenerator,
                              NucleotideSequence reference) {
         this.somaticMutationFreq = somaticMutationFreq;
-        this.errorModel = errorModel;
+        this.minorBasedErrorModel = minorBasedErrorModel;
         this.readErrorGenerator = readErrorGenerator;
         this.pcrErrorGenerator = pcrErrorGenerator;
         this.pcrHotSpotErrorGenerator = pcrHotSpotErrorGenerator;
@@ -146,7 +146,7 @@ public class ModelMigGenerator {
 
         List<Read> reads = new ArrayList<>();
 
-        for (int i = 0; i < Math.pow(errorModel.getCycles(), 0.5 + 1.5 * rnd.nextDouble()); i++) {
+        for (int i = 0; i < Math.pow(minorBasedErrorModel.getCycles(), 0.5 + 1.5 * rnd.nextDouble()); i++) {
             int[] pcrMutations = generateAndFilterMutations(pcrErrorGenerator,
                     sequence2, pcrPositions);
             NucleotideSequence sequence3 = Mutations.mutate(sequence2, pcrMutations);

@@ -18,18 +18,31 @@ package com.antigenomics.mageri.core.variant;
 
 import com.antigenomics.mageri.core.mapping.MutationsTable;
 
-public class MinorMatrix {
+public class SubstitutionErrorMatrix {
     private final double[][] innerMatrix;
 
-    public static final MinorMatrix DEFAULT = new MinorMatrix(new double[][]{
-            //  A        G        C        T
-            {0.00000, 0.08551, 0.00427, 0.00005},
-            {0.05339, 0.00000, 0.00005, 0.01960},
-            {0.00635, 0.07048, 0.00000, 0.06102},
-            {0.00005, 0.00005, 0.07926, 0.00000}
+    public static final SubstitutionErrorMatrix DEFAULT = new SubstitutionErrorMatrix(new double[][]{
+            // A     G     C     T
+            {0.00, 1e-6, 1e-6, 1e-6},
+            {1e-6, 0.00, 1e-6, 1e-6},
+            {1e-6, 1e-6, 0.00, 1e-6},
+            {1e-6, 1e-6, 1e-6, 0.00}
     });
 
-    public static MinorMatrix fromMutationsTable(MutationsTable mutationsTable) {
+    public static SubstitutionErrorMatrix fromString(String matrix) {
+        double[][] innerMatrix = new double[4][4];
+        String[] rows = matrix.split(";");
+        for (int i = 0; i < 4; i++) {
+            String[] cells = rows[i].split(",");
+            for (int j = 0; j < 4; j++) {
+                innerMatrix[i][j] = Double.parseDouble(cells[j]);
+            }
+        }
+
+        return new SubstitutionErrorMatrix(innerMatrix);
+    }
+
+    public static SubstitutionErrorMatrix fromMutationsTable(MutationsTable mutationsTable) {
         double[][] innerMatrix = new double[4][4];
         double[] fromCounters = new double[4];
 
@@ -56,10 +69,10 @@ public class MinorMatrix {
             }
         }
 
-        return new MinorMatrix(innerMatrix);
+        return new SubstitutionErrorMatrix(innerMatrix);
     }
 
-    private MinorMatrix(double[][] innerMatrix) {
+    private SubstitutionErrorMatrix(double[][] innerMatrix) {
         this.innerMatrix = innerMatrix;
     }
 

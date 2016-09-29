@@ -30,7 +30,7 @@ import com.antigenomics.mageri.core.mapping.SConsensusAligner;
 import com.antigenomics.mageri.generators.RandomReferenceGenerator;
 import org.junit.Test;
 
-public class MinorMatrixTest {
+public class SubstitutionErrorMatrixTest {
     @Test
     @SuppressWarnings("unchecked")
     public void test() {
@@ -61,7 +61,7 @@ public class MinorMatrixTest {
             }
         }
 
-        MinorMatrix minorMatrix = MinorMatrix.fromMutationsTable(aligner.getAlignerTable(reference));
+        SubstitutionErrorMatrix substitutionErrorMatrix = SubstitutionErrorMatrix.fromMutationsTable(aligner.getAlignerTable(reference));
 
         DoubleRangeAssertion assertion =
                 DoubleRangeAssertion.createRange("Observed vs expected substitution rate ratio", "Random MIG test", 0.7, 1.3);
@@ -71,7 +71,7 @@ public class MinorMatrixTest {
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
                 if (i != j) {
-                    double observed = minorMatrix.getRate(i, j) / migSize + JITTER,
+                    double observed = substitutionErrorMatrix.getRate(i, j) / migSize + JITTER,
                             expected = mutationGenerator.getSubstitutionModel().getValue(i, j) + JITTER;
                     System.out.println(
                             NucleotideAlphabet.INSTANCE.symbolFromCode((byte) i) + ">" +

@@ -22,6 +22,8 @@ import org.jdom.Element;
 public final class VariantCallerParameters implements ParameterSet {
     private final double order, modelCycles, modelEfficiency;
     private final int qualityThreshold, singletonFrequencyThreshold, coverageThreshold;
+    private final ErrorModelType errorModelType;
+    private final String substitutionErrorRateMatrix;
 
     public static VariantCallerParameters DEFAULT = new VariantCallerParameters(1.0, 20.0, 1.95,
             20, 10000, 100);

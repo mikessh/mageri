@@ -16,11 +16,6 @@
 
 package com.antigenomics.mageri.core.variant;
 
-import com.antigenomics.mageri.core.mapping.MutationsTable;
-import com.antigenomics.mageri.core.mutations.Mutation;
-
-import java.io.Serializable;
-
-public interface ErrorModel extends Serializable {
-    double computeErrorRate(Mutation mutation);
+public enum ErrorModelType {
+    RawData, MinorBased, User
 }
