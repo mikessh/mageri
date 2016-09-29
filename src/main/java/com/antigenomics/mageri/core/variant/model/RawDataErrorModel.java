@@ -14,13 +14,27 @@
  * limitations under the License.
  */
 
-package com.antigenomics.mageri.core.variant;
+package com.antigenomics.mageri.core.variant.model;
 
 import com.antigenomics.mageri.core.mapping.MutationsTable;
 import com.antigenomics.mageri.core.mutations.Mutation;
+import com.antigenomics.mageri.core.mutations.Substitution;
+import com.milaboratory.core.sequence.mutations.Mutations;
 
-import java.io.Serializable;
+public class RawDataErrorModel implements ErrorModel {
+    private final MutationsTable mutationsTable;
 
-public interface ErrorModel extends Serializable {
-    double computeErrorRate(Mutation mutation);
+    public RawDataErrorModel(MutationsTable mutationsTable) {
+        this.mutationsTable = mutationsTable;
+    }
+
+    @Override
+    public double computeErrorRate(Mutation mutation) {
+        int code = ((Substitution) mutation).getCode(),
+                pos = Mutations.getPosition(code), to = Mutations.getTo(code);
+
+        double cqs = mutationsTable.getMeanCqs(pos, to);
+
+        return Math.pow(10.0, -cqs / 10.0);
+    }
 }

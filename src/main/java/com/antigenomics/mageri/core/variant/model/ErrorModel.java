@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-package com.antigenomics.mageri.core.variant;
+package com.antigenomics.mageri.core.variant.model;
 
-import com.antigenomics.mageri.core.mapping.MutationsTable;
+import com.antigenomics.mageri.core.mutations.Mutation;
 
-public class ErrorModelProvider {
+import java.io.Serializable;
 
-    public static ErrorModel create(VariantCallerParameters parameters, MutationsTable mutationsTable) {
-
-    }
+public interface ErrorModel extends Serializable {
+    double computeErrorRate(Mutation mutation);
 }

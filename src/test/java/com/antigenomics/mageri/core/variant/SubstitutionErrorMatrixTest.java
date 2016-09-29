@@ -20,6 +20,7 @@ import com.antigenomics.mageri.DoubleRangeAssertion;
 import com.antigenomics.mageri.core.assemble.SConsensus;
 import com.antigenomics.mageri.core.genomic.Reference;
 import com.antigenomics.mageri.core.mapping.ConsensusAligner;
+import com.antigenomics.mageri.core.variant.model.SubstitutionErrorMatrix;
 import com.antigenomics.mageri.generators.MutationGenerator;
 import com.antigenomics.mageri.generators.RandomMigGenerator;
 import com.milaboratory.core.sequence.nucleotide.NucleotideAlphabet;

@@ -19,11 +19,12 @@ package com.antigenomics.mageri.generators;
 import com.antigenomics.mageri.core.input.SMig;
 import com.antigenomics.mageri.core.input.index.MaskedRead;
 import com.antigenomics.mageri.core.input.index.Read;
+import com.antigenomics.mageri.core.variant.VariantCallerParameters;
 import com.milaboratory.core.sequence.NucleotideSQPair;
 import com.milaboratory.core.sequence.mutations.Mutations;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.core.sequence.quality.SequenceQualityPhred;
-import com.antigenomics.mageri.core.variant.MinorBasedErrorModel;
+import com.antigenomics.mageri.core.variant.model.MinorBasedErrorModel;
 import com.antigenomics.mageri.pipeline.analysis.Sample;
 
 import java.util.*;
@@ -33,7 +34,7 @@ import static com.antigenomics.mageri.generators.RandomUtil.randomSequence;
 public class ModelMigGenerator {
     private static final Random rnd = new Random(480011L);
     private final double somaticMutationFreq;
-    private final MinorBasedErrorModel minorBasedErrorModel;
+    private final VariantCallerParameters variantCallerParameters;
     private final MutationGenerator readErrorGenerator, pcrErrorGenerator, pcrHotSpotErrorGenerator;
 
     private int[] somaticMutations;
@@ -47,12 +48,12 @@ public class ModelMigGenerator {
 
     public ModelMigGenerator(double hotSpotPositionRatio, double pcrPositionRatio, double somaticMutationRatio,
                              double somaticMutationFreq,
-                             MinorBasedErrorModel minorBasedErrorModel,
+                             VariantCallerParameters variantCallerParameters,
                              MutationGenerator readErrorGenerator, MutationGenerator pcrErrorGenerator,
                              MutationGenerator pcrHotSpotErrorGenerator,
                              NucleotideSequence reference) {
         this.somaticMutationFreq = somaticMutationFreq;
-        this.minorBasedErrorModel = minorBasedErrorModel;
+        this.variantCallerParameters = variantCallerParameters;
         this.readErrorGenerator = readErrorGenerator;
         this.pcrErrorGenerator = pcrErrorGenerator;
         this.pcrHotSpotErrorGenerator = pcrHotSpotErrorGenerator;
@@ -146,7 +147,7 @@ public class ModelMigGenerator {
 
         List<Read> reads = new ArrayList<>();
 
-        for (int i = 0; i < Math.pow(minorBasedErrorModel.getCycles(), 0.5 + 1.5 * rnd.nextDouble()); i++) {
+        for (int i = 0; i < Math.pow(variantCallerParameters.getModelCycles(), 0.5 + 1.5 * rnd.nextDouble()); i++) {
             int[] pcrMutations = generateAndFilterMutations(pcrErrorGenerator,
                     sequence2, pcrPositions);
             NucleotideSequence sequence3 = Mutations.mutate(sequence2, pcrMutations);

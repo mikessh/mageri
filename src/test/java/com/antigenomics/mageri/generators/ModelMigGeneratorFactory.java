@@ -16,20 +16,23 @@
 
 package com.antigenomics.mageri.generators;
 
+import com.antigenomics.mageri.core.variant.VariantCallerParameters;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
-import com.antigenomics.mageri.core.variant.MinorBasedErrorModel;
+import com.antigenomics.mageri.core.variant.model.MinorBasedErrorModel;
 
 public class ModelMigGeneratorFactory {
     private double hotSpotPositionRatio = 0.1, pcrPositionRatio = 0.4,
             somaticMutationRatio = 0.1, somaticMutationFreq = 0.0005;
-    private MinorBasedErrorModel minorBasedErrorModel = new MinorBasedErrorModel();
+    private VariantCallerParameters variantCallerParameters = VariantCallerParameters.DEFAULT;
     private MutationGenerator readErrorGenerator = MutationGenerator.NO_INDEL,
             pcrErrorGenerator = MutationGenerator.NO_INDEL_SKEWED,
-            pcrHotSpotErrorGenerator = pcrErrorGenerator.multiply(minorBasedErrorModel.getPropagateProb());
+            pcrHotSpotErrorGenerator = pcrErrorGenerator.multiply(
+                    MinorBasedErrorModel.computePropagateProb(variantCallerParameters.getModelEfficiency(),
+                            variantCallerParameters.getModelOrder()));
 
     public ModelMigGenerator create(NucleotideSequence reference) {
         return new ModelMigGenerator(hotSpotPositionRatio, pcrPositionRatio, somaticMutationRatio,
-                somaticMutationFreq, minorBasedErrorModel, readErrorGenerator,
+                somaticMutationFreq, variantCallerParameters, readErrorGenerator,
                 pcrErrorGenerator, pcrHotSpotErrorGenerator, reference);
     }
 
@@ -49,8 +52,8 @@ public class ModelMigGeneratorFactory {
         return somaticMutationFreq;
     }
 
-    public MinorBasedErrorModel getMinorBasedErrorModel() {
-        return minorBasedErrorModel;
+    public VariantCallerParameters getVariantCallerParameters() {
+        return variantCallerParameters;
     }
 
     public MutationGenerator getReadErrorGenerator() {
@@ -77,9 +80,11 @@ public class ModelMigGeneratorFactory {
         this.somaticMutationFreq = somaticMutationFreq;
     }
 
-    public void setMinorBasedErrorModel(MinorBasedErrorModel minorBasedErrorModel) {
-        this.minorBasedErrorModel = minorBasedErrorModel;
-        pcrHotSpotErrorGenerator = pcrErrorGenerator.multiply(minorBasedErrorModel.getPropagateProb());
+    public void setVariantCallerParameters(VariantCallerParameters variantCallerParameters) {
+        this.variantCallerParameters = variantCallerParameters;
+        pcrHotSpotErrorGenerator = pcrErrorGenerator.multiply(
+                MinorBasedErrorModel.computePropagateProb(variantCallerParameters.getModelEfficiency(),
+                        variantCallerParameters.getModelOrder()));
     }
 
     public void setReadErrorGenerator(MutationGenerator readErrorGenerator) {
@@ -88,6 +93,8 @@ public class ModelMigGeneratorFactory {
 
     public void setPcrErrorGenerator(MutationGenerator pcrErrorGenerator) {
         this.pcrErrorGenerator = pcrErrorGenerator;
-        pcrHotSpotErrorGenerator = pcrErrorGenerator.multiply(minorBasedErrorModel.getPropagateProb());
+        pcrHotSpotErrorGenerator = pcrErrorGenerator.multiply(MinorBasedErrorModel.computePropagateProb(
+                variantCallerParameters.getModelEfficiency(),
+                variantCallerParameters.getModelOrder()));
     }
 }

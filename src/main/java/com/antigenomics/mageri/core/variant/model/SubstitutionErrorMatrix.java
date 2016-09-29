@@ -14,11 +14,16 @@
  * limitations under the License.
  */
 
-package com.antigenomics.mageri.core.variant;
+package com.antigenomics.mageri.core.variant.model;
 
 import com.antigenomics.mageri.core.mapping.MutationsTable;
+import com.antigenomics.mageri.core.mutations.Mutation;
+import com.antigenomics.mageri.core.mutations.Substitution;
+import com.milaboratory.core.sequence.mutations.Mutations;
 
-public class SubstitutionErrorMatrix {
+import java.util.Arrays;
+
+public class SubstitutionErrorMatrix implements ErrorModel {
     private final double[][] innerMatrix;
 
     public static final SubstitutionErrorMatrix DEFAULT = new SubstitutionErrorMatrix(new double[][]{
@@ -31,12 +36,18 @@ public class SubstitutionErrorMatrix {
 
     public static SubstitutionErrorMatrix fromString(String matrix) {
         double[][] innerMatrix = new double[4][4];
-        String[] rows = matrix.split(";");
-        for (int i = 0; i < 4; i++) {
-            String[] cells = rows[i].split(",");
-            for (int j = 0; j < 4; j++) {
-                innerMatrix[i][j] = Double.parseDouble(cells[j]);
+
+        try {
+            String[] rows = matrix.split(";");
+            for (int i = 0; i < 4; i++) {
+                String[] cells = rows[i].split(",");
+                for (int j = 0; j < 4; j++) {
+                    innerMatrix[i][j] = Double.parseDouble(cells[j]);
+                }
             }
+        } catch (Exception e) {
+            throw new RuntimeException("Unable to parse substitution matrix\n" +
+                    matrix + "\nError: " + e.getMessage());
         }
 
         return new SubstitutionErrorMatrix(innerMatrix);
@@ -82,5 +93,46 @@ public class SubstitutionErrorMatrix {
 
     public double getRate(int from, int to, boolean symmetric) {
         return symmetric ? 0.5 * (innerMatrix[from][to] + innerMatrix[to][from]) : innerMatrix[from][to];
+    }
+
+    @Override
+    public String toString() {
+        String str = "";
+
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                str += innerMatrix[i][j];
+                if (j != 3)
+                    str += ",";
+            }
+            if (i != 3)
+                str += ";";
+        }
+
+        return str;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        SubstitutionErrorMatrix that = (SubstitutionErrorMatrix) o;
+
+        return Arrays.deepEquals(innerMatrix, that.innerMatrix);
+
+    }
+
+    @Override
+    public int hashCode() {
+        return Arrays.deepHashCode(innerMatrix);
+    }
+
+    @Override
+    public double computeErrorRate(Mutation mutation) {
+        int code = ((Substitution) mutation).getCode(),
+                from = Mutations.getFrom(code), to = Mutations.getTo(code);
+
+        return getRate(from, to);
     }
 }

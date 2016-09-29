@@ -24,6 +24,8 @@ import com.antigenomics.mageri.core.mutations.Substitution;
 import com.antigenomics.mageri.core.variant.filter.QualFilter;
 import com.antigenomics.mageri.core.variant.filter.SingletonFilter;
 import com.antigenomics.mageri.core.variant.filter.VariantFilter;
+import com.antigenomics.mageri.core.variant.model.ErrorModel;
+import com.antigenomics.mageri.core.variant.model.ErrorModelProvider;
 import com.milaboratory.core.sequence.mutations.Mutations;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequenceBuilder;
 import com.antigenomics.mageri.core.genomic.ReferenceLibrary;
@@ -54,11 +56,6 @@ public class VariantCaller extends PipelineBlock {
         filters[0] = new QualFilter(variantCallerParameters.getQualityThreshold());
         filters[1] = new SingletonFilter(variantCallerParameters.getSingletonFrequencyThreshold());
         filters[2] = new CoverageFilter(variantCallerParameters.getCoverageThreshold());
-
-        final MinorBasedErrorModel minorBasedErrorModel = new MinorBasedErrorModel(
-                variantCallerParameters.getOrder(),
-                variantCallerParameters.getModelCycles(),
-                variantCallerParameters.getModelEfficiency() - 1.0);
 
         for (Reference reference : referenceLibrary.getReferences()) {
             MutationsTable mutationsTable = consensusAligner.getAlignerTable(reference);

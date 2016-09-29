@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-package com.antigenomics.mageri.core.variant;
+package com.antigenomics.mageri.core.variant.model;
 
 public enum ErrorModelType {
-    RawData, MinorBased, User
+    RawData, MinorBased, Custom
 }
