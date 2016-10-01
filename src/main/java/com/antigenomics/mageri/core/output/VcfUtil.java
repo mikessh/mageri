@@ -21,6 +21,8 @@ import com.antigenomics.mageri.core.variant.Variant;
 import com.antigenomics.mageri.core.mutations.Mutation;
 
 public final class VcfUtil {
+    public static final int MAX_QUAL = 9999;
+
     private VcfUtil() {
     }
 
@@ -44,8 +46,8 @@ public final class VcfUtil {
         return new VcfRecord(genomicInfo.getChrom(),
                 genomicInfo.getStart() + mutation.getStart() + 1, // BED is 0-based, while VCF is 1-based
                 BLANK_FIELD,
-                mutation.getRef().toString(), mutation.getAlt().toString(),
-                (int) Math.min(variant.getQual(), 9999), variant.getFilterSummary().toString(),
+                variant.getRef(), variant.getAlt(),
+                (int) Math.min(variant.getQual(), MAX_QUAL), variant.getFilterSummary().toString(),
                 getInfo(variant),
                 FORMAT_KEY, getSampleInfo(variant)
         );
@@ -54,7 +56,7 @@ public final class VcfUtil {
     public static String getInfo(Variant variant) {
         return "DP=" + variant.getDepth() +
                 ";AF=" + (float) variant.getAlleleFrequency() +
-                ";AA=" + variant.getAncestralAllele().toString() +
+                ";AA=" + variant.getAncestralAllele() +
                 ";CQ=" + (float) variant.getCqs() +
                 ";ER=" + (float) variant.getErrorRate() +
                 ";RI=" + variant.getReference().getName();

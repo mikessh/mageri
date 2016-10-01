@@ -26,7 +26,6 @@ import com.antigenomics.mageri.core.mutations.Substitution;
 
 import java.io.Serializable;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -36,7 +35,7 @@ public final class MutationsTable implements Serializable {
     private final AtomicInteger migCount;
     private final NucleotideMatrix majorMigs, minorMigs;
     private final QualitySumMatrix qualitySum;
-    private final Set<Mutation> mutations;
+    private final ConcurrentHashMap<Mutation, AtomicInteger> mutationsWithCount;
 
     public MutationsTable(Reference reference) {
         this.reference = reference;
@@ -45,7 +44,7 @@ public final class MutationsTable implements Serializable {
         this.minorMigs = new NucleotideMatrix(l);
         this.qualitySum = new QualitySumMatrix(l);
         this.migCount = new AtomicInteger();
-        this.mutations = Collections.newSetFromMap(new ConcurrentHashMap<Mutation, Boolean>());
+        this.mutationsWithCount = new ConcurrentHashMap<>();
     }
 
     public void append(LocalAlignment alignment, SequenceQualityPhred qual,
@@ -89,11 +88,14 @@ public final class MutationsTable implements Serializable {
                 majorMigs.decrementAt(pos, from);
                 qualitySum.decreaseAt(pos,
                         from, qual.value(posInCons));
-
-                mutations.add(mutation);
-            } else {
-                // TODO: IMPORTANT, INDELS
             }
+
+            AtomicInteger counter = mutationsWithCount.get(mutation);
+            if (counter == null) {
+                mutationsWithCount.putIfAbsent(mutation, new AtomicInteger());
+                counter = mutationsWithCount.get(mutation);
+            }
+            counter.incrementAndGet();
         }
 
         // Update minor counters
@@ -134,6 +136,15 @@ public final class MutationsTable implements Serializable {
         return (float) qualitySum.getAt(pos, letterCode) / getMajorMigCount(pos, letterCode);
     }
 
+    public float getMeanCqs(int pos) {
+        float cqsSum = 0, migCount = 0;
+        for (int i = 0; i < 4; i++) {
+            migCount += getMajorMigCount(pos, i);
+            cqsSum += qualitySum.getAt(pos, i);
+        }
+        return cqsSum / migCount;
+    }
+
     public boolean hasReferenceBase(int pos) {
         return getMajorMigCount(pos, reference.getSequence().codeAt(pos)) > 0;
     }
@@ -155,7 +166,14 @@ public final class MutationsTable implements Serializable {
     }
 
     public Set<Mutation> getMutations() {
-        return Collections.unmodifiableSet(mutations);
+        return Collections.unmodifiableSet(mutationsWithCount.keySet());
+    }
+
+    public int getRawMutationCount(Mutation mutation) {
+        if (!mutationsWithCount.containsKey(mutation)) {
+            throw new IllegalArgumentException("Mutation " + mutation + " was not found in the mutation table.");
+        }
+        return mutationsWithCount.get(mutation).get();
     }
 
     public int length() {

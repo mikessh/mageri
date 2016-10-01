@@ -16,7 +16,7 @@
 
 package com.antigenomics.mageri.core.mutations;
 
-import com.antigenomics.mageri.core.genomic.Reference;
+import com.milaboratory.core.sequence.Sequence;
 import com.milaboratory.core.sequence.mutations.Mutations;
 
 import java.io.Serializable;
@@ -26,11 +26,11 @@ import java.util.Collections;
 import java.util.List;
 
 public class MutationArray implements Serializable {
-    protected final Reference reference;
+    protected final Sequence reference;
     protected final List<Mutation> mutations;
     protected int length, numberOfFiltered = 0;
 
-    public MutationArray(Reference reference, int[] codes) {
+    public MutationArray(Sequence reference, int[] codes) {
         this.reference = reference;
         this.mutations = new ArrayList<>();
         this.length = codes.length;
@@ -65,7 +65,7 @@ public class MutationArray implements Serializable {
         length += other.length;
     }
 
-    public Reference getReference() {
+    public Sequence getReference() {
         return reference;
     }
 
@@ -166,5 +166,19 @@ public class MutationArray implements Serializable {
             return new Deletion(MutationArray.this,
                     Arrays.copyOf(codes, counter));
         }
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+
+        for (Mutation mutation : mutations) {
+            sb.append(",");
+            sb.append(mutation.toString());
+            if (mutation.filtered)
+                sb.append("(f)");
+        }
+
+        return sb.deleteCharAt(0).toString();
     }
 }

@@ -16,6 +16,11 @@
 
 package com.antigenomics.mageri.core.mutations;
 
+import com.antigenomics.mageri.core.mapping.ConsensusAlignerParameters;
+import com.antigenomics.mageri.core.mapping.alignment.AlignmentScoring;
+import com.milaboratory.core.sequence.alignment.AffineGapAlignmentScoring;
+import com.milaboratory.core.sequence.alignment.LocalAligner;
+import com.milaboratory.core.sequence.alignment.LocalAlignment;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.antigenomics.mageri.FastTests;
 import com.antigenomics.mageri.core.genomic.Reference;
@@ -54,5 +59,38 @@ public class MutationArrayTest {
 
             Assert.assertArrayEquals("Correct mutations recovered", mutations, recoveredMutations);
         }
+    }
+
+    @Test
+    public void indelCollapseExactTest() {
+        String referen = "ATACGATCGCTACTACCAAAAAAACTGATCTACGTAGCTGCCATCGAGTTTTTATCGGCGCGAGCGACGATATTTCAGCGCGCAGCGAAAA",
+                //        0000000000111111111122222222223333333333444444444455555555556666666666777777777788888888889
+                //        0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
+                //                                      -------
+                query1 = "ATACGATCGCTACTACCAAAAAAACTGATCCTGCCATCGAGTTTTTATCGGCGCGAGCGACGATATTTCAGCGCGCAGCGAAAA",
+                //        0000000000111111111122222222223333333333444444444455555555556666666666777777777788888888889
+                //        0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
+                //                                              +++++
+                query2 = "ATACGATCGCTACTACCAAAAAAACTGATCTACGTAGCATTAATGCCATCGAGTTTTTATCGGCGCGAGCGACGATATTTCAGCGCGCAGCGAAAA",
+                //        0000000000111111111122222222223333333333444444444455555555556666666666777777777788888888889
+                //        0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
+                //                             ---
+                query3 = "ATACGATCGCTACTACCAAAACTGATCTACGTAGCTGCCATCGAGTTTTTATCGGCGCGAGCGACGATATTTCAGCGCGCAGCGAAAA",
+                //        0000000000111111111122222222223333333333444444444455555555556666666666777777777788888888889
+                //        0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890
+                //                                +++
+                query4 = "ATACGATCGCTACTACCAAAAAAAAAACTGATCTACGTAGCTGCCATCGAGTTTTTATCGGCGCGAGCGACGATATTTCAGCGCGCAGCGAAAA";
+
+        Assert.assertEquals("Composite deletion", "D30-37:TACGTAG>", getMutations(referen, query1).toString());
+        Assert.assertEquals("Composite insertion", "I38:>ATTAA>", getMutations(referen, query2).toString());
+        Assert.assertEquals("Composite deletion at homopolymer, right-shifted", "D21-24:AAA>", getMutations(referen, query3).toString());
+        Assert.assertEquals("Composite insertion at homopolymer, right-shifted", "I24:>AAA", getMutations(referen, query4).toString());
+    }
+
+    private static MutationArray getMutations(String ref, String query) {
+        NucleotideSequence r = new NucleotideSequence(ref), q = new NucleotideSequence(query);
+        AffineGapAlignmentScoring scoring = new AlignmentScoring(ConsensusAlignerParameters.DEFAULT).asInternalScoring();
+        LocalAlignment alignment = LocalAligner.align(scoring, r, q);
+        return new MutationArray(r, alignment.getAbsoluteMutations());
     }
 }

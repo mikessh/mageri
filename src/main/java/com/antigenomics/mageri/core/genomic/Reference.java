@@ -15,11 +15,14 @@
  */
 package com.antigenomics.mageri.core.genomic;
 
+import com.milaboratory.core.sequence.Alphabet;
+import com.milaboratory.core.sequence.Sequence;
+import com.milaboratory.core.sequence.nucleotide.NucleotideAlphabet;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 
 import java.io.Serializable;
 
-public class Reference implements Serializable {
+public class Reference extends Sequence implements Serializable {
     private final int index;
     private final String name;
     private final NucleotideSequence sequence;
@@ -55,6 +58,21 @@ public class Reference implements Serializable {
 
     public ReferenceLibrary getParent() {
         return parent;
+    }
+
+    @Override
+    public byte codeAt(int i) {
+        return sequence.codeAt(i);
+    }
+
+    @Override
+    public int size() {
+        return sequence.size();
+    }
+
+    @Override
+    public Alphabet getAlphabet() {
+        return NucleotideAlphabet.INSTANCE;
     }
 
     @Override

@@ -16,6 +16,7 @@
 
 package com.antigenomics.mageri.core.variant;
 
+import com.antigenomics.mageri.core.mutations.Substitution;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.antigenomics.mageri.core.genomic.Contig;
 import com.antigenomics.mageri.core.genomic.Reference;
@@ -48,6 +49,22 @@ public class Variant implements Serializable, Comparable<Variant> {
         this.errorRate = errorRate;
         this.ancestralAllele = ancestralAllele;
         this.hasReference = hasReference;
+    }
+
+    public String getRef() {
+        if (mutation instanceof Substitution) {
+            return mutation.getRef().toString();
+        } else {
+            return reference.charFromCodeAt(mutation.getStart()) + mutation.getRef().toString();
+        }
+    }
+
+    public String getAlt() {
+        if (mutation instanceof Substitution) {
+            return mutation.getAlt().toString();
+        } else {
+            return reference.charFromCodeAt(mutation.getStart()) + mutation.getAlt().toString();
+        }
     }
 
     public Reference getReference() {
@@ -98,8 +115,8 @@ public class Variant implements Serializable, Comparable<Variant> {
         return cqs;
     }
 
-    public NucleotideSequence getAncestralAllele() {
-        return ancestralAllele;
+    public String getAncestralAllele() {
+        return ancestralAllele.size() == 0 ? "." : ancestralAllele.toString();
     }
 
     public boolean hasReference() {

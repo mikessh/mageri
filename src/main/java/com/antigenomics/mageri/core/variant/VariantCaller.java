@@ -21,12 +21,14 @@ import com.antigenomics.mageri.core.genomic.Reference;
 import com.antigenomics.mageri.core.mapping.ConsensusAligner;
 import com.antigenomics.mageri.core.mapping.MutationsTable;
 import com.antigenomics.mageri.core.mutations.Substitution;
+import com.antigenomics.mageri.core.output.VcfUtil;
 import com.antigenomics.mageri.core.variant.filter.QualFilter;
 import com.antigenomics.mageri.core.variant.filter.SingletonFilter;
 import com.antigenomics.mageri.core.variant.filter.VariantFilter;
 import com.antigenomics.mageri.core.variant.model.ErrorModel;
 import com.antigenomics.mageri.core.variant.model.ErrorModelProvider;
 import com.milaboratory.core.sequence.mutations.Mutations;
+import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequenceBuilder;
 import com.antigenomics.mageri.core.genomic.ReferenceLibrary;
 import com.antigenomics.mageri.core.mutations.Mutation;
@@ -64,6 +66,8 @@ public class VariantCaller extends PipelineBlock {
                         mutationsTable);
 
                 for (Mutation mutation : mutationsTable.getMutations()) {
+                    Variant variant;
+
                     if (mutation instanceof Substitution) {
                         int code = ((Substitution) mutation).getCode(),
                                 pos = Mutations.getPosition(code),
@@ -82,63 +86,32 @@ public class VariantCaller extends PipelineBlock {
                         NucleotideSequenceBuilder nsb = new NucleotideSequenceBuilder(1);
                         nsb.setCode(0, mutationsTable.getAncestralBase(pos));
 
-                        Variant variant = new Variant(reference,
+                        variant = new Variant(reference,
                                 mutation, majorCount, minorCount,
                                 mutationsTable.getMigCoverage(pos),
                                 majorCount / (double) coverage,
                                 score, mutationsTable.getMeanCqs(pos, to), errorRate,
                                 nsb.create(), mutationsTable.hasReferenceBase(pos));
 
-                        variant.filter(this);
-
-                        variants.add(variant);
                     } else {
-                        // TODO: IMPORTANT: INDELS
-                    }
-                }
-            }
+                        int rawCount = mutationsTable.getRawMutationCount(mutation);
 
-            /*
-            final MutationsTable mutationsTable = consensusAligner.getAlignerTable(reference);
-            final SubstitutionErrorMatrix minorMatrix = SubstitutionErrorMatrix.fromMutationsTable(mutationsTable);
-            if (mutationsTable.wasUpdated()) {
-                for (Mutation mutation : mutationsTable.getMutations()) {
-                    if (mutation instanceof Substitution) {
-                        int code = ((Substitution) mutation).getCode(),
-                                pos = Mutations.getPosition(code),
-                                from = Mutations.getFrom(code), to = Mutations.getTo(code);
+                        int pos = mutation.getStart();
 
-                        int majorCount = mutationsTable.getMajorMigCount(pos, to);
+                        int coverage = mutationsTable.getMigCoverage(pos);
 
-                        assert majorCount > 0;
-
-                        int coverage = mutationsTable.getMigCoverage(pos),
-                                minorCount = mutationsTable.getMinorMigCount(pos, to);
-
-                        double errorRate = minorBasedErrorModel.getErrorRate(minorCount, coverage,
-                                from, to,
-                                minorMatrix),
-                                score = -10 * getLog10PValue(majorCount, coverage, errorRate);
-
-                        NucleotideSequenceBuilder nsb = new NucleotideSequenceBuilder(1);
-                        nsb.setCode(0, mutationsTable.getAncestralBase(pos));
-
-                        Variant variant = new Variant(reference,
-                                mutation, majorCount, minorCount,
+                        variant = new Variant(reference,
+                                mutation, rawCount, 0,
                                 mutationsTable.getMigCoverage(pos),
-                                majorCount / (double) coverage,
-                                score, mutationsTable.getMeanCqs(pos, to), errorRate,
-                                nsb.create(), mutationsTable.hasReferenceBase(pos));
-
-                        variant.filter(this);
-
-                        variants.add(variant);
-                    } else {
-                        // TODO: IMPORTANT: INDELS
+                                rawCount / (double) coverage,
+                                VcfUtil.MAX_QUAL, mutationsTable.getMeanCqs(pos), 0.0,
+                                new NucleotideSequence(""), true);
                     }
+
+                    variant.filter(this);
+                    variants.add(variant);
                 }
             }
-                    */
         }
 
         // This is quite important for memory usage
