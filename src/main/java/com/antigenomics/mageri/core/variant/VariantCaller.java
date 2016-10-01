@@ -93,6 +93,8 @@ public class VariantCaller extends PipelineBlock {
                                 score, mutationsTable.getMeanCqs(pos, to), errorRate,
                                 nsb.create(), mutationsTable.hasReferenceBase(pos));
 
+                    } else if (variantCallerParameters.isNoIndels()) {
+                        continue;
                     } else {
                         int rawCount = mutationsTable.getRawMutationCount(mutation);
 
