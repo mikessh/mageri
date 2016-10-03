@@ -20,7 +20,6 @@ import com.antigenomics.mageri.misc.ParameterSet;
 import org.jdom.Element;
 
 public final class AssemblerParameters implements ParameterSet {
-    private final boolean qualityWeightedMode;
     private final int offsetRange, anchorRegion, maxMMs, maxConsequentMMs;
     private final int minReadSize;
     private final double maxDroppedReadsRatio, maxDroppedReadsRatioAfterRescue,
@@ -28,19 +27,17 @@ public final class AssemblerParameters implements ParameterSet {
     private final boolean cqsRescue, qualityTrimming, greedyExtend;
 
     public static AssemblerParameters DEFAULT = new AssemblerParameters(
-            4, 8, 4, 3,
-            true,
+            4, 8, 4, 0,
             0.3, 0.0, 0.3, 0.0,
             false, true, true);
 
     public static AssemblerParameters TORRENT454 = new AssemblerParameters(
-            4, 8, 4, 3,
-            true,
+            4, 8, 4, 2,
             0.7, 0.3, 0.3, 0.5,
             true, true, false);
 
     public AssemblerParameters(int offsetRange, int anchorRegion, int maxMMs, int maxConsequentMMs,
-                               boolean qualityWeightedMode, double maxDroppedReadsRatio,
+                               double maxDroppedReadsRatio,
                                double maxDroppedReadsRatioAfterRescue,
                                double maxTrimmedConsensusBasesRatio, double minMatchedBasesInRealignedReadRatio,
                                boolean cqsRescue, boolean qualityTrimming, boolean greedyExtend) {
@@ -48,7 +45,6 @@ public final class AssemblerParameters implements ParameterSet {
         this.anchorRegion = anchorRegion;
         this.maxMMs = maxMMs;
         this.maxConsequentMMs = maxConsequentMMs;
-        this.qualityWeightedMode = qualityWeightedMode;
         this.minReadSize = 2 * offsetRange + 2 * anchorRegion;
         this.maxDroppedReadsRatio = maxDroppedReadsRatio;
         this.maxDroppedReadsRatioAfterRescue = maxDroppedReadsRatioAfterRescue;
@@ -57,10 +53,6 @@ public final class AssemblerParameters implements ParameterSet {
         this.cqsRescue = cqsRescue;
         this.qualityTrimming = qualityTrimming;
         this.greedyExtend = greedyExtend;
-    }
-
-    public boolean qualityWeightedMode() {
-        return qualityWeightedMode;
     }
 
     public int getOffsetRange() {
@@ -111,93 +103,86 @@ public final class AssemblerParameters implements ParameterSet {
         return minMatchedBasesInRealignedReadRatio;
     }
 
-    public AssemblerParameters withQualityWeightedMode(boolean qualityWeightedMode) {
-        return new AssemblerParameters(offsetRange, anchorRegion, maxMMs, maxConsequentMMs,
-                qualityWeightedMode, maxDroppedReadsRatio, maxDroppedReadsRatioAfterRescue,
-                maxTrimmedConsensusBasesRatio, minMatchedBasesInRealignedReadRatio,
-                cqsRescue, qualityTrimming, greedyExtend);
-    }
-
     public AssemblerParameters withOffsetRange(int offsetRange) {
         return new AssemblerParameters(offsetRange, anchorRegion, maxMMs, maxConsequentMMs,
-                qualityWeightedMode, maxDroppedReadsRatio, maxDroppedReadsRatioAfterRescue,
+                maxDroppedReadsRatio, maxDroppedReadsRatioAfterRescue,
                 maxTrimmedConsensusBasesRatio, minMatchedBasesInRealignedReadRatio,
                 cqsRescue, qualityTrimming, greedyExtend);
     }
 
     public AssemblerParameters withAnchorRegion(int anchorRegion) {
         return new AssemblerParameters(offsetRange, anchorRegion, maxMMs, maxConsequentMMs,
-                qualityWeightedMode, maxDroppedReadsRatio, maxDroppedReadsRatioAfterRescue,
+                maxDroppedReadsRatio, maxDroppedReadsRatioAfterRescue,
                 maxTrimmedConsensusBasesRatio, minMatchedBasesInRealignedReadRatio,
                 cqsRescue, qualityTrimming, greedyExtend);
     }
 
     public AssemblerParameters withMaxMMs(int maxMMs) {
         return new AssemblerParameters(offsetRange, anchorRegion, maxMMs, maxConsequentMMs,
-                qualityWeightedMode, maxDroppedReadsRatio, maxDroppedReadsRatioAfterRescue,
+                maxDroppedReadsRatio, maxDroppedReadsRatioAfterRescue,
                 maxTrimmedConsensusBasesRatio, minMatchedBasesInRealignedReadRatio,
                 cqsRescue, qualityTrimming, greedyExtend);
     }
 
     public AssemblerParameters withMaxConsequentMMs(int maxConsequentMMs) {
         return new AssemblerParameters(offsetRange, anchorRegion, maxMMs, maxConsequentMMs,
-                qualityWeightedMode, maxDroppedReadsRatio, maxDroppedReadsRatioAfterRescue,
+                maxDroppedReadsRatio, maxDroppedReadsRatioAfterRescue,
                 maxTrimmedConsensusBasesRatio, minMatchedBasesInRealignedReadRatio,
                 cqsRescue, qualityTrimming, greedyExtend);
     }
 
     public AssemblerParameters withMinReadSize(int minReadSize) {
         return new AssemblerParameters(offsetRange, anchorRegion, maxMMs, maxConsequentMMs,
-                qualityWeightedMode, maxDroppedReadsRatio, maxDroppedReadsRatioAfterRescue,
+                maxDroppedReadsRatio, maxDroppedReadsRatioAfterRescue,
                 maxTrimmedConsensusBasesRatio, minMatchedBasesInRealignedReadRatio,
                 cqsRescue, qualityTrimming, greedyExtend);
     }
 
     public AssemblerParameters withMaxDroppedReadsRatio(double maxDroppedReadsRatio) {
         return new AssemblerParameters(offsetRange, anchorRegion, maxMMs, maxConsequentMMs,
-                qualityWeightedMode, maxDroppedReadsRatio, maxDroppedReadsRatioAfterRescue,
+                maxDroppedReadsRatio, maxDroppedReadsRatioAfterRescue,
                 maxTrimmedConsensusBasesRatio, minMatchedBasesInRealignedReadRatio,
                 cqsRescue, qualityTrimming, greedyExtend);
     }
 
     public AssemblerParameters withMaxDroppedReadsAfterRescue(double maxDroppedReadsRatioAfterRescue) {
         return new AssemblerParameters(offsetRange, anchorRegion, maxMMs, maxConsequentMMs,
-                qualityWeightedMode, maxDroppedReadsRatio, maxDroppedReadsRatioAfterRescue,
+                maxDroppedReadsRatio, maxDroppedReadsRatioAfterRescue,
                 maxTrimmedConsensusBasesRatio, minMatchedBasesInRealignedReadRatio,
                 cqsRescue, qualityTrimming, greedyExtend);
     }
 
     public AssemblerParameters withCqsRescue(boolean cqsRescue) {
         return new AssemblerParameters(offsetRange, anchorRegion, maxMMs, maxConsequentMMs,
-                qualityWeightedMode, maxDroppedReadsRatio, maxDroppedReadsRatioAfterRescue,
+                maxDroppedReadsRatio, maxDroppedReadsRatioAfterRescue,
                 maxTrimmedConsensusBasesRatio, minMatchedBasesInRealignedReadRatio,
                 cqsRescue, qualityTrimming, greedyExtend);
     }
 
     public AssemblerParameters withQualityTrimming(boolean qualityTrimming) {
         return new AssemblerParameters(offsetRange, anchorRegion, maxMMs, maxConsequentMMs,
-                qualityWeightedMode, maxDroppedReadsRatio, maxDroppedReadsRatioAfterRescue,
+                maxDroppedReadsRatio, maxDroppedReadsRatioAfterRescue,
                 maxTrimmedConsensusBasesRatio, minMatchedBasesInRealignedReadRatio,
                 cqsRescue, qualityTrimming, greedyExtend);
     }
 
     public AssemblerParameters withGreedyExtend(boolean greedyExtend) {
         return new AssemblerParameters(offsetRange, anchorRegion, maxMMs, maxConsequentMMs,
-                qualityWeightedMode, maxDroppedReadsRatio, maxDroppedReadsRatioAfterRescue,
+                maxDroppedReadsRatio, maxDroppedReadsRatioAfterRescue,
                 maxTrimmedConsensusBasesRatio, minMatchedBasesInRealignedReadRatio,
                 cqsRescue, qualityTrimming, greedyExtend);
     }
 
     public AssemblerParameters withMaxTrimmedConsensusBasesRatio(double maxTrimmedConsensusBasesRatio) {
         return new AssemblerParameters(offsetRange, anchorRegion, maxMMs, maxConsequentMMs,
-                qualityWeightedMode, maxDroppedReadsRatio, maxDroppedReadsRatioAfterRescue,
+                maxDroppedReadsRatio, maxDroppedReadsRatioAfterRescue,
                 maxTrimmedConsensusBasesRatio, minMatchedBasesInRealignedReadRatio,
                 cqsRescue, qualityTrimming, greedyExtend);
     }
 
     public AssemblerParameters withMinMatchedBasesInRealignedReadRatio(double minMatchedBasesInRealignedReadRatio) {
         return new AssemblerParameters(offsetRange, anchorRegion, maxMMs, maxConsequentMMs,
-                qualityWeightedMode, maxDroppedReadsRatio, maxDroppedReadsRatioAfterRescue,
+                 maxDroppedReadsRatio, maxDroppedReadsRatioAfterRescue,
                 maxTrimmedConsensusBasesRatio, minMatchedBasesInRealignedReadRatio,
                 cqsRescue, qualityTrimming, greedyExtend);
     }
@@ -209,7 +194,6 @@ public final class AssemblerParameters implements ParameterSet {
         e.addContent(new Element("anchorRegion").setText(Integer.toString(anchorRegion)));
         e.addContent(new Element("maxMMs").setText(Integer.toString(maxMMs)));
         e.addContent(new Element("maxConsequentMMs").setText(Integer.toString(maxConsequentMMs)));
-        e.addContent(new Element("qualityWeightedMode").setText(Boolean.toString(qualityWeightedMode)));
         e.addContent(new Element("maxDroppedReadsRatio").setText(Double.toString(maxDroppedReadsRatio)));
         e.addContent(new Element("maxDroppedReadsRatioAfterRescue").setText(Double.toString(maxDroppedReadsRatioAfterRescue)));
         e.addContent(new Element("maxTrimmedConsensusBasesRatio").setText(Double.toString(maxTrimmedConsensusBasesRatio)));
@@ -227,7 +211,6 @@ public final class AssemblerParameters implements ParameterSet {
                 Integer.parseInt(e.getChildTextTrim("anchorRegion")),
                 Integer.parseInt(e.getChildTextTrim("maxMMs")),
                 Integer.parseInt(e.getChildTextTrim("maxConsequentMMs")),
-                Boolean.parseBoolean(e.getChildTextTrim("qualityWeightedMode")),
                 Double.parseDouble(e.getChildTextTrim("maxDroppedReadsRatio")),
                 Double.parseDouble(e.getChildTextTrim("maxDroppedReadsRatioAfterRescue")),
                 Double.parseDouble(e.getChildTextTrim("maxTrimmedConsensusBasesRatio")),
@@ -245,7 +228,6 @@ public final class AssemblerParameters implements ParameterSet {
 
         AssemblerParameters that = (AssemblerParameters) o;
 
-        if (qualityWeightedMode != that.qualityWeightedMode) return false;
         if (offsetRange != that.offsetRange) return false;
         if (anchorRegion != that.anchorRegion) return false;
         if (maxMMs != that.maxMMs) return false;
@@ -266,8 +248,7 @@ public final class AssemblerParameters implements ParameterSet {
     public int hashCode() {
         int result;
         long temp;
-        result = (qualityWeightedMode ? 1 : 0);
-        result = 31 * result + offsetRange;
+        result = offsetRange;
         result = 31 * result + anchorRegion;
         result = 31 * result + maxMMs;
         result = 31 * result + maxConsequentMMs;

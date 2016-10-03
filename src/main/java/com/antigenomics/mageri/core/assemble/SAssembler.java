@@ -329,11 +329,12 @@ public class SAssembler extends Assembler<SConsensus, SMig> {
                     consequentMms = 0;
                 }
 
-                if (consequentMms > 2)
+                if (consequentMms > parameters.getMaxConsequentMMs())
                     break;
             }
 
-            if (consequentMms > 2 || (double) totalMms / (readWithOffset.to - readWithOffset.from) > 0.5) {
+            if (consequentMms > parameters.getMaxConsequentMMs() ||
+                    (double) totalMms / (readWithOffset.to - readWithOffset.from) > 0.5) {
                 droppedReads.add(readWithOffset.read);
 
                 // Remove read from PWM
