@@ -16,16 +16,19 @@
 
 package com.antigenomics.mageri.core.variant.model;
 
+import com.antigenomics.mageri.core.assemble.MinorCaller;
 import com.antigenomics.mageri.core.mapping.MutationsTable;
 import com.antigenomics.mageri.core.variant.VariantCallerParameters;
 
 public class ErrorModelProvider {
-    public static ErrorModel create(VariantCallerParameters parameters, MutationsTable mutationsTable) {
+    public static ErrorModel create(VariantCallerParameters parameters, MutationsTable mutationsTable,
+                                    MinorCaller minorCaller) {
         switch (parameters.getErrorModelType()) {
             case MinorBased:
                 return new MinorBasedErrorModel(parameters.getModelOrder(),
                         parameters.getModelCycles(), parameters.getModelEfficiency(),
-                        mutationsTable);
+                        parameters.getModelCoverageThreshold(), parameters.getModelMinorCountThreshold(),
+                        mutationsTable, minorCaller);
             case RawData:
                 return new RawDataErrorModel(mutationsTable);
             case Custom:

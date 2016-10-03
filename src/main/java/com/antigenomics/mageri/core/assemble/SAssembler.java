@@ -34,11 +34,11 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class SAssembler extends Assembler<SConsensus, SMig> {
-    protected final double minorFreqThreshold;
     protected final AssemblerParameters parameters;
     private final AtomicLong readsDroppedShortCounter = new AtomicLong(),
             readsDroppedErrorsCounter = new AtomicLong(),
             readsRescuedCounter = new AtomicLong();
+    private final PoissonTestMinorCaller minorCaller;
 
     public SAssembler() {
         this(PreprocessorParameters.DEFAULT, AssemblerParameters.DEFAULT);
@@ -46,7 +46,7 @@ public class SAssembler extends Assembler<SConsensus, SMig> {
 
     public SAssembler(PreprocessorParameters preprocessorParameters,
                       AssemblerParameters parameters) {
-        this.minorFreqThreshold = Math.pow(10.0, -(double) preprocessorParameters.getGoodQualityThreshold() / 10.0);
+        this.minorCaller = new PoissonTestMinorCaller(parameters, preprocessorParameters);
         this.parameters = parameters;
     }
 
@@ -146,7 +146,7 @@ public class SAssembler extends Assembler<SConsensus, SMig> {
             return null;
         }
 
-        // Step 3: process consensus
+        // Step 3: callAndUpdate consensus
         // Step 3.1: Select region to construct PWM, append reads to PWM
 
         double[][] pwm = new double[4][0];
@@ -180,14 +180,13 @@ public class SAssembler extends Assembler<SConsensus, SMig> {
         }
 
         // Search for minors
-        int minorCountThreshold = (int) (minorFreqThreshold * n);
         Set<Integer> minors = new HashSet<>();
         for (int k = consensusAndTrimmingInfo.goodSeqStart; k < consensusAndTrimmingInfo.goodSeqEnd; k++) {
             byte from = consensusAndTrimmingInfo.consensusSQPair
                     .getSequence()
                     .codeAt(k - consensusAndTrimmingInfo.goodSeqStart);
             for (byte l = 0; l < 4; l++) {
-                if (l != from && exactPwm[l][k] > minorCountThreshold) {
+                if (l != from && minorCaller.callAndUpdate(from, l, exactPwm[l][k], n)) {
                     minors.add(Mutations.createSubstitution(k - consensusAndTrimmingInfo.goodSeqStart, from, l));
                 }
             }
@@ -483,6 +482,11 @@ public class SAssembler extends Assembler<SConsensus, SMig> {
     @Override
     public long getReadsDroppedErrorR2() {
         return 0;
+    }
+
+    @Override
+    public MinorCaller getMinorCaller() {
+        return minorCaller;
     }
 
     @Override

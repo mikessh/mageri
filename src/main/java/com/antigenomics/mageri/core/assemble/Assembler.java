@@ -33,7 +33,6 @@ import com.milaboratory.util.CompressionType;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -137,4 +136,6 @@ public abstract class Assembler<ConsensusType extends Consensus, MigType extends
 
         writer.close();
     }
+
+    public abstract MinorCaller getMinorCaller();
 }

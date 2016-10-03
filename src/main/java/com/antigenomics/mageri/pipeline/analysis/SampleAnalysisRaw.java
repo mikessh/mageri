@@ -35,6 +35,7 @@ import cc.redberry.pipe.blocks.ParallelProcessor;
 import cc.redberry.pipe.util.CountingOutputPort;
 import com.antigenomics.mageri.core.assemble.Assembler;
 import com.antigenomics.mageri.core.assemble.Consensus;
+import com.antigenomics.mageri.core.assemble.DummyMinorCaller;
 import com.antigenomics.mageri.core.input.MigSizeDistribution;
 import com.antigenomics.mageri.core.mapping.AlignedConsensus;
 import com.antigenomics.mageri.core.mapping.ConsensusAligner;
@@ -106,7 +107,7 @@ public class SampleAnalysisRaw extends SampleAnalysis {
 
         sout("Calling variants.", 1);
 
-        this.variantCaller = new VariantCaller(consensusAligner,
+        this.variantCaller = new VariantCaller(consensusAligner, DummyMinorCaller.INSTANCE,
                 parent.getPresets().getVariantCallerParameters());
 
         if (outputPrefix != null) {

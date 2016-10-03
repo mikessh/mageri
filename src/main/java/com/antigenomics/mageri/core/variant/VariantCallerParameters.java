@@ -24,7 +24,8 @@ import org.jdom.Element;
 public final class VariantCallerParameters implements ParameterSet {
     private final double modelOrder, modelCycles, modelEfficiency;
     private final ErrorModelType errorModelType;
-    private final int qualityThreshold, singletonFrequencyThreshold, coverageThreshold;
+    private final int qualityThreshold, singletonFrequencyThreshold, coverageThreshold,
+            modelCoverageThreshold, modelMinorCountThreshold;
     private final String substitutionErrorRateMatrix;
     private final SubstitutionErrorMatrix parsedSubstitutionErrorRateMatrix;
     private final boolean noIndels;
@@ -32,12 +33,13 @@ public final class VariantCallerParameters implements ParameterSet {
     public static VariantCallerParameters DEFAULT = new VariantCallerParameters(false,
             20, 10000, 100,
             ErrorModelType.MinorBased,
-            1.0, 20.0, 1.95,
+            1.0, 20.0, 1.8, 100, 10,
             SubstitutionErrorMatrix.DEFAULT.toString());
 
     public VariantCallerParameters(boolean noIndels, int qualityThreshold, int singletonFrequencyThreshold, int coverageThreshold,
                                    ErrorModelType errorModelType,
                                    double modelOrder, double modelCycles, double modelEfficiency,
+                                   int modelCoverageThreshold, int modelMinorCountThreshold,
                                    String substitutionErrorRateMatrix) {
         if (modelCycles < 10 || modelCycles > 40)
             throw new IllegalArgumentException("(model parameters) Number of PCR cycles should be in [10,40]");
@@ -56,6 +58,9 @@ public final class VariantCallerParameters implements ParameterSet {
         this.singletonFrequencyThreshold = singletonFrequencyThreshold;
         this.qualityThreshold = qualityThreshold;
         this.coverageThreshold = coverageThreshold;
+
+        this.modelCoverageThreshold = modelCoverageThreshold;
+        this.modelMinorCountThreshold = modelMinorCountThreshold;
 
         this.errorModelType = errorModelType;
         this.modelOrder = modelOrder;
@@ -105,11 +110,20 @@ public final class VariantCallerParameters implements ParameterSet {
         return coverageThreshold;
     }
 
+    public int getModelCoverageThreshold() {
+        return modelCoverageThreshold;
+    }
+
+    public int getModelMinorCountThreshold() {
+        return modelMinorCountThreshold;
+    }
+
     public VariantCallerParameters withNoIndels(boolean noIndels) {
         return new VariantCallerParameters(noIndels,
                 qualityThreshold, singletonFrequencyThreshold, coverageThreshold,
                 errorModelType,
                 modelOrder, modelCycles, modelEfficiency,
+                modelCoverageThreshold, modelMinorCountThreshold,
                 substitutionErrorRateMatrix);
     }
 
@@ -118,6 +132,7 @@ public final class VariantCallerParameters implements ParameterSet {
                 qualityThreshold, singletonFrequencyThreshold, coverageThreshold,
                 errorModelType,
                 order, modelCycles, modelEfficiency,
+                modelCoverageThreshold, modelMinorCountThreshold,
                 substitutionErrorRateMatrix);
     }
 
@@ -126,6 +141,7 @@ public final class VariantCallerParameters implements ParameterSet {
                 qualityThreshold, singletonFrequencyThreshold, coverageThreshold,
                 errorModelType,
                 modelOrder, modelCycles, modelEfficiency,
+                modelCoverageThreshold, modelMinorCountThreshold,
                 substitutionErrorRateMatrix);
     }
 
@@ -134,6 +150,7 @@ public final class VariantCallerParameters implements ParameterSet {
                 qualityThreshold, singletonFrequencyThreshold, coverageThreshold,
                 errorModelType,
                 modelOrder, modelCycles, modelEfficiency,
+                modelCoverageThreshold, modelMinorCountThreshold,
                 substitutionErrorRateMatrix);
     }
 
@@ -142,6 +159,7 @@ public final class VariantCallerParameters implements ParameterSet {
                 qualityThreshold, singletonFrequencyThreshold, coverageThreshold,
                 errorModelType,
                 modelOrder, modelCycles, modelEfficiency,
+                modelCoverageThreshold, modelMinorCountThreshold,
                 substitutionErrorRateMatrix);
     }
 
@@ -150,6 +168,7 @@ public final class VariantCallerParameters implements ParameterSet {
                 qualityThreshold, singletonFrequencyThreshold, coverageThreshold,
                 errorModelType,
                 modelOrder, modelCycles, modelEfficiency,
+                modelCoverageThreshold, modelMinorCountThreshold,
                 substitutionErrorRateMatrix);
     }
 
@@ -158,6 +177,7 @@ public final class VariantCallerParameters implements ParameterSet {
                 qualityThreshold, singletonFrequencyThreshold, coverageThreshold,
                 errorModelType,
                 modelOrder, modelCycles, modelEfficiency,
+                modelCoverageThreshold, modelMinorCountThreshold,
                 substitutionErrorRateMatrix);
     }
 
@@ -166,6 +186,7 @@ public final class VariantCallerParameters implements ParameterSet {
                 qualityThreshold, singletonFrequencyThreshold, coverageThreshold,
                 errorModelType,
                 modelOrder, modelCycles, modelEfficiency,
+                modelCoverageThreshold, modelMinorCountThreshold,
                 substitutionErrorRateMatrix);
     }
 
@@ -174,6 +195,25 @@ public final class VariantCallerParameters implements ParameterSet {
                 qualityThreshold, singletonFrequencyThreshold, coverageThreshold,
                 errorModelType,
                 modelOrder, modelCycles, modelEfficiency,
+                modelCoverageThreshold, modelMinorCountThreshold,
+                substitutionErrorRateMatrix);
+    }
+
+    public VariantCallerParameters withModelCoverageThreshold(int modelCoverageThreshold) {
+        return new VariantCallerParameters(noIndels,
+                qualityThreshold, singletonFrequencyThreshold, coverageThreshold,
+                errorModelType,
+                modelOrder, modelCycles, modelEfficiency,
+                modelCoverageThreshold, modelMinorCountThreshold,
+                substitutionErrorRateMatrix);
+    }
+
+    public VariantCallerParameters withModelMinorCountThreshold(int modelMinorCountThreshold) {
+        return new VariantCallerParameters(noIndels,
+                qualityThreshold, singletonFrequencyThreshold, coverageThreshold,
+                errorModelType,
+                modelOrder, modelCycles, modelEfficiency,
+                modelCoverageThreshold, modelMinorCountThreshold,
                 substitutionErrorRateMatrix);
     }
 
@@ -188,6 +228,8 @@ public final class VariantCallerParameters implements ParameterSet {
         e.addContent(new Element("modelOrder").setText(Double.toString(modelOrder)));
         e.addContent(new Element("modelCycles").setText(Double.toString(modelCycles)));
         e.addContent(new Element("modelEfficiency").setText(Double.toString(modelEfficiency)));
+        e.addContent(new Element("modelCoverageThreshold").setText(Integer.toString(modelCoverageThreshold)));
+        e.addContent(new Element("modelMinorCountThreshold").setText(Integer.toString(modelMinorCountThreshold)));
         e.addContent(new Element("substitutionErrorRateMatrix").setText(substitutionErrorRateMatrix));
         return e;
     }
@@ -203,6 +245,8 @@ public final class VariantCallerParameters implements ParameterSet {
                 Double.parseDouble(e.getChildTextTrim("modelOrder")),
                 Double.parseDouble(e.getChildTextTrim("modelCycles")),
                 Double.parseDouble(e.getChildTextTrim("modelEfficiency")),
+                Integer.parseInt(e.getChildTextTrim("modelCoverageThreshold")),
+                Integer.parseInt(e.getChildTextTrim("modelMinorCountThreshold")),
                 e.getChildTextTrim("substitutionErrorRateMatrix")
         );
     }
@@ -220,8 +264,12 @@ public final class VariantCallerParameters implements ParameterSet {
         if (qualityThreshold != that.qualityThreshold) return false;
         if (singletonFrequencyThreshold != that.singletonFrequencyThreshold) return false;
         if (coverageThreshold != that.coverageThreshold) return false;
+        if (modelCoverageThreshold != that.modelCoverageThreshold) return false;
+        if (modelMinorCountThreshold != that.modelMinorCountThreshold) return false;
         if (noIndels != that.noIndels) return false;
         if (errorModelType != that.errorModelType) return false;
+        if (substitutionErrorRateMatrix != null ? !substitutionErrorRateMatrix.equals(that.substitutionErrorRateMatrix) : that.substitutionErrorRateMatrix != null)
+            return false;
         return parsedSubstitutionErrorRateMatrix.equals(that.parsedSubstitutionErrorRateMatrix);
 
     }
@@ -240,6 +288,9 @@ public final class VariantCallerParameters implements ParameterSet {
         result = 31 * result + qualityThreshold;
         result = 31 * result + singletonFrequencyThreshold;
         result = 31 * result + coverageThreshold;
+        result = 31 * result + modelCoverageThreshold;
+        result = 31 * result + modelMinorCountThreshold;
+        result = 31 * result + (substitutionErrorRateMatrix != null ? substitutionErrorRateMatrix.hashCode() : 0);
         result = 31 * result + parsedSubstitutionErrorRateMatrix.hashCode();
         result = 31 * result + (noIndels ? 1 : 0);
         return result;

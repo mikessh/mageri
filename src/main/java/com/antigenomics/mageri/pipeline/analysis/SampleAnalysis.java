@@ -147,7 +147,7 @@ public class SampleAnalysis implements ReadSpecific, Serializable {
 
         sout("Calling variants.", 1);
 
-        this.variantCaller = new VariantCaller(consensusAligner,
+        this.variantCaller = new VariantCaller(consensusAligner, assembler.getMinorCaller(),
                 parent.getPresets().getVariantCallerParameters());
 
         if (outputPrefix != null) {

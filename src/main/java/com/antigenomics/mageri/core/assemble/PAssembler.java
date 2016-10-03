@@ -92,6 +92,11 @@ public final class PAssembler extends Assembler<PConsensus, PMig> {
     }
 
     @Override
+    public MinorCaller getMinorCaller() {
+        return assembler1.getMinorCaller().combine(assembler2.getMinorCaller());
+    }
+
+    @Override
     public boolean isPairedEnd() {
         return true;
     }

@@ -17,6 +17,9 @@
 package com.antigenomics.mageri.core.variant;
 
 import com.antigenomics.mageri.core.PipelineBlock;
+import com.antigenomics.mageri.core.assemble.DummyMinorCaller;
+import com.antigenomics.mageri.core.assemble.MinorCaller;
+import com.antigenomics.mageri.core.assemble.PoissonTestMinorCaller;
 import com.antigenomics.mageri.core.genomic.Reference;
 import com.antigenomics.mageri.core.mapping.ConsensusAligner;
 import com.antigenomics.mageri.core.mapping.MutationsTable;
@@ -47,10 +50,14 @@ public class VariantCaller extends PipelineBlock {
     protected final List<Variant> variants = new LinkedList<>();
 
     public VariantCaller(ConsensusAligner consensusAligner) {
-        this(consensusAligner, VariantCallerParameters.DEFAULT);
+        this(consensusAligner, DummyMinorCaller.INSTANCE, VariantCallerParameters.DEFAULT);
     }
 
-    public VariantCaller(ConsensusAligner consensusAligner,
+    public VariantCaller(ConsensusAligner consensusAligner, MinorCaller minorCaller) {
+        this(consensusAligner, minorCaller, VariantCallerParameters.DEFAULT);
+    }
+
+    public VariantCaller(ConsensusAligner consensusAligner, MinorCaller minorCaller,
                          VariantCallerParameters variantCallerParameters) {
         super("variant.caller");
         this.referenceLibrary = consensusAligner.getReferenceLibrary();
@@ -63,7 +70,7 @@ public class VariantCaller extends PipelineBlock {
             MutationsTable mutationsTable = consensusAligner.getAlignerTable(reference);
             if (mutationsTable.wasUpdated()) {
                 ErrorModel errorModel = ErrorModelProvider.create(variantCallerParameters,
-                        mutationsTable);
+                        mutationsTable, minorCaller);
 
                 for (Mutation mutation : mutationsTable.getMutations()) {
                     Variant variant;
