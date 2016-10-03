@@ -126,8 +126,7 @@ public class AssemblerModeTest {
                                           DoubleRangeAssertion migsAssembledrange) throws Exception {
         int nRepetitions = 1000;
         RandomReferenceGenerator referenceGenerator = new RandomReferenceGenerator();
-        SAssembler assembler = new SAssembler(PreprocessorParameters.IGNORE_QUAL, // don't care abt minors here
-                parameters);
+        SAssembler assembler = new SAssembler(parameters, DummyMinorCaller.INSTANCE); // don't care abt minors here
         SConsensus consensus;
 
         int migsAssembled = 0;

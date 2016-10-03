@@ -38,16 +38,19 @@ public class SAssembler extends Assembler<SConsensus, SMig> {
     private final AtomicLong readsDroppedShortCounter = new AtomicLong(),
             readsDroppedErrorsCounter = new AtomicLong(),
             readsRescuedCounter = new AtomicLong();
-    private final PoissonTestMinorCaller minorCaller;
+    private final MinorCaller minorCaller;
 
     public SAssembler() {
-        this(PreprocessorParameters.DEFAULT, AssemblerParameters.DEFAULT);
+        this(AssemblerParameters.DEFAULT, PreprocessorParameters.DEFAULT);
     }
 
-    public SAssembler(PreprocessorParameters preprocessorParameters,
-                      AssemblerParameters parameters) {
-        this.minorCaller = new PoissonTestMinorCaller(parameters, preprocessorParameters);
+    public SAssembler(AssemblerParameters parameters, PreprocessorParameters preprocessorParameters) {
+        this(parameters, new PoissonTestMinorCaller(parameters, preprocessorParameters));
+    }
+
+    public SAssembler(AssemblerParameters parameters, MinorCaller minorCaller) {
         this.parameters = parameters;
+        this.minorCaller = minorCaller;
     }
 
     private NucleotideSequence getCoreSeq(NucleotideSequence seq, int offset) {

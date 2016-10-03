@@ -30,8 +30,8 @@ public final class PAssemblerFactory extends AssemblerFactory<PConsensus, PMig> 
 
     @Override
     public PAssembler create() {
-        return new PAssembler(new SAssembler(preprocessorParameters, parameters),
-                new SAssembler(preprocessorParameters, parameters));
+        return new PAssembler(new SAssembler(parameters, preprocessorParameters),
+                new SAssembler(parameters, preprocessorParameters));
     }
 
     @Override

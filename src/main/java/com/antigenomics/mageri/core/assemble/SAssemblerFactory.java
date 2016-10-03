@@ -30,7 +30,7 @@ public final class SAssemblerFactory extends AssemblerFactory<SConsensus, SMig> 
 
     @Override
     public SAssembler create() {
-        return new SAssembler(preprocessorParameters, parameters);
+        return new SAssembler(parameters, preprocessorParameters);
     }
 
     @Override

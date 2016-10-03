@@ -26,10 +26,10 @@ public final class PAssembler extends Assembler<PConsensus, PMig> {
         this(new SAssembler(), new SAssembler());
     }
 
-    public PAssembler(PreprocessorParameters preprocessorParameters,
-                      AssemblerParameters assemblerParameters) {
-        this.assembler1 = new SAssembler(preprocessorParameters, assemblerParameters);
-        this.assembler2 = new SAssembler(preprocessorParameters, assemblerParameters);
+    public PAssembler(AssemblerParameters assemblerParameters,
+                      PreprocessorParameters preprocessorParameters) {
+        this.assembler1 = new SAssembler(assemblerParameters, preprocessorParameters);
+        this.assembler2 = new SAssembler(assemblerParameters, preprocessorParameters);
         assembler1.storeConsensuses = false;
         assembler2.storeConsensuses = false;
     }

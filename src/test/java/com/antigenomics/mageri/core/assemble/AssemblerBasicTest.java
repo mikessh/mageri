@@ -147,8 +147,8 @@ public class AssemblerBasicTest {
         PreprocessorParameters preprocessorParameters = PreprocessorParameters.DEFAULT;
         AssemblerParameters assemblerParameters = withIndels ? AssemblerParameters.TORRENT454 : AssemblerParameters.DEFAULT;
 
-        Assembler assembler = paired ? new PAssembler(preprocessorParameters, assemblerParameters) :
-                new SAssembler(preprocessorParameters, assemblerParameters);
+        Assembler assembler = paired ? new PAssembler(assemblerParameters, preprocessorParameters) :
+                new SAssembler(assemblerParameters, preprocessorParameters);
         Consensus consensus;
 
         int migsTotal = 0, migsAssembled = 0, migsDropped = 0, migsIncorrectlyAssembled = 0;
@@ -218,8 +218,8 @@ public class AssemblerBasicTest {
     @Test
     @Category(FastTests.class)
     public void fixedMutationCasesTest() {
-        fixedMutationCasesTest("DEFAULT", new SAssembler(PreprocessorParameters.DEFAULT, AssemblerParameters.DEFAULT));
-        fixedMutationCasesTest("TORRENT454", new SAssembler(PreprocessorParameters.DEFAULT, AssemblerParameters.TORRENT454));
+        fixedMutationCasesTest("DEFAULT", new SAssembler(AssemblerParameters.DEFAULT, PreprocessorParameters.DEFAULT));
+        fixedMutationCasesTest("TORRENT454", new SAssembler(AssemblerParameters.TORRENT454, PreprocessorParameters.DEFAULT));
     }
 
     public void fixedMutationCasesTest(String presetName, Assembler assembler) {
