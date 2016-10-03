@@ -138,6 +138,7 @@ public class SampleAnalysis implements ReadSpecific, Serializable {
         if (outputPrefix != null) {
             migSizeDistribution.writePlainText(outputPrefix);
             assembler.writePlainText(outputPrefix);
+            assembler.getMinorCaller().writePlainText(outputPrefix);
             consensusAligner.writePlainText(outputPrefix);
         }
 
