@@ -30,7 +30,7 @@ public class DummyMinorCaller extends MinorCaller<DummyMinorCaller> {
 
     @Override
     boolean callAndUpdate(int from, int to, int k, int n) {
-        return true;
+        return k > 0;
     }
 
     @Override

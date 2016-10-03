@@ -48,6 +48,10 @@ public class PoissonTestMinorCaller extends MinorCaller<PoissonTestMinorCaller> 
 
     @Override
     boolean callAndUpdate(int from, int to, int k, int n) {
+        if (k == 0) {
+            return false;
+        }
+
         boolean pass = false;
 
         try {
@@ -116,15 +120,15 @@ public class PoissonTestMinorCaller extends MinorCaller<PoissonTestMinorCaller> 
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
-                sb.append(NucleotideAlphabet.INSTANCE.symbolFromCode((byte)i))
+                sb.append(NucleotideAlphabet.INSTANCE.symbolFromCode((byte) i))
                         .append("\t")
-                        .append(NucleotideAlphabet.INSTANCE.symbolFromCode((byte)j))
+                        .append(NucleotideAlphabet.INSTANCE.symbolFromCode((byte) j))
                         .append("\t")
-                        .append(getM1(i,j))
+                        .append(getM1(i, j))
                         .append("\t")
-                        .append(getM(i,j))
+                        .append(getM(i, j))
                         .append("\t")
-                        .append(computeFdr(i,j))
+                        .append(computeFdr(i, j))
                         .append("\n");
             }
         }
