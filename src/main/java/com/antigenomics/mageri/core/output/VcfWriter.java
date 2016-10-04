@@ -56,6 +56,17 @@ public class VcfWriter extends RecordWriter<VcfRecord, VariantCaller> {
         // INFO fields
         stringBuilder.append(VcfUtil.INFO_HEADER).append("\n");
 
+        String[] errorModelStatisticIds = pipelineBlock.getErrorModelStatisticIds(),
+                errorModelStatisticDescriptions = pipelineBlock.getErrorModelStatisticDescriptions();
+
+        for (int i = 0; i < errorModelStatisticIds.length; i++) {
+            stringBuilder.append("##INFO=<ID=")
+                    .append(errorModelStatisticIds[i])
+                    .append(",Number=.,Type=Float,Description=\"")
+                    .append(errorModelStatisticDescriptions[i])
+                    .append("\">\n");
+        }
+
         // FILTER fields
         for (int i = 0; i < pipelineBlock.getFilterCount(); i++) {
             VariantFilter filter = pipelineBlock.getFilter(i);
@@ -83,7 +94,7 @@ public class VcfWriter extends RecordWriter<VcfRecord, VariantCaller> {
             return;
         }
 
-        VcfRecord vcfRecord = VcfUtil.create(variant);
+        VcfRecord vcfRecord = VcfUtil.create(variant, pipelineBlock.getErrorModelStatisticIds());
         write(vcfRecord);
     }
 }

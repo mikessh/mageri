@@ -17,6 +17,8 @@
 package com.antigenomics.mageri.core.variant;
 
 import com.antigenomics.mageri.core.mutations.Substitution;
+import com.antigenomics.mageri.core.variant.model.ErrorModel;
+import com.antigenomics.mageri.core.variant.model.ErrorRateEstimate;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.antigenomics.mageri.core.genomic.Contig;
 import com.antigenomics.mageri.core.genomic.Reference;
@@ -28,25 +30,26 @@ import java.io.Serializable;
 public class Variant implements Serializable, Comparable<Variant> {
     private final Reference reference;
     private final Mutation mutation;
-    private final int count, depth, minorCount;
-    private final double alleleFrequency, qual, cqs, errorRate;
+    private final int count, depth;
+    private final double alleleFrequency, qual, cqs;
     private final NucleotideSequence ancestralAllele;
     private final boolean hasReference;
+    private final ErrorRateEstimate errorRateEstimate;
     private FilterSummary filterSummary = FilterSummary.DUMMY;
 
     public Variant(Reference reference, Mutation mutation,
-                   int count, int minorCount, int depth, double alleleFrequency,
-                   double qual, double cqs, double errorRate,
-                   NucleotideSequence ancestralAllele, boolean hasReference) {
+                   int count, int depth,
+                   double qual, double cqs,
+                   NucleotideSequence ancestralAllele, boolean hasReference,
+                   ErrorRateEstimate errorRateEstimate) {
         this.reference = reference;
         this.mutation = mutation;
         this.count = count;
-        this.minorCount = minorCount;
         this.depth = depth;
-        this.alleleFrequency = alleleFrequency;
+        this.alleleFrequency = count / (double) depth;
         this.qual = qual;
         this.cqs = cqs;
-        this.errorRate = errorRate;
+        this.errorRateEstimate = errorRateEstimate;
         this.ancestralAllele = ancestralAllele;
         this.hasReference = hasReference;
     }
@@ -95,16 +98,12 @@ public class Variant implements Serializable, Comparable<Variant> {
         return count;
     }
 
-    public int getMinorCount() {
-        return minorCount;
-    }
-
     public double getAlleleFrequency() {
         return alleleFrequency;
     }
 
-    public double getErrorRate() {
-        return errorRate;
+    public ErrorRateEstimate getErrorRateEstimate() {
+        return errorRateEstimate;
     }
 
     public double getQual() {
@@ -131,19 +130,20 @@ public class Variant implements Serializable, Comparable<Variant> {
         this.filterSummary = new FilterSummary(variantCaller, this);
     }
 
-    public static String getHeader() {
+    public static String getHeaderBase() {
         return "reference\tmutation\t" +
-                "count.major\tcount.minor\tcoverage\t" +
-                "score\tcqs\terror.rate\t" +
+                "count\tcoverage\tfreq\t" +
+                "score\tcqs\t" +
                 "has.reference\tancestral.allele";
     }
 
     @Override
     public String toString() {
         return reference.getName() + "\t" + mutation.toString() + "\t" +
-                count + "\t" + minorCount + "\t" + depth + "\t" +
-                qual + "\t" + cqs + "\t" + errorRate + "\t" +
-                (hasReference ? "TRUE" : "FALSE") + "\t" + ancestralAllele.toString();
+                count + "\t" + depth + "\t" + (float) alleleFrequency + "\t" +
+                (float) qual + "\t" + (float) cqs + "\t" +
+                (hasReference ? "TRUE" : "FALSE") + "\t" + ancestralAllele.toString() +
+                errorRateEstimate.getErrorRateEstimateRowPart();
     }
 
     @Override

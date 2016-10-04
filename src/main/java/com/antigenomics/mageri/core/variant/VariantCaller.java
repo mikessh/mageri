@@ -19,7 +19,6 @@ package com.antigenomics.mageri.core.variant;
 import com.antigenomics.mageri.core.PipelineBlock;
 import com.antigenomics.mageri.core.assemble.DummyMinorCaller;
 import com.antigenomics.mageri.core.assemble.MinorCaller;
-import com.antigenomics.mageri.core.assemble.PoissonTestMinorCaller;
 import com.antigenomics.mageri.core.genomic.Reference;
 import com.antigenomics.mageri.core.mapping.ConsensusAligner;
 import com.antigenomics.mageri.core.mapping.MutationsTable;
@@ -30,6 +29,7 @@ import com.antigenomics.mageri.core.variant.filter.SingletonFilter;
 import com.antigenomics.mageri.core.variant.filter.VariantFilter;
 import com.antigenomics.mageri.core.variant.model.ErrorModel;
 import com.antigenomics.mageri.core.variant.model.ErrorModelProvider;
+import com.antigenomics.mageri.core.variant.model.ErrorRateEstimate;
 import com.milaboratory.core.sequence.mutations.Mutations;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequenceBuilder;
@@ -45,9 +45,10 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class VariantCaller extends PipelineBlock {
-    protected final ReferenceLibrary referenceLibrary;
-    protected final VariantFilter[] filters;
-    protected final List<Variant> variants = new LinkedList<>();
+    private final VariantCallerParameters variantCallerParameters;
+    private final ReferenceLibrary referenceLibrary;
+    private final VariantFilter[] filters;
+    private final List<Variant> variants = new LinkedList<>();
 
     public VariantCaller(ConsensusAligner consensusAligner) {
         this(consensusAligner, DummyMinorCaller.INSTANCE, VariantCallerParameters.DEFAULT);
@@ -60,11 +61,14 @@ public class VariantCaller extends PipelineBlock {
     public VariantCaller(ConsensusAligner consensusAligner, MinorCaller minorCaller,
                          VariantCallerParameters variantCallerParameters) {
         super("variant.caller");
+        this.variantCallerParameters = variantCallerParameters;
         this.referenceLibrary = consensusAligner.getReferenceLibrary();
         filters = new VariantFilter[3];
         filters[0] = new QualFilter(variantCallerParameters.getQualityThreshold());
         filters[1] = new SingletonFilter(variantCallerParameters.getSingletonFrequencyThreshold());
         filters[2] = new CoverageFilter(variantCallerParameters.getCoverageThreshold());
+
+        int errorModelStatisticCount = ErrorModelProvider.getErrorModelStatisticNames(variantCallerParameters).length;
 
         for (Reference reference : referenceLibrary.getReferences()) {
             MutationsTable mutationsTable = consensusAligner.getAlignerTable(reference);
@@ -84,37 +88,33 @@ public class VariantCaller extends PipelineBlock {
 
                         assert majorCount > 0;
 
-                        int coverage = mutationsTable.getMigCoverage(pos),
-                                minorCount = mutationsTable.getMinorMigCount(pos, to);
+                        int coverage = mutationsTable.getMigCoverage(pos);
 
-                        double errorRate = errorModel.computeErrorRate(mutation),
-                                score = -10 * getLog10PValue(majorCount, coverage, errorRate);
+                        ErrorRateEstimate errorRateEstimate = errorModel.computeErrorRate(mutation);
+                        double score = -10 * getLog10PValue(majorCount, coverage, errorRateEstimate.getErrorRate());
 
                         NucleotideSequenceBuilder nsb = new NucleotideSequenceBuilder(1);
                         nsb.setCode(0, mutationsTable.getAncestralBase(pos));
 
                         variant = new Variant(reference,
-                                mutation, majorCount, minorCount,
+                                mutation, majorCount,
                                 mutationsTable.getMigCoverage(pos),
-                                majorCount / (double) coverage,
-                                score, mutationsTable.getMeanCqs(pos, to), errorRate,
-                                nsb.create(), mutationsTable.hasReferenceBase(pos));
+                                score, mutationsTable.getMeanCqs(pos, to),
+                                nsb.create(), mutationsTable.hasReferenceBase(pos),
+                                errorRateEstimate);
 
                     } else if (variantCallerParameters.isNoIndels()) {
                         continue;
                     } else {
                         int rawCount = mutationsTable.getRawMutationCount(mutation);
-
                         int pos = mutation.getStart();
 
-                        int coverage = mutationsTable.getMigCoverage(pos);
-
                         variant = new Variant(reference,
-                                mutation, rawCount, 0,
+                                mutation, rawCount,
                                 mutationsTable.getMigCoverage(pos),
-                                rawCount / (double) coverage,
-                                VcfUtil.MAX_QUAL, mutationsTable.getMeanCqs(pos), 0.0,
-                                new NucleotideSequence(""), true);
+                                VcfUtil.MAX_QUAL, mutationsTable.getMeanCqs(pos),
+                                new NucleotideSequence(""), true,
+                                ErrorRateEstimate.createDummy(errorModelStatisticCount));
                     }
 
                     variant.filter(this);
@@ -170,7 +170,15 @@ public class VariantCaller extends PipelineBlock {
 
     @Override
     public String getHeader() {
-        return Variant.getHeader();
+        return Variant.getHeaderBase() + ErrorModelProvider.getErrorModelHeader(variantCallerParameters);
+    }
+
+    public String[] getErrorModelStatisticIds() {
+        return ErrorModelProvider.getErrorModelStatisticIDs(variantCallerParameters);
+    }
+
+    public String[] getErrorModelStatisticDescriptions() {
+        return ErrorModelProvider.getErrorModelStatisticDescriptions(variantCallerParameters);
     }
 
     @Override

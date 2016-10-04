@@ -84,7 +84,7 @@ public class MinorBasedErrorModel implements ErrorModel {
     }
 
     @Override
-    public double computeErrorRate(Mutation mutation) {
+    public ErrorRateEstimate computeErrorRate(Mutation mutation) {
         int code = ((Substitution) mutation).getCode(),
                 pos = Mutations.getPosition(code),
                 from = Mutations.getFrom(code), to = Mutations.getTo(code);
@@ -99,10 +99,20 @@ public class MinorBasedErrorModel implements ErrorModel {
         // Compute per cycle error rate for a given substitution
         // correct error rate by FDR (null = sequencing errors) and probability of not catching
         // a minor variant due to sampling
+        double fdr = minorCaller.computeFdr(from, to), // share of minors that are actually misidentified seq errors
+                geomMeanMigSize = minorCaller.getGeomMeanMigSize();
         double errorRateBase = computeBaseErrorRateEstimate(minorRate,
-                minorCaller.computeFdr(from, to), minorCaller.getGeomMeanMigSize(), cycles);
+                fdr, geomMeanMigSize, cycles);
 
-        // Adjust for efficiency and probability of error propagation
-        return (Math.log(lambda) - Math.log((1.0 + lambda) * errorRateBase - 1)) * propagateProb;
+        // Expected share of minors that are not lost due to sampling
+        double recall = coverage * (1.0 - Math.exp(-errorRateBase * geomMeanMigSize));
+
+        // Adjust for efficiency
+        double errorRateAdj = (Math.log(lambda) - Math.log((1.0 + lambda) * errorRateBase - 1));
+        // Adjust for probability of error propagation
+        double firstCycleErrorRate = errorRateAdj * propagateProb;
+
+        return new ErrorRateEstimate(firstCycleErrorRate,
+                errorRateAdj, minorCount, fdr, recall);
     }
 }

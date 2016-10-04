@@ -129,10 +129,10 @@ public class SubstitutionErrorMatrix implements ErrorModel {
     }
 
     @Override
-    public double computeErrorRate(Mutation mutation) {
+    public ErrorRateEstimate computeErrorRate(Mutation mutation) {
         int code = ((Substitution) mutation).getCode(),
                 from = Mutations.getFrom(code), to = Mutations.getTo(code);
 
-        return getRate(from, to);
+        return new ErrorRateEstimate(getRate(from, to));
     }
 }

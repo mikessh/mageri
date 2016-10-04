@@ -37,4 +37,46 @@ public class ErrorModelProvider {
                 throw new IllegalArgumentException("Unknown error model " + parameters.getErrorModelType().toString());
         }
     }
+
+    public static String getErrorModelHeader(VariantCallerParameters parameters) {
+        String[] statisticNames = getErrorModelStatisticNames(parameters);
+
+        String header = "";
+        if (statisticNames.length > 0) {
+            for (String name : statisticNames) {
+                header += "\t" + name;
+            }
+        }
+        return header;
+    }
+
+    public static String[] getErrorModelStatisticIDs(VariantCallerParameters parameters) {
+        switch (parameters.getErrorModelType()) {
+            case MinorBased:
+                return new String[]{"ER", "MC", "FDR", "RCL"};
+            default:
+                return new String[0];
+        }
+    }
+
+    public static String[] getErrorModelStatisticNames(VariantCallerParameters parameters) {
+        switch (parameters.getErrorModelType()) {
+            case MinorBased:
+                return new String[]{"error.rate", "minor.count", "minor.fdr", "minor.recall"};
+            default:
+                return new String[0];
+        }
+    }
+
+    public static String[] getErrorModelStatisticDescriptions(VariantCallerParameters parameters) {
+        switch (parameters.getErrorModelType()) {
+            case MinorBased:
+                return new String[]{"PCR per cycle per base error rate estimate",
+                        "Number of detected PCR minors",
+                        "PCR minor detection FDR (H0=sequencing errors)",
+                        "PCR minor recall, assuming PCR minors are lost due to sampling and finite MIG size"};
+            default:
+                return new String[0];
+        }
+    }
 }
