@@ -23,6 +23,7 @@ import org.apache.commons.math.MathException;
 import org.apache.commons.math.special.Gamma;
 
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class PoissonTestMinorCaller extends MinorCaller<PoissonTestMinorCaller> {
     private final AssemblerParameters assemblerParameters;
@@ -30,6 +31,8 @@ public class PoissonTestMinorCaller extends MinorCaller<PoissonTestMinorCaller> 
     private final double seqErrorRate;
     private final AtomicInteger[][] m1 = new AtomicInteger[4][4], m = new AtomicInteger[4][4];
     private final AtomicDouble[][] pValueSum = new AtomicDouble[4][4];
+    private final AtomicDouble logMigSizeSum = new AtomicDouble();
+    private final AtomicLong totalCounter = new AtomicLong();
 
     PoissonTestMinorCaller(AssemblerParameters assemblerParameters, PreprocessorParameters preprocessorParameters) {
         super("MinorCaller.PoissonTest");
@@ -53,6 +56,9 @@ public class PoissonTestMinorCaller extends MinorCaller<PoissonTestMinorCaller> 
         }
 
         boolean pass = false;
+
+        totalCounter.incrementAndGet();
+        logMigSizeSum.addAndGet(Math.log10(n));
 
         try {
             double p = Gamma.regularizedGammaP(k, n * seqErrorRate);
@@ -86,6 +92,11 @@ public class PoissonTestMinorCaller extends MinorCaller<PoissonTestMinorCaller> 
         }
 
         return poissonTestMinorCaller;
+    }
+
+    @Override
+    public double getGeomMeanMigSize() {
+        return Math.pow(10, logMigSizeSum.get() / totalCounter.get());
     }
 
     @Override

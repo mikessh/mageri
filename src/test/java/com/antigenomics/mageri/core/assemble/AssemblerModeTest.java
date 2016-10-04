@@ -25,13 +25,11 @@ import com.milaboratory.core.sequence.mutations.Mutations;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.antigenomics.mageri.DoubleRangeAssertion;
 import com.antigenomics.mageri.FastTests;
-import com.antigenomics.mageri.core.input.PreprocessorParameters;
 import com.antigenomics.mageri.core.input.SMig;
 import com.antigenomics.mageri.generators.MigWithMutations;
 import com.antigenomics.mageri.generators.MutationGenerator;
 import com.antigenomics.mageri.generators.RandomMigGenerator;
 import com.antigenomics.mageri.generators.RandomReferenceGenerator;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 

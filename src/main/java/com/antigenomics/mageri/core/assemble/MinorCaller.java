@@ -28,4 +28,6 @@ public abstract class MinorCaller<M extends MinorCaller> extends PipelineBlock {
     abstract boolean callAndUpdate(int from, int to, int k, int n);
 
     abstract M combine(M other);
+
+    public abstract double getGeomMeanMigSize();
 }

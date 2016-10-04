@@ -39,6 +39,11 @@ public class DummyMinorCaller extends MinorCaller<DummyMinorCaller> {
     }
 
     @Override
+    public double getGeomMeanMigSize() {
+        return 0;
+    }
+
+    @Override
     public String getHeader() {
         return "";
     }

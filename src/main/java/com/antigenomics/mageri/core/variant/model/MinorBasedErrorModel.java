@@ -72,6 +72,17 @@ public class MinorBasedErrorModel implements ErrorModel {
         return Math.pow((1.0 - lambda), order) * Math.pow(lambda, order + 1);
     }
 
+    public static double computeBaseErrorRateEstimate(double minorRate, double fdr,
+                                                      double geomMeanMigSize, double nCycles) {
+        // Actually one should solve
+        // (1-(1-eps)^nCycles) = minorRate + (1-exp(-eps * meanMigSize))
+        // where minorRate = #(at least one minor of given type) / coverage
+        // eps is the error rate
+        // Also using meanMigSize is quite crude here, regression should be used instead
+
+        return minorRate * (1.0 - fdr) / (geomMeanMigSize + nCycles);
+    }
+
     @Override
     public double computeErrorRate(Mutation mutation) {
         int code = ((Substitution) mutation).getCode(),
@@ -85,12 +96,11 @@ public class MinorBasedErrorModel implements ErrorModel {
         double minorRate = coverage < coverageThreshold || minorCount < minorCountThreshold ?
                 substitutionErrorMatrix.getRate(from, to) : (minorCount / (double) coverage);
 
-        // Correct for minor calling FDR
-        minorRate *= (1.0 - minorCaller.computeFdr(from, to));
-
         // Compute per cycle error rate for a given substitution
-        // based on probability that no error occurs from X cycles
-        double errorRateBase = Math.pow(1.0 - minorRate, 1.0 / cycles);
+        // correct error rate by FDR (null = sequencing errors) and probability of not catching
+        // a minor variant due to sampling
+        double errorRateBase = computeBaseErrorRateEstimate(minorRate,
+                minorCaller.computeFdr(from, to), minorCaller.getGeomMeanMigSize(), cycles);
 
         // Adjust for efficiency and probability of error propagation
         return (Math.log(lambda) - Math.log((1.0 + lambda) * errorRateBase - 1)) * propagateProb;

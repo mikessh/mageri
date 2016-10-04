@@ -206,7 +206,7 @@ public class AssemblerMinorTest {
     public void minorTest() {
         minorTest(true,
                 PercentRangeAssertion.createLowerBound("Specificity", "No indel minor recovery", 95),
-                PercentRangeAssertion.createLowerBound("Sensitivity", "No indel minor recovery", 95));
+                PercentRangeAssertion.createLowerBound("Sensitivity", "No indel minor recovery", 90));
 
         minorTest(false,
                 PercentRangeAssertion.createLowerBound("Specificity", "Minor recovery", 95),
