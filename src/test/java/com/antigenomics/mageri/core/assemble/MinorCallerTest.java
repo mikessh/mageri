@@ -16,6 +16,7 @@
 
 package com.antigenomics.mageri.core.assemble;
 
+import com.antigenomics.mageri.FastTests;
 import com.antigenomics.mageri.core.input.PreprocessorParameters;
 import com.antigenomics.mageri.core.variant.model.MinorBasedErrorModel;
 import org.apache.commons.math.MathException;
@@ -25,6 +26,7 @@ import org.apache.commons.math.random.RandomDataImpl;
 import org.apache.commons.math.random.RandomGenerator;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 public class MinorCallerTest {
     private final RandomData rnd;
@@ -36,6 +38,7 @@ public class MinorCallerTest {
     }
 
     @Test
+    @Category(FastTests.class)
     public void simulationTest() throws MathException {
         simulationTest(20, 0.8, (byte) 30, 1e-5, 100, 10000, 100);
         simulationTest(20, 0.8, (byte) 30, 5e-6, 100, 10000, 100);

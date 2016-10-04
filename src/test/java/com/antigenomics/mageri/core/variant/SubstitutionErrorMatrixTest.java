@@ -17,6 +17,7 @@
 package com.antigenomics.mageri.core.variant;
 
 import com.antigenomics.mageri.DoubleRangeAssertion;
+import com.antigenomics.mageri.FastTests;
 import com.antigenomics.mageri.core.assemble.SConsensus;
 import com.antigenomics.mageri.core.genomic.Reference;
 import com.antigenomics.mageri.core.mapping.ConsensusAligner;
@@ -30,9 +31,11 @@ import com.antigenomics.mageri.core.input.SMig;
 import com.antigenomics.mageri.core.mapping.SConsensusAligner;
 import com.antigenomics.mageri.generators.RandomReferenceGenerator;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 public class SubstitutionErrorMatrixTest {
     @Test
+    @Category(FastTests.class)
     @SuppressWarnings("unchecked")
     public void test() {
         RandomReferenceGenerator randomReferenceGenerator = new RandomReferenceGenerator();

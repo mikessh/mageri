@@ -58,6 +58,7 @@ public class KmerUtils {
         final NucleotideSequence sequence = rc ?
                 reference.getSequence().getReverseComplement() :
                 reference.getSequence();
+
         final int index = rc ?
                 -(reference.getIndex() + 1) :
                 (reference.getIndex() + 1);

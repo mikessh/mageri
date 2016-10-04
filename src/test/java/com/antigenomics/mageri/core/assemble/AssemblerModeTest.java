@@ -35,7 +35,7 @@ import org.junit.experimental.categories.Category;
 
 @SuppressWarnings("unchecked")
 public class AssemblerModeTest {
-    @Test
+    /*@Test
     public void temp() {
         //                                 *
         //             0000000000111111111122222222223333333333444
@@ -55,7 +55,7 @@ public class AssemblerModeTest {
         System.out.println(alignment.getSequence2Range());
         System.out.println(alignment.getSequence1Range().getFrom() + Mutations.getPosition(mut));
         System.out.println(Mutations.convertPosition(alignment.getMutations(), Mutations.getPosition(mut)));
-    }
+    }*/
 
 
     @Test

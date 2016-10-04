@@ -119,6 +119,7 @@ public class PMigReaderTest {
     }
 
     @Test
+    @Category(FastTests.class)
     public void orientationTest() throws Exception {
         System.out.println("Testing slave first attribute");
         orientationTest(getR1(), getR2(), getBarcodesSlaveFirst());
