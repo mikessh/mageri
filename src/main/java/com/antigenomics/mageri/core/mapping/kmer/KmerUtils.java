@@ -73,7 +73,7 @@ public class KmerUtils {
         } else {
             NucleotideSequence sequence = reference.getSequence();
 
-            int index = reference.getIndex();
+            int index = reference.getIndex() + 1;
 
             int nMaskedBases = reference.getnMaskedBases();
 
