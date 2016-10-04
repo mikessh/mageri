@@ -16,9 +16,10 @@
 
 package com.antigenomics.mageri.core.variant.model;
 
+import java.io.Serializable;
 import java.util.Arrays;
 
-public class ErrorRateEstimate {
+public class ErrorRateEstimate implements Serializable {
     public static ErrorRateEstimate createDummy(int statisticCount) {
         double[] statistics = new double[statisticCount];
 
