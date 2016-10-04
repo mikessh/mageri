@@ -18,14 +18,13 @@ package com.antigenomics.mageri.core.variant;
 
 import com.antigenomics.mageri.DoubleRangeAssertion;
 import com.antigenomics.mageri.FastTests;
-import com.antigenomics.mageri.core.assemble.SConsensus;
+import com.antigenomics.mageri.core.assemble.*;
 import com.antigenomics.mageri.core.genomic.Reference;
 import com.antigenomics.mageri.core.mapping.ConsensusAligner;
 import com.antigenomics.mageri.core.variant.model.SubstitutionErrorMatrix;
 import com.antigenomics.mageri.generators.MutationGenerator;
 import com.antigenomics.mageri.generators.RandomMigGenerator;
 import com.milaboratory.core.sequence.nucleotide.NucleotideAlphabet;
-import com.antigenomics.mageri.core.assemble.SAssembler;
 import com.antigenomics.mageri.core.genomic.ReferenceLibrary;
 import com.antigenomics.mageri.core.input.SMig;
 import com.antigenomics.mageri.core.mapping.SConsensusAligner;
@@ -54,7 +53,7 @@ public class SubstitutionErrorMatrixTest {
         randomMigGenerator.setMigSizeMax(migSize);
         randomMigGenerator.setMigSizeMin(migSize);
 
-        SAssembler assembler = new SAssembler();
+        SAssembler assembler = new SAssembler(AssemblerParameters.DEFAULT, DummyMinorCaller.INSTANCE);
         ConsensusAligner aligner = new SConsensusAligner(referenceLibrary);
 
         for (int i = 0; i < 1000; i++) {
@@ -68,8 +67,9 @@ public class SubstitutionErrorMatrixTest {
         SubstitutionErrorMatrix substitutionErrorMatrix = SubstitutionErrorMatrix.fromMutationsTable(aligner.getAlignerTable(reference));
 
         DoubleRangeAssertion assertion =
-                DoubleRangeAssertion.createRange("Observed vs expected substitution rate ratio", "Random MIG test", 0.7, 1.3);
-        
+                DoubleRangeAssertion.createRange("Observed vs expected substitution rate ratio",
+                        "Random MIG test", 0.7, 1.3);
+
         double JITTER = 1e-6;
 
         for (int i = 0; i < 4; i++) {

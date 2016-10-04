@@ -83,7 +83,7 @@ public class MutationArrayTest {
                 query4 = "ATACGATCGCTACTACCAAAAAAAAAACTGATCTACGTAGCTGCCATCGAGTTTTTATCGGCGCGAGCGACGATATTTCAGCGCGCAGCGAAAA";
 
         Assert.assertEquals("Composite deletion", "D30-37:TACGTAG>", getMutations(referen, query1).toString());
-        Assert.assertEquals("Composite insertion", "I38:>ATTAA>", getMutations(referen, query2).toString());
+        Assert.assertEquals("Composite insertion", "I38:>ATTAA", getMutations(referen, query2).toString());
         Assert.assertEquals("Composite deletion at homopolymer, right-shifted", "D21-24:AAA>", getMutations(referen, query3).toString());
         Assert.assertEquals("Composite insertion at homopolymer, right-shifted", "I24:>AAA", getMutations(referen, query4).toString());
     }
