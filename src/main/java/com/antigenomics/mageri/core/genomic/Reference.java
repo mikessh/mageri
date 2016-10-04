@@ -28,16 +28,30 @@ public class Reference extends Sequence implements Serializable {
     private final NucleotideSequence sequence;
     private final ReferenceLibrary parent;
     private final GenomicInfo genomicInfo;
+    private final int nMaskedBases;
 
     public Reference(ReferenceLibrary parent,
                      int index, String name,
                      NucleotideSequence sequence,
                      GenomicInfo genomicInfo) {
+        this(parent, index, name, sequence, genomicInfo, 0);
+    }
+
+    public Reference(ReferenceLibrary parent,
+                     int index, String name,
+                     NucleotideSequence sequence,
+                     GenomicInfo genomicInfo,
+                     int nMaskedBases) {
         this.parent = parent;
         this.index = index;
         this.name = name;
         this.sequence = sequence;
         this.genomicInfo = genomicInfo;
+        this.nMaskedBases = nMaskedBases;
+    }
+
+    public int getnMaskedBases() {
+        return nMaskedBases;
     }
 
     public int getIndex() {

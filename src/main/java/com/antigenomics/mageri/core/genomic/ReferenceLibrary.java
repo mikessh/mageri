@@ -169,7 +169,9 @@ public class ReferenceLibrary implements Serializable {
             sequence = sequence.getReverseComplement();
         }
 
-        Reference reference = new Reference(this, index, name, sequence, genomicInfo);
+        int maskedBases = offset <= 0 ? 0 : Math.min(sequence.size(), referenceLibraryParameters.getReadLength());
+
+        Reference reference = new Reference(this, index, name, sequence, genomicInfo, maskedBases);
 
         nameToId.put(name, index);
         references.add(reference);

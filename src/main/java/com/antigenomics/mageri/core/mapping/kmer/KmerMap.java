@@ -180,6 +180,10 @@ public class KmerMap {
     // Public methods
     //
 
+    public void increment(long kmer, int parentSequenceId) {
+        increment(kmer, parentSequenceId, true);
+    }
+
     /**
      * Increment counter for a given key. If the counter is already at its
      * maximum value, <code>Inter.MAX_VALUE</code>, the counter is not
@@ -187,7 +191,7 @@ public class KmerMap {
      *
      * @param kmer Key of the counter to increment.
      */
-    public void increment(long kmer, int parentSequenceId) {
+    public void increment(long kmer, int parentSequenceId, boolean notMasked) {
         total.incrementAndGet();
 
         KmerData element;
@@ -212,7 +216,7 @@ public class KmerMap {
 
             // Check first element
             if (element.key == kmer) {
-                if (element.counter < Integer.MAX_VALUE)
+                if (notMasked && element.counter < Integer.MAX_VALUE)
                     ++element.counter;
                 element.parentSequenceIds.add(parentSequenceId);
 
@@ -223,7 +227,7 @@ public class KmerMap {
             while (element.nextElement != null) {
 
                 if (element.nextElement.key == kmer) {
-                    if (element.nextElement.counter < Integer.MAX_VALUE)
+                    if (notMasked && element.nextElement.counter < Integer.MAX_VALUE)
                         ++element.nextElement.counter;
                     element.parentSequenceIds.add(parentSequenceId);
 

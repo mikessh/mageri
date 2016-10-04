@@ -55,16 +55,33 @@ public class KmerUtils {
     }
 
     public void countKmers(Reference reference, KmerMap kmerMap, boolean rc) {
-        final NucleotideSequence sequence = rc ?
-                reference.getSequence().getReverseComplement() :
-                reference.getSequence();
+        if (rc) {
+            NucleotideSequence sequence = reference.getSequence().getReverseComplement();
 
-        final int index = rc ?
-                -(reference.getIndex() + 1) :
-                (reference.getIndex() + 1);
+            int index = -reference.getIndex() - 1;
 
-        for (long kmer : extractKmers(sequence)) {
-            kmerMap.increment(kmer, index);
+            int nMaskedBases = reference.size() - reference.getnMaskedBases() - k;
+
+            long[] kmers = extractKmers(sequence);
+            for (int i = 0; i < kmers.length; i++) {
+                long kmer = kmers[i];
+                kmerMap.increment(kmer, index, i <= nMaskedBases);
+                // Do not increment count for masked bases
+                // we don't lower information of a given K-mer,
+                // still it points towards its parent reference
+            }
+        } else {
+            NucleotideSequence sequence = reference.getSequence();
+
+            int index = reference.getIndex();
+
+            int nMaskedBases = reference.getnMaskedBases();
+
+            long[] kmers = extractKmers(sequence);
+            for (int i = 0; i < kmers.length; i++) {
+                long kmer = kmers[i];
+                kmerMap.increment(kmer, index, i >= nMaskedBases);
+            }
         }
     }
 
