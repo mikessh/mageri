@@ -16,12 +16,7 @@
 
 package com.antigenomics.mageri.core.assemble;
 
-import com.antigenomics.mageri.core.mapping.alignment.AlignmentScoring;
 import com.milaboratory.core.sequence.NucleotideSQPair;
-import com.milaboratory.core.sequence.alignment.AffineGapAlignmentScoring;
-import com.milaboratory.core.sequence.alignment.LocalAligner;
-import com.milaboratory.core.sequence.alignment.LocalAlignment;
-import com.milaboratory.core.sequence.mutations.Mutations;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.antigenomics.mageri.DoubleRangeAssertion;
 import com.antigenomics.mageri.FastTests;

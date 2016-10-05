@@ -56,7 +56,7 @@ public class AlignerTest {
                         ResourceIOProvider.INSTANCE.getWrappedStream("genomic/pseudogene.fa"),
                         new BasicGenomicInfoProvider());
 
-        falsePositiveTest(referenceLibrary, new ReferenceLibrarySampler(pseudogeneReferenceLibrary), 1000);
+        falsePositiveTest(referenceLibrary, new ReferenceLibraryReadSampler(pseudogeneReferenceLibrary), 1000);
     }
 
     public void falsePositiveTest(ReferenceLibrary referenceLibrary, 

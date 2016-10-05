@@ -17,33 +17,35 @@ package com.antigenomics.mageri.core.mapping;
 
 import com.antigenomics.mageri.DoubleRangeAssertion;
 import com.antigenomics.mageri.core.assemble.*;
-import com.antigenomics.mageri.core.genomic.BedGenomicInfoProvider;
+import com.antigenomics.mageri.core.genomic.*;
+import com.antigenomics.mageri.core.input.PreprocessorParameters;
 import com.antigenomics.mageri.core.mapping.alignment.Aligner;
-import com.antigenomics.mageri.generators.MutationGenerator;
-import com.antigenomics.mageri.generators.RandomMigGenerator;
+import com.antigenomics.mageri.core.mutations.Mutation;
+import com.antigenomics.mageri.core.variant.Variant;
+import com.antigenomics.mageri.core.variant.model.ErrorRateEstimate;
+import com.antigenomics.mageri.generators.*;
+import com.antigenomics.mageri.misc.ProcessorResultWrapper;
+import com.antigenomics.mageri.pipeline.input.InputStreamWrapper;
 import com.milaboratory.core.sequence.NucleotideSQPair;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.antigenomics.mageri.FastTests;
 import com.antigenomics.mageri.PercentRangeAssertion;
 import com.antigenomics.mageri.core.Mig;
-import com.antigenomics.mageri.core.genomic.Reference;
-import com.antigenomics.mageri.core.genomic.ReferenceLibrary;
 import com.antigenomics.mageri.core.mapping.alignment.ExtendedKmerAligner;
 import com.antigenomics.mageri.core.mutations.MutationArray;
-import com.antigenomics.mageri.generators.MigWithMutations;
-import com.antigenomics.mageri.generators.RandomReferenceGenerator;
 import com.antigenomics.mageri.pipeline.analysis.Project;
 import com.antigenomics.mageri.pipeline.analysis.Sample;
 import com.antigenomics.mageri.pipeline.analysis.SampleGroup;
 import com.antigenomics.mageri.pipeline.input.ResourceIOProvider;
+import com.milaboratory.core.sequencing.io.fasta.FastaReader;
+import com.milaboratory.core.sequencing.read.SSequencingRead;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Random;
+import java.util.*;
 
 public class ConsensusAlignerTest {
     private final static Random rnd = new Random(480011);
@@ -172,9 +174,10 @@ public class ConsensusAlignerTest {
         RandomMigGenerator randomMigGenerator = new RandomMigGenerator();
 
         // NOTE: todo: change when indel-proof assembler is finished
-        randomMigGenerator.setMutationGenerator(MutationGenerator.NO_INDEL);
+        //randomMigGenerator.setMutationGenerator(MutationGenerator.NO_INDEL);
 
-        Assembler assembler = paired ? new PAssembler() : new SAssembler();
+        Assembler assembler = paired ? new PAssembler(AssemblerParameters.TORRENT454, PreprocessorParameters.DEFAULT) :
+                new SAssembler(AssemblerParameters.TORRENT454, PreprocessorParameters.DEFAULT);
         Aligner aligner = new ExtendedKmerAligner(statsByRef.getReferenceLibrary());
         ConsensusAligner consensusAligner = paired ? new PConsensusAligner(aligner) :
                 new SConsensusAligner(aligner);
@@ -290,5 +293,156 @@ public class ConsensusAlignerTest {
 
         PercentRangeAssertion.createLowerBound("Ref bases coincidence", setting, 95).
                 assertInRange(refBasesObs, refBasesExp);
+    }
+
+
+    @Test
+    @Category(FastTests.class)
+    public void partitionedReferenceLibraryMappingTest() throws IOException {
+        ReferenceLibraryParameters parameters = ReferenceLibraryParameters.DEFAULT.withReadLength(150);
+
+        GenomicInfoProvider genomicInfoProvider = new BedGenomicInfoProvider(
+                ResourceIOProvider.INSTANCE.getWrappedStream("genomic/cgc_exons_flank50.bed"),
+                ResourceIOProvider.INSTANCE.getWrappedStream("genomic/contigs_hg38.txt"));
+
+        List<SSequencingRead> fastaRecords = getLongNonOverlappingRefs(ResourceIOProvider
+                .INSTANCE.getWrappedStream("genomic/cgc_exons_flank50.fa"),
+                parameters, genomicInfoProvider);
+
+        ReferenceLibrary partitionedReferenceLibrary = new ReferenceLibrary(fastaRecords,
+                genomicInfoProvider, parameters),
+                nonPartitionedReferenceLibrary = new ReferenceLibrary(fastaRecords,
+                        genomicInfoProvider, parameters.withSplitLargeReferences(false));
+
+        System.out.println("Selected " + nonPartitionedReferenceLibrary.size() + " references");
+
+        ReferenceLibraryReadSampler referenceLibraryReadSampler = new ReferenceLibraryReadSampler(nonPartitionedReferenceLibrary);
+        MutationGenerator mutationGenerator = MutationGenerator.DEFAULT;
+
+        SConsensusAligner consensusAlignerPartitioned = new SConsensusAligner(partitionedReferenceLibrary),
+                consensusAlignerUnpartitioned = new SConsensusAligner(nonPartitionedReferenceLibrary);
+
+        int nReads = 10000, nMappedBoth = 0,
+                lowConfMatchParitioned = 0, lowConfMatchUnparitioned = 0,
+                discordantRefs = 0, discordantMutationsSameRef = 0,
+                badRefParitioned = 0, badRefUnpartitioned = 0;
+
+        byte mapqThreshold = 20;
+
+        for (int i = 0; i < nReads; i++) {
+            ReferenceParentChildPair referencePCP = referenceLibraryReadSampler.nextReadWithParent();
+            Reference reference = referencePCP.getParentReference();
+            NucleotideSequence sequence = mutationGenerator.nextMutatedSequence(referencePCP.getChildSequence());
+
+            SConsensus consensus = createConsensus(sequence);
+
+            SAlignedConsensus result1 = align(consensusAlignerPartitioned, consensus),
+                    result2 = align(consensusAlignerUnpartitioned, consensus);
+
+            boolean goodMatch1 = result1.getAlignmentResult().getScore() > mapqThreshold,
+                    goodMatch2 = result2.getAlignmentResult().getScore() > mapqThreshold;
+
+            if (!goodMatch1) {
+                lowConfMatchParitioned++;
+            }
+            if (!goodMatch2) {
+                lowConfMatchUnparitioned++;
+            }
+
+            if (!result1.getAlignmentResult().getReference().getOriginalName()
+                    .equals(reference.getOriginalName())) {
+                badRefParitioned++;
+            }
+            if (!result2.getAlignmentResult().getReference().getOriginalName()
+                    .equals(reference.getOriginalName())) {
+                badRefUnpartitioned++;
+            }
+
+            if (goodMatch1 && goodMatch2) {
+                nMappedBoth++;
+                if (!result1.getAlignmentResult().getReference().getOriginalName()
+                        .equals(result2.getAlignmentResult().getReference().getOriginalName())) {
+                    discordantRefs++;
+                } else {
+                    Set<String> variants1 = getVariants(result1),
+                            variants2 = getVariants(result2);
+
+                    if (!variants1.equals(variants2)) {
+                        discordantMutationsSameRef++;
+                    }
+                }
+            }
+        }
+
+
+        PercentRangeAssertion.createUpperBound("Discordant refs",
+                "Partitioned-nonpartitioned comparison", 2).
+                assertInRange(discordantRefs, nMappedBoth);
+        PercentRangeAssertion.createUpperBound("Discordant mutations same ref",
+                "Partitioned-nonpartitioned comparison", 1).
+                assertInRange(discordantMutationsSameRef, nMappedBoth);
+
+        PercentRangeAssertion.createUpperBound("Low-confidence mappings", "Partitioned library", 10).
+                assertInRange(lowConfMatchParitioned, nReads);
+        PercentRangeAssertion.createUpperBound("Low-confidence mappings", "Unpartitioned library", 6).
+                assertInRange(lowConfMatchUnparitioned, nReads);
+
+        PercentRangeAssertion.createUpperBound("Wrong reference", "Partitioned library", 1).
+                assertInRange(badRefParitioned, nReads);
+        PercentRangeAssertion.createUpperBound("Wrong reference", "Unpartitioned library", 5).
+                assertInRange(badRefUnpartitioned, nReads);
+    }
+
+    private SAlignedConsensus align(SConsensusAligner consensusAligner, SConsensus consensus) {
+        return (SAlignedConsensus) consensusAligner.process(new ProcessorResultWrapper<>(consensus)).getResult();
+    }
+
+    private Set<String> getVariants(SAlignedConsensus result) {
+        MutationArray mutations = result.getMutations();
+
+        Set<String> variants = new HashSet<>();
+
+        for (Mutation mutation : mutations.getMutations()) {
+            variants.add(
+                    new Variant(result.getAlignmentResult().getReference(), mutation,
+                            0, 0, 0, 0, new NucleotideSequence(""), true, ErrorRateEstimate.createDummy(0))
+                            .getGenomicString()
+            );
+        }
+
+        return variants;
+    }
+
+    private SConsensus createConsensus(NucleotideSequence seq) {
+        return new SConsensus(null, null, new NucleotideSQPair(seq), new HashSet<Integer>(), 1, 1);
+    }
+
+    private List<SSequencingRead> getLongNonOverlappingRefs(InputStreamWrapper input,
+                                                            ReferenceLibraryParameters referenceLibraryParameters,
+                                                            GenomicInfoProvider genomicInfoProvider) throws IOException {
+        FastaReader reader = new FastaReader(input.getInputStream(), false);
+        List<SSequencingRead> records = new ArrayList<>();
+        SSequencingRead record;
+        Set<String> addedGenes = new HashSet<>(),
+                bins = new HashSet<>();
+
+        while ((record = reader.take()) != null) {
+            if (record.getData().size() > referenceLibraryParameters.getMaxReferenceLength()) {
+                String geneName = record.getDescription().split("_")[0];
+                GenomicInfo genomicInfo = genomicInfoProvider.get(record.getDescription(),
+                        record.getData().getSequence());
+
+                String bin = genomicInfo.getChrom() + ":" +
+                        (genomicInfo.getStart() + genomicInfo.getEnd()) / 2 / 1000000;
+
+                if (!addedGenes.contains(geneName) && !bins.contains(bin)) {
+                    records.add(record);
+                    addedGenes.add(geneName);
+                    bins.add(bin);
+                }
+            }
+        }
+
+        return records;
     }
 }

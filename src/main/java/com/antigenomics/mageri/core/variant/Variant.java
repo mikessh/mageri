@@ -137,6 +137,11 @@ public class Variant implements Serializable, Comparable<Variant> {
                 "has.reference\tancestral.allele";
     }
 
+    public String getGenomicString() {
+        return getChrom() + ":" + getGenomicPosition() + ":" + mutation.getType() +
+                ":" + getRef() + ">" + getAlt();
+    }
+
     @Override
     public String toString() {
         return reference.getName() + "\t" + mutation.toString() + "\t" +

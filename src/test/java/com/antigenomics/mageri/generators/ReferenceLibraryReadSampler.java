@@ -20,11 +20,11 @@ import com.antigenomics.mageri.core.genomic.Reference;
 import com.antigenomics.mageri.core.genomic.ReferenceLibrary;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 
-public class ReferenceLibrarySampler implements RandomSequenceGenerator {
+public class ReferenceLibraryReadSampler implements RandomSequenceGenerator {
     private int minReadSize = 50, maxReadSize = 150;
     private final ReferenceLibrary referenceLibrary;
 
-    public ReferenceLibrarySampler(ReferenceLibrary referenceLibrary) {
+    public ReferenceLibraryReadSampler(ReferenceLibrary referenceLibrary) {
         this.referenceLibrary = referenceLibrary;
     }
 
@@ -54,5 +54,16 @@ public class ReferenceLibrarySampler implements RandomSequenceGenerator {
         int to = Math.min(sequence.size(), from + size);
 
         return sequence.getRange(from, to);
+    }
+
+    public ReferenceParentChildPair nextReadWithParent() {
+        Reference reference = referenceLibrary.getAt(RandomUtil.nextIndex(referenceLibrary.size()));
+        NucleotideSequence sequence = reference.getSequence();
+
+        int size = RandomUtil.nextFromRange(minReadSize, maxReadSize),
+                from = RandomUtil.nextFromRange(0, Math.max(0, sequence.size() - size));
+        int to = Math.min(sequence.size(), from + size);
+
+        return new ReferenceParentChildPair(new int[0], reference, reference.getSequence(), sequence.getRange(from, to));
     }
 }

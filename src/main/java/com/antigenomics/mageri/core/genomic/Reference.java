@@ -24,7 +24,7 @@ import java.io.Serializable;
 
 public class Reference extends Sequence implements Serializable {
     private final int index;
-    private final String name;
+    private final String name, originalName;
     private final NucleotideSequence sequence;
     private final ReferenceLibrary parent;
     private final GenomicInfo genomicInfo;
@@ -34,17 +34,18 @@ public class Reference extends Sequence implements Serializable {
                      int index, String name,
                      NucleotideSequence sequence,
                      GenomicInfo genomicInfo) {
-        this(parent, index, name, sequence, genomicInfo, 0);
+        this(parent, index, name, name, sequence, genomicInfo, 0);
     }
 
     public Reference(ReferenceLibrary parent,
-                     int index, String name,
+                     int index, String name, String originalName,
                      NucleotideSequence sequence,
                      GenomicInfo genomicInfo,
                      int nMaskedBases) {
         this.parent = parent;
         this.index = index;
         this.name = name;
+        this.originalName = originalName;
         this.sequence = sequence;
         this.genomicInfo = genomicInfo;
         this.nMaskedBases = nMaskedBases;
@@ -60,6 +61,10 @@ public class Reference extends Sequence implements Serializable {
 
     public String getName() {
         return name;
+    }
+
+    public String getOriginalName() {
+        return originalName;
     }
 
     public NucleotideSequence getSequence() {

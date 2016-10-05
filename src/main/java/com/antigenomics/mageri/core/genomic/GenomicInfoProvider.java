@@ -22,9 +22,11 @@ import java.io.Serializable;
 import java.util.List;
 
 public interface GenomicInfoProvider extends Serializable{
-    public GenomicInfo get(String name, NucleotideSequence sequence, int offset);
+    GenomicInfo get(String name, NucleotideSequence sequence, int offset);
 
-    public List<Contig> getContigs();
+    GenomicInfo get(String name, NucleotideSequence sequence);
+
+    List<Contig> getContigs();
     
-    public int size();
+    int size();
 }

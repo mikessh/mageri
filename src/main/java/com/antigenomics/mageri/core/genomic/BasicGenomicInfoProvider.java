@@ -24,6 +24,11 @@ public class BasicGenomicInfoProvider implements GenomicInfoProvider {
     private final Map<String, Contig> contigs = new HashMap<>();
 
     @Override
+    public GenomicInfo get(String name, NucleotideSequence sequence) {
+        return get(name, sequence, 0);
+    }
+
+    @Override
     public GenomicInfo get(String name, NucleotideSequence sequence, int offset) {
         if (offset < 0) {
             throw new IllegalArgumentException("Offset should be greater or equal to zero.");

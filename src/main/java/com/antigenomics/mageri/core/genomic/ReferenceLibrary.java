@@ -44,13 +44,13 @@ public class ReferenceLibrary implements Serializable {
                                              GenomicInfoProvider genomicInfoProvider,
                                              ReferenceLibraryParameters referenceLibraryParameters) throws IOException {
         FastaReader reader = new FastaReader(input.getInputStream(), false);
-        List<SSequencingRead> records = new LinkedList<>();
+        List<SSequencingRead> records = new ArrayList<>();
         SSequencingRead record;
         while ((record = reader.take()) != null) {
             records.add(record);
         }
 
-        return new ReferenceLibrary(records, genomicInfoProvider, input.getFullPath(), referenceLibraryParameters);
+        return new ReferenceLibrary(records, genomicInfoProvider, referenceLibraryParameters, input.getFullPath());
     }
 
     public ReferenceLibrary() {
@@ -79,17 +79,23 @@ public class ReferenceLibrary implements Serializable {
 
     public ReferenceLibrary(Collection<SSequencingRead> fastaRecords,
                             ReferenceLibraryParameters referenceLibraryParameters) {
-        this(fastaRecords, new BasicGenomicInfoProvider(), EMPTY_PATH, referenceLibraryParameters);
-    }
-
-    public ReferenceLibrary(Collection<SSequencingRead> fastaRecords,
-                            GenomicInfoProvider genomicInfoProvider, String path) {
-        this(fastaRecords, genomicInfoProvider, path, ReferenceLibraryParameters.DEFAULT);
+        this(fastaRecords, new BasicGenomicInfoProvider(), referenceLibraryParameters, EMPTY_PATH);
     }
 
     public ReferenceLibrary(Collection<SSequencingRead> fastaRecords,
                             GenomicInfoProvider genomicInfoProvider,
-                            String path, ReferenceLibraryParameters referenceLibraryParameters) {
+                            ReferenceLibraryParameters referenceLibraryParameters) {
+        this(fastaRecords, genomicInfoProvider, referenceLibraryParameters, EMPTY_PATH);
+    }
+
+    public ReferenceLibrary(Collection<SSequencingRead> fastaRecords,
+                            GenomicInfoProvider genomicInfoProvider, String path) {
+        this(fastaRecords, genomicInfoProvider, ReferenceLibraryParameters.DEFAULT, path);
+    }
+
+    public ReferenceLibrary(Collection<SSequencingRead> fastaRecords,
+                            GenomicInfoProvider genomicInfoProvider,
+                            ReferenceLibraryParameters referenceLibraryParameters, String path) {
         this.genomicInfoProvider = genomicInfoProvider;
         this.path = path;
         this.referenceLibraryParameters = referenceLibraryParameters;
@@ -105,46 +111,7 @@ public class ReferenceLibrary implements Serializable {
     }
 
     public synchronized void addReference(String name, NucleotideSequence sequence) {
-        if (!referenceLibraryParameters.splitLargeReferences() || sequence.size() <= referenceLibraryParameters.getMaxReferenceLength()) {
-            addReference(name, sequence, -1);
-        } else {
-            int offset = 0;
-            int step = referenceLibraryParameters.getMaxReferenceLength() - referenceLibraryParameters.getReadLength();
-
-            while (true) {
-                int to = Math.min(offset + referenceLibraryParameters.getMaxReferenceLength(), sequence.size());
-
-                if (sequence.size() - offset - step < referenceLibraryParameters.getReadLength()) {
-                    // don't create short references
-                    to = sequence.size();
-                }
-
-                addReference(name, sequence.getRange(offset, to), offset);
-
-                if (to == sequence.size()) {
-                    break;
-                }
-
-                offset += step;
-            }
-        }
-    }
-
-    public synchronized void addReference(String name, NucleotideSequence sequence, int offset) {
-        int index = references.size();
-
-        boolean noSuffix = offset < 0;
-        offset = noSuffix ? 0 : offset;
-
-        GenomicInfo genomicInfo = genomicInfoProvider.get(name, sequence, offset);
-
-        if (!noSuffix) {
-            name += "_" + offset;
-        }
-
-        if (nameToId.containsKey(name)) {
-            throw new RuntimeException("Duplicate sequence names are not allowed. " + name);
-        }
+        GenomicInfo genomicInfo = genomicInfoProvider.get(name, sequence, 0);
 
         if (genomicInfo == null) {
             if (++warningCount <= MAX_WARNINGS) {
@@ -169,9 +136,53 @@ public class ReferenceLibrary implements Serializable {
             sequence = sequence.getReverseComplement();
         }
 
+        if (!referenceLibraryParameters.splitLargeReferences() || sequence.size() <= referenceLibraryParameters.getMaxReferenceLength()) {
+            addReference(name, sequence, genomicInfo, -1);
+        } else {
+            int offset = 0;
+            int step = referenceLibraryParameters.getMaxReferenceLength() - referenceLibraryParameters.getReadLength();
+
+            while (true) {
+                int to = Math.min(offset + referenceLibraryParameters.getMaxReferenceLength(), sequence.size());
+
+                if (sequence.size() - offset - step < referenceLibraryParameters.getReadLength()) {
+                    // don't create short references
+                    to = sequence.size();
+                }
+
+                addReference(name, sequence.getRange(offset, to), genomicInfo, offset);
+
+                if (to == sequence.size()) {
+                    break;
+                }
+
+                offset += step;
+            }
+        }
+    }
+
+    public synchronized void addReference(String name, NucleotideSequence sequence, GenomicInfo genomicInfo0,
+                                          int offset) {
+        int index = references.size();
+
+        boolean noSuffix = offset < 0;
+        offset = noSuffix ? 0 : offset;
+
+        String originalName = name;
+
+        GenomicInfo genomicInfo = offset > 0 ? genomicInfoProvider.get(originalName, sequence, offset) : genomicInfo0;
+
+        if (!noSuffix) {
+            name += "_" + offset;
+        }
+
+        if (nameToId.containsKey(name)) {
+            throw new RuntimeException("Duplicate sequence names are not allowed. " + name);
+        }
+
         int maskedBases = offset <= 0 ? 0 : Math.min(sequence.size(), referenceLibraryParameters.getReadLength());
 
-        Reference reference = new Reference(this, index, name, sequence, genomicInfo, maskedBases);
+        Reference reference = new Reference(this, index, name, originalName, sequence, genomicInfo, maskedBases);
 
         nameToId.put(name, index);
         references.add(reference);

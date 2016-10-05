@@ -94,7 +94,8 @@ public final class PAlignedConsensus extends AlignedConsensus {
     @Override
     public boolean isChimeric() {
         return isMapped() &&
-                !(Objects.equals(alignmentResult1.getReference(), alignmentResult2.getReference()));
+                !alignmentResult1.getReference().getOriginalName()
+                        .equals(alignmentResult2.getReference().getOriginalName());
     }
 
     @Override
