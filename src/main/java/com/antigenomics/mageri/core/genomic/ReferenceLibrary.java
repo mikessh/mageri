@@ -110,8 +110,9 @@ public class ReferenceLibrary implements Serializable {
         }
     }
 
-    public synchronized void addReference(String name, NucleotideSequence sequence) {
-        GenomicInfo genomicInfo = genomicInfoProvider.get(name, sequence, 0);
+    private synchronized void addReference(String name, NucleotideSequence sequence) {
+        // have a glance at genomic info
+        GenomicInfo genomicInfo = genomicInfoProvider.get(name);
 
         if (genomicInfo == null) {
             if (++warningCount <= MAX_WARNINGS) {
@@ -129,15 +130,14 @@ public class ReferenceLibrary implements Serializable {
             return;
         }
 
-        contigs.add(genomicInfo.getContig());
-
         if (!genomicInfo.positiveStrand()) {
             // Only work with + strand
             sequence = sequence.getReverseComplement();
         }
 
-        if (!referenceLibraryParameters.splitLargeReferences() || sequence.size() <= referenceLibraryParameters.getMaxReferenceLength()) {
-            addReference(name, sequence, genomicInfo, -1);
+        if (!referenceLibraryParameters.splitLargeReferences() ||
+                sequence.size() <= referenceLibraryParameters.getMaxReferenceLength()) {
+            addReference(name, sequence, -1);
         } else {
             int offset = 0;
             int step = referenceLibraryParameters.getMaxReferenceLength() - referenceLibraryParameters.getReadLength();
@@ -150,7 +150,7 @@ public class ReferenceLibrary implements Serializable {
                     to = sequence.size();
                 }
 
-                addReference(name, sequence.getRange(offset, to), genomicInfo, offset);
+                addReference(name, sequence.getRange(offset, to), offset);
 
                 if (to == sequence.size()) {
                     break;
@@ -161,18 +161,20 @@ public class ReferenceLibrary implements Serializable {
         }
     }
 
-    public synchronized void addReference(String name, NucleotideSequence sequence, GenomicInfo genomicInfo0,
-                                          int offset) {
+    private synchronized void addReference(String name, NucleotideSequence sequence,
+                                           int offset) {
         int index = references.size();
 
-        boolean noSuffix = offset < 0;
-        offset = noSuffix ? 0 : offset;
+        boolean noOffsetting = offset < 0;
 
         String originalName = name;
 
-        GenomicInfo genomicInfo = offset > 0 ? genomicInfoProvider.get(originalName, sequence, offset) : genomicInfo0;
+        GenomicInfo genomicInfo = noOffsetting ? genomicInfoProvider.create(originalName, sequence) :
+                genomicInfoProvider.createPartitioned(originalName, sequence, offset);
 
-        if (!noSuffix) {
+        contigs.add(genomicInfo.getContig());
+
+        if (!noOffsetting) {
             name += "_" + offset;
         }
 
@@ -180,7 +182,8 @@ public class ReferenceLibrary implements Serializable {
             throw new RuntimeException("Duplicate sequence names are not allowed. " + name);
         }
 
-        int maskedBases = offset <= 0 ? 0 : Math.min(sequence.size(), referenceLibraryParameters.getReadLength());
+        int maskedBases = noOffsetting || offset == 0 ? 0 :
+                Math.min(sequence.size(), referenceLibraryParameters.getReadLength());
 
         Reference reference = new Reference(this, index, name, originalName, sequence, genomicInfo, maskedBases);
 

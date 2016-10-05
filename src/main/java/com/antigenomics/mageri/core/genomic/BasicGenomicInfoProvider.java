@@ -24,12 +24,24 @@ public class BasicGenomicInfoProvider implements GenomicInfoProvider {
     private final Map<String, Contig> contigs = new HashMap<>();
 
     @Override
-    public GenomicInfo get(String name, NucleotideSequence sequence) {
-        return get(name, sequence, 0);
+    public GenomicInfo get(String name) {
+        return new GenomicInfo(new Contig(name,
+                "user", -1, false), -1, -1, true);
     }
 
     @Override
-    public GenomicInfo get(String name, NucleotideSequence sequence, int offset) {
+    public GenomicInfo create(String name, NucleotideSequence sequence) {
+        Contig contig = new Contig(name,
+                "user", sequence.size(),
+                false);
+
+        contigs.put(name, contig);
+
+        return new GenomicInfo(contig, 0, sequence.size(), true);
+    }
+
+    @Override
+    public GenomicInfo createPartitioned(String name, NucleotideSequence sequence, int offset) {
         if (offset < 0) {
             throw new IllegalArgumentException("Offset should be greater or equal to zero.");
         }

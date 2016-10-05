@@ -21,12 +21,14 @@ import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import java.io.Serializable;
 import java.util.List;
 
-public interface GenomicInfoProvider extends Serializable{
-    GenomicInfo get(String name, NucleotideSequence sequence, int offset);
+public interface GenomicInfoProvider extends Serializable {
+    GenomicInfo createPartitioned(String name, NucleotideSequence sequence, int offset);
 
-    GenomicInfo get(String name, NucleotideSequence sequence);
+    GenomicInfo create(String name, NucleotideSequence sequence);
+
+    GenomicInfo get(String name);
 
     List<Contig> getContigs();
-    
+
     int size();
 }

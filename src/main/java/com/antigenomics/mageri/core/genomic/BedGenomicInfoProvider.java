@@ -75,12 +75,17 @@ public class BedGenomicInfoProvider implements GenomicInfoProvider {
     }
 
     @Override
-    public GenomicInfo get(String name, NucleotideSequence sequence) {
-        return get(name, sequence, 0);
+    public GenomicInfo get(String name) {
+        return records.get(name);
     }
 
     @Override
-    public GenomicInfo get(String name, NucleotideSequence sequence, int offset) {
+    public GenomicInfo create(String name, NucleotideSequence sequence) {
+        return records.get(name);
+    }
+
+    @Override
+    public GenomicInfo createPartitioned(String name, NucleotideSequence sequence, int offset) {
         if (offset < 0) {
             throw new IllegalArgumentException("Offset should be greater or equal to zero.");
         }

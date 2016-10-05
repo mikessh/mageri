@@ -48,7 +48,7 @@ public class GenomicInfo implements Serializable, Comparable<GenomicInfo> {
         return end;
     }
 
-    public GenomicInfo shift(int offset, NucleotideSequence sequence) {
+    GenomicInfo shift(int offset, NucleotideSequence sequence) {
         int newStart = start + offset,
                 newEnd = start + offset + sequence.size(); // BED is 0-based
 

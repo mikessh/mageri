@@ -429,8 +429,7 @@ public class ConsensusAlignerTest {
         while ((record = reader.take()) != null) {
             if (record.getData().size() > referenceLibraryParameters.getMaxReferenceLength()) {
                 String geneName = record.getDescription().split("_")[0];
-                GenomicInfo genomicInfo = genomicInfoProvider.get(record.getDescription(),
-                        record.getData().getSequence());
+                GenomicInfo genomicInfo = genomicInfoProvider.get(record.getDescription());
 
                 String bin = genomicInfo.getChrom() + ":" +
                         (genomicInfo.getStart() + genomicInfo.getEnd()) / 2 / 1000000;
