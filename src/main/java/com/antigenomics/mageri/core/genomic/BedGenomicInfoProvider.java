@@ -87,10 +87,6 @@ public class BedGenomicInfoProvider implements GenomicInfoProvider {
 
         GenomicInfo genomicInfo = records.get(name);
 
-        if (offset == 0) {
-            return genomicInfo;
-        }
-
         return genomicInfo == null ? null : genomicInfo.shift(offset, sequence);
     }
 

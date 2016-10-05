@@ -55,6 +55,7 @@ public class GenomicInfo implements Serializable, Comparable<GenomicInfo> {
         if (newStart < start || newEnd > end) {
             throw new IllegalArgumentException("Shift out of bounds of current region.");
         }
+
         return new GenomicInfo(contig, newStart, newEnd, strand);
     }
 
