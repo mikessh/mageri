@@ -3,8 +3,9 @@ Installation and running
 
 MAGERI is distributed in a form of executable JAR file and requires 
 `Java v1.8 <http://www.oracle.com/technetwork/java/javase/downloads/jre8-downloads-2133155.html>`__ to run. 
-Source code and released binaries can be found in corresponding 
-`repository <https://github.com/mikessh/mageri>`__. MAGERI can be executed by running
+Source code and binaries can be found in corresponding 
+`repository <https://github.com/mikessh/mageri>`__. Latest release can be found `here <https://github.com/mikessh/mageri/releases/latest>`__. 
+MAGERI can be executed by running
 
 .. code-block:: bash
 
@@ -435,7 +436,7 @@ The content of the default XML config file is given below:
 
    <?xml version="1.0" encoding="UTF-8"?>
    <MageriPresets>
-     <version>1.0.1</version>
+     <version>1.0.1-SNAPSHOT</version>
      <platform>ILLUMINA</platform>
      <libraryType>SS</libraryType>
      <DemultiplexParameters>
@@ -457,13 +458,21 @@ The content of the default XML config file is given below:
        <offsetRange>4</offsetRange>
        <anchorRegion>8</anchorRegion>
        <maxMMs>4</maxMMs>
-       <maxConsequentMMs>3</maxConsequentMMs>
-       <qualityWeightedMode>true</qualityWeightedMode>
+       <maxConsequentMMs>0</maxConsequentMMs>
        <maxDroppedReadsRatio>0.3</maxDroppedReadsRatio>
+       <maxDroppedReadsRatioAfterRescue>0.0</maxDroppedReadsRatioAfterRescue>
+       <maxTrimmedConsensusBasesRatio>0.3</maxTrimmedConsensusBasesRatio>
+       <minMatchedBasesInRealignedReadRatio>0.0</minMatchedBasesInRealignedReadRatio>
+       <pcrMinorTestPValue>0.001</pcrMinorTestPValue>
        <cqsRescue>false</cqsRescue>
        <qualityTrimming>true</qualityTrimming>
        <greedyExtend>true</greedyExtend>
      </AssemblerParameters>
+     <ReferenceLibraryParameters>
+       <splitLargeReferences>true</splitLargeReferences>
+       <maxReferenceLength>1000</maxReferenceLength>
+       <readLength>100</readLength>
+     </ReferenceLibraryParameters>
      <ConsensusAlignerParameters>
        <k>11</k>
        <matchReward>1</matchReward>
@@ -473,19 +482,61 @@ The content of the default XML config file is given below:
        <minIdentityRatio>0.9</minIdentityRatio>
        <minAlignedQueryRelativeSpan>0.7</minAlignedQueryRelativeSpan>
        <muationCqsThreshold>30</muationCqsThreshold>
+       <useSpacedKmers>true</useSpacedKmers>
      </ConsensusAlignerParameters>
      <VariantCallerParameters>
-       <order>1.0</order>
-       <modelCycles>20.0</modelCycles>
-       <modelEfficiency>1.95</modelEfficiency>
+       <noIndels>false</noIndels>
        <qualityThreshold>20</qualityThreshold>
        <singletonFrequencyThreshold>10000</singletonFrequencyThreshold>
        <coverageThreshold>100</coverageThreshold>
+       <errorModelType>MinorBased</errorModelType>
+       <modelOrder>1.0</modelOrder>
+       <modelCycles>20.0</modelCycles>
+       <modelEfficiency>1.8</modelEfficiency>
+       <modelCoverageThreshold>100</modelCoverageThreshold>
+       <modelMinorCountThreshold>10</modelMinorCountThreshold>
+       <substitutionErrorRateMatrix>0.0,1.0E-6,1.0E-6,1.0E-6;1.0E-6,0.0,1.0E-6,1.0E-6;1.0E-6,1.0E-6,0.0,1.0E-6;1.0E-6,1.0E-6,1.0E-6,0.0</substitutionErrorRateMatrix>
      </VariantCallerParameters>
    </MageriPresets>
+   
+Presets are also available for 454 and IonTorrent platforms that are characterized by indel errors at homopolymer regions and therefore require a more robust 
+algorithm for consensus assembly, and therefore different ``<AssemblerParameters>`` preset:
+
+.. code-block:: bash
+
+   java -jar mageri.jar --platform roche454 --export-preset my_preset.xml
+   
+Will have the following difference:
+
+.. code-block:: xml
+
+   ...
+   <platform>ROCHE454</platform>
+   ...
+   <AssemblerParameters>
+     <offsetRange>4</offsetRange>
+     <anchorRegion>8</anchorRegion>
+     <maxMMs>4</maxMMs>
+     <maxConsequentMMs>2</maxConsequentMMs>
+     <maxDroppedReadsRatio>0.7</maxDroppedReadsRatio>
+     <maxDroppedReadsRatioAfterRescue>0.3</maxDroppedReadsRatioAfterRescue>
+     <maxTrimmedConsensusBasesRatio>0.3</maxTrimmedConsensusBasesRatio>
+     <minMatchedBasesInRealignedReadRatio>0.5</minMatchedBasesInRealignedReadRatio>
+     <pcrMinorTestPValue>0.001</pcrMinorTestPValue>
+     <cqsRescue>true</cqsRescue>
+     <qualityTrimming>true</qualityTrimming>
+     <greedyExtend>false</greedyExtend>
+   </AssemblerParameters>
+   ...
 
 Parameter descriptions
 ~~~~~~~~~~~~~~~~~~~~~~
+
+*Preset*
+
+- ``version`` version of software that generated this preset via ``--export-preset``.
+- ``platform`` name of the platform for which the preset was generated, specified with ``--platform`` option during ``--export-preset``. Allowed values are ``illumina``, ``roche454`` and ``iontorrent``. The preset affects consensus assembler parameters.
+- ``libraryType`` type of library, single-stranded (``SS``) or double-stranded (``DS``), specified with ``--library-type`` option during ``--export-preset``. This affects the consensus assembler and minor-based error model parameters.
 
 *De-multiplexing*
 
@@ -509,12 +560,21 @@ Parameter descriptions
 -  ``offsetRange`` read offsets (from ``-offsetRange`` to ``+offsetRange``) to try when aligning reads
 -  ``anchorRegion`` halfsize of region used to compare reads during alignemnt
 -  ``maxMMs`` maximum number of mismatches in ``anchorRegion``, reads having more that ``maxMMs`` mismatches in any offset will be dropped
--  ``maxConsequentMMs`` maximum number of consequent mismatches between read and consensus `unused`
--  ``qualityWeightedMode`` weight bases by quality when computing consensus position-weight matrix `unused`
+-  ``maxConsequentMMs`` maximum number of consequent mismatches between read and consensus during CQS rescue (see ``cqsRescue`` below). Reads that fail this filter are likely to contain an indel and are re-aligned to consensus using Smith-Waterman algorithm.
 -  ``maxDroppedReadsRatio`` maximum ratio of reads dropped for a consensus to be discarded
--  ``cqsRescue`` perform consensus quality score rescue for indel-heavy reads `unused`
+-  ``maxDroppedReadsRatioAfterRescue`` maximum ratio of reads dropped after CQS rescue (see ``cqsRescue`` below) for a consensus to be discarded
+-  ``maxTrimmedConsensusBasesRatio`` maximum ratio of bases trimmed from consensus due to poor CQS (see ``qualityTrimming`` below) for a consensus to be discarded
+-  ``minMatchedBasesInRealignedReadRatio`` minimum fraction of matching bases during read re-alignment (see ``cqsRescue`` below) for a read to be dropped
+-  ``pcrMinorTestPValue`` P-value threshold used during PCR-induced minor error calling (see ``minor calling``)
+-  ``cqsRescue`` perform consensus quality score (CQS) rescue for indel-heavy reads
 -  ``qualityTrimming`` trim consensus bases with low consensus quality score which is proportional to the ratio of major base and total base count
--  ``greedyExtend`` specifies whether to compute initial PWM for maximal span of reads, uses average span if set to ``false``
+-  ``greedyExtend`` specifies whether to compute the initial PWM for maximal span of reads, uses average span if set to ``false``
+
+*Reference library*
+
+-  ``splitLargeReferences`` split references larger than ``maxReferenceLength`` into partitions to speed up the consensus alignment and decrease its memory footprint.
+-  ``maxReferenceLength`` maximum length of reference, beyond which reference will be partitioned
+-  ``readLength`` estimate of max read length. In case reference is split, its paritions will contain overlapping regions to ensure that each read coming from a given reference will be fully contained in at least one of its paritions.
    
 *Consensus alignment*
 
@@ -526,22 +586,29 @@ Parameter descriptions
 -  ``minIdentityRatio`` minimal local alignment identity (accounting for substitutions only) used for filtering
 -  ``minAlignedQueryRelativeSpan`` minimal relative span of query sequence that are aligned to reference, used for filtering
 -  ``muationCqsThreshold`` consensus quality threshold used to filter unreliable major mutations
+-  ``useSpacedKmers`` if set to ``true`` will use k-mers with the central base set to ``N``. This strategy (introduced in `Vidjil <http://bmcgenomics.biomedcentral.com/articles/10.1186/1471-2164-15-409>`__ software) can greatly improve mapping sensitivity while having the same specificity.
 
 *Variant calling*
 
--  ``order`` order of minor-based error model (MBEM), 2 for signle-stranded start and 3 for double-stranded start
--  ``modelCycles`` effective number of PCR cycles used by MBEB
--  ``modelEfficiency`` PCR efficiency value used by MBEB
--  ``qualityThreshold`` MBEM quality threshold, used in FILTER field of output VCF file
+-  ``noIndels`` if set to ``true`` will not attempt to call indel variants
+-  ``qualityThreshold`` variant error model quality threshold, used in FILTER field of output VCF file
 -  ``singletonFrequencyThreshold`` threshold for ratio between signleton errors and their parent molecules (filters extremely rare errors introduced during UMI attachment), used in FILTER field of output VCF file
--  ``coverageThreshold`` threhsold for molecular coverage of variants, used in FILTER field of output VCF file
+-  ``coverageThreshold`` threhsold for variant coverage (number of MIGs), used in FILTER field of output VCF file
+-  ``errorModelType`` error model type: ``MinorBased`` infer error rate from minor PCR errors that are deduced during consensus assembly (see Minor-Based Error Model aka MBEM), ``RawData`` compute error rate from average variant quality Phred score, or ``Custom`` that uses error rates defined in ``substitutionErrorRateMatrix``
+-  ``modelOrder`` order of minor-based error model (MBEM), 1 for signle-stranded and 2 for double-stranded library
+-  ``modelCycles`` effective number of PCR cycles used by MBEM
+-  ``modelEfficiency`` PCR efficiency value used by MBEM
+-  ``modelCoverageThreshold`` coverage threshold that is used in MBEM to decide whether to use error rate inferred at a given position or global error rate for a given substution type (e.g. ``A>G``)
+-  ``modelMinorCountThreshold`` total number of inferred PCR minors at a given position that is used in MBEM to decide whether to use error rate inferred at a given position or global error rate for a given substution type (e.g. ``A>G``)
+-  ``substitutionErrorRateMatrix`` a flat representation of substitution error rate matrix: ``0,A>G,A>C,A>T;G>A,0,G>C,G>T;C>A,C>G,0,C>T;T>A,T>G,T>C,0``. Used if ``Custom`` error model is selected.
 
 The parameters you are likely to change under certain conditions:
 
-- ``goodQualityThreshold`` in case reads are of poor sequencing quality
-- ``forceOverseq`` and ``defaultOverseq`` in case MIG size histogram shows irregular behavior or ``5+`` reads per UMI coverage cannot be reached
-- ``mismatchPenalty``, ``minIdentityRatio`` and ``minAlignedQueryRelativeSpan`` in case of a complex library and high number of artefact alignments; you would probably like to introduce additional reference such as pseudogenes if your reference set doesn't cover everything that is amplified with your primers
-- ``order``, ``modelCycles`` and ``modelEfficiency`` in case of highly customized library preparation protocol
+-  ``goodQualityThreshold`` in case reads are of poor sequencing quality (e.g. MiSeq 300+300 reads)
+-  ``readLength`` when analyzing data generated by 454, IonTorrent platfroms and MiSeq long reads
+-  ``forceOverseq`` and ``defaultOverseq`` in case MIG size histogram shows irregular behavior or ``5+`` reads per UMI coverage cannot be reached
+-  ``mismatchPenalty``, ``minIdentityRatio`` and ``minAlignedQueryRelativeSpan`` in case of a complex library and high number of artefact alignments; Note that a good solution to this problem is to introduce additional references (e.g. pseudogenes) if your reference set doesn't cover everything that can be amplified with your primers
+-  ``errorModelType` and ``substitutionErrorRateMatrix`` .. we plan to publish a comprehensive set of error models inferred for different polymerases
   
 Batch processing
 ^^^^^^^^^^^^^^^^
