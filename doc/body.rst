@@ -259,8 +259,7 @@ is given below:
 - In the dataset section select **Ensembl genes 84** and choose **Homo sapiens genes**.
 - In the filter section and **Gene** subsection, input your gene IDs to **external references ID** textbox and select appropriate nomenclature (e.g. **HGNC symbol** when using gene symbols).
 - In attributes section select **Sequences** and untick all header information features.
-- Under the **SEQUENCES** menu select **Exon sequences** and input the 5' and 3' flank base count, e.g. 50 (it should be the same for both 5'
- and 3' flank). This is to ensure that reads produced by exome capture techniques are fully mapped.
+- Under the **SEQUENCES** menu select **Exon sequences** and input the 5' and 3' flank base count, e.g. 50 (it should be the same for both 5' and 3' flank). This is to ensure that reads produced by exome capture techniques are fully mapped.
 - Select the following features (order matters here): **Associated Gene Name**, **Ensembl Exon ID**, **Chromosome Name**, **Exon Chr Start (bp)**, **Exon Chr End (bp)** and **Strand**.
 - Go to results, select **unique results only** and download the resulting FASTA file (save it as ``biomart_refs.fa``).
 - Download and run the following `script <https://raw.githubusercontent.com/mikessh/mageri-paper/master/get_refs/ExtractBedFormBiomartRefs.groovy>`__ (requires `Groovy <http://www.groovy-lang.org/>`__ to be installed): ``groovy ExtractBedFormBiomartRefs.groovy biomart_refs.fa refs.fa refs.bed 50``. The last argument specifies the flank size.
