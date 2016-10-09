@@ -20,6 +20,7 @@ import com.antigenomics.mageri.core.assemble.MinorCaller;
 import com.antigenomics.mageri.core.mapping.MutationsTable;
 import com.antigenomics.mageri.core.mutations.Mutation;
 import com.antigenomics.mageri.core.mutations.Substitution;
+import com.antigenomics.mageri.core.variant.VariantCallerParameters;
 import com.milaboratory.core.sequence.mutations.Mutations;
 
 public class MinorBasedErrorModel implements ErrorModel {
@@ -28,6 +29,16 @@ public class MinorBasedErrorModel implements ErrorModel {
     private final MutationsTable mutationsTable;
     private final SubstitutionErrorMatrix substitutionErrorMatrix;
     private final MinorCaller minorCaller;
+
+    public MinorBasedErrorModel(VariantCallerParameters variantCallerParameters,
+                                MutationsTable mutationsTable, MinorCaller minorCaller) {
+        this(variantCallerParameters.getModelOrder(),
+                variantCallerParameters.getModelCycles(),
+                variantCallerParameters.getModelEfficiency(),
+                variantCallerParameters.getCoverageThreshold(),
+                variantCallerParameters.getModelMinorCountThreshold(),
+                mutationsTable, minorCaller);
+    }
 
     public MinorBasedErrorModel(double order, double cycles, double efficiency,
                                 int coverageThreshold, int minorCountThreshold,
@@ -73,14 +84,19 @@ public class MinorBasedErrorModel implements ErrorModel {
     }
 
     public static double computeBaseErrorRateEstimate(double minorRate, double fdr,
-                                                      double geomMeanMigSize, double nCycles) {
+                                                      double geomMeanMigSize, double nCycles,
+                                                      double lambda) {
         // Actually one should solve
-        // (1-(1-eps)^nCycles) = minorRate + (1-exp(-eps * meanMigSize))
-        // where minorRate = #(at least one minor of given type) / coverage
+        // minorRate = 1 - Ppcr(0) - Psample(0)
+        //
+        // Ppcr(0)=(1+lambda*exp(-eps))^n/(1+lambda)^n - probability of template without pcr errors
+        // Psample(0)=exp(-eps * geomMeanMigSize) - probability of not sampling any PCR error
+        //
+        // where minorRate = #(at least one minor of given type) / coverage - prob at least one error in template
         // eps is the error rate
         // Also using meanMigSize is quite crude here, regression should be used instead
 
-        return minorRate * (1.0 - fdr) / (geomMeanMigSize + nCycles);
+        return minorRate * (1.0 - fdr) / (geomMeanMigSize + nCycles * lambda / (1.0 + lambda));
     }
 
     @Override
@@ -102,17 +118,15 @@ public class MinorBasedErrorModel implements ErrorModel {
         double fdr = minorCaller.computeFdr(from, to), // share of minors that are actually misidentified seq errors
                 geomMeanMigSize = minorCaller.getGeomMeanMigSize();
         double errorRateBase = computeBaseErrorRateEstimate(minorRate,
-                fdr, geomMeanMigSize, cycles);
+                fdr, geomMeanMigSize, cycles, lambda);
 
         // Expected share of minors that are not lost due to sampling
         double recall = coverage * (1.0 - Math.exp(-errorRateBase * geomMeanMigSize));
 
-        // Adjust for efficiency
-        double errorRateAdj = (Math.log(lambda) - Math.log((1.0 + lambda) * errorRateBase - 1));
         // Adjust for probability of error propagation
-        double firstCycleErrorRate = errorRateAdj * propagateProb;
+        double firstCycleErrorRate = errorRateBase * propagateProb;
 
         return new ErrorRateEstimate(firstCycleErrorRate,
-                errorRateAdj, minorCount, fdr, recall);
+                errorRateBase, minorCount, fdr, recall);
     }
 }

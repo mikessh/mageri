@@ -102,6 +102,12 @@
                 <testcase.groups>com.antigenomics.mageri.FastTests</testcase.groups>
             </properties>
         </profile>
+        <profile>
+            <id>ctest</id>
+            <properties>
+                <testcase.groups>com.antigenomics.mageri.ComplexRandomTests</testcase.groups>
+            </properties>
+        </profile>
     </profiles>
 
     <build>
