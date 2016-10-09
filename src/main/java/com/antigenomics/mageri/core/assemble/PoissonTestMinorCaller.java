@@ -91,6 +91,9 @@ public class PoissonTestMinorCaller extends MinorCaller<PoissonTestMinorCaller> 
             }
         }
 
+        poissonTestMinorCaller.logMigSizeSum.addAndGet(logMigSizeSum.get());
+        poissonTestMinorCaller.totalCounter.addAndGet(totalCounter.get());
+
         return poissonTestMinorCaller;
     }
 
