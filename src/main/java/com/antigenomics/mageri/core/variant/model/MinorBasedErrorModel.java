@@ -79,6 +79,9 @@ public class MinorBasedErrorModel implements ErrorModel {
     }
 
     public static double computePropagateProb(double efficiency, double order) {
+        if (order == 0)
+            return 1.0;
+
         double lambda = efficiency - 1;
         return Math.pow((1.0 - lambda), order) * Math.pow(lambda, order + 1);
     }
@@ -101,10 +104,12 @@ public class MinorBasedErrorModel implements ErrorModel {
 
     @Override
     public ErrorRateEstimate computeErrorRate(Mutation mutation) {
-        int code = ((Substitution) mutation).getCode(),
-                pos = Mutations.getPosition(code),
-                from = Mutations.getFrom(code), to = Mutations.getTo(code);
+        int code = ((Substitution) mutation).getCode();
+        return computeErrorRate(Mutations.getPosition(code), Mutations.getFrom(code), Mutations.getTo(code));
+    }
 
+    @Override
+    public ErrorRateEstimate computeErrorRate(int pos, int from, int to) {
         int coverage = mutationsTable.getMigCoverage(pos),
                 minorCount = mutationsTable.getMinorMigCount(pos, to);
 
@@ -125,6 +130,10 @@ public class MinorBasedErrorModel implements ErrorModel {
 
         // Adjust for probability of error propagation
         double firstCycleErrorRate = errorRateBase * propagateProb;
+
+        if (Double.isInfinite(firstCycleErrorRate)) {
+            System.out.println();
+        }
 
         return new ErrorRateEstimate(firstCycleErrorRate,
                 errorRateBase, minorCount, fdr, recall);

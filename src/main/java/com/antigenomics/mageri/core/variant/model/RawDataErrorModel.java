@@ -30,9 +30,13 @@ public class RawDataErrorModel implements ErrorModel {
 
     @Override
     public ErrorRateEstimate computeErrorRate(Mutation mutation) {
-        int code = ((Substitution) mutation).getCode(),
-                pos = Mutations.getPosition(code), to = Mutations.getTo(code);
+        int code = ((Substitution) mutation).getCode();
 
+        return computeErrorRate(Mutations.getPosition(code), 0, Mutations.getTo(code));
+    }
+
+    @Override
+    public ErrorRateEstimate computeErrorRate(int pos, int from, int to) {
         double cqs = mutationsTable.getMeanCqs(pos, to);
 
         return new ErrorRateEstimate(Math.pow(10.0, -cqs / 10.0));

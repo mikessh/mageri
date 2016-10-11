@@ -217,6 +217,16 @@ public final class VariantCallerParameters implements ParameterSet {
                 substitutionErrorRateMatrix);
     }
 
+
+    public VariantCallerParameters withModelOrder(int modelOrder) {
+        return new VariantCallerParameters(noIndels,
+                qualityThreshold, singletonFrequencyThreshold, coverageThreshold,
+                errorModelType,
+                modelOrder, modelCycles, modelEfficiency,
+                modelCoverageThreshold, modelMinorCountThreshold,
+                substitutionErrorRateMatrix);
+    }
+
     @Override
     public Element toXml() {
         Element e = new Element("VariantCallerParameters");

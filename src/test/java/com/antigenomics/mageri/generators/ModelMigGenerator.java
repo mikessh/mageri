@@ -35,7 +35,7 @@ public class ModelMigGenerator {
     private static final Random rnd = new Random(480011L);
     private final double somaticMutationFreq;
     private final VariantCallerParameters variantCallerParameters;
-    private final MutationGenerator readErrorGenerator, pcrErrorGenerator, pcrHotSpotErrorGenerator;
+    private final MutationGenerator readErrorGenerator, pcrErrorGenerator;
 
     private int[] somaticMutations;
 
@@ -50,13 +50,11 @@ public class ModelMigGenerator {
                              double somaticMutationFreq,
                              VariantCallerParameters variantCallerParameters,
                              MutationGenerator readErrorGenerator, MutationGenerator pcrErrorGenerator,
-                             MutationGenerator pcrHotSpotErrorGenerator,
                              NucleotideSequence reference) {
         this.somaticMutationFreq = somaticMutationFreq;
         this.variantCallerParameters = variantCallerParameters;
         this.readErrorGenerator = readErrorGenerator;
         this.pcrErrorGenerator = pcrErrorGenerator;
-        this.pcrHotSpotErrorGenerator = pcrHotSpotErrorGenerator;
         this.reference = reference;
 
         for (int i = 0; i < reference.size(); i++) {
@@ -129,7 +127,7 @@ public class ModelMigGenerator {
 
         //
 
-        int[] hotSpotMutations = generateAndFilterMutations(pcrHotSpotErrorGenerator,
+        int[] hotSpotMutations = generateAndFilterMutations(pcrErrorGenerator,
                 sequence1, hotSpotPositions);
 
         for (int code : hotSpotMutations) {

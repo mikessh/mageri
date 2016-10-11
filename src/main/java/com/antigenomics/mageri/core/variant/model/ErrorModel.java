@@ -24,4 +24,6 @@ import java.util.Map;
 
 public interface ErrorModel extends Serializable {
     ErrorRateEstimate computeErrorRate(Mutation mutation);
+
+    ErrorRateEstimate computeErrorRate(int pos, int from, int to);
 }

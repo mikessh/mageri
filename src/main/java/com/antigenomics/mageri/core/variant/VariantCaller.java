@@ -91,7 +91,8 @@ public class VariantCaller extends PipelineBlock {
                         int coverage = mutationsTable.getMigCoverage(pos);
 
                         ErrorRateEstimate errorRateEstimate = errorModel.computeErrorRate(mutation);
-                        double score = -10 * getLog10PValue(majorCount, coverage, errorRateEstimate.getErrorRate());
+                        double score = -10 * getLog10PValue(majorCount, coverage,
+                                errorRateEstimate.getErrorRate());
 
                         NucleotideSequenceBuilder nsb = new NucleotideSequenceBuilder(1);
                         nsb.setCode(0, mutationsTable.getAncestralBase(pos));

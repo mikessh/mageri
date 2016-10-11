@@ -107,6 +107,11 @@ public class PoissonTestMinorCaller extends MinorCaller<PoissonTestMinorCaller> 
         // FDR estimation according to
         // http://bioinformatics.oxfordjournals.org/content/22/16/1979.full.pdf+html
         int mm = getM(from, to), mm1 = getM1(from, to);
+
+        if (mm1 == 0) {
+            return 0.0;
+        }
+
         double pavg = getPValueSum(from, to) / mm;
 
         return assemblerParameters.getPcrMinorTestPValue() * Math.min(1.0, 2.0 * pavg) * mm / (double) mm1;

@@ -25,15 +25,12 @@ public class ModelMigGeneratorFactory {
             somaticMutationRatio = 0.1, somaticMutationFreq = 0.0005;
     private VariantCallerParameters variantCallerParameters = VariantCallerParameters.DEFAULT;
     private MutationGenerator readErrorGenerator = MutationGenerator.NO_INDEL,
-            pcrErrorGenerator = MutationGenerator.NO_INDEL_SKEWED,
-            pcrHotSpotErrorGenerator = pcrErrorGenerator.multiply(
-                    MinorBasedErrorModel.computePropagateProb(variantCallerParameters.getModelEfficiency(),
-                            variantCallerParameters.getModelOrder()));
+            pcrErrorGenerator = MutationGenerator.NO_INDEL_SKEWED;
 
     public ModelMigGenerator create(NucleotideSequence reference) {
         return new ModelMigGenerator(hotSpotPositionRatio, pcrPositionRatio, somaticMutationRatio,
                 somaticMutationFreq, variantCallerParameters, readErrorGenerator,
-                pcrErrorGenerator, pcrHotSpotErrorGenerator, reference);
+                pcrErrorGenerator, reference);
     }
 
     public double getHotSpotPositionRatio() {
@@ -80,21 +77,11 @@ public class ModelMigGeneratorFactory {
         this.somaticMutationFreq = somaticMutationFreq;
     }
 
-    public void setVariantCallerParameters(VariantCallerParameters variantCallerParameters) {
-        this.variantCallerParameters = variantCallerParameters;
-        pcrHotSpotErrorGenerator = pcrErrorGenerator.multiply(
-                MinorBasedErrorModel.computePropagateProb(variantCallerParameters.getModelEfficiency(),
-                        variantCallerParameters.getModelOrder()));
-    }
-
     public void setReadErrorGenerator(MutationGenerator readErrorGenerator) {
         this.readErrorGenerator = readErrorGenerator;
     }
 
     public void setPcrErrorGenerator(MutationGenerator pcrErrorGenerator) {
         this.pcrErrorGenerator = pcrErrorGenerator;
-        pcrHotSpotErrorGenerator = pcrErrorGenerator.multiply(MinorBasedErrorModel.computePropagateProb(
-                variantCallerParameters.getModelEfficiency(),
-                variantCallerParameters.getModelOrder()));
     }
 }

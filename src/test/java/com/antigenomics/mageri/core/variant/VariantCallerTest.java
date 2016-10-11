@@ -18,7 +18,10 @@ package com.antigenomics.mageri.core.variant;
 
 import com.antigenomics.mageri.ComplexRandomTests;
 import com.antigenomics.mageri.core.assemble.Assembler;
+import com.antigenomics.mageri.core.mapping.*;
 import com.antigenomics.mageri.core.mutations.Substitution;
+import com.antigenomics.mageri.core.variant.model.ErrorModel;
+import com.antigenomics.mageri.core.variant.model.ErrorModelProvider;
 import com.antigenomics.mageri.generators.MutationGenerator;
 import com.antigenomics.mageri.DoubleRangeAssertion;
 import com.antigenomics.mageri.PercentRangeAssertion;
@@ -27,10 +30,6 @@ import com.antigenomics.mageri.core.assemble.Consensus;
 import com.antigenomics.mageri.core.assemble.SAssembler;
 import com.antigenomics.mageri.core.genomic.Reference;
 import com.antigenomics.mageri.core.genomic.ReferenceLibrary;
-import com.antigenomics.mageri.core.mapping.AlignedConsensus;
-import com.antigenomics.mageri.core.mapping.ConsensusAligner;
-import com.antigenomics.mageri.core.mapping.ConsensusAlignerParameters;
-import com.antigenomics.mageri.core.mapping.SConsensusAligner;
 import com.antigenomics.mageri.core.mapping.alignment.Aligner;
 import com.antigenomics.mageri.core.mapping.alignment.ExtendedKmerAligner;
 import com.antigenomics.mageri.core.mutations.Mutation;
@@ -55,7 +54,7 @@ public class VariantCallerTest {
                 qualThreshold,
                 PercentRangeAssertion.createLowerBound("Matching unique variants", setting, 80),
                 PercentRangeAssertion.createUpperBound("Erroneous unique variants", setting, 1),
-                DoubleRangeAssertion.createUpperBound("Average variant count difference", setting, 0.05),
+                DoubleRangeAssertion.createUpperBound("Average variant count difference", setting, 0.15),
                 PercentRangeAssertion.createLowerBound("Specificity", setting, 90),
                 PercentRangeAssertion.createLowerBound("Sensitivity", setting, 85));
     }
@@ -76,7 +75,7 @@ public class VariantCallerTest {
                 qualThreshold,
                 PercentRangeAssertion.createLowerBound("Matching unique variants", setting, 80),
                 PercentRangeAssertion.createUpperBound("Erroneous unique variants", setting, 1),
-                DoubleRangeAssertion.createUpperBound("Average variant count difference", setting, 0.05),
+                DoubleRangeAssertion.createUpperBound("Average variant count difference", setting, 0.15),
                 PercentRangeAssertion.createLowerBound("Specificity", setting, 90),
                 PercentRangeAssertion.createLowerBound("Sensitivity", setting, 85));
     }
@@ -97,7 +96,7 @@ public class VariantCallerTest {
                 qualThreshold,
                 PercentRangeAssertion.createLowerBound("Matching unique variants", setting, 80),
                 PercentRangeAssertion.createUpperBound("Erroneous unique variants", setting, 1),
-                DoubleRangeAssertion.createUpperBound("Average variant count difference", setting, 0.05),
+                DoubleRangeAssertion.createUpperBound("Average variant count difference", setting, 0.15),
                 PercentRangeAssertion.createLowerBound("Specificity", setting, 90),
                 PercentRangeAssertion.createLowerBound("Sensitivity", setting, 85));
     }
@@ -148,7 +147,8 @@ public class VariantCallerTest {
 
             expectedVariants += modelMigGenerator.totalSize();
 
-            final VariantCaller variantCaller = new VariantCaller(consensusAligner);
+            final VariantCaller variantCaller = new VariantCaller(consensusAligner,
+                    assembler.getMinorCaller(), VariantCallerParameters.DEFAULT.withModelOrder(0));
 
             for (Variant variant : variantCaller.getVariants()) {
                 Mutation mutation = variant.getMutation();
