@@ -39,8 +39,8 @@ public class DummyMinorCaller extends MinorCaller<DummyMinorCaller> {
     }
 
     @Override
-    public double getGeomMeanMigSize() {
-        return 0;
+    public double getReadFractionForCalledMinors(int from, int to) {
+        return 1.0;
     }
 
     @Override

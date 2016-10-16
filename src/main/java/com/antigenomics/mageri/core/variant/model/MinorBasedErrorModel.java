@@ -87,19 +87,28 @@ public class MinorBasedErrorModel implements ErrorModel {
     }
 
     public static double computeBaseErrorRateEstimate(double minorRate, double fdr,
-                                                      double geomMeanMigSize, double nCycles,
+                                                      double readFractionEstForCalledMinors,
                                                       double lambda) {
         // Actually one should solve
-        // minorRate = 1 - Ppcr(0) - Psample(0)
+        // minorRate = eps * sum_{n=1..nStar}(1+lambda)^n
+        // Where eps - true error rate
+        // lambda - efficiency
+        // sum_{n=1..nStar}(1+lambda)^n - total number of molecules from cycles that can yield detectable minor
         //
-        // Ppcr(0)=(1+lambda*exp(-eps))^n/(1+lambda)^n - probability of template without pcr errors
-        // Psample(0)=exp(-eps * geomMeanMigSize) - probability of not sampling any PCR error
-        //
-        // where minorRate = #(at least one minor of given type) / coverage - prob at least one error in template
-        // eps is the error rate
-        // Also using meanMigSize is quite crude here, regression should be used instead
+        // nStar is computed as
+        // 1 / (1+lambda) ^ nStar = minor read frequency est
+        // minor read frequency est is
+        // (total number of reads in minors) / (total number of reads in MIGs where minors were detected)
 
-        return minorRate * (1.0 - fdr) / (geomMeanMigSize + nCycles * lambda / (1.0 + lambda));
+        double nStar = -Math.log(readFractionEstForCalledMinors) / Math.log(1.0 + lambda);
+
+        double molecules = 1;
+
+        for (int i = 1; i <= (int) Math.ceil(nStar); i++) {
+            molecules += Math.pow(1.0 + lambda, i);
+        }
+
+        return minorRate * (1.0 - fdr) / molecules;
     }
 
     @Override
@@ -113,27 +122,20 @@ public class MinorBasedErrorModel implements ErrorModel {
         int coverage = mutationsTable.getMigCoverage(pos),
                 minorCount = mutationsTable.getMinorMigCount(pos, to);
 
-        // Use global error rate if not enough coverage / statistics
+        // Use global error rate and minor read fraction if not enough coverage / statistics for a given position
         double minorRate = coverage < coverageThreshold || minorCount < minorCountThreshold ?
-                substitutionErrorMatrix.getRate(from, to) : (minorCount / (double) coverage);
+                substitutionErrorMatrix.getRate(from, to) : minorCount / (double) coverage;
 
-        // Compute per cycle error rate for a given substitution
-        // correct error rate by FDR (null = sequencing errors) and probability of not catching
-        // a minor variant due to sampling
-        double fdr = minorCaller.computeFdr(from, to), // share of minors that are actually misidentified seq errors
-                geomMeanMigSize = minorCaller.getGeomMeanMigSize();
+        double fdr = minorCaller.computeFdr(from, to); // share of minors that are actually misidentified seq errors
+
         double errorRateBase = computeBaseErrorRateEstimate(minorRate,
-                fdr, geomMeanMigSize, cycles, lambda);
+                fdr, minorCaller.getReadFractionForCalledMinors(from, to), lambda);
 
         // Expected share of minors that are not lost due to sampling
-        double recall = coverage * (1.0 - Math.exp(-errorRateBase * geomMeanMigSize));
+        double recall = minorRate / errorRateBase / lambda / cycles * (1.0 + lambda);
 
         // Adjust for probability of error propagation
         double firstCycleErrorRate = errorRateBase * propagateProb;
-
-        if (Double.isInfinite(firstCycleErrorRate)) {
-            System.out.println();
-        }
 
         return new ErrorRateEstimate(firstCycleErrorRate,
                 errorRateBase, minorCount, fdr, recall);

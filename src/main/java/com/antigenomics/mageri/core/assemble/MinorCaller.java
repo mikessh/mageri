@@ -29,5 +29,5 @@ public abstract class MinorCaller<M extends MinorCaller> extends PipelineBlock {
 
     abstract M combine(M other);
 
-    public abstract double getGeomMeanMigSize();
+    public abstract double getReadFractionForCalledMinors(int from, int to);
 }

@@ -29,10 +29,11 @@ public class PoissonTestMinorCaller extends MinorCaller<PoissonTestMinorCaller> 
     private final AssemblerParameters assemblerParameters;
     private final PreprocessorParameters preprocessorParameters;
     private final double seqErrorRate;
-    private final AtomicInteger[][] m1 = new AtomicInteger[4][4], m = new AtomicInteger[4][4];
+    private final AtomicInteger[][] m1 = new AtomicInteger[4][4],
+            m = new AtomicInteger[4][4];
+    private final AtomicLong[][] minorReadCountSumArr = new AtomicLong[4][4],
+            totalReadCountSumArr = new AtomicLong[4][4];
     private final AtomicDouble[][] pValueSum = new AtomicDouble[4][4];
-    private final AtomicDouble logMigSizeSum = new AtomicDouble();
-    private final AtomicLong totalCounter = new AtomicLong();
 
     PoissonTestMinorCaller(AssemblerParameters assemblerParameters, PreprocessorParameters preprocessorParameters) {
         super("MinorCaller.PoissonTest");
@@ -42,9 +43,11 @@ public class PoissonTestMinorCaller extends MinorCaller<PoissonTestMinorCaller> 
 
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
-                m1[i][j] = new AtomicInteger();
-                m[i][j] = new AtomicInteger();
-                pValueSum[i][j] = new AtomicDouble();
+                this.m1[i][j] = new AtomicInteger();
+                this.m[i][j] = new AtomicInteger();
+                this.pValueSum[i][j] = new AtomicDouble();
+                this.minorReadCountSumArr[i][j] = new AtomicLong();
+                this.totalReadCountSumArr[i][j] = new AtomicLong();
             }
         }
     }
@@ -57,9 +60,6 @@ public class PoissonTestMinorCaller extends MinorCaller<PoissonTestMinorCaller> 
 
         boolean pass = false;
 
-        totalCounter.incrementAndGet();
-        logMigSizeSum.addAndGet(Math.log10(n));
-
         try {
             double p = Gamma.regularizedGammaP(k, n * seqErrorRate);
 
@@ -70,6 +70,8 @@ public class PoissonTestMinorCaller extends MinorCaller<PoissonTestMinorCaller> 
 
             if (pass) {
                 m1[from][to].incrementAndGet();
+                minorReadCountSumArr[from][to].addAndGet(k);
+                totalReadCountSumArr[from][to].addAndGet(n);
             }
         } catch (MathException e) {
             e.printStackTrace();
@@ -88,18 +90,17 @@ public class PoissonTestMinorCaller extends MinorCaller<PoissonTestMinorCaller> 
                 poissonTestMinorCaller.m1[i][j].addAndGet(this.getM1(i, j) + other.getM1(i, j));
                 poissonTestMinorCaller.m[i][j].addAndGet(this.getM(i, j) + other.getM(i, j));
                 poissonTestMinorCaller.pValueSum[i][j].addAndGet(this.getPValueSum(i, j) + other.getPValueSum(i, j));
+                poissonTestMinorCaller.minorReadCountSumArr[i][j].addAndGet(minorReadCountSumArr[i][j].get());
+                poissonTestMinorCaller.totalReadCountSumArr[i][j].addAndGet(totalReadCountSumArr[i][j].get());
             }
         }
-
-        poissonTestMinorCaller.logMigSizeSum.addAndGet(logMigSizeSum.get());
-        poissonTestMinorCaller.totalCounter.addAndGet(totalCounter.get());
 
         return poissonTestMinorCaller;
     }
 
     @Override
-    public double getGeomMeanMigSize() {
-        return Math.pow(10, logMigSizeSum.get() / totalCounter.get());
+    public double getReadFractionForCalledMinors(int from, int to) {
+        return minorReadCountSumArr[from][to].get() / (double) totalReadCountSumArr[from][to].get();
     }
 
     @Override

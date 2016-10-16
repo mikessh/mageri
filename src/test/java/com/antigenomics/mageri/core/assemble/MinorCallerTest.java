@@ -37,14 +37,6 @@ public class MinorCallerTest {
         rnd = new RandomDataImpl(rng);
     }
 
-   /* @Test
-    @Category(FastTests.class)
-    public void simulationTestFedToVarCaller() throws MathException {
-        MinorCaller minorCaller = simulationTest(20, 0.8, (byte) 30, 5e-6, 100, 10000, 100);
-
-        MinorBasedErrorModel minorBasedErrorModel = new MinorBasedErrorModel()
-    }*/
-
     @Test
     @Category(FastTests.class)
     public void simulationTest() throws MathException {
@@ -60,9 +52,9 @@ public class MinorCallerTest {
     }
 
     private MinorCaller simulationTest(int nCycles, double lambda,
-                                byte seqQual,
-                                double pcrErrorRate,
-                                int migSize, int nMigs, int readLength) throws MathException {
+                                       byte seqQual,
+                                       double pcrErrorRate,
+                                       int migSize, int nMigs, int readLength) throws MathException {
         System.out.println("---\nRunning for parameters: " +
                 "cycles=" + nCycles +
                 ";efficiency=" + (1.0 + lambda) +
@@ -119,14 +111,16 @@ public class MinorCallerTest {
         System.out.println("Called true PCR minors = " + calledTruePCRMinors);
         System.out.println("Called false PCR minors = " + calledFalsePCRMinors);
         System.out.println("FDR estimate = " + minorCaller.computeFdr(0, 0));
-        System.out.println("Error rate mean = " + errorRateMean / (nMigs * readLength));
+        double errorRateExp = errorRateMean / (nMigs * readLength) / nCycles / lambda * (1.0 + lambda);
+        // Will differ from the original rate as the model is quite crude
+        System.out.println("Error rate exp = " + errorRateExp);
         double minorRate = (calledTruePCRMinors + calledFalsePCRMinors) / (double) (nMigs * readLength);
         double errorRateEst = MinorBasedErrorModel.computeBaseErrorRateEstimate(minorRate,
-                minorCaller.computeFdr(0, 0), minorCaller.getGeomMeanMigSize(), nCycles, lambda);
+                minorCaller.computeFdr(0, 0), minorCaller.getReadFractionForCalledMinors(0, 0), lambda);
         System.out.println("Error rate est = " + errorRateEst);
 
         Assert.assertTrue("No more than order of magnitude difference between true PCR " +
-                "error rate and its estimate",
+                        "error rate and its estimate",
                 Math.abs(Math.log10(errorRateEst) - Math.log10(pcrErrorRate)) <= 1.0);
 
         return minorCaller;
