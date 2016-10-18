@@ -31,7 +31,8 @@ import java.util.*;
 public class ModelMigGenerator2 {
     private static final Random rnd = new Random(480011L);
 
-    private final MutationGenerator seqMutationGenerator, somaticMutationGenerator;
+    private final MutationGenerator seqMutationGenerator, somaticMutationGenerator,
+            pcrMutationGenerator;
     private final double[][] pcrErrorRates;
     private final VariantCallerParameters variantCallerParameters;
     private final Reference reference;
@@ -41,21 +42,36 @@ public class ModelMigGenerator2 {
 
     public ModelMigGenerator2(VariantCallerParameters variantCallerParameters,
                               Reference reference, int migSize) {
-        this(variantCallerParameters,reference,migSize,
-                MutationGenerator.a)
+        this(variantCallerParameters, reference, migSize,
+                MutationGenerator.getUniform(1e-2),
+                MutationGenerator.SEQ_Q30,
+                MutationGenerator.NO_INDEL_SKEWED);
     }
 
     public ModelMigGenerator2(VariantCallerParameters variantCallerParameters,
                               Reference reference, int migSize,
                               MutationGenerator somaticMutationGenerator,
                               MutationGenerator seqMutationGenerator,
-                              double[][] pcrErrorRates) {
+                              MutationGenerator pcrMutationGenerator) {
         this.seqMutationGenerator = seqMutationGenerator;
-        this.pcrErrorRates = pcrErrorRates;
+        this.pcrMutationGenerator = pcrMutationGenerator;
+        this.pcrErrorRates = getPcrErrorRates(pcrMutationGenerator);
         this.variantCallerParameters = variantCallerParameters;
         this.somaticMutationGenerator = somaticMutationGenerator;
         this.reference = reference;
         this.migSize = migSize;
+    }
+
+    private double[][] getPcrErrorRates(MutationGenerator pcrMutationGenerator) {
+        double[][] errorRates = new double[4][4];
+
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                errorRates[i][j] = pcrMutationGenerator.getSubstitutionModel().getValue(i, j);
+            }
+        }
+
+        return errorRates;
     }
 
     public SMig nextMig() {
@@ -78,23 +94,27 @@ public class ModelMigGenerator2 {
 
         for (int i = 0; i < sequence.size(); i++) {
             int originalBase = sequence.codeAt(i);
+            double errFreqSum = 0;
             for (int j = 0; j < 4; j++) {
                 if (j != originalBase) {
                     double errorFrequency = 0;
                     double pcrErrorRate = pcrErrorRates[originalBase][j];
 
-                    for (int k = 0; k < cycles; k++) {
+                    for (int k = 1; k <= cycles; k++) {
                         errorFrequency += pcrErrorRate;
 
-                        int nTemplates = (int) Math.pow(1.0 + lambda, j);
+                        int nTemplates = (int) Math.pow(1.0 + lambda, k);
 
                         if (rnd.nextDouble() < pcrErrorRate * nTemplates) {
                             errorFrequency += 1.0 / nTemplates;
                         }
                     }
+                    errorFrequency = errorFrequency > 1.0 ? 1.0 : errorFrequency;
                     pcrErrorRatesByPosAndBase[i][j] = errorFrequency;
+                    errFreqSum += errorFrequency;
                 }
             }
+            pcrErrorRatesByPosAndBase[i][originalBase] = 1.0 - errFreqSum;
         }
 
         List<Read> reads = new ArrayList<>();
@@ -103,17 +123,7 @@ public class ModelMigGenerator2 {
             Bit2Array seqBits = new Bit2Array(sequence.size());
 
             for (int j = 0; j < sequence.size(); j++) {
-                int origBase = sequence.codeAt(j), base = origBase;
-
-                for (int k = 0; k < 4; k++) {
-                    if (k != origBase) {
-                        if (rnd.nextDouble() < pcrErrorRatesByPosAndBase[j][k]) {
-                            base = k;
-                        }
-                    }
-                }
-
-                seqBits.set(j, base);
+                seqBits.set(j, getBase(pcrErrorRatesByPosAndBase[j]));
             }
 
             NucleotideSequence newSeq = new NucleotideSequence(seqBits);
@@ -126,9 +136,40 @@ public class ModelMigGenerator2 {
         return new SMig(null, null, reads);
     }
 
+    private int getBase(double[] pcrErrorRates) {
+        double rand = rnd.nextDouble();
+
+        double errFreqSum = pcrErrorRates[0];
+
+        for (int i = 1; i < 4; i++) {
+            if (rand <= errFreqSum) {
+                return i - 1;
+            }
+            errFreqSum += pcrErrorRates[i];
+        }
+
+        return 3;
+    }
+
     public float getSomaticFreq(int code) {
         Integer count = somaticCounts.get(code);
 
         return count == null ? 0.0f : (count / (float) total);
+    }
+
+    public MutationGenerator getSeqMutationGenerator() {
+        return seqMutationGenerator;
+    }
+
+    public MutationGenerator getSomaticMutationGenerator() {
+        return somaticMutationGenerator;
+    }
+
+    public MutationGenerator getPcrMutationGenerator() {
+        return pcrMutationGenerator;
+    }
+
+    public VariantCallerParameters getVariantCallerParameters() {
+        return variantCallerParameters;
     }
 }

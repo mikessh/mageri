@@ -74,7 +74,7 @@ public class MinorCallerTest {
 
         for (int i = 0; i < nMigs * readLength; i++) {
             double erroneousTemplateFraction = 0;
-            for (int j = 0; j < nCycles; j++) {
+            for (int j = 1; j <= nCycles; j++) {
                 erroneousTemplateFraction += pcrErrorRate;
 
                 int nTemplates = (int) Math.pow(1.0 + lambda, j);
@@ -107,19 +107,23 @@ public class MinorCallerTest {
             }
         }
 
+        errorRateMean /= (nMigs * readLength);
+
         System.out.println("Total PCR minors = " + totalPCRMinors);
         System.out.println("Called true PCR minors = " + calledTruePCRMinors);
         System.out.println("Called false PCR minors = " + calledFalsePCRMinors);
         System.out.println("FDR estimate = " + minorCaller.computeFdr(0, 0));
-        double errorRateExp = errorRateMean / (nMigs * readLength) / nCycles / lambda * (1.0 + lambda);
+
+        double errorRateExp = errorRateMean / nCycles / lambda * (1.0 + lambda);
         // Will differ from the original rate as the model is quite crude
         System.out.println("Error rate exp = " + errorRateExp);
+
         double minorRate = (calledTruePCRMinors + calledFalsePCRMinors) / (double) (nMigs * readLength);
         double errorRateEst = MinorBasedErrorModel.computeBaseErrorRateEstimate(minorRate,
-                minorCaller.computeFdr(0, 0), minorCaller.getReadFractionForCalledMinors(0, 0), lambda);
+                minorCaller.computeFdr(0, 0), minorCaller.getReadFractionForCalledMinors(0, 0),
+                lambda, nCycles);
         System.out.println("Error rate est = " + errorRateEst);
-
-        Assert.assertTrue("No more than order of magnitude difference between true PCR " +
+        Assert.assertTrue("No more than order of magnitude difference between expected PCR " +
                         "error rate and its estimate",
                 Math.abs(Math.log10(errorRateEst) - Math.log10(pcrErrorRate)) <= 1.0);
 

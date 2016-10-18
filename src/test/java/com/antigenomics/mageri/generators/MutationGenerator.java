@@ -29,8 +29,13 @@ public class MutationGenerator {
     private static final double DEL_PROB = 0.005, INS_PROB = 0.002;
 
     public static final MutationGenerator DEFAULT = new MutationGenerator(51102L, 1.0),
+            SEQ_Q30 = getUniform(0.001),
             NO_INDEL = new MutationGenerator(51102L, 0.0),
             NO_INDEL_SKEWED = new MutationGenerator(51102L, 0.0, getSkewedNucleotideSubstitutionModel());
+
+    public static MutationGenerator getUniform(double freq) {
+        return new MutationGenerator(51102L, 0.0, getUniformSubstitutionModel(freq));
+    }
 
     private static SubstitutionModel getSkewedNucleotideSubstitutionModel() {
         return getSkewedNucleotideSubstitutionModel(SubstitutionModels.getEmpiricalNucleotideSubstitutionModel());
@@ -43,6 +48,20 @@ public class MutationGenerator {
             for (byte j = 0; j < 4; j++) {
                 if (i != j) {
                     builder.setProbability(i, j, Math.pow(substitutionModel.getValue(i, j), 3) * 500_000);
+                }
+            }
+        }
+
+        return builder.build();
+    }
+
+    private static SubstitutionModel getUniformSubstitutionModel(double errorRate) {
+        SubstitutionModelBuilder builder = new SubstitutionModelBuilder(4);
+
+        for (byte i = 0; i < 4; i++) {
+            for (byte j = 0; j < 4; j++) {
+                if (i != j) {
+                    builder.setProbability(i, j, errorRate);
                 }
             }
         }
