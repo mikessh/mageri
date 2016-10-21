@@ -30,6 +30,7 @@ import com.antigenomics.mageri.core.genomic.ReferenceLibrary;
 import com.antigenomics.mageri.core.mapping.alignment.Aligner;
 import com.antigenomics.mageri.core.mapping.alignment.ExtendedKmerAligner;
 import com.antigenomics.mageri.core.mutations.Mutation;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -39,14 +40,14 @@ public class VariantCallerTest {
     public void skewedDistributionTest() {
         System.out.println("Testing identification of somatic mutations and hot-spot errors " +
                 "for various hot spot models");
-        int qualThreshold = 10;
+        int qualThreshold = 5;
         String setting = "Skewed, Q" + qualThreshold;
 
         test(0.5, 1e-3,
                 MutationGenerator.NO_INDEL_SKEWED, 1e-3,
                 qualThreshold,
                 PercentRangeAssertion.createLowerBound("Specificity", setting, 90),
-                PercentRangeAssertion.createLowerBound("Sensitivity", setting, 70));
+                PercentRangeAssertion.createLowerBound("Sensitivity", setting, 50));
     }
 
     @SuppressWarnings("unchecked")
@@ -64,11 +65,7 @@ public class VariantCallerTest {
         final ReferenceLibrary referenceLibrary = randomReferenceGenerator.nextReferenceLibrary(1);
         final Reference reference = referenceLibrary.getAt(0);
         final Assembler assembler = new SAssembler();
-        final Aligner aligner = new ExtendedKmerAligner(referenceLibrary,
-                // we do relax local alignment evaluator as error rates are high:
-                ConsensusAlignerParameters.DEFAULT
-                        .withMinIdentityRatio(0.7)
-                        .withMinAlignedQueryRelativeSpan(0.5));
+        final Aligner aligner = new ExtendedKmerAligner(referenceLibrary);
         ConsensusAligner consensusAligner = new SConsensusAligner(aligner);
 
         VariantCallerParameters variantCallerParameters = VariantCallerParameters.DEFAULT.withModelOrder(0);
@@ -138,6 +135,9 @@ public class VariantCallerTest {
         System.out.println("Mean frequency is " + meanSomaticFreq + " and " + meanErrorFreq + " for somatic and erroneous variants.");
         System.out.println("Mean quality is " + meanSomaticQ + " and " + meanErrorQ + " for somatic and erroneous variants.");
         System.out.println("Mean difference between observed and expected frequency of somatic mutaitons is " + meanSomaticFreqDiff + " variants.");
+
+        Assert.assertTrue("Mean somatic quality is more than an order of magnitude more than erroneous quality.",
+                meanSomaticQ > 10 * meanErrorQ);
 
         specificityRange.assertInRange(tn, fp + tn);
         sensitivityRange.assertInRange(tp, tp + fn);
