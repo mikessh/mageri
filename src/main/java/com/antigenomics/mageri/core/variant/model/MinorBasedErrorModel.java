@@ -101,11 +101,7 @@ public class MinorBasedErrorModel implements ErrorModel {
         //readFractionEstForCalledMinors = readFractionEstForCalledMinors > 0 ? readFractionEstForCalledMinors :
         //        Math.pow(1.0 + lambda, -nCycles);
 
-        double nTemplateEst = readFractionEstForCalledMinors > 0 ?
-                (1.0 - readFractionEstForCalledMinors) / lambda / readFractionEstForCalledMinors :
-                Math.pow(1.0 + lambda, nCycles);
-
-        return minorRate * (1 - fdr) / nTemplateEst / nCycles;
+        return minorRate * (1.0 - fdr) * readFractionEstForCalledMinors / nCycles;
     }
 
     @Override

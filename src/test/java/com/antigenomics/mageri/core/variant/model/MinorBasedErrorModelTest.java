@@ -29,6 +29,7 @@
 
 package com.antigenomics.mageri.core.variant.model;
 
+import com.antigenomics.mageri.ComplexRandomTests;
 import com.antigenomics.mageri.core.Mig;
 import com.antigenomics.mageri.core.assemble.Assembler;
 import com.antigenomics.mageri.core.assemble.Consensus;
@@ -41,19 +42,22 @@ import com.antigenomics.mageri.core.mapping.SConsensusAligner;
 import com.antigenomics.mageri.core.mapping.alignment.Aligner;
 import com.antigenomics.mageri.core.mapping.alignment.ExtendedKmerAligner;
 import com.antigenomics.mageri.core.variant.VariantCallerParameters;
-import com.antigenomics.mageri.generators.ModelMigGenerator2;
+import com.antigenomics.mageri.generators.ModelMigGenerator;
 import com.antigenomics.mageri.generators.RandomReferenceGenerator;
+import com.milaboratory.core.sequence.nucleotide.NucleotideAlphabet;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
 public class MinorBasedErrorModelTest {
     @Test
+    @Category(ComplexRandomTests.class)
     public void test() {
-        int nMigs = 10000, migSize = 100;
+        int nMigs = 30000, migSize = 100;
 
         RandomReferenceGenerator randomReferenceGenerator = new RandomReferenceGenerator();
-        randomReferenceGenerator.setReferenceSizeMin(200);
-        randomReferenceGenerator.setReferenceSizeMax(200);
+        randomReferenceGenerator.setReferenceSizeMin(100);
+        randomReferenceGenerator.setReferenceSizeMax(100);
 
         ReferenceLibrary referenceLibrary = randomReferenceGenerator.nextReferenceLibrary(1);
         Reference reference = referenceLibrary.getAt(0);
@@ -64,9 +68,9 @@ public class MinorBasedErrorModelTest {
 
         VariantCallerParameters variantCallerParameters =
                 VariantCallerParameters.DEFAULT
-                        .withOrder(0);
+                        .withOrder(0).withCoverageThreshold(0).withModelMinorCountThreshold(0);
 
-        ModelMigGenerator2 modelMigGenerator = new ModelMigGenerator2(variantCallerParameters,
+        ModelMigGenerator modelMigGenerator = new ModelMigGenerator(variantCallerParameters,
                 reference, migSize);
 
         for (int j = 0; j < nMigs; j++) {
@@ -87,6 +91,10 @@ public class MinorBasedErrorModelTest {
                 if (base != j) {
                     double errorRateEst = errorModel.computeErrorRate(i, base, j).getErrorRate(),
                             errorRateExp = modelMigGenerator.getPcrMutationGenerator().getSubstitutionModel().getValue(base, j);
+                    System.out.println("Substitution " + i + ":" +
+                            NucleotideAlphabet.INSTANCE.symbolFromCode((byte) base) +
+                            ">" + NucleotideAlphabet.INSTANCE.symbolFromCode((byte) j) +
+                            ". Error rate expected = " + errorRateExp + ", estimated = " + errorRateEst);
                     if (errorRateExp < 1e-6) {
                         Assert.assertTrue("Small error rate in absence of errors",
                                 errorRateEst < 5e-6);

@@ -54,7 +54,8 @@ public class MinorCallerTest {
     private MinorCaller simulationTest(int nCycles, double lambda,
                                        byte seqQual,
                                        double pcrErrorRate,
-                                       int migSize, int nMigs, int readLength) throws MathException {
+                                       int migSize, int nMigs,
+                                       int readLength) throws MathException {
         System.out.println("---\nRunning for parameters: " +
                 "cycles=" + nCycles +
                 ";efficiency=" + (1.0 + lambda) +
@@ -69,6 +70,7 @@ public class MinorCallerTest {
 
         int totalPCRMinors = 0, calledTruePCRMinors = 0, calledFalsePCRMinors = 0;
         double errorRateMean = 0;
+        double meanTemplatesForTrueMinors = 0;
 
         double expectedSeqErrors = migSize * Math.pow(10.0, -seqQual / 10.0);
 
@@ -98,9 +100,11 @@ public class MinorCallerTest {
 
             int sequencingErrorSize = (int) rnd.nextPoisson(expectedSeqErrors);
 
-            if (minorCaller.callAndUpdate(0, 0, pcrErrorSize + sequencingErrorSize, migSize)) {
+            if (minorCaller.callAndUpdate(0, 0, Math.min(migSize, pcrErrorSize + sequencingErrorSize),
+                    migSize)) {
                 if (truePcrMinor) {
                     calledTruePCRMinors++;
+                    meanTemplatesForTrueMinors += 1.0 / erroneousTemplateFraction;
                 } else {
                     calledFalsePCRMinors++;
                 }
@@ -113,6 +117,8 @@ public class MinorCallerTest {
         System.out.println("Called true PCR minors = " + calledTruePCRMinors);
         System.out.println("Called false PCR minors = " + calledFalsePCRMinors);
         System.out.println("FDR estimate = " + minorCaller.computeFdr(0, 0));
+        System.out.println("Minors called from cycle ~ " + Math.log(meanTemplatesForTrueMinors / calledTruePCRMinors) /
+                Math.log(1.0 + lambda));
 
         double errorRateExp = errorRateMean / nCycles / lambda * (1.0 + lambda);
         // Will differ from the original rate as the model is quite crude

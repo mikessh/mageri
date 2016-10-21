@@ -20,10 +20,7 @@ import com.antigenomics.mageri.ComplexRandomTests;
 import com.antigenomics.mageri.core.assemble.Assembler;
 import com.antigenomics.mageri.core.mapping.*;
 import com.antigenomics.mageri.core.mutations.Substitution;
-import com.antigenomics.mageri.core.variant.model.ErrorModel;
-import com.antigenomics.mageri.core.variant.model.ErrorModelProvider;
-import com.antigenomics.mageri.generators.MutationGenerator;
-import com.antigenomics.mageri.DoubleRangeAssertion;
+import com.antigenomics.mageri.generators.*;
 import com.antigenomics.mageri.PercentRangeAssertion;
 import com.antigenomics.mageri.core.Mig;
 import com.antigenomics.mageri.core.assemble.Consensus;
@@ -33,9 +30,6 @@ import com.antigenomics.mageri.core.genomic.ReferenceLibrary;
 import com.antigenomics.mageri.core.mapping.alignment.Aligner;
 import com.antigenomics.mageri.core.mapping.alignment.ExtendedKmerAligner;
 import com.antigenomics.mageri.core.mutations.Mutation;
-import com.antigenomics.mageri.generators.ModelMigGenerator;
-import com.antigenomics.mageri.generators.ModelMigGeneratorFactory;
-import com.antigenomics.mageri.generators.RandomReferenceGenerator;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 
@@ -45,174 +39,105 @@ public class VariantCallerTest {
     public void skewedDistributionTest() {
         System.out.println("Testing identification of somatic mutations and hot-spot errors " +
                 "for various hot spot models");
-
-        ModelMigGeneratorFactory modelMigGeneratorFactory = new ModelMigGeneratorFactory();
         int qualThreshold = 20;
         String setting = "Skewed, Q" + qualThreshold;
 
-        test(modelMigGeneratorFactory,
+        test(0.5, 1e-3,
+                MutationGenerator.NO_INDEL_SKEWED, 1e-3,
                 qualThreshold,
-                PercentRangeAssertion.createLowerBound("Matching unique variants", setting, 80),
-                PercentRangeAssertion.createUpperBound("Erroneous unique variants", setting, 1),
-                DoubleRangeAssertion.createUpperBound("Average variant count difference", setting, 0.15),
-                PercentRangeAssertion.createLowerBound("Specificity", setting, 90),
-                PercentRangeAssertion.createLowerBound("Sensitivity", setting, 85));
-    }
-
-    @Test
-    @Category(ComplexRandomTests.class)
-    public void uniformPositionTest() {
-        System.out.println("Testing identification of somatic mutations and hot-spot errors " +
-                "for various hot spot models");
-
-        ModelMigGeneratorFactory modelMigGeneratorFactory = new ModelMigGeneratorFactory();
-        int qualThreshold = 20;
-        String setting = "Uniform position, Q" + qualThreshold;
-        modelMigGeneratorFactory.setHotSpotPositionRatio(1.0);
-        modelMigGeneratorFactory.setPcrPositionRatio(1.0);
-
-        test(modelMigGeneratorFactory,
-                qualThreshold,
-                PercentRangeAssertion.createLowerBound("Matching unique variants", setting, 80),
-                PercentRangeAssertion.createUpperBound("Erroneous unique variants", setting, 1),
-                DoubleRangeAssertion.createUpperBound("Average variant count difference", setting, 0.15),
-                PercentRangeAssertion.createLowerBound("Specificity", setting, 90),
-                PercentRangeAssertion.createLowerBound("Sensitivity", setting, 85));
-    }
-
-    @Test
-    @Category(ComplexRandomTests.class)
-    public void uniformPositionPatternTest() {
-        System.out.println("Testing identification of somatic mutations and hot-spot errors " +
-                "for various hot spot models");
-
-        ModelMigGeneratorFactory modelMigGeneratorFactory = new ModelMigGeneratorFactory();
-        int qualThreshold = 20;
-
-        String setting = "Uniform position and pattern, Q" + qualThreshold;
-        modelMigGeneratorFactory.setPcrErrorGenerator(MutationGenerator.NO_INDEL);
-
-        test(modelMigGeneratorFactory,
-                qualThreshold,
-                PercentRangeAssertion.createLowerBound("Matching unique variants", setting, 80),
-                PercentRangeAssertion.createUpperBound("Erroneous unique variants", setting, 1),
-                DoubleRangeAssertion.createUpperBound("Average variant count difference", setting, 0.15),
-                PercentRangeAssertion.createLowerBound("Specificity", setting, 90),
-                PercentRangeAssertion.createLowerBound("Sensitivity", setting, 85));
+                PercentRangeAssertion.createDummy("Specificity", setting),
+                PercentRangeAssertion.createDummy("Sensitivity", setting));
     }
 
     @SuppressWarnings("unchecked")
-    public void test(ModelMigGeneratorFactory modelMigGeneratorFactory,
+    public void test(double somaticPositionRatio,
+                     double somaticFreq, MutationGenerator pcrErrorModel, double seqErrorFreq,
                      int qualThreshold,
-                     PercentRangeAssertion matchingVariantsRange,
-                     PercentRangeAssertion erroneousVariantsRange,
-                     DoubleRangeAssertion countDeltaRange,
                      PercentRangeAssertion specificityRange,
                      PercentRangeAssertion sensitivityRange) {
-        int nReferences = 10, nMigs = 20000;
+        int nMigs = 30000, migSize = 100;
 
         RandomReferenceGenerator randomReferenceGenerator = new RandomReferenceGenerator();
-        randomReferenceGenerator.setReferenceSizeMin(50);
+        randomReferenceGenerator.setReferenceSizeMin(100);
         randomReferenceGenerator.setReferenceSizeMax(100);
 
-        int finalMigs = 0;
-        int expectedVariants = 0, expectedSomatic = 0, expectedHotSpot = 0,
-                matchingVariants = 0, observedVariants = 0;
-        int tp = 0, fp = 0, tn = 0, fn = 0;
-        double variantCountDelta = 0, meanHotSpotQ = 0, meanSomaticQ = 0;
+        final ReferenceLibrary referenceLibrary = randomReferenceGenerator.nextReferenceLibrary(1);
+        final Reference reference = referenceLibrary.getAt(0);
+        final Assembler assembler = new SAssembler();
+        final Aligner aligner = new ExtendedKmerAligner(referenceLibrary,
+                // we do relax local alignment evaluator as error rates are high:
+                ConsensusAlignerParameters.DEFAULT
+                        .withMinIdentityRatio(0.7)
+                        .withMinAlignedQueryRelativeSpan(0.5));
+        ConsensusAligner consensusAligner = new SConsensusAligner(aligner);
 
-        for (int i = 0; i < nReferences; i++) {
-            final ReferenceLibrary referenceLibrary = randomReferenceGenerator.nextReferenceLibrary(1);
-            final Reference reference = referenceLibrary.getAt(0);
-            final Assembler assembler = new SAssembler();
-            final Aligner aligner = new ExtendedKmerAligner(referenceLibrary,
-                    // we do relax local alignment evaluator as error rates are high:
-                    ConsensusAlignerParameters.DEFAULT
-                            .withMinIdentityRatio(0.7)
-                            .withMinAlignedQueryRelativeSpan(0.5));
+        VariantCallerParameters variantCallerParameters = VariantCallerParameters.DEFAULT.withModelOrder(0);
+        ModelMigGenerator modelMigGenerator = new ModelMigGenerator(variantCallerParameters, reference, migSize,
+                somaticPositionRatio,
+                MutationGenerator.getUniform(somaticFreq),
+                MutationGenerator.getUniform(seqErrorFreq),
+                pcrErrorModel);
 
-            final ConsensusAligner consensusAligner = new SConsensusAligner(aligner);
-            final ModelMigGenerator modelMigGenerator = modelMigGeneratorFactory.create(reference.getSequence());
-
-            for (int j = 0; j < nMigs; j++) {
-                Mig mig = modelMigGenerator.nextMig();
-                Consensus consensus = assembler.assemble(mig);
-                if (consensus != null) {
-                    AlignedConsensus alignedConsensus = consensusAligner.align(consensus);
-                    if (alignedConsensus.isMapped()) {
-                        finalMigs++;
-                    }
-                }
+        for (int j = 0; j < nMigs; j++) {
+            Mig mig = modelMigGenerator.nextMig();
+            Consensus consensus = assembler.assemble(mig);
+            if (consensus != null) {
+                consensusAligner.align(consensus);
             }
+        }
 
-            expectedVariants += modelMigGenerator.totalSize();
+        final VariantCaller variantCaller = new VariantCaller(consensusAligner,
+                assembler.getMinorCaller(), variantCallerParameters);
 
-            final VariantCaller variantCaller = new VariantCaller(consensusAligner,
-                    assembler.getMinorCaller(), VariantCallerParameters.DEFAULT.withModelOrder(0));
+        int tp = 0, fp = 0, tn = 0, fn = 0,
+                totalSomatic = 0, totalErrors = 0;
+        double meanSomaticFreq = 0, meanSomaticFreqDiff = 0, meanErrorFreq = 0;
+        double meanSomaticQ = 0, meanErrorQ = 0;
 
-            for (Variant variant : variantCaller.getVariants()) {
-                Mutation mutation = variant.getMutation();
-                if (mutation instanceof Substitution) {
-                    Substitution substitution = (Substitution) mutation;
-                    int code = substitution.getCode();
-                    //System.out.println(variant + "\t" +
-                    //        modelMigGenerator.getHotSpotCount(code) + "\t" +
-                    //        modelMigGenerator.getSomaticCount(code));
+        for (Variant variant : variantCaller.getVariants()) {
+            Mutation mutation = variant.getMutation();
+            if (mutation instanceof Substitution) {
+                Substitution substitution = (Substitution) mutation;
+                int code = substitution.getCode();
 
-                    int realCount = modelMigGenerator.getVariantCount(code);
+                double qual = variant.getQual();
+                boolean passQual = qual >= qualThreshold;
+                double knownFreq = modelMigGenerator.getSomaticFreq(code),
+                        varFreq = variant.getAlleleFrequency();
 
-                    if (realCount != 0) {
-                        matchingVariants++;
-                        variantCountDelta += Math.abs(variant.getCount() - realCount);
-
-                        double qual = variant.getQual();
-                        boolean passQual = qual >= qualThreshold;
-
-                        int somaticCount = modelMigGenerator.getSomaticCount(code),
-                                hotSpotCount = modelMigGenerator.getHotSpotCount(code);
-
-                        if (somaticCount > 0) {
-                            meanSomaticQ += Math.log10(qual);
-                            expectedSomatic++;
-                        }
-                        if (hotSpotCount > 0) {
-                            meanHotSpotQ += Math.log10(qual);
-                            expectedHotSpot++;
-                        }
-
-                        // Can be both somatic and
-                        if (somaticCount > hotSpotCount) {
-                            if (passQual) {
-                                tp++;
-                            } else {
-                                fn++;
-                            }
-                        } else {
-                            if (passQual) {
-                                fp++;
-                            } else {
-                                tn++;
-                            }
-                        }
+                if (knownFreq > 0) {
+                    totalSomatic++;
+                    meanSomaticQ += qual;
+                    meanSomaticFreq += varFreq;
+                    meanSomaticFreqDiff += (varFreq - knownFreq);
+                    if (passQual) {
+                        tp++;
+                    } else {
+                        fn++;
                     }
-                    observedVariants++;
+                } else {
+                    totalErrors++;
+                    meanErrorQ += qual;
+                    meanErrorFreq += varFreq;
+                    if (passQual) {
+                        fp++;
+                    } else {
+                        tn++;
+                    }
                 }
             }
         }
 
-        meanSomaticQ /= expectedSomatic;
-        meanHotSpotQ /= expectedHotSpot;
-        meanSomaticQ = Math.pow(10, meanSomaticQ);
-        meanHotSpotQ = Math.pow(10, meanHotSpotQ);
+        meanSomaticFreq /= totalSomatic;
+        meanSomaticFreqDiff /= totalSomatic;
+        meanSomaticQ /= totalSomatic;
+        meanErrorFreq /= totalErrors;
+        meanErrorQ /= totalErrors;
 
-        System.out.println("Processed " + finalMigs + " migs.");
-        System.out.println("Generated " + expectedSomatic + " somatic and " + expectedHotSpot + " hot-spot variants.");
-        System.out.println("Geom. mean quality is " + meanSomaticQ + " and " + meanHotSpotQ + " for somatic and hot-spot variants.");
-        System.out.println("Found " + observedVariants + " variants.");
-
-        matchingVariantsRange.assertInRange(matchingVariants, expectedVariants);
-        erroneousVariantsRange.assertInRange(observedVariants - matchingVariants, expectedVariants);
-        countDeltaRange.assertInRange(variantCountDelta / matchingVariants);
+        System.out.println("Found " + totalSomatic + " somatic and " + totalErrors + " erroneous variants.");
+        System.out.println("Mean frequency is " + meanSomaticFreq + " and " + meanErrorFreq + " for somatic and erroneous variants.");
+        System.out.println("Mean quality is " + meanSomaticQ + " and " + meanErrorQ + " for somatic and erroneous variants.");
+        System.out.println("Mean difference between observed and expected frequency of somatic mutaitons is " + meanSomaticFreqDiff + " variants.");
 
         specificityRange.assertInRange(tn, fp + tn);
         sensitivityRange.assertInRange(tp, tp + fn);

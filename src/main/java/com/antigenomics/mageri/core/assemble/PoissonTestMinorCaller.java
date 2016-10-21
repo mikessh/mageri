@@ -103,7 +103,7 @@ public class PoissonTestMinorCaller extends MinorCaller<PoissonTestMinorCaller> 
     @Override
     public double getReadFractionForCalledMinors(int from, int to) {
         return Math.max(0,
-                minorReadCountSumArr[from][to].get() / (double) totalReadCountSumArr[from][to].get() - seqErrorRate);
+                minorReadCountSumArr[from][to].get() / (double) totalReadCountSumArr[from][to].get());
     }
 
     @Override

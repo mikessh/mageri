@@ -29,7 +29,7 @@ public class MutationGenerator {
     private static final double DEL_PROB = 0.005, INS_PROB = 0.002;
 
     public static final MutationGenerator DEFAULT = new MutationGenerator(51102L, 1.0),
-            SEQ_Q30 = getUniform(0.001),
+            SEQ_Q30 = getUniform(0.001), DUMMY = getUniform(0),
             NO_INDEL = new MutationGenerator(51102L, 0.0),
             NO_INDEL_SKEWED = new MutationGenerator(51102L, 0.0, getSkewedNucleotideSubstitutionModel());
 
