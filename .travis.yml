@@ -1,2 +1,2 @@
 language: java
-script: mvn test -P ftest,ctest -q
+script: mvn test -Dtestcase.groups ftest,ctest -q

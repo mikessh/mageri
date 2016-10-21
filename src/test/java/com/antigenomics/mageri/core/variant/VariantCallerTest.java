@@ -39,14 +39,14 @@ public class VariantCallerTest {
     public void skewedDistributionTest() {
         System.out.println("Testing identification of somatic mutations and hot-spot errors " +
                 "for various hot spot models");
-        int qualThreshold = 20;
+        int qualThreshold = 10;
         String setting = "Skewed, Q" + qualThreshold;
 
         test(0.5, 1e-3,
                 MutationGenerator.NO_INDEL_SKEWED, 1e-3,
                 qualThreshold,
-                PercentRangeAssertion.createDummy("Specificity", setting),
-                PercentRangeAssertion.createDummy("Sensitivity", setting));
+                PercentRangeAssertion.createLowerBound("Specificity", setting, 90),
+                PercentRangeAssertion.createLowerBound("Sensitivity", setting, 70));
     }
 
     @SuppressWarnings("unchecked")
