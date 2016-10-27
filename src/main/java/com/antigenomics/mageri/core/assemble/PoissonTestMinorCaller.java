@@ -54,7 +54,7 @@ public class PoissonTestMinorCaller extends MinorCaller<PoissonTestMinorCaller> 
 
     @Override
     boolean callAndUpdate(int from, int to, int k, int n) {
-        if (k == 0) {
+        if (k == 0 || n < 4) {
             return false;
         }
 

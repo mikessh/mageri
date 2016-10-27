@@ -188,8 +188,10 @@ public class SAssembler extends Assembler<SConsensus, SMig> {
             byte from = consensusAndTrimmingInfo.consensusSQPair
                     .getSequence()
                     .codeAt(k - consensusAndTrimmingInfo.goodSeqStart);
+
             for (byte l = 0; l < 4; l++) {
-                if (l != from && minorCaller.callAndUpdate(from, l, exactPwm[l][k], n)) {
+                if (l != from &&
+                        minorCaller.callAndUpdate(from, l, exactPwm[l][k], exactPwm[from][k] + exactPwm[l][k])) {
                     minors.add(Mutations.createSubstitution(k - consensusAndTrimmingInfo.goodSeqStart, from, l));
                 }
             }
