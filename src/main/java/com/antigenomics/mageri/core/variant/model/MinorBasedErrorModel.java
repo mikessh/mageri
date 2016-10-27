@@ -88,8 +88,7 @@ public class MinorBasedErrorModel implements ErrorModel {
 
     public static double computeBaseErrorRateEstimate(double minorRate, double fdr,
                                                       double readFractionEstForCalledMinors,
-                                                      double lambda) {
-        // Actually one should solve
+                                                      double lambda, double nCycles) {
         // minorRate = eps * sum_{n=1..nStar}(1+lambda)^n
         // Where eps - true error rate
         // lambda - efficiency
@@ -99,16 +98,10 @@ public class MinorBasedErrorModel implements ErrorModel {
         // 1 / (1+lambda) ^ nStar = minor read frequency est
         // minor read frequency est is
         // (total number of reads in minors) / (total number of reads in MIGs where minors were detected)
+        //readFractionEstForCalledMinors = readFractionEstForCalledMinors > 0 ? readFractionEstForCalledMinors :
+        //        Math.pow(1.0 + lambda, -nCycles);
 
-        double nStar = -Math.log(readFractionEstForCalledMinors) / Math.log(1.0 + lambda);
-
-        double molecules = 1;
-
-        for (int i = 1; i <= (int) Math.ceil(nStar); i++) {
-            molecules += Math.pow(1.0 + lambda, i);
-        }
-
-        return minorRate * (1.0 - fdr) / molecules;
+        return minorRate * (1.0 - fdr) * readFractionEstForCalledMinors / nCycles;
     }
 
     @Override
@@ -129,7 +122,7 @@ public class MinorBasedErrorModel implements ErrorModel {
         double fdr = minorCaller.computeFdr(from, to); // share of minors that are actually misidentified seq errors
 
         double errorRateBase = computeBaseErrorRateEstimate(minorRate,
-                fdr, minorCaller.getReadFractionForCalledMinors(from, to), lambda);
+                fdr, minorCaller.getReadFractionForCalledMinors(from, to), lambda, cycles);
 
         // Expected share of minors that are not lost due to sampling
         double recall = minorRate / errorRateBase / lambda / cycles * (1.0 + lambda);

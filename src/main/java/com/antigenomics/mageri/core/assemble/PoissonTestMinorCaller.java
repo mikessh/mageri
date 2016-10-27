@@ -61,12 +61,14 @@ public class PoissonTestMinorCaller extends MinorCaller<PoissonTestMinorCaller> 
         boolean pass = false;
 
         try {
-            double p = Gamma.regularizedGammaP(k, n * seqErrorRate);
+            double lambda = n * seqErrorRate;
+            double p = Gamma.regularizedGammaP(k, lambda) +
+                    0.5 * Math.exp(k * Math.log(lambda) - lambda - Gamma.logGamma(k + 1));
 
             pass = p < assemblerParameters.getPcrMinorTestPValue();
 
             m[from][to].incrementAndGet();
-            pValueSum[from][to].addAndGet(2 * Math.min(p, 1 - p));
+            pValueSum[from][to].addAndGet(p);
 
             if (pass) {
                 m1[from][to].incrementAndGet();
@@ -100,7 +102,8 @@ public class PoissonTestMinorCaller extends MinorCaller<PoissonTestMinorCaller> 
 
     @Override
     public double getReadFractionForCalledMinors(int from, int to) {
-        return minorReadCountSumArr[from][to].get() / (double) totalReadCountSumArr[from][to].get();
+        return Math.max(0,
+                minorReadCountSumArr[from][to].get() / (double) totalReadCountSumArr[from][to].get());
     }
 
     @Override
@@ -115,7 +118,8 @@ public class PoissonTestMinorCaller extends MinorCaller<PoissonTestMinorCaller> 
 
         double pavg = getPValueSum(from, to) / mm;
 
-        return assemblerParameters.getPcrMinorTestPValue() * Math.min(1.0, 2.0 * pavg) * mm / (double) mm1;
+        return Math.min(1.0,
+                assemblerParameters.getPcrMinorTestPValue() * Math.min(1.0, 2.0 * pavg) * mm / (double) mm1);
     }
 
     private int getM(int from, int to) {
