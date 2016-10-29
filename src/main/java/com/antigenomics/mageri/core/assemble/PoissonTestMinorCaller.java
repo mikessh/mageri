@@ -22,6 +22,9 @@ import com.milaboratory.core.sequence.nucleotide.NucleotideAlphabet;
 import org.apache.commons.math.MathException;
 import org.apache.commons.math.special.Gamma;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -34,6 +37,8 @@ public class PoissonTestMinorCaller extends MinorCaller<PoissonTestMinorCaller> 
     private final AtomicLong[][] minorReadCountSumArr = new AtomicLong[4][4],
             totalReadCountSumArr = new AtomicLong[4][4];
     private final AtomicDouble[][] pValueSum = new AtomicDouble[4][4];
+    private final List<CallResult> results = Collections.synchronizedList(new ArrayList<CallResult>());
+
 
     PoissonTestMinorCaller(AssemblerParameters assemblerParameters, PreprocessorParameters preprocessorParameters) {
         super("MinorCaller.PoissonTest");
@@ -64,6 +69,10 @@ public class PoissonTestMinorCaller extends MinorCaller<PoissonTestMinorCaller> 
             double lambda = n * seqErrorRate;
             double p = Gamma.regularizedGammaP(k, lambda) +
                     0.5 * Math.exp(k * Math.log(lambda) - lambda - Gamma.logGamma(k + 1));
+
+            if (assemblerParameters.isMinorCallerDebug()) {
+                results.add(new CallResult(from, to, k, n, p));
+            }
 
             pass = p < assemblerParameters.getPcrMinorTestPValue();
 
@@ -136,26 +145,55 @@ public class PoissonTestMinorCaller extends MinorCaller<PoissonTestMinorCaller> 
 
     @Override
     public String getHeader() {
-        return "from\tto\tm1\tm\tfdr";
+        return assemblerParameters.isMinorCallerDebug() ? "from\tto\tk\tn\tp" : "from\tto\tm1\tm\tfdr";
     }
 
     @Override
     public String getBody() {
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 4; j++) {
-                sb.append(NucleotideAlphabet.INSTANCE.symbolFromCode((byte) i))
-                        .append("\t")
-                        .append(NucleotideAlphabet.INSTANCE.symbolFromCode((byte) j))
-                        .append("\t")
-                        .append(getM1(i, j))
-                        .append("\t")
-                        .append(getM(i, j))
-                        .append("\t")
-                        .append(computeFdr(i, j))
-                        .append("\n");
+
+        if (assemblerParameters.isMinorCallerDebug()) {
+            for (CallResult result : results) {
+                    sb.append(NucleotideAlphabet.INSTANCE.symbolFromCode((byte) result.from))
+                            .append("\t")
+                            .append(NucleotideAlphabet.INSTANCE.symbolFromCode((byte) result.to))
+                            .append("\t")
+                            .append(result.k)
+                            .append("\t")
+                            .append(result.n)
+                            .append("\t")
+                            .append(result.p)
+                            .append("\n");
+            }
+        }else {
+            for (int i = 0; i < 4; i++) {
+                for (int j = 0; j < 4; j++) {
+                    sb.append(NucleotideAlphabet.INSTANCE.symbolFromCode((byte) i))
+                            .append("\t")
+                            .append(NucleotideAlphabet.INSTANCE.symbolFromCode((byte) j))
+                            .append("\t")
+                            .append(getM1(i, j))
+                            .append("\t")
+                            .append(getM(i, j))
+                            .append("\t")
+                            .append(computeFdr(i, j))
+                            .append("\n");
+                }
             }
         }
         return sb.toString();
+    }
+
+    private static class CallResult {
+        final int from, to, k, n;
+        final double p;
+
+        public CallResult(int from, int to, int k, int n, double p) {
+            this.from = from;
+            this.to = to;
+            this.k = k;
+            this.n = n;
+            this.p = p;
+        }
     }
 }

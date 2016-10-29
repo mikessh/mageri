@@ -25,26 +25,27 @@ public final class AssemblerParameters implements ParameterSet {
     private final double maxDroppedReadsRatio, maxDroppedReadsRatioAfterRescue,
             maxTrimmedConsensusBasesRatio, minMatchedBasesInRealignedReadRatio,
             pcrMinorTestPValue;
-    private final boolean cqsRescue, qualityTrimming, greedyExtend;
+    private final boolean cqsRescue, qualityTrimming, greedyExtend, minorCallerDebug;
 
     public static AssemblerParameters DEFAULT = new AssemblerParameters(
             4, 8, 4, 0,
             0.3, 0.0, 0.3, 0.0,
             1e-3,
-            false, true, true);
+            false, true, true, false);
 
     public static AssemblerParameters TORRENT454 = new AssemblerParameters(
             4, 8, 4, 2,
             0.7, 0.3, 0.3, 0.5,
             1e-3,
-            true, true, false);
+            true, true, false, false);
 
     public AssemblerParameters(int offsetRange, int anchorRegion, int maxMMs, int maxConsequentMMs,
                                double maxDroppedReadsRatio,
                                double maxDroppedReadsRatioAfterRescue,
                                double maxTrimmedConsensusBasesRatio, double minMatchedBasesInRealignedReadRatio,
                                double pcrMinorTestPValue,
-                               boolean cqsRescue, boolean qualityTrimming, boolean greedyExtend) {
+                               boolean cqsRescue, boolean qualityTrimming, boolean greedyExtend,
+                               boolean minorCallerDebug) {
         this.offsetRange = offsetRange;
         this.anchorRegion = anchorRegion;
         this.maxMMs = maxMMs;
@@ -58,6 +59,7 @@ public final class AssemblerParameters implements ParameterSet {
         this.cqsRescue = cqsRescue;
         this.qualityTrimming = qualityTrimming;
         this.greedyExtend = greedyExtend;
+        this.minorCallerDebug = minorCallerDebug;
     }
 
     public int getOffsetRange() {
@@ -112,95 +114,106 @@ public final class AssemblerParameters implements ParameterSet {
         return pcrMinorTestPValue;
     }
 
+    public boolean isMinorCallerDebug() {
+        return minorCallerDebug;
+    }
+
     public AssemblerParameters withOffsetRange(int offsetRange) {
         return new AssemblerParameters(offsetRange, anchorRegion, maxMMs, maxConsequentMMs,
                 maxDroppedReadsRatio, maxDroppedReadsRatioAfterRescue,
                 maxTrimmedConsensusBasesRatio, minMatchedBasesInRealignedReadRatio, pcrMinorTestPValue,
-                cqsRescue, qualityTrimming, greedyExtend);
+                cqsRescue, qualityTrimming, greedyExtend, minorCallerDebug);
     }
 
     public AssemblerParameters withAnchorRegion(int anchorRegion) {
         return new AssemblerParameters(offsetRange, anchorRegion, maxMMs, maxConsequentMMs,
                 maxDroppedReadsRatio, maxDroppedReadsRatioAfterRescue,
                 maxTrimmedConsensusBasesRatio, minMatchedBasesInRealignedReadRatio, pcrMinorTestPValue,
-                cqsRescue, qualityTrimming, greedyExtend);
+                cqsRescue, qualityTrimming, greedyExtend, minorCallerDebug);
     }
 
     public AssemblerParameters withMaxMMs(int maxMMs) {
         return new AssemblerParameters(offsetRange, anchorRegion, maxMMs, maxConsequentMMs,
                 maxDroppedReadsRatio, maxDroppedReadsRatioAfterRescue,
                 maxTrimmedConsensusBasesRatio, minMatchedBasesInRealignedReadRatio, pcrMinorTestPValue,
-                cqsRescue, qualityTrimming, greedyExtend);
+                cqsRescue, qualityTrimming, greedyExtend, minorCallerDebug);
     }
 
     public AssemblerParameters withMaxConsequentMMs(int maxConsequentMMs) {
         return new AssemblerParameters(offsetRange, anchorRegion, maxMMs, maxConsequentMMs,
                 maxDroppedReadsRatio, maxDroppedReadsRatioAfterRescue,
                 maxTrimmedConsensusBasesRatio, minMatchedBasesInRealignedReadRatio, pcrMinorTestPValue,
-                cqsRescue, qualityTrimming, greedyExtend);
+                cqsRescue, qualityTrimming, greedyExtend, minorCallerDebug);
     }
 
     public AssemblerParameters withMinReadSize(int minReadSize) {
         return new AssemblerParameters(offsetRange, anchorRegion, maxMMs, maxConsequentMMs,
                 maxDroppedReadsRatio, maxDroppedReadsRatioAfterRescue,
                 maxTrimmedConsensusBasesRatio, minMatchedBasesInRealignedReadRatio, pcrMinorTestPValue,
-                cqsRescue, qualityTrimming, greedyExtend);
+                cqsRescue, qualityTrimming, greedyExtend, minorCallerDebug);
     }
 
     public AssemblerParameters withMaxDroppedReadsRatio(double maxDroppedReadsRatio) {
         return new AssemblerParameters(offsetRange, anchorRegion, maxMMs, maxConsequentMMs,
                 maxDroppedReadsRatio, maxDroppedReadsRatioAfterRescue,
                 maxTrimmedConsensusBasesRatio, minMatchedBasesInRealignedReadRatio, pcrMinorTestPValue,
-                cqsRescue, qualityTrimming, greedyExtend);
+                cqsRescue, qualityTrimming, greedyExtend, minorCallerDebug);
     }
 
     public AssemblerParameters withMaxDroppedReadsAfterRescue(double maxDroppedReadsRatioAfterRescue) {
         return new AssemblerParameters(offsetRange, anchorRegion, maxMMs, maxConsequentMMs,
                 maxDroppedReadsRatio, maxDroppedReadsRatioAfterRescue,
                 maxTrimmedConsensusBasesRatio, minMatchedBasesInRealignedReadRatio, pcrMinorTestPValue,
-                cqsRescue, qualityTrimming, greedyExtend);
+                cqsRescue, qualityTrimming, greedyExtend, minorCallerDebug);
     }
 
     public AssemblerParameters withCqsRescue(boolean cqsRescue) {
         return new AssemblerParameters(offsetRange, anchorRegion, maxMMs, maxConsequentMMs,
                 maxDroppedReadsRatio, maxDroppedReadsRatioAfterRescue,
                 maxTrimmedConsensusBasesRatio, minMatchedBasesInRealignedReadRatio, pcrMinorTestPValue,
-                cqsRescue, qualityTrimming, greedyExtend);
+                cqsRescue, qualityTrimming, greedyExtend, minorCallerDebug);
     }
 
     public AssemblerParameters withQualityTrimming(boolean qualityTrimming) {
         return new AssemblerParameters(offsetRange, anchorRegion, maxMMs, maxConsequentMMs,
                 maxDroppedReadsRatio, maxDroppedReadsRatioAfterRescue,
                 maxTrimmedConsensusBasesRatio, minMatchedBasesInRealignedReadRatio, pcrMinorTestPValue,
-                cqsRescue, qualityTrimming, greedyExtend);
+                cqsRescue, qualityTrimming, greedyExtend, minorCallerDebug);
     }
 
     public AssemblerParameters withGreedyExtend(boolean greedyExtend) {
         return new AssemblerParameters(offsetRange, anchorRegion, maxMMs, maxConsequentMMs,
                 maxDroppedReadsRatio, maxDroppedReadsRatioAfterRescue,
                 maxTrimmedConsensusBasesRatio, minMatchedBasesInRealignedReadRatio, pcrMinorTestPValue,
-                cqsRescue, qualityTrimming, greedyExtend);
+                cqsRescue, qualityTrimming, greedyExtend, minorCallerDebug);
     }
 
     public AssemblerParameters withMaxTrimmedConsensusBasesRatio(double maxTrimmedConsensusBasesRatio) {
         return new AssemblerParameters(offsetRange, anchorRegion, maxMMs, maxConsequentMMs,
                 maxDroppedReadsRatio, maxDroppedReadsRatioAfterRescue,
                 maxTrimmedConsensusBasesRatio, minMatchedBasesInRealignedReadRatio, pcrMinorTestPValue,
-                cqsRescue, qualityTrimming, greedyExtend);
+                cqsRescue, qualityTrimming, greedyExtend, minorCallerDebug);
     }
 
     public AssemblerParameters withMinMatchedBasesInRealignedReadRatio(double minMatchedBasesInRealignedReadRatio) {
         return new AssemblerParameters(offsetRange, anchorRegion, maxMMs, maxConsequentMMs,
                 maxDroppedReadsRatio, maxDroppedReadsRatioAfterRescue,
                 maxTrimmedConsensusBasesRatio, minMatchedBasesInRealignedReadRatio, pcrMinorTestPValue,
-                cqsRescue, qualityTrimming, greedyExtend);
+                cqsRescue, qualityTrimming, greedyExtend, minorCallerDebug);
     }
 
     public AssemblerParameters withPcrMinorTestPValue(double pcrMinorTestPValue) {
         return new AssemblerParameters(offsetRange, anchorRegion, maxMMs, maxConsequentMMs,
                 maxDroppedReadsRatio, maxDroppedReadsRatioAfterRescue,
                 maxTrimmedConsensusBasesRatio, minMatchedBasesInRealignedReadRatio, pcrMinorTestPValue,
-                cqsRescue, qualityTrimming, greedyExtend);
+                cqsRescue, qualityTrimming, greedyExtend, minorCallerDebug);
+    }
+
+    public AssemblerParameters withMinorCallerDebug(boolean minorCallerDebug) {
+        return new AssemblerParameters(offsetRange, anchorRegion, maxMMs, maxConsequentMMs,
+                maxDroppedReadsRatio, maxDroppedReadsRatioAfterRescue,
+                maxTrimmedConsensusBasesRatio, minMatchedBasesInRealignedReadRatio, pcrMinorTestPValue,
+                cqsRescue, qualityTrimming, greedyExtend, minorCallerDebug);
     }
 
     @Override
@@ -218,6 +231,7 @@ public final class AssemblerParameters implements ParameterSet {
         e.addContent(new Element("cqsRescue").setText(Boolean.toString(cqsRescue)));
         e.addContent(new Element("qualityTrimming").setText(Boolean.toString(qualityTrimming)));
         e.addContent(new Element("greedyExtend").setText(Boolean.toString(greedyExtend)));
+        e.addContent(new Element("minorCallerDebug").setText(Boolean.toString(minorCallerDebug)));
         return e;
     }
 
@@ -235,7 +249,8 @@ public final class AssemblerParameters implements ParameterSet {
                 Double.parseDouble(e.getChildTextTrim("pcrMinorTestPValue")),
                 Boolean.parseBoolean(e.getChildTextTrim("cqsRescue")),
                 Boolean.parseBoolean(e.getChildTextTrim("qualityTrimming")),
-                Boolean.parseBoolean(e.getChildTextTrim("greedyExtend"))
+                Boolean.parseBoolean(e.getChildTextTrim("greedyExtend")),
+                Boolean.parseBoolean(e.getChildTextTrim("minorCallerDebug"))
         );
     }
 
@@ -259,7 +274,8 @@ public final class AssemblerParameters implements ParameterSet {
         if (Double.compare(that.pcrMinorTestPValue, pcrMinorTestPValue) != 0) return false;
         if (cqsRescue != that.cqsRescue) return false;
         if (qualityTrimming != that.qualityTrimming) return false;
-        return greedyExtend == that.greedyExtend;
+        if (greedyExtend != that.greedyExtend) return false;
+        return minorCallerDebug == that.minorCallerDebug;
 
     }
 
@@ -285,6 +301,7 @@ public final class AssemblerParameters implements ParameterSet {
         result = 31 * result + (cqsRescue ? 1 : 0);
         result = 31 * result + (qualityTrimming ? 1 : 0);
         result = 31 * result + (greedyExtend ? 1 : 0);
+        result = 31 * result + (minorCallerDebug ? 1 : 0);
         return result;
     }
 }
