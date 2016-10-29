@@ -106,6 +106,9 @@ public class PoissonTestMinorCaller extends MinorCaller<PoissonTestMinorCaller> 
             }
         }
 
+        poissonTestMinorCaller.results.addAll(results);
+        poissonTestMinorCaller.results.addAll(other.results);
+
         return poissonTestMinorCaller;
     }
 
@@ -154,18 +157,18 @@ public class PoissonTestMinorCaller extends MinorCaller<PoissonTestMinorCaller> 
 
         if (assemblerParameters.isMinorCallerDebug()) {
             for (CallResult result : results) {
-                    sb.append(NucleotideAlphabet.INSTANCE.symbolFromCode((byte) result.from))
-                            .append("\t")
-                            .append(NucleotideAlphabet.INSTANCE.symbolFromCode((byte) result.to))
-                            .append("\t")
-                            .append(result.k)
-                            .append("\t")
-                            .append(result.n)
-                            .append("\t")
-                            .append(result.p)
-                            .append("\n");
+                sb.append(NucleotideAlphabet.INSTANCE.symbolFromCode((byte) result.from))
+                        .append("\t")
+                        .append(NucleotideAlphabet.INSTANCE.symbolFromCode((byte) result.to))
+                        .append("\t")
+                        .append(result.k)
+                        .append("\t")
+                        .append(result.n)
+                        .append("\t")
+                        .append(result.p)
+                        .append("\n");
             }
-        }else {
+        } else {
             for (int i = 0; i < 4; i++) {
                 for (int j = 0; j < 4; j++) {
                     sb.append(NucleotideAlphabet.INSTANCE.symbolFromCode((byte) i))
