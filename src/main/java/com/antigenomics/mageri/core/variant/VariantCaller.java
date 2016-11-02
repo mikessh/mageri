@@ -36,22 +36,21 @@ import com.milaboratory.core.sequence.nucleotide.NucleotideSequenceBuilder;
 import com.antigenomics.mageri.core.genomic.ReferenceLibrary;
 import com.antigenomics.mageri.core.mutations.Mutation;
 import com.antigenomics.mageri.core.variant.filter.CoverageFilter;
+import htsjdk.variant.vcf.VCFUtils;
 import org.apache.commons.math.MathException;
 import org.apache.commons.math.distribution.BinomialDistribution;
 import org.apache.commons.math.distribution.BinomialDistributionImpl;
 
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 public class VariantCaller extends PipelineBlock {
     private final VariantCallerParameters variantCallerParameters;
     private final ReferenceLibrary referenceLibrary;
     private final VariantFilter[] filters;
-    private final List<Variant> variants = new LinkedList<>();
+    private final List<Variant> variants = new ArrayList<>();
 
     public VariantCaller(ConsensusAligner consensusAligner) {
-        this(consensusAligner, DummyMinorCaller.INSTANCE, VariantCallerParameters.DEFAULT);
+        this(consensusAligner, new DummyMinorCaller(), VariantCallerParameters.DEFAULT);
     }
 
     public VariantCaller(ConsensusAligner consensusAligner, MinorCaller minorCaller) {
@@ -76,6 +75,8 @@ public class VariantCaller extends PipelineBlock {
                 ErrorModel errorModel = ErrorModelProvider.create(variantCallerParameters,
                         mutationsTable, minorCaller);
 
+                Set<Integer> substitutionCodes = new HashSet<>();
+
                 for (Mutation mutation : mutationsTable.getMutations()) {
                     Variant variant;
 
@@ -84,11 +85,12 @@ public class VariantCaller extends PipelineBlock {
                                 pos = Mutations.getPosition(code),
                                 to = Mutations.getTo(code);
 
-                        int majorCount = mutationsTable.getMajorMigCount(pos, to);
+                        if (variantCallerParameters.showAbsentVariants()) {
+                            substitutionCodes.add(code);
+                        }
 
-                        assert majorCount > 0;
-
-                        int coverage = mutationsTable.getMigCoverage(pos);
+                        int majorCount = mutationsTable.getMajorMigCount(pos, to),
+                                coverage = mutationsTable.getMigCoverage(pos);
 
                         ErrorRateEstimate errorRateEstimate = errorModel.computeErrorRate(mutation);
                         double score = -10 * getLog10PValue(majorCount, coverage,
@@ -103,7 +105,6 @@ public class VariantCaller extends PipelineBlock {
                                 score, mutationsTable.getMeanCqs(pos, to),
                                 nsb.create(), mutationsTable.hasReferenceBase(pos),
                                 errorRateEstimate);
-
                     } else if (variantCallerParameters.isNoIndels()) {
                         continue;
                     } else {
@@ -120,6 +121,36 @@ public class VariantCaller extends PipelineBlock {
 
                     variant.filter(this);
                     variants.add(variant);
+                }
+
+                // Debug mode - provide error rates for absent positions
+                if (variantCallerParameters.showAbsentVariants()) {
+                    for (int pos = 0; pos < reference.size(); pos++) {
+                        int from = reference.codeAt(pos);
+                        for (int to = 0; to < 4; to++) {
+                            if (to != from) {
+                                int code = Mutations.createSubstitution(pos, from, to);
+
+                                if (!substitutionCodes.contains(code)) {
+                                    Mutation mutation = new Substitution(null, code);
+
+                                    ErrorRateEstimate errorRateEstimate = errorModel.computeErrorRate(mutation);
+
+                                    NucleotideSequenceBuilder nsb = new NucleotideSequenceBuilder(1);
+                                    nsb.setCode(0, mutationsTable.getAncestralBase(pos));
+
+                                    Variant variant = new Variant(reference,
+                                            mutation, 0,
+                                            mutationsTable.getMigCoverage(pos),
+                                            VcfUtil.MAX_QUAL, mutationsTable.getMeanCqs(pos, to),
+                                            nsb.create(), mutationsTable.hasReferenceBase(pos),
+                                            errorRateEstimate);
+
+                                    variants.add(variant);
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -144,13 +175,16 @@ public class VariantCaller extends PipelineBlock {
         BinomialDistribution binomialDistribution = new BinomialDistributionImpl(total,
                 errorRate);
 
+        double score;
         try {
-            return Math.log10(1.0 - binomialDistribution.cumulativeProbability(majorCount) +
+            score = Math.log10(1.0 - binomialDistribution.cumulativeProbability(majorCount) +
                     0.5 * binomialDistribution.probability(majorCount));
         } catch (MathException e) {
             e.printStackTrace();
-            return Math.log10(binomialDistribution.probability(majorCount));
+            return Double.NaN;
         }
+
+        return Double.isInfinite(score) ? VcfUtil.MAX_QUAL : score;
     }
 
     public ReferenceLibrary getReferenceLibrary() {

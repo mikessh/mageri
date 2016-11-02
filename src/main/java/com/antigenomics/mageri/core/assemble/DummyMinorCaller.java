@@ -16,10 +16,15 @@
 
 package com.antigenomics.mageri.core.assemble;
 
-public class DummyMinorCaller extends MinorCaller<DummyMinorCaller> {
-    public static final DummyMinorCaller INSTANCE = new DummyMinorCaller();
+import com.antigenomics.mageri.misc.AtomicDouble;
 
-    private DummyMinorCaller() {
+import java.util.concurrent.atomic.AtomicInteger;
+
+public class DummyMinorCaller extends MinorCaller<DummyMinorCaller> {
+    private final AtomicInteger totalMigs = new AtomicInteger();
+    private final AtomicDouble logMigSize = new AtomicDouble();
+
+    public DummyMinorCaller() {
         super("MinorCaller.DUMMY");
     }
 
@@ -29,18 +34,35 @@ public class DummyMinorCaller extends MinorCaller<DummyMinorCaller> {
     }
 
     @Override
-    boolean callAndUpdate(int from, int to, int k, int n) {
+    boolean callAndUpdate(int from, int to, int k, int n, int n0) {
+        totalMigs.incrementAndGet();
+        logMigSize.addAndGet(Math.log(n));
         return k > 0;
     }
 
     @Override
     DummyMinorCaller combine(DummyMinorCaller other) {
-        return this;
+        DummyMinorCaller dummyMinorCaller = new DummyMinorCaller();
+
+        dummyMinorCaller.totalMigs.addAndGet(this.totalMigs.get() + other.totalMigs.get());
+        dummyMinorCaller.logMigSize.addAndGet(this.logMigSize.get() + other.logMigSize.get());
+
+        return dummyMinorCaller;
     }
 
     @Override
     public double getReadFractionForCalledMinors(int from, int to) {
         return 1.0;
+    }
+
+    @Override
+    public double getFilteredReadFraction(int from, int to) {
+        return 0.0;
+    }
+
+    @Override
+    public double getGlobalMinorRate(int from, int to) {
+        return 0;
     }
 
     @Override
@@ -51,5 +73,15 @@ public class DummyMinorCaller extends MinorCaller<DummyMinorCaller> {
     @Override
     public String getBody() {
         return "";
+    }
+
+    @Override
+    public int getTotalMigs() {
+        return totalMigs.get();
+    }
+
+    @Override
+    public int getGeometricMeanMigSize() {
+        return (int) Math.exp(logMigSize.get() / getTotalMigs());
     }
 }

@@ -53,7 +53,7 @@ public class SubstitutionErrorMatrixTest {
         randomMigGenerator.setMigSizeMax(migSize);
         randomMigGenerator.setMigSizeMin(migSize);
 
-        SAssembler assembler = new SAssembler(AssemblerParameters.DEFAULT, DummyMinorCaller.INSTANCE);
+        SAssembler assembler = new SAssembler(AssemblerParameters.DEFAULT, new DummyMinorCaller());
         ConsensusAligner aligner = new SConsensusAligner(referenceLibrary);
 
         for (int i = 0; i < 1000; i++) {
@@ -75,7 +75,7 @@ public class SubstitutionErrorMatrixTest {
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
                 if (i != j) {
-                    double observed = substitutionErrorMatrix.getRate(i, j) / migSize + JITTER,
+                    double observed = substitutionErrorMatrix.getRate(i, j, false) / migSize + JITTER,
                             expected = mutationGenerator.getSubstitutionModel().getValue(i, j) + JITTER;
                     System.out.println(
                             NucleotideAlphabet.INSTANCE.symbolFromCode((byte) i) + ">" +

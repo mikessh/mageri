@@ -87,21 +87,8 @@ public class MinorBasedErrorModel implements ErrorModel {
     }
 
     public static double computeBaseErrorRateEstimate(double minorRate, double fdr,
-                                                      double readFractionEstForCalledMinors,
-                                                      double lambda, double nCycles) {
-        // minorRate = eps * sum_{n=1..nStar}(1+lambda)^n
-        // Where eps - true error rate
-        // lambda - efficiency
-        // sum_{n=1..nStar}(1+lambda)^n - total number of molecules from cycles that can yield detectable minor
-        //
-        // nStar is computed as
-        // 1 / (1+lambda) ^ nStar = minor read frequency est
-        // minor read frequency est is
-        // (total number of reads in minors) / (total number of reads in MIGs where minors were detected)
-        //readFractionEstForCalledMinors = readFractionEstForCalledMinors > 0 ? readFractionEstForCalledMinors :
-        //        Math.pow(1.0 + lambda, -nCycles);
-
-        return minorRate * (1.0 - fdr) * readFractionEstForCalledMinors / nCycles;
+                                                      double readFractionEstForCalledMinors) {
+        return minorRate * (1.0 - fdr) * readFractionEstForCalledMinors;
     }
 
     @Override
@@ -115,22 +102,34 @@ public class MinorBasedErrorModel implements ErrorModel {
         int coverage = mutationsTable.getMigCoverage(pos),
                 minorCount = mutationsTable.getMinorMigCount(pos, to);
 
+        double localMinorRate = minorCount / (double) coverage,
+                globalMinorRate = substitutionErrorMatrix.getRate(from, to),
+                readFractionForCalledMinors = minorCaller.getReadFractionForCalledMinors(from, to),
+                filteredReadFraction = minorCaller.getFilteredReadFraction(from, to);
+
         // Use global error rate and minor read fraction if not enough coverage / statistics for a given position
-        double minorRate = coverage < coverageThreshold || minorCount < minorCountThreshold ?
-                substitutionErrorMatrix.getRate(from, to) : minorCount / (double) coverage;
+        int useGlobal = coverage < coverageThreshold || minorCount < minorCountThreshold ? 1 : 0;
+        if (globalMinorRate == 0) {
+            globalMinorRate = minorCaller.getGlobalMinorRate(from, to);
+            useGlobal = 2;
+        }
+        double minorRate = useGlobal > 0 ? globalMinorRate : localMinorRate;
 
-        double fdr = minorCaller.computeFdr(from, to); // share of minors that are actually misidentified seq errors
+        // Share of minors that are misidentified sequencing errors
+        double fdr = minorCaller.computeFdr(from, to);
 
-        double errorRateBase = computeBaseErrorRateEstimate(minorRate,
-                fdr, minorCaller.getReadFractionForCalledMinors(from, to), lambda, cycles);
+        double errorRateBase = computeBaseErrorRateEstimate(minorRate, fdr, readFractionForCalledMinors);
 
-        // Expected share of minors that are not lost due to sampling
-        double recall = minorRate / errorRateBase / lambda / cycles * (1.0 + lambda);
+        // Share of minors to expect in the absence of sequencing errors due to sampling
+        double recall = Math.exp(-errorRateBase * minorCaller.getGeometricMeanMigSize());
 
         // Adjust for probability of error propagation
-        double firstCycleErrorRate = errorRateBase * propagateProb;
+        double majorErrorRate = errorRateBase / cycles / lambda * (1.0 + lambda) * propagateProb;
 
-        return new ErrorRateEstimate(firstCycleErrorRate,
-                errorRateBase, minorCount, fdr, recall);
+        return new ErrorRateEstimate(majorErrorRate,
+                errorRateBase, minorCount, fdr, recall,
+                globalMinorRate * coverage,
+                readFractionForCalledMinors, filteredReadFraction,
+                useGlobal);
     }
 }

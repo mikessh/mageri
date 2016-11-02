@@ -20,6 +20,8 @@ import com.antigenomics.mageri.core.mapping.MutationsTable;
 import com.antigenomics.mageri.core.mutations.Mutation;
 import com.antigenomics.mageri.core.mutations.Substitution;
 import com.milaboratory.core.sequence.mutations.Mutations;
+import com.milaboratory.core.sequence.nucleotide.NucleotideAlphabet;
+import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 
 import java.util.Arrays;
 
@@ -88,11 +90,12 @@ public class SubstitutionErrorMatrix implements ErrorModel {
     }
 
     public double getRate(int from, int to) {
-        return getRate(from, to, false);
+        return getRate(from, to, true);
     }
 
     public double getRate(int from, int to, boolean symmetric) {
-        return symmetric ? 0.5 * (innerMatrix[from][to] + innerMatrix[to][from]) : innerMatrix[from][to];
+        return symmetric ? 0.5 * (innerMatrix[from][to] + innerMatrix[~from & 3][~to & 3]) :
+                innerMatrix[from][to];
     }
 
     @Override

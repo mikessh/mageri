@@ -191,7 +191,8 @@ public class SAssembler extends Assembler<SConsensus, SMig> {
 
             for (byte l = 0; l < 4; l++) {
                 if (l != from &&
-                        minorCaller.callAndUpdate(from, l, exactPwm[l][k], exactPwm[from][k] + exactPwm[l][k])) {
+                        minorCaller.callAndUpdate(from, l, exactPwm[l][k],
+                                exactPwm[from][k] + exactPwm[l][k], (int) (pwm[from][k] + pwm[l][k]))) {
                     minors.add(Mutations.createSubstitution(k - consensusAndTrimmingInfo.goodSeqStart, from, l));
                 }
             }

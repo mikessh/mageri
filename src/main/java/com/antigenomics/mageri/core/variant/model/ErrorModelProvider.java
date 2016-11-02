@@ -53,7 +53,8 @@ public class ErrorModelProvider {
     public static String[] getErrorModelStatisticIDs(VariantCallerParameters parameters) {
         switch (parameters.getErrorModelType()) {
             case MinorBased:
-                return new String[]{"ER", "MC", "FDR", "RCL"};
+                return new String[]{"ER", "MCL",
+                        "FDR", "REC", "MCG", "RF"};
             default:
                 return new String[0];
         }
@@ -62,7 +63,10 @@ public class ErrorModelProvider {
     public static String[] getErrorModelStatisticNames(VariantCallerParameters parameters) {
         switch (parameters.getErrorModelType()) {
             case MinorBased:
-                return new String[]{"error.rate", "minor.count", "minor.fdr", "minor.recall"};
+                return new String[]{"error.rate", "minor.count.local", "minor.fdr",
+                        "minor.recall", "minor.count.global", "read.fraction.in.minors",
+                        "q.filtered.read.fraction",
+                        "global.est"};
             default:
                 return new String[0];
         }
@@ -72,9 +76,13 @@ public class ErrorModelProvider {
         switch (parameters.getErrorModelType()) {
             case MinorBased:
                 return new String[]{"PCR per cycle per base error rate estimate",
-                        "Number of detected PCR minors",
-                        "PCR minor detection FDR (H0=sequencing errors)",
-                        "PCR minor recall, assuming PCR minors are lost due to sampling and finite MIG size"};
+                        "Number of detected PCR minors for a given substitution and position",
+                        "PCR minor false discovery rate for sequencing error null hypothesis",
+                        "PCR minor recall in absence sequencing errors",
+                        "Total number of detected PCR minors for a given substitution",
+                        "Fraction of reads with PCR error within MIG",
+                        "Fraction of reads filtered by sequencing quality",
+                        "1 if global rates were used to estimate error rate, 0 otherwise"};
             default:
                 return new String[0];
         }

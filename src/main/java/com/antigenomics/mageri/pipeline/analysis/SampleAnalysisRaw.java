@@ -107,7 +107,7 @@ public class SampleAnalysisRaw extends SampleAnalysis {
 
         sout("Calling variants.", 1);
 
-        this.variantCaller = new VariantCaller(consensusAligner, DummyMinorCaller.INSTANCE,
+        this.variantCaller = new VariantCaller(consensusAligner, new DummyMinorCaller(),
                 parent.getPresets().getVariantCallerParameters());
 
         if (outputPrefix != null) {

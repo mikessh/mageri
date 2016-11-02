@@ -133,7 +133,8 @@ public final class MutationsTable implements Serializable {
     }
 
     public float getMeanCqs(int pos, int letterCode) {
-        return (float) qualitySum.getAt(pos, letterCode) / getMajorMigCount(pos, letterCode);
+        int majorMigCount = getMajorMigCount(pos, letterCode);
+        return majorMigCount > 0 ? (float) qualitySum.getAt(pos, letterCode) / majorMigCount : 0;
     }
 
     public float getMeanCqs(int pos) {

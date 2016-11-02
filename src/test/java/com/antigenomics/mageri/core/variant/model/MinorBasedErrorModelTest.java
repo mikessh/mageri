@@ -54,8 +54,7 @@ public class MinorBasedErrorModelTest {
         ConsensusAligner consensusAligner = new SConsensusAligner(aligner);
 
         VariantCallerParameters variantCallerParameters =
-                VariantCallerParameters.DEFAULT
-                        .withOrder(0).withCoverageThreshold(0).withModelMinorCountThreshold(0);
+                VariantCallerParameters.DEFAULT.withModelMinorCountThreshold(0);
 
         ModelMigGenerator modelMigGenerator = new ModelMigGenerator(variantCallerParameters,
                 reference, migSize);

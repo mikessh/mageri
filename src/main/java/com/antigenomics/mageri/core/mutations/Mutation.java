@@ -34,7 +34,9 @@ public abstract class Mutation implements Serializable {
 
     public void filter() {
         filtered = true;
-        parent.numberOfFiltered++;
+        if (parent != null) {
+            parent.numberOfFiltered++;
+        }
     }
 
     public boolean isFiltered() {

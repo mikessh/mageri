@@ -101,7 +101,7 @@ public class AssemblerMinorTest {
 
         SMig mig = new SMig(null, new NucleotideSequence("ATGC"), reads);
 
-        SAssembler assembler = new SAssembler(AssemblerParameters.DEFAULT, DummyMinorCaller.INSTANCE);
+        SAssembler assembler = new SAssembler(AssemblerParameters.DEFAULT, new DummyMinorCaller());
         SConsensus consensus = assembler.assemble(mig);
 
         Assert.assertEquals("Incorrect consensus sequence", cons, consensus.getConsensusSQPair().getSequence().toString());
@@ -177,7 +177,7 @@ public class AssemblerMinorTest {
         SMig mig = new SMig(null, new NucleotideSequence("ATGC"), reads);
 
         SAssembler assembler = new SAssembler(AssemblerParameters.TORRENT454.withGreedyExtend(true),
-                DummyMinorCaller.INSTANCE);
+                new DummyMinorCaller());
         SConsensus consensus = assembler.assemble(mig);
 
         Assert.assertEquals("Incorrect consensus sequence", cons, consensus.getConsensusSQPair().getSequence().toString());
@@ -221,10 +221,10 @@ public class AssemblerMinorTest {
         if (noIndel) {
             migGenerator.setMutationGenerator(MutationGenerator.NO_INDEL);
             migGenerator.setMaxRandomFlankSize(10);
-            assembler = new SAssembler(AssemblerParameters.DEFAULT, DummyMinorCaller.INSTANCE);
+            assembler = new SAssembler(AssemblerParameters.DEFAULT, new DummyMinorCaller());
         } else {
             migGenerator.setMaxRandomFlankSize(0);
-            assembler = new SAssembler(AssemblerParameters.TORRENT454, DummyMinorCaller.INSTANCE);
+            assembler = new SAssembler(AssemblerParameters.TORRENT454, new DummyMinorCaller());
         }
         RandomReferenceGenerator referenceGenerator = new RandomReferenceGenerator();
         SConsensus consensus;

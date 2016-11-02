@@ -32,10 +32,12 @@ public class PoissonTestMinorCaller extends MinorCaller<PoissonTestMinorCaller> 
     private final AssemblerParameters assemblerParameters;
     private final PreprocessorParameters preprocessorParameters;
     private final double seqErrorRate;
+    private final AtomicDouble logMigSize = new AtomicDouble();
+    private final AtomicInteger totalMigs = new AtomicInteger();
     private final AtomicInteger[][] m1 = new AtomicInteger[4][4],
             m = new AtomicInteger[4][4];
     private final AtomicLong[][] minorReadCountSumArr = new AtomicLong[4][4],
-            totalReadCountSumArr = new AtomicLong[4][4];
+            totalReadCountSumArr = new AtomicLong[4][4], totalReadCountSumArrNoQFilter = new AtomicLong[4][4];
     private final AtomicDouble[][] pValueSum = new AtomicDouble[4][4];
     private final List<CallResult> results = Collections.synchronizedList(new ArrayList<CallResult>());
 
@@ -44,7 +46,7 @@ public class PoissonTestMinorCaller extends MinorCaller<PoissonTestMinorCaller> 
         super("MinorCaller.PoissonTest");
         this.assemblerParameters = assemblerParameters;
         this.preprocessorParameters = preprocessorParameters;
-        this.seqErrorRate = Math.pow(10.0, -(double) preprocessorParameters.getGoodQualityThreshold() / 10.0);
+        this.seqErrorRate = Math.pow(10.0, -(double) preprocessorParameters.getGoodQualityThreshold() / 10.0) / 3.0;
 
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
@@ -53,15 +55,19 @@ public class PoissonTestMinorCaller extends MinorCaller<PoissonTestMinorCaller> 
                 this.pValueSum[i][j] = new AtomicDouble();
                 this.minorReadCountSumArr[i][j] = new AtomicLong();
                 this.totalReadCountSumArr[i][j] = new AtomicLong();
+                this.totalReadCountSumArrNoQFilter[i][j] = new AtomicLong();
             }
         }
     }
 
     @Override
-    boolean callAndUpdate(int from, int to, int k, int n) {
+    boolean callAndUpdate(int from, int to, int k, int n, int n0) {
         if (k == 0 || n < 4) {
             return false;
         }
+
+        totalMigs.incrementAndGet();
+        logMigSize.addAndGet(Math.log(n));
 
         boolean pass = false;
 
@@ -71,7 +77,7 @@ public class PoissonTestMinorCaller extends MinorCaller<PoissonTestMinorCaller> 
                     0.5 * Math.exp(k * Math.log(lambda) - lambda - Gamma.logGamma(k + 1));
 
             if (assemblerParameters.isMinorCallerDebug()) {
-                results.add(new CallResult(from, to, k, n, p));
+                results.add(new CallResult(from, to, k, n, n0, p));
             }
 
             pass = p < assemblerParameters.getPcrMinorTestPValue();
@@ -83,6 +89,7 @@ public class PoissonTestMinorCaller extends MinorCaller<PoissonTestMinorCaller> 
                 m1[from][to].incrementAndGet();
                 minorReadCountSumArr[from][to].addAndGet(k);
                 totalReadCountSumArr[from][to].addAndGet(n);
+                totalReadCountSumArrNoQFilter[from][to].addAndGet(n0);
             }
         } catch (MathException e) {
             e.printStackTrace();
@@ -94,28 +101,39 @@ public class PoissonTestMinorCaller extends MinorCaller<PoissonTestMinorCaller> 
     @Override
     PoissonTestMinorCaller combine(PoissonTestMinorCaller other) {
         PoissonTestMinorCaller poissonTestMinorCaller = new PoissonTestMinorCaller(this.assemblerParameters,
-                other.preprocessorParameters);
+                this.preprocessorParameters);
 
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
                 poissonTestMinorCaller.m1[i][j].addAndGet(this.getM1(i, j) + other.getM1(i, j));
                 poissonTestMinorCaller.m[i][j].addAndGet(this.getM(i, j) + other.getM(i, j));
                 poissonTestMinorCaller.pValueSum[i][j].addAndGet(this.getPValueSum(i, j) + other.getPValueSum(i, j));
-                poissonTestMinorCaller.minorReadCountSumArr[i][j].addAndGet(minorReadCountSumArr[i][j].get());
-                poissonTestMinorCaller.totalReadCountSumArr[i][j].addAndGet(totalReadCountSumArr[i][j].get());
+                poissonTestMinorCaller.minorReadCountSumArr[i][j].addAndGet(
+                        this.minorReadCountSumArr[i][j].get() + other.minorReadCountSumArr[i][j].get());
+                poissonTestMinorCaller.totalReadCountSumArr[i][j].addAndGet(
+                        this.totalReadCountSumArr[i][j].get() + other.totalReadCountSumArr[i][j].get());
+                poissonTestMinorCaller.totalReadCountSumArrNoQFilter[i][j].addAndGet(
+                        this.totalReadCountSumArrNoQFilter[i][j].get() + other.totalReadCountSumArrNoQFilter[i][j].get());
             }
         }
 
-        poissonTestMinorCaller.results.addAll(results);
+        poissonTestMinorCaller.results.addAll(this.results);
         poissonTestMinorCaller.results.addAll(other.results);
+
+        poissonTestMinorCaller.totalMigs.addAndGet(this.totalMigs.get() + other.totalMigs.get());
+        poissonTestMinorCaller.logMigSize.addAndGet(this.logMigSize.get() + other.logMigSize.get());
 
         return poissonTestMinorCaller;
     }
 
     @Override
     public double getReadFractionForCalledMinors(int from, int to) {
-        return Math.max(0,
-                minorReadCountSumArr[from][to].get() / (double) totalReadCountSumArr[from][to].get());
+        return minorReadCountSumArr[from][to].get() / (double) totalReadCountSumArr[from][to].get();
+    }
+
+    @Override
+    public double getFilteredReadFraction(int from, int to) {
+        return 1.0 - totalReadCountSumArr[from][to].get() / (double) totalReadCountSumArrNoQFilter[from][to].get();
     }
 
     @Override
@@ -134,6 +152,16 @@ public class PoissonTestMinorCaller extends MinorCaller<PoissonTestMinorCaller> 
                 assemblerParameters.getPcrMinorTestPValue() * Math.min(1.0, 2.0 * pavg) * mm / (double) mm1);
     }
 
+    @Override
+    public int getTotalMigs() {
+        return totalMigs.get();
+    }
+
+    @Override
+    public int getGeometricMeanMigSize() {
+        return (int) Math.exp(logMigSize.get() / getTotalMigs());
+    }
+
     private int getM(int from, int to) {
         return m[from][to].get();
     }
@@ -142,13 +170,25 @@ public class PoissonTestMinorCaller extends MinorCaller<PoissonTestMinorCaller> 
         return m1[from][to].get();
     }
 
+    @Override
+    public double getGlobalMinorRate(int from, int to) {
+        return getGlobalMinorRate(from, to, true);
+    }
+
+    public double getGlobalMinorRate(int from, int to, boolean symmetric) {
+        return symmetric ?
+                0.5 * (getM1(from, to) / getM(from, to) + getM1(~from & 3, ~to & 3) / getM(~from & 3, ~to & 3)) :
+                getM1(from, to) / getM(from, to);
+    }
+
     private double getPValueSum(int from, int to) {
         return pValueSum[from][to].get();
     }
 
     @Override
     public String getHeader() {
-        return assemblerParameters.isMinorCallerDebug() ? "from\tto\tk\tn\tp" : "from\tto\tm1\tm\tfdr";
+        return assemblerParameters.isMinorCallerDebug() ? "pos\tfrom\tto\tk\tn\tn0\tp" :
+                "from\tto\tm1\tm\tfdr\tgeom.mean.mig.size\ttotal";
     }
 
     @Override
@@ -157,13 +197,16 @@ public class PoissonTestMinorCaller extends MinorCaller<PoissonTestMinorCaller> 
 
         if (assemblerParameters.isMinorCallerDebug()) {
             for (CallResult result : results) {
-                sb.append(NucleotideAlphabet.INSTANCE.symbolFromCode((byte) result.from))
+                sb.append("\t")
+                        .append(NucleotideAlphabet.INSTANCE.symbolFromCode((byte) result.from))
                         .append("\t")
                         .append(NucleotideAlphabet.INSTANCE.symbolFromCode((byte) result.to))
                         .append("\t")
                         .append(result.k)
                         .append("\t")
                         .append(result.n)
+                        .append("\t")
+                        .append(result.n0)
                         .append("\t")
                         .append(result.p)
                         .append("\n");
@@ -180,6 +223,10 @@ public class PoissonTestMinorCaller extends MinorCaller<PoissonTestMinorCaller> 
                             .append(getM(i, j))
                             .append("\t")
                             .append(computeFdr(i, j))
+                            .append("\t")
+                            .append(getGeometricMeanMigSize())
+                            .append("\t")
+                            .append(getTotalMigs())
                             .append("\n");
                 }
             }
@@ -188,14 +235,15 @@ public class PoissonTestMinorCaller extends MinorCaller<PoissonTestMinorCaller> 
     }
 
     private static class CallResult {
-        final int from, to, k, n;
+        final int from, to, k, n, n0;
         final double p;
 
-        public CallResult(int from, int to, int k, int n, double p) {
+        public CallResult(int from, int to, int k, int n, int n0, double p) {
             this.from = from;
             this.to = to;
             this.k = k;
             this.n = n;
+            this.n0 = n0;
             this.p = p;
         }
     }

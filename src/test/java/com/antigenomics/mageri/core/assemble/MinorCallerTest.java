@@ -72,7 +72,7 @@ public class MinorCallerTest {
         double errorRateMean = 0;
         double meanTemplatesForTrueMinors = 0;
 
-        double expectedSeqErrors = migSize * Math.pow(10.0, -seqQual / 10.0);
+        double expectedSeqErrors = migSize * Math.pow(10.0, -seqQual / 10.0) / 3.0;
 
         for (int i = 0; i < nMigs * readLength; i++) {
             double erroneousTemplateFraction = 0;
@@ -100,8 +100,8 @@ public class MinorCallerTest {
 
             int sequencingErrorSize = (int) rnd.nextPoisson(expectedSeqErrors);
 
-            if (minorCaller.callAndUpdate(0, 0, Math.min(migSize, pcrErrorSize + sequencingErrorSize),
-                    migSize)) {
+            if (minorCaller.callAndUpdate(0, 0,
+                    Math.min(migSize, pcrErrorSize + sequencingErrorSize), migSize, migSize)) {
                 if (truePcrMinor) {
                     calledTruePCRMinors++;
                     meanTemplatesForTrueMinors += 1.0 / erroneousTemplateFraction;
@@ -126,8 +126,8 @@ public class MinorCallerTest {
 
         double minorRate = (calledTruePCRMinors + calledFalsePCRMinors) / (double) (nMigs * readLength);
         double errorRateEst = MinorBasedErrorModel.computeBaseErrorRateEstimate(minorRate,
-                minorCaller.computeFdr(0, 0), minorCaller.getReadFractionForCalledMinors(0, 0),
-                lambda, nCycles);
+                minorCaller.computeFdr(0, 0), minorCaller.getReadFractionForCalledMinors(0, 0)) /
+                nCycles / lambda * (1.0 + lambda);
         System.out.println("Error rate est = " + errorRateEst);
         Assert.assertTrue("No more than order of magnitude difference between expected PCR " +
                         "error rate and its estimate",

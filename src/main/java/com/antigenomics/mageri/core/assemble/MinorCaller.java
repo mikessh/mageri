@@ -25,9 +25,17 @@ public abstract class MinorCaller<M extends MinorCaller> extends PipelineBlock {
 
     public abstract double computeFdr(int from, int to);
 
-    abstract boolean callAndUpdate(int from, int to, int k, int n);
+    abstract boolean callAndUpdate(int from, int to, int k, int n, int n0);
 
     abstract M combine(M other);
 
     public abstract double getReadFractionForCalledMinors(int from, int to);
+
+    public abstract double getFilteredReadFraction(int from, int to);
+
+    public abstract double getGlobalMinorRate(int from, int to);
+
+    public abstract int getTotalMigs();
+
+    public abstract int getGeometricMeanMigSize();
 }
