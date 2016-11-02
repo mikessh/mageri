@@ -30,7 +30,7 @@ public final class VcfUtil {
             BLANK_FIELD = ".",
             INFO_HEADER =
                     "##INFO=<ID=DP,Number=1,Type=Integer,Description=\"Total Depth\">\n" +
-                            "##INFO=<ID=AF,Number=.,Type=Float,Description=\"Allele Frequency\">\n" +
+                            "##INFO=<ID=AF,Number=1,Type=Float,Description=\"Allele Frequency\">\n" +
                             "##INFO=<ID=AA,Number=1,Type=String,Description=\"Ancestral Allele\">\n" +
                             "##INFO=<ID=CQ,Number=1,Type=Integer,Description=\"Assembly quality\">\n" +
                             "##INFO=<ID=RI,Number=1,Type=String,Description=\"Reference id\">",

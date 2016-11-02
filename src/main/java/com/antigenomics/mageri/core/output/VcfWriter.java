@@ -62,7 +62,7 @@ public class VcfWriter extends RecordWriter<VcfRecord, VariantCaller> {
         for (int i = 0; i < errorModelStatisticIds.length; i++) {
             stringBuilder.append("##INFO=<ID=")
                     .append(errorModelStatisticIds[i])
-                    .append(",Number=.,Type=Float,Description=\"")
+                    .append(",Number=1,Type=Float,Description=\"")
                     .append(errorModelStatisticDescriptions[i])
                     .append("\">\n");
         }
