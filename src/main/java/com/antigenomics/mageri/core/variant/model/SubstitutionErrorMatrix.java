@@ -123,7 +123,6 @@ public class SubstitutionErrorMatrix implements ErrorModel {
         SubstitutionErrorMatrix that = (SubstitutionErrorMatrix) o;
 
         return Arrays.deepEquals(innerMatrix, that.innerMatrix);
-
     }
 
     @Override

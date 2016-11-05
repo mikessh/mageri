@@ -82,7 +82,7 @@ public class ErrorModelProvider {
                         "Total number of detected PCR minors for a given substitution",
                         "Fraction of reads with PCR error within MIG",
                         "Fraction of reads filtered by sequencing quality",
-                        "1 if global rates were used to estimate error rate, 0 otherwise"};
+                        "2 for global, 1 for reference-wide and 0 for local (point) error rate estimate"};
             default:
                 return new String[0];
         }

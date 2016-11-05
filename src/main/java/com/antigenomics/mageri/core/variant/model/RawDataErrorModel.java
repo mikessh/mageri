@@ -39,6 +39,6 @@ public class RawDataErrorModel implements ErrorModel {
     public ErrorRateEstimate computeErrorRate(int pos, int from, int to) {
         double cqs = mutationsTable.getMeanCqs(pos, to);
 
-        return new ErrorRateEstimate(Math.pow(10.0, -cqs / 10.0));
+        return new ErrorRateEstimate(Math.pow(10.0, -cqs / 10.0) / 3);
     }
 }
