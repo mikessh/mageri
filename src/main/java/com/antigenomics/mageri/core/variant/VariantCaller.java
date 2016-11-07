@@ -29,14 +29,15 @@ import com.antigenomics.mageri.core.variant.filter.SingletonFilter;
 import com.antigenomics.mageri.core.variant.filter.VariantFilter;
 import com.antigenomics.mageri.core.variant.model.ErrorModel;
 import com.antigenomics.mageri.core.variant.model.ErrorModelProvider;
+import com.antigenomics.mageri.core.variant.model.ErrorModelType;
 import com.antigenomics.mageri.core.variant.model.ErrorRateEstimate;
+import com.antigenomics.mageri.misc.ThirdPartyMath;
 import com.milaboratory.core.sequence.mutations.Mutations;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequenceBuilder;
 import com.antigenomics.mageri.core.genomic.ReferenceLibrary;
 import com.antigenomics.mageri.core.mutations.Mutation;
 import com.antigenomics.mageri.core.variant.filter.CoverageFilter;
-import htsjdk.variant.vcf.VCFUtils;
 import org.apache.commons.math.MathException;
 import org.apache.commons.math.distribution.BinomialDistribution;
 import org.apache.commons.math.distribution.BinomialDistributionImpl;
@@ -94,7 +95,7 @@ public class VariantCaller extends PipelineBlock {
 
                         ErrorRateEstimate errorRateEstimate = errorModel.computeErrorRate(mutation);
                         double score = -10 * getLog10PValue(majorCount, coverage,
-                                errorRateEstimate.getErrorRate());
+                                errorRateEstimate.getErrorRate(), variantCallerParameters);
 
                         NucleotideSequenceBuilder nsb = new NucleotideSequenceBuilder(1);
                         nsb.setCode(0, mutationsTable.getAncestralBase(pos));
@@ -167,11 +168,7 @@ public class VariantCaller extends PipelineBlock {
         Collections.sort(variants);
     }
 
-    private static double getLog10PValue(int majorCount, int total, double errorRate) {
-        if (majorCount == 0) {
-            return 0;
-        }
-
+    private static double getLog10PValueBinomial(int majorCount, int total, double errorRate) {
         BinomialDistribution binomialDistribution = new BinomialDistributionImpl(total,
                 errorRate);
 
@@ -184,7 +181,42 @@ public class VariantCaller extends PipelineBlock {
             return Double.NaN;
         }
 
-        return Double.isInfinite(score) ? VcfUtil.MAX_QUAL : score;
+        return score;
+    }
+
+    private static double getLog10PValueNegativeBinomial(int majorCount, int total, double errorRate) {
+        errorRate *= total;
+
+        // Estimate the parameters of distribution of real error rate (lambda) based on errorRate estimate
+
+        // Mean and variance of lambda from linear fitting
+        double meanA = 5.02, meanB = 0.35,
+                varA = 27.67, varB = 4.09;
+
+        double mean = meanA + meanB * errorRate, var = varA + varB * errorRate;
+
+        // Alpha and beta parameters of Gamma distribution
+        double beta = mean / var, alpha = mean * beta;
+
+        // Convert them to Negative Binomial distribution parameters
+        double p = beta / (1.0 + beta);
+        int r = (int) alpha;
+
+        return Math.log10(1.0 - ThirdPartyMath.negativeBinomialCdf(majorCount, r, p) +
+                0.5 * ThirdPartyMath.negativeBinomialPdf(majorCount, r, p));
+    }
+
+    private static double getLog10PValue(int majorCount, int total, double errorRate,
+                                         VariantCallerParameters variantCallerParameters) {
+        if (majorCount == 0) {
+            return 0;
+        }
+
+        double score = variantCallerParameters.getErrorModelType() == ErrorModelType.MinorBased ?
+                getLog10PValueNegativeBinomial(majorCount, total, errorRate) :
+                getLog10PValueBinomial(majorCount, total, errorRate);
+
+        return Double.isInfinite(score) || Double.isNaN(score) ? VcfUtil.MAX_QUAL : score;
     }
 
     public ReferenceLibrary getReferenceLibrary() {
