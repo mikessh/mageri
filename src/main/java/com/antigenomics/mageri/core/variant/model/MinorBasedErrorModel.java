@@ -130,6 +130,7 @@ public class MinorBasedErrorModel implements ErrorModel {
                 errorRateBase, minorCount, fdr, recall,
                 globalMinorRate * coverage,
                 readFractionForCalledMinors, filteredReadFraction,
+                minorCaller.getGeometricMeanMigSize(),
                 useGlobal);
     }
 }

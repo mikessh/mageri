@@ -54,7 +54,8 @@ public class ErrorModelProvider {
         switch (parameters.getErrorModelType()) {
             case MinorBased:
                 return new String[]{"ER", "MCL",
-                        "FDR", "REC", "MCG", "RF"};
+                        "FDR", "REC", "MCG", "MS",
+                        "RF"};
             default:
                 return new String[0];
         }
@@ -65,7 +66,7 @@ public class ErrorModelProvider {
             case MinorBased:
                 return new String[]{"error.rate", "minor.count.local", "minor.fdr",
                         "minor.recall", "minor.count.global", "read.fraction.in.minors",
-                        "q.filtered.read.fraction",
+                        "q.filtered.read.fraction", "mig.size",
                         "global.est"};
             default:
                 return new String[0];
@@ -82,6 +83,7 @@ public class ErrorModelProvider {
                         "Total number of detected PCR minors for a given substitution",
                         "Fraction of reads with PCR error within MIG",
                         "Fraction of reads filtered by sequencing quality",
+                        "Geometric mean of MIG size",
                         "2 for global, 1 for reference-wide and 0 for local (point) error rate estimate"};
             default:
                 return new String[0];
