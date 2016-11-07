@@ -31,7 +31,7 @@ import com.antigenomics.mageri.core.variant.model.ErrorModel;
 import com.antigenomics.mageri.core.variant.model.ErrorModelProvider;
 import com.antigenomics.mageri.core.variant.model.ErrorModelType;
 import com.antigenomics.mageri.core.variant.model.ErrorRateEstimate;
-import com.antigenomics.mageri.misc.ThirdPartyMath;
+import com.antigenomics.mageri.misc.AuxiliaryStats;
 import com.milaboratory.core.sequence.mutations.Mutations;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequenceBuilder;
@@ -94,7 +94,7 @@ public class VariantCaller extends PipelineBlock {
                                 coverage = mutationsTable.getMigCoverage(pos);
 
                         ErrorRateEstimate errorRateEstimate = errorModel.computeErrorRate(mutation);
-                        double score = -10 * getLog10PValue(majorCount, coverage,
+                        double score = getQScore(majorCount, coverage,
                                 errorRateEstimate.getErrorRate(), variantCallerParameters);
 
                         NucleotideSequenceBuilder nsb = new NucleotideSequenceBuilder(1);
@@ -115,7 +115,7 @@ public class VariantCaller extends PipelineBlock {
                         variant = new Variant(reference,
                                 mutation, rawCount,
                                 mutationsTable.getMigCoverage(pos),
-                                VcfUtil.MAX_QUAL, mutationsTable.getMeanCqs(pos),
+                                VcfUtil.UNDEF_QUAL, mutationsTable.getMeanCqs(pos),
                                 new NucleotideSequence(""), true,
                                 ErrorRateEstimate.createDummy(errorModelStatisticCount));
                     }
@@ -143,7 +143,7 @@ public class VariantCaller extends PipelineBlock {
                                     Variant variant = new Variant(reference,
                                             mutation, 0,
                                             mutationsTable.getMigCoverage(pos),
-                                            VcfUtil.MAX_QUAL, mutationsTable.getMeanCqs(pos, to),
+                                            VcfUtil.UNDEF_QUAL, mutationsTable.getMeanCqs(pos, to),
                                             nsb.create(), mutationsTable.hasReferenceBase(pos),
                                             errorRateEstimate);
 
@@ -168,23 +168,23 @@ public class VariantCaller extends PipelineBlock {
         Collections.sort(variants);
     }
 
-    private static double getLog10PValueBinomial(int majorCount, int total, double errorRate) {
+    private static double getBinomialQScore(int majorCount, int total, double errorRate) {
         BinomialDistribution binomialDistribution = new BinomialDistributionImpl(total,
                 errorRate);
 
         double score;
         try {
-            score = Math.log10(1.0 - binomialDistribution.cumulativeProbability(majorCount) +
+            score = -10 * Math.log10(1.0 - binomialDistribution.cumulativeProbability(majorCount) +
                     0.5 * binomialDistribution.probability(majorCount));
         } catch (MathException e) {
             e.printStackTrace();
-            return Double.NaN;
+            return VcfUtil.UNDEF_QUAL;
         }
 
         return score;
     }
 
-    private static double getLog10PValueNegativeBinomial(int majorCount, int total, double errorRate) {
+    private static double getNegativeBinomialQScore(int majorCount, int total, double errorRate) {
         errorRate *= total;
 
         // Estimate the parameters of distribution of real error rate (lambda) based on errorRate estimate
@@ -200,23 +200,31 @@ public class VariantCaller extends PipelineBlock {
 
         // Convert them to Negative Binomial distribution parameters
         double p = beta / (1.0 + beta);
-        int r = (int) alpha;
+        int r = (int) Math.round(alpha);
 
-        return Math.log10(1.0 - ThirdPartyMath.negativeBinomialCdf(majorCount, r, p) +
-                0.5 * ThirdPartyMath.negativeBinomialPdf(majorCount, r, p));
+        if (r == 0) {
+            return VcfUtil.UNDEF_QUAL;
+        }
+
+        return -10 * Math.log10(1.0 - AuxiliaryStats.negativeBinomialCdf(majorCount, r, p) +
+                0.5 * AuxiliaryStats.negativeBinomialPdf(majorCount, r, p));
     }
 
-    private static double getLog10PValue(int majorCount, int total, double errorRate,
-                                         VariantCallerParameters variantCallerParameters) {
+    private static double getQScore(int majorCount, int total, double errorRate,
+                                    VariantCallerParameters variantCallerParameters) {
         if (majorCount == 0) {
             return 0;
         }
 
-        double score = variantCallerParameters.getErrorModelType() == ErrorModelType.MinorBased ?
-                getLog10PValueNegativeBinomial(majorCount, total, errorRate) :
-                getLog10PValueBinomial(majorCount, total, errorRate);
+        if (Double.isNaN(errorRate)) {
+            return VcfUtil.UNDEF_QUAL;
+        }
 
-        return Double.isInfinite(score) || Double.isNaN(score) ? VcfUtil.MAX_QUAL : score;
+        double score = variantCallerParameters.getErrorModelType() == ErrorModelType.MinorBased ?
+                getNegativeBinomialQScore(majorCount, total, errorRate) :
+                getBinomialQScore(majorCount, total, errorRate);
+
+        return Double.isInfinite(score) ? VcfUtil.MAX_QUAL : score;
     }
 
     public ReferenceLibrary getReferenceLibrary() {

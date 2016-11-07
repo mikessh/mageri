@@ -53,7 +53,7 @@ public class VcfRecord implements Record {
     public String toString() {
         return chromosome + "\t" + position + "\t" + id + "\t" +
                 referenceBase + "\t" + alternativeBase + "\t" +
-                quality + "\t" + filterString + "\t" +
+                (quality == VcfUtil.UNDEF_QUAL ? "." : quality) + "\t" + filterString + "\t" +
                 infoString + "\t" + formatKeyString + "\t" + formatValueString;
     }
 }
