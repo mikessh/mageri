@@ -20,6 +20,7 @@ import com.antigenomics.mageri.ComplexRandomTests;
 import com.antigenomics.mageri.core.assemble.Assembler;
 import com.antigenomics.mageri.core.mapping.*;
 import com.antigenomics.mageri.core.mutations.Substitution;
+import com.antigenomics.mageri.core.output.VcfUtil;
 import com.antigenomics.mageri.generators.*;
 import com.antigenomics.mageri.PercentRangeAssertion;
 import com.antigenomics.mageri.core.Mig;
@@ -40,10 +41,10 @@ public class VariantCallerTest {
     public void skewedDistributionTest() {
         System.out.println("Testing identification of somatic mutations and hot-spot errors " +
                 "for various hot spot models");
-        int qualThreshold = 5;
+        int qualThreshold = 10;
         String setting = "Skewed, Q" + qualThreshold;
 
-        test(0.5, 1e-3,
+        test(0.4, 1e-2,
                 MutationGenerator.NO_INDEL_SKEWED, 1e-3,
                 qualThreshold,
                 PercentRangeAssertion.createLowerBound("Specificity", setting, 90),
@@ -56,7 +57,7 @@ public class VariantCallerTest {
                      int qualThreshold,
                      PercentRangeAssertion specificityRange,
                      PercentRangeAssertion sensitivityRange) {
-        int nMigs = 30000, migSize = 100;
+        int nMigs = 100000, migSize = 10;
 
         RandomReferenceGenerator randomReferenceGenerator = new RandomReferenceGenerator();
         randomReferenceGenerator.setReferenceSizeMin(100);
@@ -98,6 +99,12 @@ public class VariantCallerTest {
                 int code = substitution.getCode();
 
                 double qual = variant.getQual();
+
+                if (qual == VcfUtil.UNDEF_QUAL) {
+                    continue;
+                }
+
+
                 boolean passQual = qual >= qualThreshold;
                 double knownFreq = modelMigGenerator.getSomaticFreq(code),
                         varFreq = variant.getAlleleFrequency();
@@ -134,10 +141,10 @@ public class VariantCallerTest {
         System.out.println("Found " + totalSomatic + " somatic and " + totalErrors + " erroneous variants.");
         System.out.println("Mean frequency is " + meanSomaticFreq + " and " + meanErrorFreq + " for somatic and erroneous variants.");
         System.out.println("Mean quality is " + meanSomaticQ + " and " + meanErrorQ + " for somatic and erroneous variants.");
-        System.out.println("Mean difference between observed and expected frequency of somatic mutaitons is " + meanSomaticFreqDiff + " variants.");
+        System.out.println("Mean difference between observed and expected frequency of somatic variants is " + meanSomaticFreqDiff + ".");
 
-        Assert.assertTrue("Mean somatic quality is more than an order of magnitude more than erroneous quality.",
-                meanSomaticQ > 10 * meanErrorQ);
+        Assert.assertTrue("Mean somatic quality is more than 5 times more than erroneous quality.",
+                meanSomaticQ >= 5 * meanErrorQ);
 
         specificityRange.assertInRange(tn, fp + tn);
         sensitivityRange.assertInRange(tp, tp + fn);

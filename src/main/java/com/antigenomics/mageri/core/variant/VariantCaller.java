@@ -184,30 +184,23 @@ public class VariantCaller extends PipelineBlock {
         return score;
     }
 
-    private static double getNegativeBinomialQScore(int majorCount, int total, double errorRate) {
-        errorRate *= total;
+    private static double getCompoundQScore(int majorCount, int total, double errorRate,
+                                            int countThreshold, double modelSD) {
+        if (majorCount <= countThreshold) {
+            double m = errorRate * Math.exp(modelSD * modelSD / 2),
+                    v = errorRate * errorRate * Math.exp(modelSD * modelSD) * (Math.exp(modelSD * modelSD) - 1),
+                    alpha = m * (m * (1 - m) / v - 1), beta = (1 - m) * (m * (1 - m) / v - 1);
 
-        // Estimate the parameters of distribution of real error rate (lambda) based on errorRate estimate
+            if (alpha == 0 || beta == 0) {
+                return VcfUtil.UNDEF_QUAL;
+            }
 
-        // Mean and variance of lambda from linear fitting
-        double meanA = 5.02, meanB = 0.35,
-                varA = 27.67, varB = 4.09;
-
-        double mean = meanA + meanB * errorRate, var = varA + varB * errorRate;
-
-        // Alpha and beta parameters of Gamma distribution
-        double beta = mean / var, alpha = mean * beta;
-
-        // Convert them to Negative Binomial distribution parameters
-        double p = beta / (1.0 + beta);
-        int r = (int) Math.round(alpha);
-
-        if (r == 0) {
-            return VcfUtil.UNDEF_QUAL;
+            return -10 * Math.log10(1.0 - AuxiliaryStats.betaBinomialCdf(majorCount, total, alpha, beta) +
+                    0.5 * AuxiliaryStats.betaBinomialCdf(majorCount, total, alpha, beta));
+        } else {
+            return -10 * Math.log10(1.0 - AuxiliaryStats.normalCdf(Math.log10(majorCount / (double) total),
+                    Math.log10(errorRate), modelSD));
         }
-
-        return -10 * Math.log10(1.0 - AuxiliaryStats.negativeBinomialCdf(majorCount, r, p) +
-                0.5 * AuxiliaryStats.negativeBinomialPdf(majorCount, r, p));
     }
 
     private static double getQScore(int majorCount, int total, double errorRate,
@@ -216,12 +209,14 @@ public class VariantCaller extends PipelineBlock {
             return 0;
         }
 
-        if (Double.isNaN(errorRate)) {
+        if (Double.isNaN(errorRate) || errorRate == 0) {
             return VcfUtil.UNDEF_QUAL;
         }
 
         double score = variantCallerParameters.getErrorModelType() == ErrorModelType.MinorBased ?
-                getNegativeBinomialQScore(majorCount, total, errorRate) :
+                getCompoundQScore(majorCount, total, errorRate,
+                        variantCallerParameters.getCompoundQScoreThreshold(),
+                        variantCallerParameters.getCompoundQScoreSD()) :
                 getBinomialQScore(majorCount, total, errorRate);
 
         return Double.isInfinite(score) ? VcfUtil.MAX_QUAL : score;
