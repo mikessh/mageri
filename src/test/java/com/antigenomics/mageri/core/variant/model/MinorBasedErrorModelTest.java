@@ -83,7 +83,7 @@ public class MinorBasedErrorModelTest {
                             ". Error rate expected = " + errorRateExp + ", estimated = " + errorRateEst);
                     if (errorRateExp < 1e-6) {
                         Assert.assertTrue("Small error rate in absence of errors",
-                                errorRateEst < 5e-6);
+                                errorRateEst < 1e-5);
                     } else {
                         Assert.assertTrue("No more than order of magnitude difference between expected PCR " +
                                         "error rate and its estimate",
