@@ -85,7 +85,7 @@ public class AlignerTest {
         }
 
         PercentRangeAssertion.createLowerBound("MAPQ threshold filtered filtering", "Aligner false positive test", 95).assertInRange(nMapqFitlered, nAligned);
-        PercentRangeAssertion.createLowerBound("Alignment evaluator filtering", "Aligner false positive test", 95).assertInRange(nEvaluatorFiltered, nAligned);
+        PercentRangeAssertion.createLowerBound("Alignment evaluator filtering", "Aligner false positive test", 90).assertInRange(nEvaluatorFiltered, nAligned);
     }
 
     @Test
