@@ -87,8 +87,10 @@ public class MinorBasedErrorModel implements ErrorModel {
     }
 
     public static double computeBaseErrorRateEstimate(double minorRate, double fdr,
-                                                      double readFractionEstForCalledMinors) {
-        return minorRate * (1.0 - fdr) * readFractionEstForCalledMinors;
+                                                      double readFractionEstForCalledMinors,
+                                                      double geomMeanMigSize) {
+        minorRate *= (1.0 - fdr);
+        return minorRate * (readFractionEstForCalledMinors + 1.0 / geomMeanMigSize);
     }
 
     @Override
@@ -118,10 +120,11 @@ public class MinorBasedErrorModel implements ErrorModel {
         // Share of minors that are misidentified sequencing errors
         double fdr = minorCaller.computeFdr(from, to);
 
-        double errorRateBase = computeBaseErrorRateEstimate(minorRate, fdr, readFractionForCalledMinors);
+        double errorRateBase = computeBaseErrorRateEstimate(minorRate, fdr,
+                readFractionForCalledMinors, minorCaller.getGeometricMeanMigSize());
 
         // Share of minors to expect in the absence of sequencing errors due to sampling
-        double recall = Math.exp(-errorRateBase * minorCaller.getGeometricMeanMigSize());
+        double recall = 1.0 - Math.exp(-errorRateBase * minorCaller.getGeometricMeanMigSize());
 
         // Adjust for probability of error propagation
         double majorErrorRate = errorRateBase / cycles / lambda * (1.0 + lambda) * propagateProb;

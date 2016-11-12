@@ -40,11 +40,11 @@ public class MinorBasedErrorModelTest {
     @Test
     @Category(ComplexRandomTests.class)
     public void test() {
-        int nMigs = 30000, migSize = 100;
+        int nMigs = 20000, migSize = 100;
 
         RandomReferenceGenerator randomReferenceGenerator = new RandomReferenceGenerator();
-        randomReferenceGenerator.setReferenceSizeMin(100);
-        randomReferenceGenerator.setReferenceSizeMax(100);
+        randomReferenceGenerator.setReferenceSizeMin(50);
+        randomReferenceGenerator.setReferenceSizeMax(50);
 
         ReferenceLibrary referenceLibrary = randomReferenceGenerator.nextReferenceLibrary(1);
         Reference reference = referenceLibrary.getAt(0);

@@ -37,5 +37,5 @@ public abstract class MinorCaller<M extends MinorCaller> extends PipelineBlock {
 
     public abstract int getTotalMigs();
 
-    public abstract int getGeometricMeanMigSize();
+    public abstract double getGeometricMeanMigSize();
 }

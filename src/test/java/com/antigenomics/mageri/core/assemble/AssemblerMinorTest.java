@@ -180,7 +180,11 @@ public class AssemblerMinorTest {
                 new DummyMinorCaller());
         SConsensus consensus = assembler.assemble(mig);
 
-        Assert.assertEquals("Incorrect consensus sequence", cons, consensus.getConsensusSQPair().getSequence().toString());
+        System.out.println(cons);
+        System.out.println(consensus.getConsensusSQPair().getSequence());
+
+        Assert.assertEquals("Incorrect consensus sequence", cons,
+                consensus.getConsensusSQPair().getSequence().toString());
 
         System.out.println("Expected minors:");
         for (int minor : minors) {

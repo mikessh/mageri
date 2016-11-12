@@ -126,7 +126,7 @@ public class MinorCallerTest {
 
         double minorRate = (calledTruePCRMinors + calledFalsePCRMinors) / (double) (nMigs * readLength);
         double errorRateEst = MinorBasedErrorModel.computeBaseErrorRateEstimate(minorRate,
-                minorCaller.computeFdr(0, 0), minorCaller.getReadFractionForCalledMinors(0, 0)) /
+                minorCaller.computeFdr(0, 0), minorCaller.getReadFractionForCalledMinors(0, 0), migSize) /
                 nCycles / lambda * (1.0 + lambda);
         System.out.println("Error rate est = " + errorRateEst);
         Assert.assertTrue("No more than order of magnitude difference between expected PCR " +

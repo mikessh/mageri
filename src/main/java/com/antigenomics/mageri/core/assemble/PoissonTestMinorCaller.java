@@ -158,8 +158,8 @@ public class PoissonTestMinorCaller extends MinorCaller<PoissonTestMinorCaller> 
     }
 
     @Override
-    public int getGeometricMeanMigSize() {
-        return (int) Math.exp(logMigSize.get() / getTotalMigs());
+    public double getGeometricMeanMigSize() {
+        return Math.exp(logMigSize.get() / getTotalMigs());
     }
 
     private int getM(int from, int to) {

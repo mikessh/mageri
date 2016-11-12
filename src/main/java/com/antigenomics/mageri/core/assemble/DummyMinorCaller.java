@@ -81,7 +81,7 @@ public class DummyMinorCaller extends MinorCaller<DummyMinorCaller> {
     }
 
     @Override
-    public int getGeometricMeanMigSize() {
+    public double getGeometricMeanMigSize() {
         return (int) Math.exp(logMigSize.get() / getTotalMigs());
     }
 }
