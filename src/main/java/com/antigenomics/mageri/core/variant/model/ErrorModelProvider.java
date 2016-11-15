@@ -28,7 +28,8 @@ public class ErrorModelProvider {
                 return new MinorBasedErrorModel(parameters.getModelOrder(),
                         parameters.getModelCycles(), parameters.getModelEfficiency(),
                         parameters.getModelCoverageThreshold(), parameters.getModelMinorCountThreshold(),
-                        mutationsTable, minorCaller);
+                        mutationsTable,
+                        minorCaller);
             case RawData:
                 return new RawDataErrorModel(mutationsTable);
             case Custom:
@@ -84,7 +85,7 @@ public class ErrorModelProvider {
                         "Fraction of reads with PCR error within MIG",
                         "Fraction of reads filtered by sequencing quality",
                         "Geometric mean of MIG size",
-                        "2 for global, 1 for reference-wide and 0 for local (point) error rate estimate"};
+                        "1 for global (substitution type) and 0 for local (point) error rate estimate"};
             default:
                 return new String[0];
         }

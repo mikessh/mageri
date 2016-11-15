@@ -27,10 +27,7 @@ import com.antigenomics.mageri.core.output.VcfUtil;
 import com.antigenomics.mageri.core.variant.filter.QualFilter;
 import com.antigenomics.mageri.core.variant.filter.SingletonFilter;
 import com.antigenomics.mageri.core.variant.filter.VariantFilter;
-import com.antigenomics.mageri.core.variant.model.ErrorModel;
-import com.antigenomics.mageri.core.variant.model.ErrorModelProvider;
-import com.antigenomics.mageri.core.variant.model.ErrorModelType;
-import com.antigenomics.mageri.core.variant.model.ErrorRateEstimate;
+import com.antigenomics.mageri.core.variant.model.*;
 import com.antigenomics.mageri.misc.AuxiliaryStats;
 import com.milaboratory.core.sequence.mutations.Mutations;
 import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
@@ -38,6 +35,8 @@ import com.milaboratory.core.sequence.nucleotide.NucleotideSequenceBuilder;
 import com.antigenomics.mageri.core.genomic.ReferenceLibrary;
 import com.antigenomics.mageri.core.mutations.Mutation;
 import com.antigenomics.mageri.core.variant.filter.CoverageFilter;
+import org.apache.commons.collections.ListUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.math.MathException;
 import org.apache.commons.math.distribution.BinomialDistribution;
 import org.apache.commons.math.distribution.BinomialDistributionImpl;
@@ -168,7 +167,7 @@ public class VariantCaller extends PipelineBlock {
         Collections.sort(variants);
     }
 
-    private static double getBinomialQScore(int majorCount, int total, double errorRate) {
+    static double getBinomialQScore(int majorCount, int total, double errorRate) {
         BinomialDistribution binomialDistribution = new BinomialDistributionImpl(total,
                 errorRate);
 
@@ -184,27 +183,27 @@ public class VariantCaller extends PipelineBlock {
         return score;
     }
 
-    private static double getCompoundQScore(int majorCount, int total, double errorRate,
-                                            int countThreshold, double modelSD) {
-        if (majorCount <= countThreshold) {
-            double m = errorRate * Math.exp(modelSD * modelSD / 2),
-                    v = errorRate * errorRate * Math.exp(modelSD * modelSD) * (Math.exp(modelSD * modelSD) - 1),
-                    alpha = m * (m * (1 - m) / v - 1), beta = (1 - m) * (m * (1 - m) / v - 1);
-
-            if (alpha == 0 || beta == 0) {
-                return VcfUtil.UNDEF_QUAL;
-            }
-
-            return -10 * Math.log10(1.0 - AuxiliaryStats.betaBinomialCdf(majorCount, total, alpha, beta) +
-                    0.5 * AuxiliaryStats.betaBinomialCdf(majorCount, total, alpha, beta));
-        } else {
-            return -10 * Math.log10(1.0 - AuxiliaryStats.normalCdf(Math.log10(majorCount / (double) total),
-                    Math.log10(errorRate), modelSD));
-        }
+    static double getNegBinomialQScore(int majorCount, int total, double errorRate,
+                                       VariantCallerParameters variantCallerParameters) {
+        return getNegBinomialQScore(majorCount, total, errorRate,
+                variantCallerParameters.getCompoundQScoreMu(),
+                variantCallerParameters.getCompoundQScoreSD());
     }
 
-    private static double getQScore(int majorCount, int total, double errorRate,
-                                    VariantCallerParameters variantCallerParameters) {
+    static double getNegBinomialQScore(int majorCount, int total, double errorRate,
+                                       double modelMu, double modelSD) {
+        double r = 1.0 / (Math.exp(modelSD * modelSD) - 1),
+                p = 1 / (1 + r / Math.exp(modelMu + modelSD * modelSD / 2) / errorRate / total);
+
+        if (r <= 0 || p >= 1 || p <= 0) {
+            return VcfUtil.UNDEF_QUAL;
+        }
+
+        return -10 * Math.log10(1.0 - AuxiliaryStats.negativeBinomialCdf(majorCount, r, p));
+    }
+
+    static double getQScore(int majorCount, int total, double errorRate,
+                            VariantCallerParameters variantCallerParameters) {
         if (majorCount == 0) {
             return 0;
         }
@@ -214,9 +213,7 @@ public class VariantCaller extends PipelineBlock {
         }
 
         double score = variantCallerParameters.getErrorModelType() == ErrorModelType.MinorBased ?
-                getCompoundQScore(majorCount, total, errorRate,
-                        variantCallerParameters.getCompoundQScoreThreshold(),
-                        variantCallerParameters.getCompoundQScoreSD()) :
+                getNegBinomialQScore(majorCount, total, errorRate, variantCallerParameters) :
                 getBinomialQScore(majorCount, total, errorRate);
 
         return Double.isInfinite(score) ? VcfUtil.MAX_QUAL : score;

@@ -27,7 +27,7 @@ import static org.apache.commons.math3.util.CombinatoricsUtils.binomialCoefficie
 public class AuxiliaryStats {
     private static final double SQRT2 = FastMath.sqrt(2.0);
 
-    public static double negativeBinomialCdf(int k, int r, double p) {
+    public static double negativeBinomialCdf(int k, double r, double p) {
         return 1.0 - regularizedBeta(p, k + 1, r);
     }
 
@@ -37,7 +37,8 @@ public class AuxiliaryStats {
     }
 
     public static double betaBinomialPdf(int k, int n, double alpha, double beta) {
-        return Math.exp(Beta.logBeta(k + alpha, n - k + beta) - Beta.logBeta(alpha, beta) +
+        return Math.exp(
+                Beta.logBeta(k + alpha, n - k + beta) - Beta.logBeta(alpha, beta) +
                 Gamma.logGamma(n + 1) - Gamma.logGamma(k + 1) - Gamma.logGamma(n - k + 1)
         );
     }
@@ -46,10 +47,10 @@ public class AuxiliaryStats {
         double sum = 0;
 
         for (int i = 0; i < k; i++) {
-            sum += betaBinomialPdf(k, n, alpha, beta);
+            sum += betaBinomialPdf(i, n, alpha, beta);
         }
 
-        return sum;
+        return Math.min(1.0, sum);
     }
 
     public static double normalCdf(double x, double mean, double sd) {

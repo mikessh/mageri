@@ -22,10 +22,10 @@ import com.antigenomics.mageri.misc.ParameterSet;
 import org.jdom.Element;
 
 public final class VariantCallerParameters implements ParameterSet {
-    private final double modelOrder, modelCycles, modelEfficiency, compoundQScoreSD;
+    private final double modelOrder, modelCycles, modelEfficiency, compoundQScoreSD, compoundQScoreMu;
     private final ErrorModelType errorModelType;
     private final int qualityThreshold, singletonFrequencyThreshold, coverageThreshold,
-            modelCoverageThreshold, modelMinorCountThreshold, compoundQScoreThreshold;
+            modelCoverageThreshold, modelMinorCountThreshold;
     private final String substitutionErrorRateMatrix;
     private final SubstitutionErrorMatrix parsedSubstitutionErrorRateMatrix;
     private final boolean noIndels, showAbsentVariants;
@@ -35,7 +35,7 @@ public final class VariantCallerParameters implements ParameterSet {
             ErrorModelType.MinorBased,
             1.0, 20.0, 1.8, 100, 10,
             SubstitutionErrorMatrix.DEFAULT.toString(),
-            5, 0.64,
+            -0.46, 1.44,
             false);
 
     public VariantCallerParameters(boolean noIndels, int qualityThreshold, int singletonFrequencyThreshold, int coverageThreshold,
@@ -43,7 +43,7 @@ public final class VariantCallerParameters implements ParameterSet {
                                    double modelOrder, double modelCycles, double modelEfficiency,
                                    int modelCoverageThreshold, int modelMinorCountThreshold,
                                    String substitutionErrorRateMatrix,
-                                   int compoundQScoreThreshold, double compoundQScoreSD,
+                                   double compoundQScoreMu, double compoundQScoreSD,
                                    boolean showAbsentVariants) {
         if (modelCycles < 10 || modelCycles > 40)
             throw new IllegalArgumentException("(model parameters) Number of PCR cycles should be in [10,40]");
@@ -72,7 +72,7 @@ public final class VariantCallerParameters implements ParameterSet {
         this.modelEfficiency = modelEfficiency;
         this.substitutionErrorRateMatrix = substitutionErrorRateMatrix;
 
-        this.compoundQScoreThreshold = compoundQScoreThreshold;
+        this.compoundQScoreMu = compoundQScoreMu;
         this.compoundQScoreSD = compoundQScoreSD;
 
         this.parsedSubstitutionErrorRateMatrix = SubstitutionErrorMatrix.fromString(substitutionErrorRateMatrix);
@@ -135,8 +135,8 @@ public final class VariantCallerParameters implements ParameterSet {
         return compoundQScoreSD;
     }
 
-    public int getCompoundQScoreThreshold() {
-        return compoundQScoreThreshold;
+    public double getCompoundQScoreMu() {
+        return compoundQScoreMu;
     }
 
     public VariantCallerParameters withNoIndels(boolean noIndels) {
@@ -145,7 +145,7 @@ public final class VariantCallerParameters implements ParameterSet {
                 errorModelType,
                 modelOrder, modelCycles, modelEfficiency,
                 modelCoverageThreshold, modelMinorCountThreshold,
-                substitutionErrorRateMatrix, compoundQScoreThreshold, compoundQScoreSD,
+                substitutionErrorRateMatrix, compoundQScoreMu, compoundQScoreSD,
                 showAbsentVariants);
     }
 
@@ -155,7 +155,7 @@ public final class VariantCallerParameters implements ParameterSet {
                 errorModelType,
                 order, modelCycles, modelEfficiency,
                 modelCoverageThreshold, modelMinorCountThreshold,
-                substitutionErrorRateMatrix, compoundQScoreThreshold, compoundQScoreSD,
+                substitutionErrorRateMatrix, compoundQScoreMu, compoundQScoreSD,
                 showAbsentVariants);
     }
 
@@ -165,7 +165,7 @@ public final class VariantCallerParameters implements ParameterSet {
                 errorModelType,
                 modelOrder, modelCycles, modelEfficiency,
                 modelCoverageThreshold, modelMinorCountThreshold,
-                substitutionErrorRateMatrix, compoundQScoreThreshold, compoundQScoreSD,
+                substitutionErrorRateMatrix, compoundQScoreMu, compoundQScoreSD,
                 showAbsentVariants);
     }
 
@@ -175,7 +175,7 @@ public final class VariantCallerParameters implements ParameterSet {
                 errorModelType,
                 modelOrder, modelCycles, modelEfficiency,
                 modelCoverageThreshold, modelMinorCountThreshold,
-                substitutionErrorRateMatrix, compoundQScoreThreshold, compoundQScoreSD,
+                substitutionErrorRateMatrix, compoundQScoreMu, compoundQScoreSD,
                 showAbsentVariants);
     }
 
@@ -185,7 +185,7 @@ public final class VariantCallerParameters implements ParameterSet {
                 errorModelType,
                 modelOrder, modelCycles, modelEfficiency,
                 modelCoverageThreshold, modelMinorCountThreshold,
-                substitutionErrorRateMatrix, compoundQScoreThreshold, compoundQScoreSD,
+                substitutionErrorRateMatrix, compoundQScoreMu, compoundQScoreSD,
                 showAbsentVariants);
     }
 
@@ -195,7 +195,7 @@ public final class VariantCallerParameters implements ParameterSet {
                 errorModelType,
                 modelOrder, modelCycles, modelEfficiency,
                 modelCoverageThreshold, modelMinorCountThreshold,
-                substitutionErrorRateMatrix, compoundQScoreThreshold, compoundQScoreSD,
+                substitutionErrorRateMatrix, compoundQScoreMu, compoundQScoreSD,
                 showAbsentVariants);
     }
 
@@ -205,7 +205,7 @@ public final class VariantCallerParameters implements ParameterSet {
                 errorModelType,
                 modelOrder, modelCycles, modelEfficiency,
                 modelCoverageThreshold, modelMinorCountThreshold,
-                substitutionErrorRateMatrix, compoundQScoreThreshold, compoundQScoreSD,
+                substitutionErrorRateMatrix, compoundQScoreMu, compoundQScoreSD,
                 showAbsentVariants);
     }
 
@@ -215,7 +215,7 @@ public final class VariantCallerParameters implements ParameterSet {
                 errorModelType,
                 modelOrder, modelCycles, modelEfficiency,
                 modelCoverageThreshold, modelMinorCountThreshold,
-                substitutionErrorRateMatrix, compoundQScoreThreshold, compoundQScoreSD,
+                substitutionErrorRateMatrix, compoundQScoreMu, compoundQScoreSD,
                 showAbsentVariants);
     }
 
@@ -225,7 +225,7 @@ public final class VariantCallerParameters implements ParameterSet {
                 errorModelType,
                 modelOrder, modelCycles, modelEfficiency,
                 modelCoverageThreshold, modelMinorCountThreshold,
-                substitutionErrorRateMatrix, compoundQScoreThreshold, compoundQScoreSD,
+                substitutionErrorRateMatrix, compoundQScoreMu, compoundQScoreSD,
                 showAbsentVariants);
     }
 
@@ -235,7 +235,7 @@ public final class VariantCallerParameters implements ParameterSet {
                 errorModelType,
                 modelOrder, modelCycles, modelEfficiency,
                 modelCoverageThreshold, modelMinorCountThreshold,
-                substitutionErrorRateMatrix, compoundQScoreThreshold, compoundQScoreSD,
+                substitutionErrorRateMatrix, compoundQScoreMu, compoundQScoreSD,
                 showAbsentVariants);
     }
 
@@ -245,7 +245,7 @@ public final class VariantCallerParameters implements ParameterSet {
                 errorModelType,
                 modelOrder, modelCycles, modelEfficiency,
                 modelCoverageThreshold, modelMinorCountThreshold,
-                substitutionErrorRateMatrix, compoundQScoreThreshold, compoundQScoreSD,
+                substitutionErrorRateMatrix, compoundQScoreMu, compoundQScoreSD,
                 showAbsentVariants);
     }
 
@@ -255,17 +255,17 @@ public final class VariantCallerParameters implements ParameterSet {
                 errorModelType,
                 modelOrder, modelCycles, modelEfficiency,
                 modelCoverageThreshold, modelMinorCountThreshold,
-                substitutionErrorRateMatrix, compoundQScoreThreshold, compoundQScoreSD,
+                substitutionErrorRateMatrix, compoundQScoreMu, compoundQScoreSD,
                 showAbsentVariants);
     }
 
-    public VariantCallerParameters withCompoundQScoreThreshold(int compoundQScoreThreshold) {
+    public VariantCallerParameters withCompoundQScoreMu(double compoundQScoreMu) {
         return new VariantCallerParameters(noIndels,
                 qualityThreshold, singletonFrequencyThreshold, coverageThreshold,
                 errorModelType,
                 modelOrder, modelCycles, modelEfficiency,
                 modelCoverageThreshold, modelMinorCountThreshold,
-                substitutionErrorRateMatrix, compoundQScoreThreshold, compoundQScoreSD,
+                substitutionErrorRateMatrix, compoundQScoreMu, compoundQScoreSD,
                 showAbsentVariants);
     }
 
@@ -275,7 +275,7 @@ public final class VariantCallerParameters implements ParameterSet {
                 errorModelType,
                 modelOrder, modelCycles, modelEfficiency,
                 modelCoverageThreshold, modelMinorCountThreshold,
-                substitutionErrorRateMatrix, compoundQScoreThreshold, compoundQScoreSD,
+                substitutionErrorRateMatrix, compoundQScoreMu, compoundQScoreSD,
                 showAbsentVariants);
     }
 
@@ -285,7 +285,7 @@ public final class VariantCallerParameters implements ParameterSet {
                 errorModelType,
                 modelOrder, modelCycles, modelEfficiency,
                 modelCoverageThreshold, modelMinorCountThreshold,
-                substitutionErrorRateMatrix, compoundQScoreThreshold, compoundQScoreSD,
+                substitutionErrorRateMatrix, compoundQScoreMu, compoundQScoreSD,
                 showAbsentVariants);
     }
 
@@ -303,7 +303,7 @@ public final class VariantCallerParameters implements ParameterSet {
         e.addContent(new Element("modelCoverageThreshold").setText(Integer.toString(modelCoverageThreshold)));
         e.addContent(new Element("modelMinorCountThreshold").setText(Integer.toString(modelMinorCountThreshold)));
         e.addContent(new Element("substitutionErrorRateMatrix").setText(substitutionErrorRateMatrix));
-        e.addContent(new Element("compoundQScoreThreshold").setText(Integer.toString(compoundQScoreThreshold)));
+        e.addContent(new Element("compoundQScoreMu").setText(Double.toString(compoundQScoreMu)));
         e.addContent(new Element("compoundQScoreSD").setText(Double.toString(compoundQScoreSD)));
         e.addContent(new Element("showAbsentVariants").setText(Boolean.toString(showAbsentVariants)));
         return e;
@@ -323,7 +323,7 @@ public final class VariantCallerParameters implements ParameterSet {
                 Integer.parseInt(e.getChildTextTrim("modelCoverageThreshold")),
                 Integer.parseInt(e.getChildTextTrim("modelMinorCountThreshold")),
                 e.getChildTextTrim("substitutionErrorRateMatrix"),
-                Integer.parseInt(e.getChildTextTrim("compoundQScoreThreshold")),
+                Double.parseDouble(e.getChildTextTrim("compoundQScoreMu")),
                 Double.parseDouble(e.getChildTextTrim("compoundQScoreSD")),
                 Boolean.parseBoolean(e.getChildTextTrim("showAbsentVariants"))
         );
@@ -340,12 +340,12 @@ public final class VariantCallerParameters implements ParameterSet {
         if (Double.compare(that.modelCycles, modelCycles) != 0) return false;
         if (Double.compare(that.modelEfficiency, modelEfficiency) != 0) return false;
         if (Double.compare(that.compoundQScoreSD, compoundQScoreSD) != 0) return false;
+        if (Double.compare(that.compoundQScoreMu, compoundQScoreMu) != 0) return false;
         if (qualityThreshold != that.qualityThreshold) return false;
         if (singletonFrequencyThreshold != that.singletonFrequencyThreshold) return false;
         if (coverageThreshold != that.coverageThreshold) return false;
         if (modelCoverageThreshold != that.modelCoverageThreshold) return false;
         if (modelMinorCountThreshold != that.modelMinorCountThreshold) return false;
-        if (compoundQScoreThreshold != that.compoundQScoreThreshold) return false;
         if (noIndels != that.noIndels) return false;
         if (showAbsentVariants != that.showAbsentVariants) return false;
         if (errorModelType != that.errorModelType) return false;
@@ -366,13 +366,14 @@ public final class VariantCallerParameters implements ParameterSet {
         result = 31 * result + (int) (temp ^ (temp >>> 32));
         temp = Double.doubleToLongBits(compoundQScoreSD);
         result = 31 * result + (int) (temp ^ (temp >>> 32));
+        temp = Double.doubleToLongBits(compoundQScoreMu);
+        result = 31 * result + (int) (temp ^ (temp >>> 32));
         result = 31 * result + errorModelType.hashCode();
         result = 31 * result + qualityThreshold;
         result = 31 * result + singletonFrequencyThreshold;
         result = 31 * result + coverageThreshold;
         result = 31 * result + modelCoverageThreshold;
         result = 31 * result + modelMinorCountThreshold;
-        result = 31 * result + compoundQScoreThreshold;
         result = 31 * result + substitutionErrorRateMatrix.hashCode();
         result = 31 * result + parsedSubstitutionErrorRateMatrix.hashCode();
         result = 31 * result + (noIndels ? 1 : 0);

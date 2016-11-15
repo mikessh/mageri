@@ -55,21 +55,25 @@ public class SubstitutionErrorMatrix implements ErrorModel {
         return new SubstitutionErrorMatrix(innerMatrix);
     }
 
-    public static SubstitutionErrorMatrix fromMutationsTable(MutationsTable mutationsTable) {
+    public static SubstitutionErrorMatrix fromMutationsTable(MutationsTable... mutationsTables) {
         double[][] innerMatrix = new double[4][4];
         double[] fromCounters = new double[4];
 
-        for (int pos = 0; pos < mutationsTable.length(); pos++) {
-            int total = mutationsTable.getMigCoverage(pos);
+        for (MutationsTable mutationsTable : mutationsTables) {
+            if (mutationsTable.wasUpdated()) {
+                for (int pos = 0; pos < mutationsTable.length(); pos++) {
+                    int total = mutationsTable.getMigCoverage(pos);
 
-            for (int from = 0; from < 4; from++) {
-                int count = mutationsTable.getMajorMigCount(pos, from);
-                if (count > 0) {
-                    double factor = count / (double) total;
-                    fromCounters[from] += count;
-                    for (int to = 0; to < 4; to++) {
-                        if (from != to) {
-                            innerMatrix[from][to] += mutationsTable.getMinorMigCount(pos, to) * factor;
+                    for (int from = 0; from < 4; from++) {
+                        int count = mutationsTable.getMajorMigCount(pos, from);
+                        if (count > 0) {
+                            double factor = count / (double) total;
+                            fromCounters[from] += count;
+                            for (int to = 0; to < 4; to++) {
+                                if (from != to) {
+                                    innerMatrix[from][to] += mutationsTable.getMinorMigCount(pos, to) * factor;
+                                }
+                            }
                         }
                     }
                 }

@@ -40,7 +40,7 @@ public class MinorBasedErrorModelTest {
     @Test
     @Category(ComplexRandomTests.class)
     public void test() {
-        int nMigs = 20000, migSize = 100;
+        int nMigs = 50000, migSize = 16;
 
         RandomReferenceGenerator randomReferenceGenerator = new RandomReferenceGenerator();
         randomReferenceGenerator.setReferenceSizeMin(50);
@@ -75,7 +75,7 @@ public class MinorBasedErrorModelTest {
             int base = reference.codeAt(i);
             for (int j = 0; j < 4; j++) {
                 if (base != j) {
-                    double errorRateEst = errorModel.computeErrorRate(i, base, j).getErrorRate(),
+                    double errorRateEst = errorModel.computeErrorRate(i, base, j, true).getErrorRate(),
                             errorRateExp = modelMigGenerator.getPcrMutationGenerator().getSubstitutionModel().getValue(base, j);
                     System.out.println("Substitution " + i + ":" +
                             NucleotideAlphabet.INSTANCE.symbolFromCode((byte) base) +

@@ -17,6 +17,7 @@
 package com.antigenomics.mageri.core.variant;
 
 import com.antigenomics.mageri.ComplexRandomTests;
+import com.antigenomics.mageri.FastTests;
 import com.antigenomics.mageri.core.assemble.Assembler;
 import com.antigenomics.mageri.core.mapping.*;
 import com.antigenomics.mageri.core.mutations.Substitution;
@@ -37,6 +38,20 @@ import org.junit.experimental.categories.Category;
 
 public class VariantCallerTest {
     @Test
+    @Category(FastTests.class)
+    public void qScoreCalcTest() {
+        double s1 = VariantCaller.getNegBinomialQScore(1, 2200, 1.650918E-5, VariantCallerParameters.DEFAULT),
+                s2 = VariantCaller.getNegBinomialQScore(2, 2200, 1.650918E-5, VariantCallerParameters.DEFAULT),
+                s3 = VariantCaller.getNegBinomialQScore(3, 2200, 1.650918E-5, VariantCallerParameters.DEFAULT);
+
+        System.out.println(VariantCaller.getNegBinomialQScore(3, 4089, 1.14071345E-5, VariantCallerParameters.DEFAULT));
+        System.out.println(VariantCaller.getNegBinomialQScore(4, 4089, 1.14071345E-5, VariantCallerParameters.DEFAULT));
+        System.out.println(VariantCaller.getNegBinomialQScore(5, 4089, 1.14071345E-5, VariantCallerParameters.DEFAULT));
+        System.out.println(VariantCaller.getNegBinomialQScore(6, 4089, 1.14071345E-5, VariantCallerParameters.DEFAULT));
+        System.out.println(VariantCaller.getNegBinomialQScore(10, 4089, 1.14071345E-5, VariantCallerParameters.DEFAULT));
+    }
+
+    @Test
     @Category(ComplexRandomTests.class)
     public void skewedDistributionTest() {
         System.out.println("Testing identification of somatic mutations and hot-spot errors " +
@@ -44,7 +59,7 @@ public class VariantCallerTest {
         int qualThreshold = 10;
         String setting = "Skewed, Q" + qualThreshold;
 
-        test(0.4, 1e-2,
+        test(0.4, 5e-3,
                 MutationGenerator.NO_INDEL_SKEWED, 1e-3,
                 qualThreshold,
                 PercentRangeAssertion.createLowerBound("Specificity", setting, 90),
@@ -57,7 +72,7 @@ public class VariantCallerTest {
                      int qualThreshold,
                      PercentRangeAssertion specificityRange,
                      PercentRangeAssertion sensitivityRange) {
-        int nMigs = 100000, migSize = 10;
+        int nMigs = 100000, migSize = 32;
 
         RandomReferenceGenerator randomReferenceGenerator = new RandomReferenceGenerator();
         randomReferenceGenerator.setReferenceSizeMin(100);

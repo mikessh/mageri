@@ -27,7 +27,6 @@ public class MinorBasedErrorModel implements ErrorModel {
     private final int coverageThreshold, minorCountThreshold;
     private final double order, cycles, lambda, propagateProb;
     private final MutationsTable mutationsTable;
-    private final SubstitutionErrorMatrix substitutionErrorMatrix;
     private final MinorCaller minorCaller;
 
     public MinorBasedErrorModel(VariantCallerParameters variantCallerParameters,
@@ -42,14 +41,14 @@ public class MinorBasedErrorModel implements ErrorModel {
 
     public MinorBasedErrorModel(double order, double cycles, double efficiency,
                                 int coverageThreshold, int minorCountThreshold,
-                                MutationsTable mutationsTable, MinorCaller minorCaller) {
+                                MutationsTable mutationsTable,
+                                MinorCaller minorCaller) {
         this.order = order;
         this.cycles = cycles;
         this.lambda = efficiency - 1;
-        this.propagateProb = computePropagateProb(lambda, order);
+        this.propagateProb = order > 0 ? 1.0 : (1.0 - lambda) * lambda * lambda;
         this.mutationsTable = mutationsTable;
         this.minorCaller = minorCaller;
-        this.substitutionErrorMatrix = SubstitutionErrorMatrix.fromMutationsTable(mutationsTable);
         this.coverageThreshold = coverageThreshold;
         this.minorCountThreshold = minorCountThreshold;
     }
@@ -78,19 +77,12 @@ public class MinorBasedErrorModel implements ErrorModel {
         return coverageThreshold;
     }
 
-    public static double computePropagateProb(double efficiency, double order) {
-        if (order == 0)
-            return 1.0;
-
-        double lambda = efficiency - 1;
-        return Math.pow((1.0 - lambda), order) * Math.pow(lambda, order + 1);
-    }
-
     public static double computeBaseErrorRateEstimate(double minorRate, double fdr,
                                                       double readFractionEstForCalledMinors,
                                                       double geomMeanMigSize) {
         minorRate *= (1.0 - fdr);
-        return minorRate * (readFractionEstForCalledMinors + 1.0 / geomMeanMigSize);
+        return minorRate * readFractionEstForCalledMinors -
+                (1.0 - minorRate) * Math.log(1.0 - minorRate) / geomMeanMigSize;
     }
 
     @Override
@@ -101,20 +93,20 @@ public class MinorBasedErrorModel implements ErrorModel {
 
     @Override
     public ErrorRateEstimate computeErrorRate(int pos, int from, int to) {
+        return computeErrorRate(pos, from, to, false);
+    }
+
+    public ErrorRateEstimate computeErrorRate(int pos, int from, int to, boolean localOnly) {
         int coverage = mutationsTable.getMigCoverage(pos),
                 minorCount = mutationsTable.getMinorMigCount(pos, to);
 
         double localMinorRate = minorCount / (double) coverage,
-                globalMinorRate = substitutionErrorMatrix.getRate(from, to),
+                globalMinorRate = minorCaller.getGlobalMinorRate(from, to),
                 readFractionForCalledMinors = minorCaller.getReadFractionForCalledMinors(from, to),
                 filteredReadFraction = minorCaller.getFilteredReadFraction(from, to);
 
         // Use global error rate and minor read fraction if not enough coverage / statistics for a given position
-        int useGlobal = coverage < coverageThreshold || minorCount < minorCountThreshold ? 1 : 0;
-        if (globalMinorRate == 0) {
-            globalMinorRate = minorCaller.getGlobalMinorRate(from, to);
-            useGlobal = 2;
-        }
+        int useGlobal = localOnly ? 0 : (coverage < coverageThreshold || minorCount < minorCountThreshold ? 1 : 0);
         double minorRate = useGlobal > 0 ? globalMinorRate : localMinorRate;
 
         // Share of minors that are misidentified sequencing errors
