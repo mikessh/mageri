@@ -40,7 +40,7 @@ public class MinorBasedErrorModelTest {
     @Test
     @Category(ComplexRandomTests.class)
     public void test() {
-        int nMigs = 50000, migSize = 16;
+        int nMigs = 10000, migSize = 32;
 
         RandomReferenceGenerator randomReferenceGenerator = new RandomReferenceGenerator();
         randomReferenceGenerator.setReferenceSizeMin(50);
@@ -71,6 +71,8 @@ public class MinorBasedErrorModelTest {
         MinorBasedErrorModel errorModel = new MinorBasedErrorModel(variantCallerParameters,
                 mutationsTable, assembler.getMinorCaller());
 
+        double errorRateDifference = 0;
+
         for (int i = 0; i < reference.size(); i++) {
             int base = reference.codeAt(i);
             for (int j = 0; j < 4; j++) {
@@ -81,16 +83,13 @@ public class MinorBasedErrorModelTest {
                             NucleotideAlphabet.INSTANCE.symbolFromCode((byte) base) +
                             ">" + NucleotideAlphabet.INSTANCE.symbolFromCode((byte) j) +
                             ". Error rate expected = " + errorRateExp + ", estimated = " + errorRateEst);
-                    if (errorRateExp < 1e-6) {
-                        Assert.assertTrue("Small error rate in absence of errors",
-                                errorRateEst < 1e-5);
-                    } else {
-                        Assert.assertTrue("No more than order of magnitude difference between expected PCR " +
-                                        "error rate and its estimate",
-                                Math.abs(Math.log10(errorRateEst) - Math.log10(errorRateExp)) <= 1.0);
-                    }
+
+                    errorRateDifference += Math.log10(errorRateExp + 1e-7) - Math.log10(errorRateEst + 1e-7);
                 }
             }
         }
+
+        Assert.assertTrue("No more than order of magnitude difference between expected PCR " +
+                        "error rate and its estimate", Math.abs(errorRateDifference) / reference.size() / 3 <= 1.0);
     }
 }
