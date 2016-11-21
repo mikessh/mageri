@@ -177,8 +177,8 @@ public class PoissonTestMinorCaller extends MinorCaller<PoissonTestMinorCaller> 
 
     public double getGlobalMinorRate(int from, int to, boolean symmetric) {
         return symmetric ?
-                (getM1(from, to) + getM1(~from & 3, ~to & 3)) / (getM(from, to) + getM(~from & 3, ~to & 3)) :
-                getM1(from, to) / getM(from, to);
+                (getM1(from, to) + getM1(~from & 3, ~to & 3)) / (double) (getM(from, to) + getM(~from & 3, ~to & 3)) :
+                getM1(from, to) / (double) getM(from, to);
     }
 
     private double getPValueSum(int from, int to) {
