@@ -15,12 +15,12 @@ public class PresetErrorModel implements ErrorModel {
     private final MutationsTable mutationsTable;
 
     public final static String DEFAULT_VALUES =
-            "A>C,T>G:0.9279161:3.727861e-05;" +
-                    "A>G,T>C:1.0296172:6.099085e-05;" +
-                    "A>T,T>A:1.0838314:2.565636e-05;" +
-                    "C>A,G>T:0.9957468:4.573685e-05;" +
-                    "C>G,G>C:1.0584827:2.081932e-05;" +
-                    "C>T,G>A:2.1316472:4.106974e-05";
+            "A_C,T_G:0.9279161:3.727861e-05;" +
+                    "A_G,T_C:1.0296172:6.099085e-05;" +
+                    "A_T,T_A:1.0838314:2.565636e-05;" +
+                    "C_A,G_T:0.9957468:4.573685e-05;" +
+                    "C_G,G_C:1.0584827:2.081932e-05;" +
+                    "C_T,G_A:2.1316472:4.106974e-05";
 
     public PresetErrorModel(VariantCallerParameters variantCallerParameters, MutationsTable mutationsTable) {
         String[] lines = variantCallerParameters.getModelPresetString().split(";");
@@ -32,7 +32,7 @@ public class PresetErrorModel implements ErrorModel {
                         theta = Double.parseDouble(tokens[2]);
 
                 for (String substitution : tokens[0].split(",")) {
-                    String[] fromTo = substitution.split(">");
+                    String[] fromTo = substitution.split("_");
 
                     int from = NucleotideAlphabet.INSTANCE.codeFromSymbol(fromTo[0].charAt(0)),
                             to = NucleotideAlphabet.INSTANCE.codeFromSymbol(fromTo[1].charAt(0));

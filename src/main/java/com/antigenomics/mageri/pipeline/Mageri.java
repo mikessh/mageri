@@ -132,7 +132,7 @@ public final class Mageri {
     public static Presets parsePresets(CommandLine commandLine) throws JDOMException, IOException {
         Presets presets;
         String platform = commandLine.getOptionValue(OPT_PLATFORM, "illumina"),
-                libraryType = commandLine.getOptionValue(OPT_LIBRARY_TYPE, "ss");
+                libraryType = commandLine.getOptionValue(OPT_LIBRARY_TYPE, "a");
         presets = Presets.create(platform, libraryType);
 
         if (commandLine.hasOption(OPT_IMPORT_PRESET)) {
