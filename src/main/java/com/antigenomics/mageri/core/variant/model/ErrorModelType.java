@@ -17,5 +17,5 @@
 package com.antigenomics.mageri.core.variant.model;
 
 public enum ErrorModelType {
-    RawData, MinorBased, Custom
+    Preset, RawData, MinorBased
 }

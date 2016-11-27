@@ -20,33 +20,41 @@ import com.antigenomics.mageri.core.assemble.MinorCaller;
 import com.antigenomics.mageri.core.mapping.MutationsTable;
 import com.antigenomics.mageri.core.mutations.Mutation;
 import com.antigenomics.mageri.core.mutations.Substitution;
+import com.antigenomics.mageri.core.output.VcfUtil;
 import com.antigenomics.mageri.core.variant.VariantCallerParameters;
+import com.antigenomics.mageri.misc.AuxiliaryStats;
 import com.milaboratory.core.sequence.mutations.Mutations;
 
 public class MinorBasedErrorModel implements ErrorModel {
     private final int coverageThreshold, minorCountThreshold;
-    private final double order, cycles, lambda, propagateProb;
+    private final boolean shouldPropagate;
+    private final double cycles, lambda, propagateProb, compoundQScoreSD, compoundQScoreMu;
     private final MutationsTable mutationsTable;
     private final MinorCaller minorCaller;
 
     public MinorBasedErrorModel(VariantCallerParameters variantCallerParameters,
                                 MutationsTable mutationsTable, MinorCaller minorCaller) {
-        this(variantCallerParameters.getModelOrder(),
+        this(variantCallerParameters.shouldPropagate(),
                 variantCallerParameters.getModelCycles(),
                 variantCallerParameters.getModelEfficiency(),
                 variantCallerParameters.getCoverageThreshold(),
                 variantCallerParameters.getModelMinorCountThreshold(),
+                variantCallerParameters.getCompoundQScoreSD(),
+                variantCallerParameters.getCompoundQScoreMu(),
                 mutationsTable, minorCaller);
     }
 
-    public MinorBasedErrorModel(double order, double cycles, double efficiency,
+    public MinorBasedErrorModel(boolean shouldPropagate, double cycles, double efficiency,
                                 int coverageThreshold, int minorCountThreshold,
+                                double compoundQScoreSD, double compoundQScoreMu,
                                 MutationsTable mutationsTable,
                                 MinorCaller minorCaller) {
-        this.order = order;
+        this.shouldPropagate = shouldPropagate;
         this.cycles = cycles;
         this.lambda = efficiency - 1;
-        this.propagateProb = order > 0 ? 1.0 : (1.0 - lambda) * lambda * lambda;
+        this.compoundQScoreSD = compoundQScoreSD;
+        this.compoundQScoreMu = compoundQScoreMu;
+        this.propagateProb = shouldPropagate ? (1.0 - lambda) * lambda * lambda : 1.0;
         this.mutationsTable = mutationsTable;
         this.minorCaller = minorCaller;
         this.coverageThreshold = coverageThreshold;
@@ -61,8 +69,16 @@ public class MinorBasedErrorModel implements ErrorModel {
         return lambda;
     }
 
-    public double getOrder() {
-        return order;
+    public boolean isShouldPropagate() {
+        return shouldPropagate;
+    }
+
+    public double getCompoundQScoreSD() {
+        return compoundQScoreSD;
+    }
+
+    public double getCompoundQScoreMu() {
+        return compoundQScoreMu;
     }
 
     public double getPropagateProb() {
@@ -81,8 +97,8 @@ public class MinorBasedErrorModel implements ErrorModel {
                                                       double readFractionEstForCalledMinors,
                                                       double geomMeanMigSize) {
         minorRate *= (1.0 - fdr);
-        return minorRate * readFractionEstForCalledMinors -
-                (1.0 - minorRate) * Math.log(1.0 - minorRate) / geomMeanMigSize;
+        return minorRate * readFractionEstForCalledMinors ;//-
+              //  (1.0 - minorRate) * Math.log(1.0 - minorRate) / geomMeanMigSize;
     }
 
     @Override
@@ -94,6 +110,22 @@ public class MinorBasedErrorModel implements ErrorModel {
     @Override
     public ErrorRateEstimate computeErrorRate(int pos, int from, int to) {
         return computeErrorRate(pos, from, to, false);
+    }
+
+    @Override
+    public VariantQuality computeQuality(int majorCount, int coverage, Mutation mutation) {
+        ErrorRateEstimate errorRateEstimate = computeErrorRate(mutation);
+        double score = getNegBinomialQScore(majorCount, coverage, errorRateEstimate.getErrorRate(),
+                compoundQScoreMu, compoundQScoreSD);
+        return new VariantQuality(errorRateEstimate, score);
+    }
+
+    @Override
+    public VariantQuality computeQuality(int majorCount, int coverage, int pos, int from, int to) {
+        ErrorRateEstimate errorRateEstimate = computeErrorRate(pos, from, to);
+        double score = getNegBinomialQScore(majorCount, coverage, errorRateEstimate.getErrorRate(),
+                compoundQScoreMu, compoundQScoreSD);
+        return new VariantQuality(errorRateEstimate, score);
     }
 
     public ErrorRateEstimate computeErrorRate(int pos, int from, int to, boolean localOnly) {
@@ -127,5 +159,25 @@ public class MinorBasedErrorModel implements ErrorModel {
                 readFractionForCalledMinors, filteredReadFraction,
                 minorCaller.getGeometricMeanMigSize(),
                 useGlobal);
+    }
+
+    private static double getNegBinomialQScore(int majorCount, int total, double errorRate,
+                                               double modelMu, double modelSD) {
+        if (majorCount == 0) {
+            return 0;
+        }
+
+        if (Double.isNaN(errorRate) || errorRate == 0) {
+            return -1.0;
+        }
+
+        double r = 1.0 / (Math.exp(modelSD * modelSD) - 1),
+                p = 1 / (1 + r / Math.exp(modelMu + modelSD * modelSD / 2) / errorRate / total);
+
+        if (r <= 0 || p >= 1 || p <= 0) {
+            return -1.0;
+        }
+
+        return -10 * Math.log10(1.0 - AuxiliaryStats.negativeBinomialCdf(majorCount, r, p));
     }
 }

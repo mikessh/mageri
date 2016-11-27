@@ -26,4 +26,8 @@ public interface ErrorModel extends Serializable {
     ErrorRateEstimate computeErrorRate(Mutation mutation);
 
     ErrorRateEstimate computeErrorRate(int pos, int from, int to);
+
+    VariantQuality computeQuality(int majorCount, int coverage, Mutation mutation);
+
+    VariantQuality computeQuality(int majorCount, int coverage, int pos, int from, int to);
 }

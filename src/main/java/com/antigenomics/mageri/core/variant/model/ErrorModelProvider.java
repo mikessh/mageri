@@ -24,16 +24,14 @@ public class ErrorModelProvider {
     public static ErrorModel create(VariantCallerParameters parameters, MutationsTable mutationsTable,
                                     MinorCaller minorCaller) {
         switch (parameters.getErrorModelType()) {
+            case Preset:
+                return new PresetErrorModel(parameters, mutationsTable);
             case MinorBased:
-                return new MinorBasedErrorModel(parameters.getModelOrder(),
-                        parameters.getModelCycles(), parameters.getModelEfficiency(),
-                        parameters.getModelCoverageThreshold(), parameters.getModelMinorCountThreshold(),
+                return new MinorBasedErrorModel(parameters,
                         mutationsTable,
                         minorCaller);
             case RawData:
                 return new RawDataErrorModel(mutationsTable);
-            case Custom:
-                return parameters.getParsedSubstitutionErrorRateMatrix();
             default:
                 throw new IllegalArgumentException("Unknown error model " + parameters.getErrorModelType().toString());
         }
@@ -53,6 +51,8 @@ public class ErrorModelProvider {
 
     public static String[] getErrorModelStatisticIDs(VariantCallerParameters parameters) {
         switch (parameters.getErrorModelType()) {
+            case Preset:
+                return new String[]{"NF", "SP"};
             case MinorBased:
                 return new String[]{"ER", "MCL",
                         "FDR", "REC", "MCG", "MS",
@@ -64,6 +64,8 @@ public class ErrorModelProvider {
 
     public static String[] getErrorModelStatisticNames(VariantCallerParameters parameters) {
         switch (parameters.getErrorModelType()) {
+            case Preset:
+                return new String[]{"nbinom.r", "nbinom.p"};
             case MinorBased:
                 return new String[]{"error.rate", "minor.count.local", "minor.fdr",
                         "minor.recall", "minor.count.global", "read.fraction.in.minors",
@@ -76,6 +78,9 @@ public class ErrorModelProvider {
 
     public static String[] getErrorModelStatisticDescriptions(VariantCallerParameters parameters) {
         switch (parameters.getErrorModelType()) {
+            case Preset:
+                return new String[]{"Negative binomial model number of failures (r parameter)",
+                        "Negative binomial model success probability (p parameter)"};
             case MinorBased:
                 return new String[]{"PCR per cycle per base error rate estimate",
                         "Number of detected PCR minors for a given substitution and position",

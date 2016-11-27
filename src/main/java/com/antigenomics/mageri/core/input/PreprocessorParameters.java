@@ -27,14 +27,14 @@ public class PreprocessorParameters implements ParameterSet {
     private final double minUmiMismatchRatio;
 
     public static final PreprocessorParameters DEFAULT = new PreprocessorParameters(
-            QualityDefaults.PH33_BAD_QUAL, QualityDefaults.PH33_GOOD_QUAL,
+            QualityDefaults.PH33_BAD_QUAL, (byte) 25,
             true,
-            20.0, false, 5);
+            10.0, true, 5);
 
     public static final PreprocessorParameters IGNORE_QUAL = new PreprocessorParameters(
             (byte) 0, (byte) 0,
             true,
-            20.0, false, 5);
+            10.0, true, 5);
 
     public PreprocessorParameters(byte umiQualThreshold, byte goodQualityThreshold,
                                   boolean trimAdapters,

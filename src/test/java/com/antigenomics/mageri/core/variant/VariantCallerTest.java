@@ -22,6 +22,7 @@ import com.antigenomics.mageri.core.assemble.Assembler;
 import com.antigenomics.mageri.core.mapping.*;
 import com.antigenomics.mageri.core.mutations.Substitution;
 import com.antigenomics.mageri.core.output.VcfUtil;
+import com.antigenomics.mageri.core.variant.model.ErrorModelType;
 import com.antigenomics.mageri.generators.*;
 import com.antigenomics.mageri.PercentRangeAssertion;
 import com.antigenomics.mageri.core.Mig;
@@ -38,20 +39,6 @@ import org.junit.experimental.categories.Category;
 
 public class VariantCallerTest {
     @Test
-    @Category(FastTests.class)
-    public void qScoreCalcTest() {
-        double s1 = VariantCaller.getNegBinomialQScore(1, 2200, 1.650918E-5, VariantCallerParameters.DEFAULT),
-                s2 = VariantCaller.getNegBinomialQScore(2, 2200, 1.650918E-5, VariantCallerParameters.DEFAULT),
-                s3 = VariantCaller.getNegBinomialQScore(3, 2200, 1.650918E-5, VariantCallerParameters.DEFAULT);
-
-        System.out.println(VariantCaller.getNegBinomialQScore(3, 4089, 1.14071345E-5, VariantCallerParameters.DEFAULT));
-        System.out.println(VariantCaller.getNegBinomialQScore(4, 4089, 1.14071345E-5, VariantCallerParameters.DEFAULT));
-        System.out.println(VariantCaller.getNegBinomialQScore(5, 4089, 1.14071345E-5, VariantCallerParameters.DEFAULT));
-        System.out.println(VariantCaller.getNegBinomialQScore(6, 4089, 1.14071345E-5, VariantCallerParameters.DEFAULT));
-        System.out.println(VariantCaller.getNegBinomialQScore(10, 4089, 1.14071345E-5, VariantCallerParameters.DEFAULT));
-    }
-
-    @Test
     @Category(ComplexRandomTests.class)
     public void skewedDistributionTest() {
         System.out.println("Testing identification of somatic mutations and hot-spot errors " +
@@ -63,7 +50,7 @@ public class VariantCallerTest {
                 MutationGenerator.NO_INDEL_SKEWED, 1e-3,
                 qualThreshold,
                 PercentRangeAssertion.createLowerBound("Specificity", setting, 90),
-                PercentRangeAssertion.createLowerBound("Sensitivity", setting, 50));
+                PercentRangeAssertion.createLowerBound("Sensitivity", setting, 40));
     }
 
     @SuppressWarnings("unchecked")
@@ -84,7 +71,8 @@ public class VariantCallerTest {
         final Aligner aligner = new ExtendedKmerAligner(referenceLibrary);
         ConsensusAligner consensusAligner = new SConsensusAligner(aligner);
 
-        VariantCallerParameters variantCallerParameters = VariantCallerParameters.DEFAULT.withModelOrder(0);
+        VariantCallerParameters variantCallerParameters = VariantCallerParameters.DEFAULT
+                .withErrorModelType(ErrorModelType.MinorBased);
         ModelMigGenerator modelMigGenerator = new ModelMigGenerator(variantCallerParameters, reference, migSize,
                 somaticPositionRatio,
                 MutationGenerator.getUniform(somaticFreq),

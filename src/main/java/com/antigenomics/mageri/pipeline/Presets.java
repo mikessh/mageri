@@ -54,7 +54,7 @@ public class Presets implements ParameterSet {
 
     public Presets() {
         this(Platform.ILLUMINA,
-                LibraryType.SS,
+                LibraryType.A,
                 DemultiplexParameters.DEFAULT,
                 PreprocessorParameters.DEFAULT,
                 AssemblerParameters.DEFAULT,
@@ -160,11 +160,11 @@ public class Presets implements ParameterSet {
         }
 
         switch (libraryType) {
-            case SS:
-                variantCallerParameters = VariantCallerParameters.DEFAULT.withOrder(1.0);
+            case A:
+                variantCallerParameters = VariantCallerParameters.DEFAULT.withShouldPropagate(false);
                 break;
-            case DS:
-                variantCallerParameters = VariantCallerParameters.DEFAULT.withOrder(2.0);
+            case L:
+                variantCallerParameters = VariantCallerParameters.DEFAULT.withShouldPropagate(true);
                 break;
             default:
                 throw new IllegalArgumentException("Unknown library type: " + libraryTypeStr);

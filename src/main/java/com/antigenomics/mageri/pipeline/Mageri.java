@@ -355,9 +355,9 @@ public final class Mageri {
                             .withArgName("name")
                             .hasArg(true)
                             .withDescription("Library type: " +
-                                    "SS (single-stranded start, RT-PCR or linear PCR) " +
-                                    "or DS (double stranded start [currently not supported])" +
-                                    "[default = SS]")
+                                    "A (RT-PCR or linear PCR, amplification-based UMI attachment) " +
+                                    "or L (ligation-based UMI attachment)" +
+                                    "[default = A]")
                             .withLongOpt(OPT_LIBRARY_TYPE)
                             .create()
             )

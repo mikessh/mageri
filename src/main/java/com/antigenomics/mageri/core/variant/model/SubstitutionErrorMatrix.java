@@ -25,7 +25,8 @@ import com.milaboratory.core.sequence.nucleotide.NucleotideSequence;
 
 import java.util.Arrays;
 
-public class SubstitutionErrorMatrix implements ErrorModel {
+@Deprecated
+public class SubstitutionErrorMatrix {
     private final double[][] innerMatrix;
 
     public static final SubstitutionErrorMatrix DEFAULT = new SubstitutionErrorMatrix(new double[][]{
@@ -134,14 +135,12 @@ public class SubstitutionErrorMatrix implements ErrorModel {
         return Arrays.deepHashCode(innerMatrix);
     }
 
-    @Override
     public ErrorRateEstimate computeErrorRate(Mutation mutation) {
         int code = ((Substitution) mutation).getCode();
 
         return computeErrorRate(0, Mutations.getFrom(code), Mutations.getTo(code));
     }
 
-    @Override
     public ErrorRateEstimate computeErrorRate(int pos, int from, int to) {
         return new ErrorRateEstimate(getRate(from, to));
     }

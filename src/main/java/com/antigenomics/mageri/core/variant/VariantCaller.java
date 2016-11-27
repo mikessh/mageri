@@ -92,9 +92,8 @@ public class VariantCaller extends PipelineBlock {
                         int majorCount = mutationsTable.getMajorMigCount(pos, to),
                                 coverage = mutationsTable.getMigCoverage(pos);
 
-                        ErrorRateEstimate errorRateEstimate = errorModel.computeErrorRate(mutation);
-                        double score = getQScore(majorCount, coverage,
-                                errorRateEstimate.getErrorRate(), variantCallerParameters);
+                        VariantQuality variantQuality = errorModel.computeQuality(majorCount,
+                                coverage, mutation);
 
                         NucleotideSequenceBuilder nsb = new NucleotideSequenceBuilder(1);
                         nsb.setCode(0, mutationsTable.getAncestralBase(pos));
@@ -102,9 +101,9 @@ public class VariantCaller extends PipelineBlock {
                         variant = new Variant(reference,
                                 mutation, majorCount,
                                 mutationsTable.getMigCoverage(pos),
-                                score, mutationsTable.getMeanCqs(pos, to),
+                                variantQuality.getScore(), mutationsTable.getMeanCqs(pos, to),
                                 nsb.create(), mutationsTable.hasReferenceBase(pos),
-                                errorRateEstimate);
+                                variantQuality.getErrorRateEstimate());
                     } else if (variantCallerParameters.isNoIndels()) {
                         continue;
                     } else {
@@ -165,58 +164,6 @@ public class VariantCaller extends PipelineBlock {
 
         // Variants should be sorted for GATK compatibility
         Collections.sort(variants);
-    }
-
-    static double getBinomialQScore(int majorCount, int total, double errorRate) {
-        BinomialDistribution binomialDistribution = new BinomialDistributionImpl(total,
-                errorRate);
-
-        double score;
-        try {
-            score = -10 * Math.log10(1.0 - binomialDistribution.cumulativeProbability(majorCount) +
-                    0.5 * binomialDistribution.probability(majorCount));
-        } catch (MathException e) {
-            e.printStackTrace();
-            return VcfUtil.UNDEF_QUAL;
-        }
-
-        return score;
-    }
-
-    static double getNegBinomialQScore(int majorCount, int total, double errorRate,
-                                       VariantCallerParameters variantCallerParameters) {
-        return getNegBinomialQScore(majorCount, total, errorRate,
-                variantCallerParameters.getCompoundQScoreMu(),
-                variantCallerParameters.getCompoundQScoreSD());
-    }
-
-    static double getNegBinomialQScore(int majorCount, int total, double errorRate,
-                                       double modelMu, double modelSD) {
-        double r = 1.0 / (Math.exp(modelSD * modelSD) - 1),
-                p = 1 / (1 + r / Math.exp(modelMu + modelSD * modelSD / 2) / errorRate / total);
-
-        if (r <= 0 || p >= 1 || p <= 0) {
-            return VcfUtil.UNDEF_QUAL;
-        }
-
-        return -10 * Math.log10(1.0 - AuxiliaryStats.negativeBinomialCdf(majorCount, r, p));
-    }
-
-    static double getQScore(int majorCount, int total, double errorRate,
-                            VariantCallerParameters variantCallerParameters) {
-        if (majorCount == 0) {
-            return 0;
-        }
-
-        if (Double.isNaN(errorRate) || errorRate == 0) {
-            return VcfUtil.UNDEF_QUAL;
-        }
-
-        double score = variantCallerParameters.getErrorModelType() == ErrorModelType.MinorBased ?
-                getNegBinomialQScore(majorCount, total, errorRate, variantCallerParameters) :
-                getBinomialQScore(majorCount, total, errorRate);
-
-        return Double.isInfinite(score) ? VcfUtil.MAX_QUAL : score;
     }
 
     public ReferenceLibrary getReferenceLibrary() {

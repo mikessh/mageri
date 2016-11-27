@@ -17,5 +17,5 @@
 package com.antigenomics.mageri.pipeline;
 
 public enum LibraryType {
-    SS, DS
+    A, L
 }

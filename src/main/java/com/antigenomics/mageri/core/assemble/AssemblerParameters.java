@@ -30,13 +30,13 @@ public final class AssemblerParameters implements ParameterSet {
     public static AssemblerParameters DEFAULT = new AssemblerParameters(
             4, 8, 4, 0,
             0.3, 0.0, 0.3, 0.0,
-            1e-3,
+            1e-2,
             false, true, true, false);
 
     public static AssemblerParameters TORRENT454 = new AssemblerParameters(
             4, 8, 4, 2,
             0.7, 0.3, 0.3, 0.5,
-            1e-3,
+            1e-2,
             true, true, false, false);
 
     public AssemblerParameters(int offsetRange, int anchorRegion, int maxMMs, int maxConsequentMMs,
