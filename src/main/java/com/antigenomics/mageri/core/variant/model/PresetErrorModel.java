@@ -63,13 +63,13 @@ public class PresetErrorModel implements ErrorModel {
         double r = alpha[from][to],
                 p = theta[from][to] * coverage / (1.0 + theta[from][to] * coverage) * propagateProb;
 
-        return new ErrorRateEstimate(p * r / (1 - p), r, p);
+        return new ErrorRateEstimate(p * r / (1 - p) / coverage, r, p);
     }
 
     @Override
     public VariantQuality computeQuality(int majorCount, int coverage, Mutation mutation) {
         ErrorRateEstimate errorRateEstimate = computeErrorRate(mutation);
-        double score = computeNegBinomScore(majorCount, coverage, errorRateEstimate.getStatistics()[0],
+        double score = computeNegBinomScore(majorCount, errorRateEstimate.getStatistics()[0],
                 errorRateEstimate.getStatistics()[1]);
 
         return new VariantQuality(errorRateEstimate, score);
@@ -78,23 +78,17 @@ public class PresetErrorModel implements ErrorModel {
     @Override
     public VariantQuality computeQuality(int majorCount, int coverage, int pos, int from, int to) {
         ErrorRateEstimate errorRateEstimate = computeErrorRate(pos, from, to);
-        double score = computeNegBinomScore(majorCount, coverage, errorRateEstimate.getStatistics()[0],
+        double score = computeNegBinomScore(majorCount, errorRateEstimate.getStatistics()[0],
                 errorRateEstimate.getStatistics()[1]);
 
         return new VariantQuality(errorRateEstimate, score);
     }
 
-    private static double computeNegBinomScore(int majorCount, int coverage, double alpha, double theta) {
+    private static double computeNegBinomScore(int majorCount, double r, double p) {
         if (majorCount == 0) {
             return 0;
         }
 
-        double p = theta * coverage / (1.0 + theta * coverage);
-
-        if (alpha <= 0 || p >= 1 || p <= 0) {
-            return -1.0;
-        }
-
-        return -10 * Math.log10(1.0 - AuxiliaryStats.negativeBinomialCdf(majorCount, alpha, p));
+        return -10 * Math.log10(1.0 - AuxiliaryStats.negativeBinomialCdf(majorCount, r, p));
     }
 }
