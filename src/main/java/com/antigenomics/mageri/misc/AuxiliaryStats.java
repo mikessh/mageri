@@ -50,7 +50,25 @@ public class AuxiliaryStats {
             sum += betaBinomialPdf(i, n, alpha, beta);
         }
 
-        return Math.min(1.0, sum);
+        return Math.min(1.0, sum); // overflow possible ?
+    }
+
+    public static double betaBinomialPvalueFast(int k, int n, double alpha, double beta) {
+        return betaBinomialPvalueFast(k, n, alpha, beta, 1e-100);
+    }
+
+    public static double betaBinomialPvalueFast(int k, int n, double alpha, double beta, double pThreshold) {
+        double sum = 1 + 0.5 * betaBinomialPdf(k, n, alpha, beta);
+
+        for (int i = 0; i < k; i++) {
+            sum -= betaBinomialPdf(i, n, alpha, beta);
+
+            if (sum <= pThreshold) {
+                break;
+            }
+        }
+
+        return sum;
     }
 
     public static double normalCdf(double x, double mean, double sd) {

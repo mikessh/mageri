@@ -21,7 +21,7 @@ import com.antigenomics.mageri.core.variant.Variant;
 import com.antigenomics.mageri.core.mutations.Mutation;
 
 public final class VcfUtil {
-    public static final int MAX_QUAL = 9999, UNDEF_QUAL = -1;
+    public static final int MAX_QUAL = 999, UNDEF_QUAL = -1;
 
     private VcfUtil() {
     }

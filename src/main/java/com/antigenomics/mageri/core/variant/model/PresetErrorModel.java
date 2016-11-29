@@ -10,17 +10,17 @@ import com.milaboratory.core.sequence.mutations.Mutations;
 import com.milaboratory.core.sequence.nucleotide.NucleotideAlphabet;
 
 public class PresetErrorModel implements ErrorModel {
-    private final double[][] alpha = new double[4][4], theta = new double[4][4];
+    private final double[][] alpha = new double[4][4], beta = new double[4][4];
     private final double propagateProb;
     private final MutationsTable mutationsTable;
 
     public final static String DEFAULT_VALUES =
-            "A_C,T_G:0.9279161:3.727861e-05;" +
-                    "A_G,T_C:1.0296172:6.099085e-05;" +
-                    "A_T,T_A:1.0838314:2.565636e-05;" +
-                    "C_A,G_T:0.9957468:4.573685e-05;" +
-                    "C_G,G_C:1.0584827:2.081932e-05;" +
-                    "C_T,G_A:2.1316472:4.106974e-05";
+            "A_C,T_G:0.9278882:26823.24;" +
+                    "A_G,T_C:1.0295689:16394.12;" +
+                    "A_T,T_A:1.0838020:38974.43;" +
+                    "C_A,G_T:0.9957058:21862.23;" +
+                    "C_G,G_C:1.0584582:48029.97;" +
+                    "C_T,G_A:2.1314829:24344.82";
 
     public PresetErrorModel(VariantCallerParameters variantCallerParameters, MutationsTable mutationsTable) {
         String[] lines = variantCallerParameters.getModelPresetString().split(";");
@@ -38,7 +38,7 @@ public class PresetErrorModel implements ErrorModel {
                             to = NucleotideAlphabet.INSTANCE.codeFromSymbol(fromTo[1].charAt(0));
 
                     this.alpha[from][to] = alpha;
-                    this.theta[from][to] = theta;
+                    this.beta[from][to] = theta;
                 }
             }
         }
@@ -59,17 +59,17 @@ public class PresetErrorModel implements ErrorModel {
 
     @Override
     public ErrorRateEstimate computeErrorRate(int pos, int from, int to) {
-        int coverage = mutationsTable.getMigCoverage(pos);
-        double r = alpha[from][to],
-                p = theta[from][to] * coverage / (1.0 + theta[from][to] * coverage) * propagateProb;
+        double a = alpha[from][to],
+                b = beta[from][to] / propagateProb;
 
-        return new ErrorRateEstimate(p * r / (1 - p) / coverage, r, p);
+        return new ErrorRateEstimate(a / (a + b), a, b);
     }
 
     @Override
     public VariantQuality computeQuality(int majorCount, int coverage, Mutation mutation) {
         ErrorRateEstimate errorRateEstimate = computeErrorRate(mutation);
-        double score = computeNegBinomScore(majorCount, errorRateEstimate.getStatistics()[0],
+        double score = computeNegBinomScore(majorCount, coverage,
+                errorRateEstimate.getStatistics()[0],
                 errorRateEstimate.getStatistics()[1]);
 
         return new VariantQuality(errorRateEstimate, score);
@@ -78,17 +78,18 @@ public class PresetErrorModel implements ErrorModel {
     @Override
     public VariantQuality computeQuality(int majorCount, int coverage, int pos, int from, int to) {
         ErrorRateEstimate errorRateEstimate = computeErrorRate(pos, from, to);
-        double score = computeNegBinomScore(majorCount, errorRateEstimate.getStatistics()[0],
+        double score = computeNegBinomScore(majorCount, coverage,
+                errorRateEstimate.getStatistics()[0],
                 errorRateEstimate.getStatistics()[1]);
 
         return new VariantQuality(errorRateEstimate, score);
     }
 
-    private static double computeNegBinomScore(int majorCount, double r, double p) {
+    private static double computeNegBinomScore(int majorCount, int coverage, double a, double b) {
         if (majorCount == 0) {
             return 0;
         }
 
-        return -10 * Math.log10(1.0 - AuxiliaryStats.negativeBinomialCdf(majorCount, r, p));
+        return -10 * Math.log10(AuxiliaryStats.betaBinomialPvalueFast(majorCount, coverage, a, b));
     }
 }

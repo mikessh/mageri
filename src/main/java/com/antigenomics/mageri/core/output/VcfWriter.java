@@ -90,7 +90,8 @@ public class VcfWriter extends RecordWriter<VcfRecord, VariantCaller> {
     }
 
     public void write(Variant variant) throws IOException {
-        if (variant.getReference().getGenomicInfo().getContig().skipInSamAndVcf()) {
+        if (variant.getReference().getGenomicInfo().getContig().skipInSamAndVcf() ||
+                variant.getCount() == 0) {
             return;
         }
 
