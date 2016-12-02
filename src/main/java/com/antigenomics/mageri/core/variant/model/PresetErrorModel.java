@@ -68,7 +68,7 @@ public class PresetErrorModel implements ErrorModel {
     @Override
     public VariantQuality computeQuality(int majorCount, int coverage, Mutation mutation) {
         ErrorRateEstimate errorRateEstimate = computeErrorRate(mutation);
-        double score = computeNegBinomScore(majorCount, coverage,
+        double score = computeBetaBinomScore(majorCount, coverage,
                 errorRateEstimate.getStatistics()[0],
                 errorRateEstimate.getStatistics()[1]);
 
@@ -78,14 +78,14 @@ public class PresetErrorModel implements ErrorModel {
     @Override
     public VariantQuality computeQuality(int majorCount, int coverage, int pos, int from, int to) {
         ErrorRateEstimate errorRateEstimate = computeErrorRate(pos, from, to);
-        double score = computeNegBinomScore(majorCount, coverage,
+        double score = computeBetaBinomScore(majorCount, coverage,
                 errorRateEstimate.getStatistics()[0],
                 errorRateEstimate.getStatistics()[1]);
 
         return new VariantQuality(errorRateEstimate, score);
     }
 
-    private static double computeNegBinomScore(int majorCount, int coverage, double a, double b) {
+    private static double computeBetaBinomScore(int majorCount, int coverage, double a, double b) {
         if (majorCount == 0) {
             return 0;
         }
