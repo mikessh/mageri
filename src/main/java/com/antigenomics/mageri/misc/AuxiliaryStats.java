@@ -38,11 +38,12 @@ public class AuxiliaryStats {
 
     public static double betaBinomialPdf(int k, int n, double alpha, double beta) {
         return Math.exp(
-                Beta.logBeta(k + alpha, n - k + beta) - Beta.logBeta(alpha, beta) +
-                Gamma.logGamma(n + 1) - Gamma.logGamma(k + 1) - Gamma.logGamma(n - k + 1)
+                (Beta.logBeta(k + alpha, n - k + beta) - Beta.logBeta(alpha, beta)) +
+                        (Gamma.logGamma(n + 1) - Gamma.logGamma(k + 1) - Gamma.logGamma(n - k + 1))
         );
     }
 
+    @Deprecated
     public static double betaBinomialCdf(int k, int n, double alpha, double beta) {
         double sum = 0;
 
@@ -50,21 +51,21 @@ public class AuxiliaryStats {
             sum += betaBinomialPdf(i, n, alpha, beta);
         }
 
-        return Math.min(1.0, sum); // overflow possible ?
+        return Math.min(1.0, sum);
     }
 
     public static double betaBinomialPvalueFast(int k, int n, double alpha, double beta) {
-        return betaBinomialPvalueFast(k, n, alpha, beta, 1e-100);
+        return betaBinomialPvalueFast(k, n, alpha, beta, 1e-10);
     }
 
     public static double betaBinomialPvalueFast(int k, int n, double alpha, double beta, double pThreshold) {
-        double sum = 1 + 0.5 * betaBinomialPdf(k, n, alpha, beta);
+        double sum = 1.0 + 0.5 * betaBinomialPdf(k, n, alpha, beta);
 
         for (int i = 0; i < k; i++) {
             sum -= betaBinomialPdf(i, n, alpha, beta);
 
             if (sum <= pThreshold) {
-                break;
+                return pThreshold;
             }
         }
 
