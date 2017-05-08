@@ -11,3 +11,5 @@ datasets into ready SAM and VCF files in a single command. Its main purpose is t
 See [mageri-paper repository](https://github.com/mikessh/mageri-paper) for examples and supplementary data.
 
 Software binaries can be found in the [releases section](https://github.com/mikessh/mageri/releases/latest), the documentation is available [here](http://mageri.readthedocs.io/en/latest/).
+
+Please cite the software as [Shugay et al. Plos Comp Biol 2017](http://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1005480).
