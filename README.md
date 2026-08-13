@@ -3,6 +3,8 @@ MAGERI
 
 [![Build Status](https://travis-ci.org/mikessh/mageri.svg?branch=master)](https://travis-ci.org/mikessh/mageri)
 
+> **DEPRECATED.** This tool is no longer maintained. See [MIGEC](https://github.com/antigenomics/migec) instead.
+
 [Molecular tagging approach](http://www.pnas.org/content/108/23/9530) has revolutionized the field of high depth genome re-sequencing 
 by allowing detection of ultra-rare mutations. This pipeline aims at filling the gap in software for analysis of UMI-tagged data. 
 MAGERI implements consensus assembly, alignment and variant calling and allows to process 
